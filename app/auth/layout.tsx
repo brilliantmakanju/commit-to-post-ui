@@ -2,6 +2,7 @@ import '../globals.css';
 
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Suspense } from 'react';
 
 import AuthTopNavigation from '@/components/navigation/top_navigation/auth-top-navigation';
 
@@ -27,7 +28,9 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} relative antialiased xl:container xl:mx-auto`}
 			>
 				<AuthTopNavigation />
-				<main className={'flex-1'}>{children}</main>
+				<Suspense fallback={<div>Loading.....</div>}>
+					<main className={'flex-1'}>{children}</main>
+				</Suspense>
 			</body>
 		</html>
 	);
