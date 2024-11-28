@@ -1,0 +1,18 @@
+[
+	{
+		"icon": "FileText",
+		"title": "Rich Text Editor",
+		"description": "Express yourself fully with our powerful editor featuring:",
+		"points": ["Format text with ease", "Embed links"],
+		"imagePosition": "right",
+		"imageURL": "/Anime-Girl1.png"
+	},
+	{
+		"icon": "BarChart3",
+		"title": "Mood Analytics",
+		"description": "Track your emotional journey with powerful analytics:",
+		"points": ["Visual mood trends", "Pattern recognition"],
+		"imagePosition": "left",
+		"imageURL": "/Anime-Girl4.png"
+	}
+]

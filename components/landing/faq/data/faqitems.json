@@ -1,0 +1,18 @@
+[
+	{
+		"question": "Is my journal data secure?",
+		"answer": "Yes, we use enterprise-grade encryption to protect your journal entries."
+	},
+	{
+		"question": "Can I organize my journal entries?",
+		"answer": "Yes, you can use tags, categories, and custom organization systems."
+	},
+	{
+		"question": "How does the mood tracking work?",
+		"answer": "Each entry can be tagged with a mood, and our analytics tool creates visual representations of your emotional journey over time."
+	},
+	{
+		"question": "Is there a mobile app?",
+		"answer": "Yes, we have iOS and Android apps available for journaling on the go."
+	}
+]
