@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import AuthModal from '@/components/auth/modal';
-import { Button } from '@/components/ui/button';
+import AuthModal from "@/components/auth/modal";
+import { Button } from "@/components/ui/button";
 
 const AuthButtons = () => {
 	return (

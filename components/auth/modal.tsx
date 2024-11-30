@@ -1,15 +1,15 @@
-'use client';
-import React from 'react';
+"use client";
+import React from "react";
 
-import SubAuthPage from '@/components/auth/sub-modal';
+import SubAuthPage from "@/components/auth/sub-modal";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from '@/components/ui/dialog';
-import { AuthModalProps } from '@/types';
+} from "@/components/ui/dialog";
+import { AuthModalProps } from "@/types";
 
 const AuthModal = ({ trigger }: AuthModalProps) => {
 	return (
@@ -20,7 +20,7 @@ const AuthModal = ({ trigger }: AuthModalProps) => {
 					<SubAuthPage />
 				</DialogHeader>
 			</DialogContent>
-			<DialogTitle className={'dialog-title'}>Authentication Modal</DialogTitle>
+			<DialogTitle className={"dialog-title"}>Authentication Modal</DialogTitle>
 		</Dialog>
 	);
 };

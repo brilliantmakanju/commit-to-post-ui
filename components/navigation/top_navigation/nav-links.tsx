@@ -1,10 +1,10 @@
-'use client';
-import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+"use client";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
-import { links } from './data.';
+import { links } from "./data.";
 
 const NavLinks = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,11 +12,11 @@ const NavLinks = () => {
 
 	useEffect(() => {
 		const root = globalThis.window.document.documentElement;
-		root.classList.toggle('dark', darkMode);
+		root.classList.toggle("dark", darkMode);
 	}, [darkMode]);
 
 	return (
-		<nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block`}>
+		<nav className={`${isMenuOpen ? "block" : "hidden"} md:block`}>
 			{/*<Button*/}
 			{/*	variant="ghost"*/}
 			{/*	size="icon"*/}

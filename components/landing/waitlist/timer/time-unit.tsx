@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import FlipCard from './flip-card';
+import FlipCard from "./flip-card";
 
 interface TimeUnitProps {
 	tens: number;

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface HeroButtonsProps {
-	layout?: 'col' | 'row' | 'input';
+	layout?: "col" | "row" | "input";
 	primaryLabel?: string;
 	secondaryLabel?: string;
 	onPrimaryClick?: () => void;
@@ -13,9 +13,9 @@ interface HeroButtonsProps {
 }
 
 const HeroButtons: React.FC<HeroButtonsProps> = ({
-	layout = 'col',
-	primaryLabel = 'Get Started',
-	secondaryLabel = 'View Demo',
+	layout = "col",
+	primaryLabel = "Get Started",
+	secondaryLabel = "View Demo",
 	onPrimaryClick,
 	onSecondaryClick,
 	onEmailSubmit,
@@ -23,14 +23,14 @@ const HeroButtons: React.FC<HeroButtonsProps> = ({
 	const handleEmailSubmit = (event_: React.FormEvent<HTMLFormElement>) => {
 		event_.preventDefault();
 		const email = (
-			event_.currentTarget.elements.namedItem('email') as HTMLInputElement
+			event_.currentTarget.elements.namedItem("email") as HTMLInputElement
 		)?.value;
 		if (onEmailSubmit && email) {
 			onEmailSubmit(email);
 		}
 	};
 
-	if (layout === 'input') {
+	if (layout === "input") {
 		return (
 			<div className="mx-auto w-full max-w-sm">
 				<form onSubmit={handleEmailSubmit} className="flex space-x-2">
@@ -54,7 +54,7 @@ const HeroButtons: React.FC<HeroButtonsProps> = ({
 	return (
 		<div
 			className={`flex ${
-				layout === 'col' ? 'flex-col' : 'flex-row'
+				layout === "col" ? "flex-col" : "flex-row"
 			} justify-center gap-4`}
 		>
 			<Button

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Logo from './logo';
+import Logo from "./logo";
 
 const AuthTopNavigation = () => {
 	return (

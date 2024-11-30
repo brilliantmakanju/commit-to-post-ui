@@ -1084,7 +1084,7 @@
 // };
 //
 // export default PricingAndHowItWorks;
-import React from 'react';
+import React from "react";
 
 const Test = () => {
 	return <div>Test</div>;

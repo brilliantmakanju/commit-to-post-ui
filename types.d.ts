@@ -18,7 +18,7 @@ type HeroBannerTopProps = {
 	customStyles?: string;
 
 	// Variant for different designs
-	variant?: 'outline' | 'default'; // Can add more variants as needed
+	variant?: "outline" | "default"; // Can add more variants as needed
 };
 
 export interface HeroTimerData {

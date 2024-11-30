@@ -4,4 +4,4 @@ type Feature = {
 	description: string;
 };
 
-export const featuresData: Feature[] = require('./data/feature.json');
+export const featuresData: Feature[] = require("./data/feature.json");

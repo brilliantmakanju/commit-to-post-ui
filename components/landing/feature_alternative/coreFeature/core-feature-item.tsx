@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import React from 'react';
+import Image from "next/image";
+import React from "react";
 
 type CoreFeatureItemProps = {
 	icon: React.ReactNode;
@@ -15,21 +15,21 @@ const CoreFeatureItem = ({
 	title,
 	description,
 	points,
-	imagePosition = 'right',
+	imagePosition = "right",
 	imageURL,
 }: CoreFeatureItemProps) => {
 	return (
 		<div
-			className={`grid grid-cols-1 items-center gap-12 md:grid-cols-2 ${imagePosition === 'left' ? '' : ''}`}
+			className={`grid grid-cols-1 items-center gap-12 md:grid-cols-2 ${imagePosition === "left" ? "" : ""}`}
 		>
-			{imagePosition === 'left' && (
+			{imagePosition === "left" && (
 				<div className="relative order-2 aspect-video overflow-hidden rounded-lg bg-gray-100 shadow-lg md:order-1">
 					<Image src={imageURL} alt={title} fill />
 				</div>
 			)}
 
 			<div
-				className={`space-y-6 ${imagePosition === 'left' ? 'order-1 md:order-2' : ''}`}
+				className={`space-y-6 ${imagePosition === "left" ? "order-1 md:order-2" : ""}`}
 			>
 				<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-50">
 					{icon}
@@ -51,7 +51,7 @@ const CoreFeatureItem = ({
 				</div>
 			</div>
 
-			{imagePosition === 'right' && (
+			{imagePosition === "right" && (
 				<div className="relative order-2 aspect-video overflow-hidden rounded-lg bg-gray-100 shadow-lg md:order-1">
 					<Image src={imageURL} alt={title} fill />
 				</div>

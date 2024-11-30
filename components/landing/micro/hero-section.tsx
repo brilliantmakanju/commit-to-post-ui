@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { FaRocket } from 'react-icons/fa';
+import { FaRocket } from "react-icons/fa";
 
 import {
 	Heading,
 	Paragraph,
 	Span,
-} from '@/components/general/micro/typography';
-import HeroBannerTop from '@/components/landing/micro/hero-banner-top';
-import HeroButtons from '@/components/landing/micro/hero-cta';
-import HeroImage from '@/components/landing/micro/hero-image';
+} from "@/components/general/micro/typography";
+import HeroBannerTop from "@/components/landing/micro/hero-banner-top";
+import HeroButtons from "@/components/landing/micro/hero-cta";
+import HeroImage from "@/components/landing/micro/hero-image";
 
 const HeroSection = () => {
 	return (
 		<div className="container px-4 md:px-6">
 			<div className="flex flex-col items-center space-y-8 text-center">
 				{/* Badge */}
-				<HeroBannerTop variant={'outline'} icon={FaRocket} />
+				<HeroBannerTop variant={"outline"} icon={FaRocket} />
 
 				{/* Text Section */}
 				<div className="max-w-3xl space-y-4">

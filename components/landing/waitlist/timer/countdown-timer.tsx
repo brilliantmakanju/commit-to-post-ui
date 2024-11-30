@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import TimeUnit from './time-unit';
+import TimeUnit from "./time-unit";
 
 const CountdownTimer: React.FC = () => {
 	const [timeLeft, setTimeLeft] = useState<number>(0);

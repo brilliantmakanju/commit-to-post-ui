@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Heading, Paragraph } from '@/components/general/micro/typography';
-import { heroTimerData } from '@/components/landing/waitlist/data'; // Configurable JSON data
-import { EmailSignupForm } from '@/components/landing/waitlist/email-signup';
-import CountdownTimer from '@/components/landing/waitlist/timer/countdown-timer';
-import { TimeDisplayCard } from '@/components/landing/waitlist/timer/timedisplay-card';
+import { Heading, Paragraph } from "@/components/general/micro/typography";
+import { heroTimerData } from "@/components/landing/waitlist/data"; // Configurable JSON data
+import { EmailSignupForm } from "@/components/landing/waitlist/email-signup";
+import CountdownTimer from "@/components/landing/waitlist/timer/countdown-timer";
+import { TimeDisplayCard } from "@/components/landing/waitlist/timer/timedisplay-card";
 
 const HeroTimerSection: React.FC = () => {
 	return (

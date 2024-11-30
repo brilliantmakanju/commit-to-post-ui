@@ -1,10 +1,10 @@
-import { BarChart3, FileText } from 'lucide-react';
+import { BarChart3, FileText } from "lucide-react";
 
-import coreFeaturesData from '../data/corefeature.json';
-import CoreFeatureItem from './core-feature-item';
+import coreFeaturesData from "../data/corefeature.json";
+import CoreFeatureItem from "./core-feature-item";
 
 // Define a type for the available icon keys
-type IconKey = 'FileText' | 'BarChart3'; // Add all other icon names here as union types
+type IconKey = "FileText" | "BarChart3"; // Add all other icon names here as union types
 
 // Define the iconMap with specific keys
 const iconMap: Record<IconKey, JSX.Element> = {

@@ -1,22 +1,22 @@
-'use client';
-import React from 'react';
+"use client";
+import React from "react";
 
 // eslint-disable-next-line import/named
-import { HeroBannerTopProps } from '@/types';
+import { HeroBannerTopProps } from "@/types";
 
 const HeroBannerTop = ({
 	icon: Icon,
-	title = 'New Feature',
-	content = 'AI-powered analytics now available!',
-	titleStyles = '',
-	contentStyles = '',
-	customStyles = '',
-	variant = 'default', // Default variant is 'default'
+	title = "New Feature",
+	content = "AI-powered analytics now available!",
+	titleStyles = "",
+	contentStyles = "",
+	customStyles = "",
+	variant = "default", // Default variant is 'default'
 }: HeroBannerTopProps) => {
 	return (
 		<>
 			{/* Default Variant */}
-			{variant === 'default' && (
+			{variant === "default" && (
 				<div
 					className={`inline-flex items-center rounded-full border border-transparent bg-emerald-500 px-2.5 py-0.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-emerald-500/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${customStyles}`}
 				>
@@ -34,7 +34,7 @@ const HeroBannerTop = ({
 			)}
 
 			{/* Outline Variant */}
-			{variant === 'outline' && (
+			{variant === "outline" && (
 				<div
 					className={`inline-flex items-center rounded-full border border-transparent bg-emerald-500/10 py-0.5 pl-2.5 pr-[1.5px] text-xs font-semibold text-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:text-emerald-400 ${customStyles}`}
 				>

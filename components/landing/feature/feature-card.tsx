@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Heading, Paragraph } from '@/components/general/micro/typography';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Heading, Paragraph } from "@/components/general/micro/typography";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface FeatureCardProps {
 	icon: React.ReactNode;
@@ -17,7 +17,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({
 	icon,
-	badgeColor = 'bg-emerald-500',
+	badgeColor = "bg-emerald-500",
 	title,
 	subtitle,
 	description,

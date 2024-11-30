@@ -1,7 +1,7 @@
-import { Accordion } from '@/components/ui/accordion';
+import { Accordion } from "@/components/ui/accordion";
 
-import faqItems from './data/faqitems.json';
-import FAQItem from './faq-item';
+import faqItems from "./data/faqitems.json";
+import FAQItem from "./faq-item";
 
 const FAQSection = () => {
 	return (

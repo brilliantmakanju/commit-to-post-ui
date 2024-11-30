@@ -1,18 +1,18 @@
-import { Check } from 'lucide-react';
-import React from 'react';
+import { Check } from "lucide-react";
+import React from "react";
 
-import { Heading, Span } from '@/components/general/micro/typography';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Heading, Span } from "@/components/general/micro/typography";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
-import { pricingData } from './data'; // Importing directly here
+import { pricingData } from "./data"; // Importing directly here
 
 const Pricing = () => {
 	const { title, plans } = pricingData; // Destructure the data for easy use
@@ -28,8 +28,8 @@ const Pricing = () => {
 						key={plan.name}
 						className={`relative flex w-full flex-col ${
 							plan.popular
-								? 'z-10 scale-105 bg-slate-900 text-white shadow-lg'
-								: 'bg-white'
+								? "z-10 scale-105 bg-slate-900 text-white shadow-lg"
+								: "bg-white"
 						}`}
 					>
 						{plan.popular ? (
@@ -55,7 +55,7 @@ const Pricing = () => {
 								<ul className="space-y-2">
 									{plan.features.map(feature => (
 										<li key={feature} className="flex items-center gap-2">
-											<Check className={`h-5 w-5 text-[#66cc33]`} />
+											<Check className={"h-5 w-5 text-[#66cc33]"} />
 											<span className="text-sm">{feature}</span>
 										</li>
 									))}
@@ -74,8 +74,8 @@ const Pricing = () => {
 							<Button
 								className={`w-full ${
 									plan.popular
-										? 'bg-[#66cc33] text-white hover:bg-[#55bb22]'
-										: 'bg-slate-900 text-white hover:bg-slate-800'
+										? "bg-[#66cc33] text-white hover:bg-[#55bb22]"
+										: "bg-slate-900 text-white hover:bg-slate-800"
 								}`}
 							>
 								{plan.buttonText}

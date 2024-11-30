@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Aperture, FileText, Play, Users, Zap } from 'lucide-react';
-import React from 'react';
+import { Aperture, FileText, Play, Users, Zap } from "lucide-react";
+import React from "react";
 
-import { Heading } from '@/components/general/micro/typography';
+import { Heading } from "@/components/general/micro/typography";
 
-import FeatureCard from './feature-card';
-import FeatureGrid from './feature-grid';
+import FeatureCard from "./feature-card";
+import FeatureGrid from "./feature-grid";
 
 const HeroFeaturesSection = () => {
 	return (
@@ -44,15 +44,15 @@ const HeroFeaturesSection = () => {
 					features={[
 						{
 							icon: <Aperture className="h-5 w-5 text-blue-400" />,
-							title: 'AI Automated Video Editing',
+							title: "AI Automated Video Editing",
 						},
 						{
 							icon: <Users className="h-5 w-5 text-blue-400" />,
-							title: 'Collaborate with Your Team',
+							title: "Collaborate with Your Team",
 						},
 						{
 							icon: <Zap className="h-5 w-5 text-blue-400" />,
-							title: 'Ultra Fast Cloud-Engine',
+							title: "Ultra Fast Cloud-Engine",
 						},
 					]}
 				/>

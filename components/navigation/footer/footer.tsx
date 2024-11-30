@@ -1,10 +1,10 @@
-import { Command } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
+import { Command } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
-import { Paragraph, Span } from '@/components/general/micro/typography';
+import { Paragraph, Span } from "@/components/general/micro/typography";
 
-import { footerData } from './data'; // Import footer data directly from data.ts
+import { footerData } from "./data"; // Import footer data directly from data.ts
 
 interface FooterProps {
 	companyName?: string;
@@ -19,11 +19,11 @@ interface FooterProps {
 
 const Footer: React.FC = () => {
 	const {
-		companyName = 'DevLock Inc',
-		tagline = 'Building the future of web development, one component at a time.',
+		companyName = "DevLock Inc",
+		tagline = "Building the future of web development, one component at a time.",
 		sections = [],
 		legalLinks = [],
-		copyright = '',
+		copyright = "",
 	}: FooterProps = footerData; // Directly destructure footerData
 
 	return (

@@ -1,11 +1,11 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
-import CTAWaitlistForm from './cta-waitlistform';
+import CTAWaitlistForm from "./cta-waitlistform";
 
 const CTASection = () => {
 	const [showWaitlist, setShowWaitlist] = useState(false);

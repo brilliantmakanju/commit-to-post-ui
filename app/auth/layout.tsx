@@ -1,20 +1,20 @@
-import '../globals.css';
+import "@/app/globals.css";
 
-import type { Metadata } from 'next';
-import localFont from 'next/font/local';
-import { Suspense } from 'react';
+import localFont from "next/font/local";
+import { Suspense } from "react";
 
-import AuthTopNavigation from '@/components/navigation/top_navigation/auth-top-navigation';
+import AuthTopNavigation from "@/components/navigation/top_navigation/auth-top-navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = localFont({
-	src: '../fonts/GeistVF.woff',
-	variable: '--font-geist-sans',
-	weight: '100 900',
+	src: "../fonts/GeistVF.woff",
+	variable: "--font-geist-sans",
+	weight: "100 900",
 });
 const geistMono = localFont({
-	src: '../fonts/GeistMonoVF.woff',
-	variable: '--font-geist-mono',
-	weight: '100 900',
+	src: "../fonts/GeistMonoVF.woff",
+	variable: "--font-geist-mono",
+	weight: "100 900",
 });
 
 export default function RootLayout({
@@ -29,8 +29,9 @@ export default function RootLayout({
 			>
 				<AuthTopNavigation />
 				<Suspense fallback={<div>Loading.....</div>}>
-					<main className={'flex-1'}>{children}</main>
+					<main className={"flex-1"}>{children}</main>
 				</Suspense>
+				<Toaster />
 			</body>
 		</html>
 	);

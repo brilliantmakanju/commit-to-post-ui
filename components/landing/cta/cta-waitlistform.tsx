@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type CTAWaitlistFormProps = {
 	onSubmit: (email: string) => void;
@@ -9,7 +9,7 @@ const CTAWaitlistForm = ({ onSubmit }: CTAWaitlistFormProps) => {
 	const handleSubmit = (event_: React.FormEvent<HTMLFormElement>) => {
 		event_.preventDefault();
 		const email = (
-			event_.currentTarget.elements.namedItem('email') as HTMLInputElement
+			event_.currentTarget.elements.namedItem("email") as HTMLInputElement
 		)?.value;
 		if (email) {
 			onSubmit(email);

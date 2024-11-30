@@ -1,8 +1,8 @@
-'use client';
-import { FileText, Lock, Sparkles } from 'lucide-react';
-import { ReactNode } from 'react';
+"use client";
+import { FileText, Lock, Sparkles } from "lucide-react";
+import { ReactNode } from "react";
 
-import { featuresData } from '@/components/landing/feature_alternative/feature-section';
+import { featuresData } from "@/components/landing/feature_alternative/feature-section";
 
 // Mapping icon names to components
 const iconMap: Record<string, ReactNode> = {

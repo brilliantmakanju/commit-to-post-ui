@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
+import Image from "next/image";
 
 interface HeroImageProps {
 	src: string;
@@ -15,7 +15,7 @@ const HeroImage: React.FC<HeroImageProps> = ({
 	alt,
 	height = 720,
 	width = 1280,
-	className = '',
+	className = "",
 }) => {
 	return (
 		<div className="mx-auto mt-8 w-full max-w-5xl">
