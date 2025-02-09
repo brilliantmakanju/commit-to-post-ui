@@ -17,13 +17,13 @@ export async function getBaseUrl(): Promise<string> {
 		const organization = await getDecryptedCookie("organization");
 
 		// Extract domain from organization if it exists
-		const domain = organization?.domain;
+		const domain = `https://${organization?.domian}`;
 
 		// In development, append port 8000 to domain
 		const domainWithPort =
 			domain && process.env.NODE_ENV === "development"
 				? `https://${domain}`
-				: `https://${domain}`;
+				: domain;
 		// Add :8000 when done with testing
 		// Return first available URL in priority order
 		const baseUrl =
