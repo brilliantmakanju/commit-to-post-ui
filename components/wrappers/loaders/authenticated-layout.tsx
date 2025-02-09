@@ -45,7 +45,7 @@ export function AuthenticatedLayout({
 			<AppSidebar />
 			<SidebarInset className="overflow-hidden bg-transparent md:rounded-[30px]">
 				<main
-					className={`relative h-auto w-full overflow-hidden ${
+					className={`relative h-screen w-full overflow-hidden md:h-auto ${
 						status === "loading" || !isClient || logout
 							? ""
 							: "overflow-y-auto bg-[#232528] px-7 text-[#EAF6FF]"
