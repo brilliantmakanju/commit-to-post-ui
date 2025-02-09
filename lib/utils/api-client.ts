@@ -1,4 +1,15 @@
+import { access } from "node:fs";
+
 import { z } from "zod";
+
+import { auth } from "@/auth";
+import { refreshToken } from "@/server-actions/auth/auth-actions";
+
+import { updateCookie } from "../cookies/create-cookies";
+import { getBaseUrl } from "./getbase-url";
+import { getAuthTokens } from "./gettokens";
+import { isTokenExpired } from "./tokens";
+import { validateEndpointAndMethod } from "./verify-endpoint";
 
 export interface ApiClientConfig {
 	baseUrl: string; // The base URL for API requests
@@ -24,6 +35,29 @@ export class ApiClient {
 		this.timeout = timeout;
 	}
 
+	// Method to retrieve the session token dynamically
+	private async getSessionToken() {
+		const { access_token } = await getAuthTokens();
+		console.log(access_token, "AccessToken");
+		return access_token || ""; // Return the token or an empty string if not available
+	}
+
+	private async getSessionRefreshToken() {
+		const { refresh_token } = await getAuthTokens();
+		return refresh_token || ""; // Return the token or an empty string if not available
+	}
+
+	// Add new method to get the appropriate base URL
+	private async getDynamicBaseUrl(): Promise<string> {
+		const session = await auth();
+		if (session?.user) {
+			// User is logged in, use dynamic base URL
+			return getBaseUrl();
+		}
+		// User is not logged in, use default base URL
+		return this.baseUrl;
+	}
+
 	private mergeHeaders(customHeaders: Record<string, string> = {}) {
 		return { ...this.defaultHeaders, ...customHeaders };
 	}
@@ -32,6 +66,57 @@ export class ApiClient {
 		const controller = new AbortController();
 		setTimeout(() => controller.abort(), timeout);
 		return controller;
+	}
+
+	private async getAuthorizationHeader(headers: Record<string, string> = {}) {
+		// Get session token if available
+		const token = await this.getSessionToken(); // Dynamically get the session token
+		const refreshtoken = await this.getSessionRefreshToken(); // Dynamically get the session token
+
+		// Return the merged headers with the Authorization header added if token exists
+		return this.mergeHeaders({
+			Authorization: token ? `Bearer ${token}` : "", // Add token if available
+			"X-Refresh-Token": refreshtoken || "",
+			...headers, // Merge any custom headers passed in
+		});
+	}
+
+	private async handleUnauthorizedError(
+		endpoint: string,
+		method: string,
+		body?: any,
+		headers?: Record<string, string>,
+		signal?: AbortSignal,
+	) {
+		try {
+			// Get refresh token and attempt to refresh
+			const refreshtoken = await this.getSessionRefreshToken();
+			const response = await refreshToken(refreshtoken);
+
+			if (response.success && response.data) {
+				// Update cookies with new tokens
+				await updateCookie("cookie_state", {
+					access_token: response.data.access_token,
+					refresh_token: response.data.refresh_token,
+				});
+
+				// Retry the original request with new token
+				const retryHeaders = await this.getAuthorizationHeader(headers);
+				return await fetch(`${await this.getDynamicBaseUrl()}${endpoint}`, {
+					method,
+					headers: retryHeaders,
+					body: body ? JSON.stringify(body) : undefined,
+					signal,
+					credentials: "include",
+				});
+			} else {
+				throw new Error("Token refresh failed");
+			}
+		} catch {
+			// Force sign out on refresh failure
+			// await signOut({ callbackUrl: "/auth?view=login" });
+			throw new Error("Authentication failed. Please login again.");
+		}
 	}
 
 	private async executeRequest(
@@ -44,17 +129,47 @@ export class ApiClient {
 		| { data?: any; success: boolean; status?: number }
 		| { success: boolean; error: any; status: number }
 	> {
-		const url = `${this.baseUrl}${endpoint}`;
+		const dynamicBaseUrl = await this.getDynamicBaseUrl();
+		const endpointRegulation = await validateEndpointAndMethod(
+			endpoint,
+			method,
+		);
+		const url = endpointRegulation
+			? `${this.baseUrl}${endpoint}`
+			: `${dynamicBaseUrl}${endpoint}`;
+		const mergedHeader = await this.getAuthorizationHeader(headers);
+		const accessToken = (await this.getSessionToken()) || "";
+
+		console.log(url, "URL");
+
+		const isExpired = isTokenExpired(accessToken);
+		console.log(isExpired, "Is Expired");
+
 		try {
-			const response = await fetch(url, {
+			let response = await fetch(url, {
 				method,
-				headers: this.mergeHeaders(headers),
+				headers: mergedHeader,
 				body: body ? JSON.stringify(body) : undefined,
 				signal,
-				credentials: "include", // Secure cookie handling
+				credentials: "include",
 			});
 
+			if (isExpired) {
+				response = await this.handleUnauthorizedError(
+					endpoint,
+					method,
+					body,
+					headers,
+					signal,
+				);
+			}
+
 			const responseBody = await response.json().catch(() => {});
+			console.log("-----------------------------------------------");
+			console.log(response, "Responses Devindse");
+			console.log("-----------------------------------------------");
+			console.log(responseBody, "Responssses -------- Devindse");
+			console.log("-----------------------------------------------");
 
 			return response.ok
 				? {
@@ -67,21 +182,6 @@ export class ApiClient {
 						success: false,
 						error: responseBody || { message: response.statusText },
 					};
-
-			// if (response.ok) {
-			// 	return {
-			// 		status: response.status,
-			// 		success: true,
-			// 		data: responseBody,
-			// 	};
-			// } else {
-			// 	// Return error details in a structured format
-			// 	return {
-			// 		status: response.status,
-			// 		success: false,
-			// 		error: responseBody || { message: response.statusText },
-			// 	};
-			// }
 		} catch (error: any) {
 			return {
 				success: false,
@@ -176,7 +276,7 @@ export class ApiClient {
 	}
 }
 
-// Exporting a single instance of ApiClient with your BASE_URL_API_CALL
+// Exporting a single instance of ApiClient
 export const apiClient = new ApiClient({
-	baseUrl: process.env.BASE_URL_API_CALL || "http://127.0.0.1:8000", // Default to localhost if env var not available
+	baseUrl: process.env.BASE_URL_API_CALL || "http://localhost:8000",
 });

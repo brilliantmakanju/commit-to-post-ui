@@ -1,41 +1,50 @@
 "use server";
 
 import dotenv from "dotenv";
+import { AuthError } from "next-auth";
 
-import { apiClient } from "@/lib/utils/api-client";
-import { loginSchema } from "@/resolvers/auth-resolvers";
+import { signIn } from "@/auth";
+import {
+	createEncryptedCookie,
+	deleteCookie,
+} from "@/lib/cookies/create-cookies";
 
 dotenv.config();
 
 // Function to register a user
-export const loginUser = async (
-	data: any,
-): Promise<{
-	success: boolean;
-	message: string;
-	errorDetails?: string;
-	responseBody?: string;
-}> => {
-	// Validate the data using Zod schema
-	const parsedData = loginSchema.parse(data);
-
+export const loginUser = async ({
+	email,
+	password,
+}: {
+	email: string;
+	password: string;
+}) => {
 	try {
-		// Make the API call using the apiClient
-		const response = await apiClient.post("/auth_base/users/", parsedData);
-
-		console.log(response, "Response from APIassss:");
-
-		// Check if the registration was successful (status 200 or 201)
-		if (response.error) {
-			throw new Error(response?.error.email || "Failed to register user.");
+		await createEncryptedCookie("firstLogin", {
+			firstLogin: true,
+		});
+		await signIn("credentials", {
+			email,
+			password,
+			magicLink: false,
+			token: "",
+			redirect: false,
+		});
+	} catch (error) {
+		if (error instanceof AuthError) {
+			switch (error.type) {
+				case "CredentialsSignin": {
+					return {
+						message: "Invalid credentials.",
+					};
+				}
+				default: {
+					return {
+						message: "Something went wrongsd.",
+					};
+				}
+			}
 		}
-		return response;
-	} catch (error: any) {
-		// Catch any errors from the API call and return them
-		return {
-			success: false,
-			message: error.message || "An unexpected error occurred.",
-			errorDetails: error, // Optional: Include error details for debugging
-		};
+		throw error;
 	}
 };

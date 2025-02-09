@@ -2,8 +2,6 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-
 import { links } from "./data.";
 
 const NavLinks = () => {

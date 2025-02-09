@@ -1,12 +1,20 @@
 "use client";
 
-import AuthModal from "@/components/auth/modal";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
+
+// import AuthModal from "@/components/auth/modal";
 
 const AuthButtons = () => {
 	return (
 		<div className="flex space-x-4">
-			<AuthModal trigger={<Button variant="secondary">Sign In</Button>} />
+			{/* Previous modal implementation */}
+			{/* <AuthModal trigger={<Button variant="secondary">Sign In</Button>} /> */}
+
+			<Link href="/auth">
+				<Button variant="secondary">Sign In</Button>
+			</Link>
 		</div>
 	);
 };

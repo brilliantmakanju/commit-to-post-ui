@@ -21,10 +21,7 @@ export const registerUser = async (
 
 	try {
 		// Make the API call using the apiClient
-		const response = await apiClient.post("/auth_base/users/", parsedData);
-
-		console.log(response, "Response from APIassss:");
-
+		const response = await apiClient.post("/api/v1/auth/users/", parsedData);
 		// Check if the registration was successful (status 200 or 201)
 		if (response.error) {
 			throw new Error(response?.error.email || "Failed to register user.");

@@ -1,5 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 // import { useToast } from "@/hooks/use-toast";
@@ -37,10 +38,10 @@ const SignupForm = ({ setView }: FormProps) => {
 			re_password: "",
 		},
 	});
+	const [showSocial, setShowSocial] = useState(false);
 
 	const submittin = async (values: z.infer<typeof signupSchema>) => {
 		try {
-			// console.log(values);
 			const apiRequest = await registerUser(values);
 			if (apiRequest.success == true) {
 				toast.success(
@@ -54,7 +55,9 @@ const SignupForm = ({ setView }: FormProps) => {
 			} else {
 				toast.error(apiRequest.message);
 			}
-		} catch {}
+		} catch {
+			toast.error("Something went wrong. Please try again later.");
+		}
 	};
 
 	return (
@@ -62,26 +65,30 @@ const SignupForm = ({ setView }: FormProps) => {
 			<h2 className="text-center text-2xl font-bold text-[#1E3A8A] dark:text-white">
 				Sign Up
 			</h2>
-			<Button
-				className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
-				variant="outline"
-				onClick={() =>
-					(globalThis.window.location.href =
-						"/api/auth/login?connection=google-oauth2")
-				}
-			>
-				<FaGoogle className="mr-2" /> Continue with Google
-			</Button>
-			<Button
-				className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
-				variant="outline"
-				onClick={() =>
-					(globalThis.window.location.href =
-						"/api/auth/login?connection=github")
-				}
-			>
-				<FaGithub className="mr-2" /> Continue with GitHub
-			</Button>
+			{showSocial && (
+				<>
+					<Button
+						className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
+						variant="outline"
+						onClick={() =>
+							(globalThis.window.location.href =
+								"/api/auth/login?connection=google-oauth2")
+						}
+					>
+						<FaGoogle className="mr-2" /> Continue with Google
+					</Button>
+					<Button
+						className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
+						variant="outline"
+						onClick={() =>
+							(globalThis.window.location.href =
+								"/api/auth/login?connection=github")
+						}
+					>
+						<FaGithub className="mr-2" /> Continue with GitHub
+					</Button>
+				</>
+			)}
 			<div className="relative">
 				<div className="absolute inset-0 flex items-center">
 					<span className="w-full border-t border-[#4B5563] dark:border-[#E5E7EB]" />

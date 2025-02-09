@@ -7,8 +7,8 @@ import Logo from "./logo";
 import NavLinks from "./nav-links";
 
 const TopNavigation = () => {
-	const { data: session } = useSession();
-	console.log(session);
+	const { data: session, status } = useSession();
+
 	return (
 		<header className="sticky top-0 z-50 w-full bg-[#FAFBFF]/80 backdrop-blur-xl dark:bg-slate-700/80">
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -20,7 +20,7 @@ const TopNavigation = () => {
 					<NavLinks />
 					{/* Right Section: Auth Buttons */}
 					<div className="flex items-center">
-						<AuthButtons />
+						{status !== "loading" && !session && <AuthButtons />}
 					</div>
 				</div>
 			</div>

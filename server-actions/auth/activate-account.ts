@@ -25,7 +25,7 @@ export const activateAccount = async ({
 	try {
 		// Make the API call using the apiClient
 		const response = await apiClient.post(
-			"/auth_base/users/activation/",
+			"/api/v1/auth/users/activation/",
 			parsedData,
 		);
 		return response;
@@ -47,13 +47,27 @@ export const resendActivationEmail = async ({
 	success: boolean;
 }> => {
 	const parsedData = resendActivationToken.parse(data);
-	console.log(data);
 	try {
 		// Make the API call using the apiClient
 		const response = await apiClient.post(
-			"/auth_base/users/resend_activation/",
+			"/api/v1/auth/users/resend_activation/",
 			parsedData,
 		);
+		return response;
+	} catch {
+		// Catch any errors from the API call and return them
+		return {
+			success: false,
+		};
+	}
+};
+
+export const protectedEndPoint = async (): Promise<{
+	success: boolean;
+}> => {
+	try {
+		// Make the API call using the apiClient
+		const response = await apiClient.get("/managements/protected/");
 		return response;
 	} catch {
 		// Catch any errors from the API call and return them

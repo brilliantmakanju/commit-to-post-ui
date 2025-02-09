@@ -1,18 +1,8 @@
 "use client";
 
-import {
-	BookOpen,
-	Bot,
-	Command,
-	Frame,
-	LifeBuoy,
-	Map,
-	PieChart,
-	Send,
-	Settings2,
-	SquareTerminal,
-} from "lucide-react";
-import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Bot, Settings2, SquareTerminal } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -21,161 +11,132 @@ import {
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import useOrganizationStore from "@/lib/zustand/useorganization-store";
+import { getOrganizations } from "@/server-actions/organizations/get-organizations";
+
+import { TeamSwitcher } from "./organization-sidebar";
 
 const data = {
-	user: {
-		name: "shadcn",
-		email: "m@example.com",
-		avatar: "/avatars/shadcn.jpg",
-	},
 	navMain: [
 		{
-			title: "Playground",
-			url: "#",
+			title: "Dashboard",
+			url: "/dashboard",
 			icon: SquareTerminal,
 			isActive: true,
-			items: [
-				{
-					title: "History",
-					url: "#",
-				},
-				{
-					title: "Starred",
-					url: "#",
-				},
-				{
-					title: "Settings",
-					url: "#",
-				},
-			],
+			items: [],
 		},
 		{
-			title: "Models",
-			url: "#",
+			title: "Post",
+			url: "/posts",
 			icon: Bot,
-			items: [
-				{
-					title: "Genesis",
-					url: "#",
-				},
-				{
-					title: "Explorer",
-					url: "#",
-				},
-				{
-					title: "Quantum",
-					url: "#",
-				},
-			],
+			items: [],
 		},
-		{
-			title: "Documentation",
-			url: "#",
-			icon: BookOpen,
-			items: [
-				{
-					title: "Introduction",
-					url: "#",
-				},
-				{
-					title: "Get Started",
-					url: "#",
-				},
-				{
-					title: "Tutorials",
-					url: "#",
-				},
-				{
-					title: "Changelog",
-					url: "#",
-				},
-			],
-		},
+		// {
+		// 	title: "Resources",
+		// 	url: "#",
+		// 	icon: BookOpen,
+		// 	items: [
+		// 		{
+		// 			title: "FAQs",
+		// 			url: "#",
+		// 		},
+		// 		{
+		// 			title: "How-To Guides",
+		// 			url: "#",
+		// 		},
+		// 	],
+		// },
 		{
 			title: "Settings",
-			url: "#",
+			url: "/settings",
 			icon: Settings2,
 			items: [
 				{
 					title: "General",
-					url: "#",
-				},
-				{
-					title: "Team",
-					url: "#",
+					url: "settings?tab=general",
 				},
 				{
 					title: "Billing",
-					url: "#",
+					url: "settings?tab=billing",
 				},
 				{
-					title: "Limits",
-					url: "#",
+					title: "Profile",
+					url: "settings?tab=profile",
 				},
 			],
-		},
-	],
-	navSecondary: [
-		{
-			title: "Support",
-			url: "#",
-			icon: LifeBuoy,
-		},
-		{
-			title: "Feedback",
-			url: "#",
-			icon: Send,
-		},
-	],
-	projects: [
-		{
-			name: "Design Engineering",
-			url: "#",
-			icon: Frame,
-		},
-		{
-			name: "Sales & Marketing",
-			url: "#",
-			icon: PieChart,
-		},
-		{
-			name: "Travel",
-			url: "#",
-			icon: Map,
 		},
 	],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const [mounted, setMounted] = useState(false);
+	const useorganizationStore = useOrganizationStore();
+
+	const { data: organizations, isFetching } = useQuery({
+		queryKey: ["organizations"],
+		queryFn: async () => {
+			const result = await getOrganizations();
+
+			if (!result.success) {
+				return [];
+			}
+
+			if (result.organizations && result.organizations.length > 0) {
+				// Only set organization if it's not already set
+				const currentOrg = useOrganizationStore.getState().organization;
+				if (currentOrg.name === "") {
+					useorganizationStore.clearOrganization();
+					useorganizationStore.setOrganization(result.organizations[0]);
+					await createEncryptedCookie("organization", {
+						domain: result.organizations[0].domains[0],
+					});
+				} else {
+					useorganizationStore.clearOrganization();
+					useorganizationStore.setOrganization(result.organizations[0]);
+					await createEncryptedCookie("organization", {
+						domain: result.organizations[0].domains[0],
+					});
+				}
+			}
+
+			return result.organizations;
+		},
+		staleTime: Infinity, // Keep the data fresh indefinitely
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false,
+	});
+
+	useEffect(() => {
+		setMounted(true);
+	}, [mounted]);
+
 	return (
 		<Sidebar variant="inset" {...props}>
-			<SidebarHeader>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton size="lg" asChild>
-							<a href="#">
-								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-									<Command className="size-4" />
-								</div>
-								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-semibold">Devlock</span>
-									<span className="truncate text-xs">Enterprise</span>
-								</div>
-							</a>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarHeader>
-			<SidebarContent>
-				<NavMain items={data.navMain} />
-			</SidebarContent>
-			<SidebarFooter>
-				<NavUser user={data.user} />
-			</SidebarFooter>
+			{mounted ? (
+				<>
+					<SidebarHeader>
+						<TeamSwitcher teams={organizations || []} isLoading={isFetching} />
+					</SidebarHeader>
+					<SidebarContent>
+						<NavMain items={data.navMain} />
+					</SidebarContent>
+					<SidebarFooter>
+						<NavUser />
+					</SidebarFooter>
+				</>
+			) : (
+				<>
+					<SidebarHeader>
+						<TeamSwitcher teams={[]} isLoading={isFetching} />
+					</SidebarHeader>
+					<SidebarContent>
+						<NavMain items={data.navMain} />
+					</SidebarContent>
+				</>
+			)}
 		</Sidebar>
 	);
 }

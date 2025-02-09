@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
 // eslint-disable-next-line import/namespace,import/default,import/no-named-as-default,import/no-named-as-default-member
 import ForgotPasswordForm from "@/components/auth/modals/forgotpassword";
@@ -11,22 +13,42 @@ import ForgotPasswordForm from "@/components/auth/modals/forgotpassword";
 import LoginForm from "@/components/auth/modals/login";
 // eslint-disable-next-line import/namespace,import/default,import/no-named-as-default,import/no-named-as-default-member
 import SignupForm from "@/components/auth/modals/signup";
-
-// import { useUser } from '@auth0/nextjs-auth0/client'
+import { magicLinkSchemaToken } from "@/resolvers/auth-resolvers";
+import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 
 type ViewType = "login" | "signup" | "forgot";
+
+const submitMagicLink = async (
+	values: z.infer<typeof magicLinkSchemaToken>,
+) => {
+	try {
+		const apiRequest = await verifyAndLogin({
+			token: values.token,
+		});
+		if (apiRequest?.message === "Invalid credentials.") {
+			toast.error("Invalid credentials, please try again");
+		} else if (apiRequest?.message === "Something went wrong.") {
+			toast.error("Something went wrong. Please try again later.");
+		} else {
+			globalThis.window.location.reload();
+			toast.success("Welcome back!");
+		}
+	} catch (error) {
+		toast.error((error as Error).message);
+	}
+};
 
 const AuthPage = () => {
 	const [view, setView] = useState<ViewType>("login");
 	const searchParams = useSearchParams();
 	const router = useRouter();
-	// const { user, error, isLoading } = useUser()
 
-	// useEffect(() => {
-	//     if (user) {
-	//         router.push('/dashboard')
-	//     }
-	// }, [user, router])
+	useEffect(() => {
+		const getToken = searchParams.get("token");
+		if (!getToken) return;
+
+		submitMagicLink({ token: getToken });
+	}, [searchParams]);
 
 	useEffect(() => {
 		const viewParameter = searchParams.get("view") as ViewType;
@@ -46,9 +68,6 @@ const AuthPage = () => {
 			`/auth?view=${newView}`,
 		);
 	};
-
-	// if (isLoading) return <div>Loading...</div>
-	// if (error) return <div>{error.message}</div>
 
 	const slideVariants = {
 		enterLeft: { x: "-100%", opacity: 0 },

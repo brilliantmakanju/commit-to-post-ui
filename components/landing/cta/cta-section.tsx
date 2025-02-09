@@ -12,7 +12,6 @@ const CTASection = () => {
 
 	// eslint-disable-next-line unicorn/consistent-function-scoping
 	const handleWaitlistSubmit = (email: string) => {
-		console.log(`Email submitted: ${email}`);
 		// Add your email submission logic here
 	};
 
