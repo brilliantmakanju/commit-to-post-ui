@@ -164,6 +164,7 @@ export class ApiClient {
 				);
 			}
 
+			console.log(url, "API URL");
 			const responseBody = await response.json().catch(() => {});
 			console.log("-----------------------------------------------");
 			console.log(response, "Responses Devindse");
