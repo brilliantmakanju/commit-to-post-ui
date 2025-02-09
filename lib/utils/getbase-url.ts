@@ -15,27 +15,28 @@ export async function getBaseUrl(): Promise<string> {
 	try {
 		// Get organization details from encrypted cookie
 		const organization = await getDecryptedCookie("organization");
+		// Extract domain from organization using the correct property name.
+		const orgDomain = organization?.domain;
 
-		// Extract domain from organization if it exists
-		const domain = `https://${organization?.domian}`;
+		// If an organization domain exists, construct the URL.
+		let domainWithPort: string | undefined;
+		if (orgDomain) {
+			domainWithPort =
+				process.env.NODE_ENV === "development"
+					? `https://${orgDomain}:8000`
+					: `https://${orgDomain}`;
+		}
 
-		// In development, append port 8000 to domain
-		const domainWithPort =
-			domain && process.env.NODE_ENV === "development"
-				? `https://${domain}`
-				: domain;
-		// Add :8000 when done with testing
-		// Return first available URL in priority order
+		// Return the first available URL: the constructed domain, an environment variable, or localhost.
 		const baseUrl =
-			(domainWithPort as string) ||
+			domainWithPort ||
 			process.env.BASE_URL_API_CALL ||
 			"http://localhost:8000";
 
 		return baseUrl;
-	} catch {
-		// If cookie access fails, fall back to environment variable or localhost
-		const fallbackUrl =
-			process.env.BASE_URL_API_CALL || "http://localhost:8000";
-		return fallbackUrl;
+	} catch (error) {
+		// If any error occurs, fallback to the environment variable or localhost.
+		console.error("Error retrieving base URL:", error);
+		return process.env.BASE_URL_API_CALL || "http://localhost:8000";
 	}
 }

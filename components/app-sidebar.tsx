@@ -53,14 +53,14 @@ const data = {
 			url: "/settings",
 			icon: Settings2,
 			items: [
-				{
-					title: "General",
-					url: "settings?tab=general",
-				},
-				{
-					title: "Billing",
-					url: "settings?tab=billing",
-				},
+				// {
+				// 	title: "General",
+				// 	url: "settings?tab=general",
+				// },
+				// {
+				// 	title: "Billing",
+				// 	url: "settings?tab=billing",
+				// },
 				{
 					title: "Profile",
 					url: "settings?tab=profile",

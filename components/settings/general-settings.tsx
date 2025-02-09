@@ -4,6 +4,7 @@ import { DeleteOrganization } from "@/components/settings/general-settings/delet
 import { WebHookSettings } from "@/components/settings/general-settings/web-hooks";
 import { Separator } from "@/components/ui/separator";
 
+import { GeneralSettingsForm } from "./general-settings/general-settings-form";
 import { SocialConnectionSettings } from "./general-settings/social-connection";
 
 export function GeneralSettings() {
@@ -15,7 +16,7 @@ export function GeneralSettings() {
 					<DeleteOrganization />
 				</div>
 
-				{/* <GeneralSettingsForm isFetching={isFetching} /> */}
+				<GeneralSettingsForm isFetching={false} />
 			</div>
 
 			<WebHookSettings />

@@ -108,7 +108,7 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 							<FormControl>
 								<Input
 									{...field}
-									className="border-gray-200"
+									className="border-gray-200 bg-transparent"
 									disabled={isFetching}
 								/>
 							</FormControl>
@@ -127,7 +127,7 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 									{...field}
 									rows={4}
 									disabled={isFetching}
-									className="border-gray-200"
+									className="border-gray-200 bg-transparent"
 								/>
 							</FormControl>
 							<FormMessage />
