@@ -155,7 +155,10 @@ export function ProfileSettings() {
 							<FormItem>
 								<FormLabel className="text-white">First Name</FormLabel>
 								<FormControl>
-									<Input {...field} className="bg-white" />
+									<Input
+										{...field}
+										className="border-gray-200 bg-transparent"
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -169,7 +172,10 @@ export function ProfileSettings() {
 							<FormItem>
 								<FormLabel className="text-white">Last Name</FormLabel>
 								<FormControl>
-									<Input {...field} className="bg-white" />
+									<Input
+										{...field}
+										className="border-gray-200 bg-transparent"
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
