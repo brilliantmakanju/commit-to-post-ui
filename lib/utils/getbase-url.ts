@@ -23,7 +23,7 @@ export async function getBaseUrl(): Promise<string> {
 		const domainWithPort =
 			domain && process.env.NODE_ENV === "development"
 				? `https://${domain}`
-				: domain;
+				: `https://${domain}`;
 		// Add :8000 when done with testing
 		// Return first available URL in priority order
 		const baseUrl =
