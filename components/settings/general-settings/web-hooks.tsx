@@ -18,7 +18,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import { regenerateWebhookSchema } from "@/resolvers/organizations/organization-schema";
 import { createRegenerateWebhook } from "@/server-actions/organizations/create-web-hook";
@@ -71,6 +70,46 @@ export function WebHookSettings() {
 		useState(false);
 	// New state to track whether we're fetching webhook data
 	const [isWebhookLoading, setIsWebhookLoading] = useState<boolean>(false);
+
+	const { data } = useQuery({
+		queryKey: ["retrieving_webhooks"],
+		queryFn: async () => {
+			const hooks = await retriveWebhook();
+			setWebhook(undefined);
+			setSecretKey(undefined);
+			setIsWebhookLoading(false);
+			console.log(hooks, "Hookes");
+
+			if (hooks.success) {
+				setWebhook(hooks.data.secret_key_url);
+				setSecretKey(hooks.data.private_secret);
+				setIsWebhookLoading(false);
+				setIsConnected(true);
+				return hooks;
+			}
+
+			if (hooks.error.message === "No webhook found for this organization.") {
+				setIsConnected(true);
+				setWebhook(undefined);
+				setSecretKey(undefined);
+				setIsWebhookLoading(false);
+				return [];
+			}
+
+			if (!hooks.success) {
+				setWebhook(undefined);
+				setSecretKey(undefined);
+				setIsWebhookLoading(false);
+				setIsConnected(false);
+				return [];
+			}
+			return hooks;
+		},
+		staleTime: Infinity, // Keep the data fresh indefinitely
+		refetchOnMount: true,
+		refetchOnWindowFocus: true,
+		refetchOnReconnect: true,
+	});
 
 	const regenerateWebhookForm = useForm<
 		z.infer<typeof regenerateWebhookSchema>
@@ -142,32 +181,6 @@ export function WebHookSettings() {
 		</div>
 	);
 
-	const { data } = useQuery({
-		queryKey: ["retrieving_webhooks"],
-		queryFn: async () => {
-			const hooks = await retriveWebhook();
-			setWebhook(undefined);
-			setSecretKey(undefined);
-			setIsWebhookLoading(false);
-
-			if (!hooks.success) {
-				setWebhook(undefined);
-				setSecretKey(undefined);
-				setIsWebhookLoading(false);
-				return [];
-			}
-
-			setWebhook(hooks.data.secret_key_url);
-			setSecretKey(hooks.data.private_secret);
-			setIsWebhookLoading(false);
-			return hooks;
-		},
-		staleTime: Infinity, // Keep the data fresh indefinitely
-		refetchOnMount: false,
-		refetchOnWindowFocus: false,
-		refetchOnReconnect: false,
-	});
-
 	// const getSocialStatus = async ({ connection }: { connection: boolean }) => {
 	// 	setIsWebhookLoading(true);
 	// 	// Retrieve the cached connection status.
@@ -236,6 +249,9 @@ export function WebHookSettings() {
 		);
 	}
 
+	console.log(isGeneratingWebhook, "Generating");
+	console.log(isConnected, "Connected");
+
 	return (
 		<div className="flex w-full flex-col">
 			<div className="w-full space-y-4 text-white">
@@ -253,7 +269,7 @@ export function WebHookSettings() {
 				<div className="flex w-full justify-end pt-4">
 					<Button
 						onClick={
-							webhook
+							isConnected && webhook
 								? () => setIsRegenerateWebhookDialogOpen(true)
 								: generateWebhook
 						}

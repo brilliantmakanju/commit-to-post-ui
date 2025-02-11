@@ -2,9 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { CreateOrganizationModal } from "@/components/organization/create-organization";
 import {
@@ -24,14 +22,11 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-	clearCookies,
 	createEncryptedCookie,
 	deleteCookie,
 } from "@/lib/cookies/create-cookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
-import { logout, signOut } from "@/server-actions/auth/signout";
 
 export function TeamSwitcher({
 	teams,
@@ -45,11 +40,8 @@ export function TeamSwitcher({
 	}[];
 	isLoading: boolean;
 }) {
-	const router = useRouter();
 	const { isMobile } = useSidebar();
-	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
-	const hasSetup = React.useRef(false);
 	const queryClient = useQueryClient();
 	const [open, setOpen] = React.useState(false);
 	const organizationStore = useOrganizationStore();
@@ -151,8 +143,6 @@ export function TeamSwitcher({
 		queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 		queryClient.invalidateQueries({ queryKey: ["organization-ownership"] });
 		queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
-
-		router.refresh();
 	};
 
 	// Only access store after mounting

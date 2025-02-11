@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -63,6 +63,7 @@ const onConnectAccount = async (
 export function SettingsTabs() {
 	const router = useRouter();
 	const pathname = usePathname();
+	const queryClient = useQueryClient();
 	const searchParams = useSearchParams();
 
 	const [mounted, setMounted] = useState(false);
@@ -134,6 +135,10 @@ export function SettingsTabs() {
 	// }, [searchParams, isOwner, router]);
 
 	useEffect(() => {
+		queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+		queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+		// queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
+		// queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
 		const handleConnection = async () => {
 			const tab = searchParams.get("tab");
 			const code = searchParams.get("code");
@@ -161,7 +166,7 @@ export function SettingsTabs() {
 		};
 
 		handleConnection();
-	}, [searchParams, isOwner, router, pathname]);
+	}, [searchParams, isOwner, router, pathname, queryClient]);
 
 	const handleTabChange = (value: string) => {
 		setActiveTab(value);

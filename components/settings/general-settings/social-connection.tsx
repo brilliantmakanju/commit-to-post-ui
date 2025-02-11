@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Linkedin, Twitter } from "lucide-react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,22 +26,18 @@ const SocialConnectionSettings = () => {
 	const { data: social_status, isFetching } = useQuery({
 		queryKey: ["retrieving_social_status"],
 		queryFn: async () => {
+			console.log("Query function is running...");
 			const result = await getSocialStatus();
+			console.log(result, "Results");
 
-			if (!result.success) {
-				return false;
-			}
-
-			if (!result.data) {
+			if (!result.success || !result.data) {
 				return false;
 			}
 
 			return result.data.has_linkedin;
 		},
-		staleTime: Infinity, // Keep the data fresh indefinitely
-		refetchOnMount: true,
-		refetchOnWindowFocus: true,
-		refetchOnReconnect: true,
+		staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+		refetchOnWindowFocus: false,
 	});
 
 	return (

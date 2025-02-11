@@ -76,6 +76,9 @@ const SocialConnectCallback = ({
 					setStatus("success");
 					setMessage("Your account has been successfully connected!");
 					closeModal(false);
+					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
 					queryClient.invalidateQueries({
 						queryKey: ["retrieving_webhooks"],
 					});
@@ -85,9 +88,6 @@ const SocialConnectCallback = ({
 					queryClient.invalidateQueries({
 						queryKey: ["retrieving_social_status"],
 					});
-					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
 				}
 			} catch (error) {
 				console.error("Failed to connect account:", error);
@@ -98,28 +98,6 @@ const SocialConnectCallback = ({
 
 		handleConnection();
 	}, [searchParams, code, router, pathname, closeModal, queryClient]);
-
-	// useEffect(() => {
-	// 	const token = searchParams.get("token");
-	// 	if (token) {
-	// 		// Simulate API call to backend
-	// 		setTimeout(() => {
-	// 			// For demonstration, we'll randomly succeed or fail
-	// 			if (Math.random() > 0.5) {
-	// 				setStatus("success");
-	// 				setMessage("Your account has been successfully connected!");
-	// 			} else {
-	// 				setStatus("error");
-	// 				setMessage(
-	// 					"There was an error connecting your account. Please try again.",
-	// 				);
-	// 			}
-	// 		}, 3000); // Simulate a 3-second delay
-	// 	} else {
-	// 		setStatus("error");
-	// 		setMessage("No token provided. Unable to connect account.");
-	// 	}
-	// }, [searchParams]);
 
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
