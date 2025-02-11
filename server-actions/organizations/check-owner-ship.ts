@@ -11,7 +11,7 @@ interface OwnershipResponse {
 
 export async function checkOrganizationOwnership(): Promise<OwnershipResponse> {
 	try {
-		const response = await apiClient.get("/api/v1/organizations/is-owner/");
+		const response = await apiClient.get("/api/v1/organizations/is-owner");
 
 		if (!response.success) {
 			return {

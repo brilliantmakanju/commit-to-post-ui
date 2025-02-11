@@ -92,13 +92,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					await createEncryptedCookie("organization", {
 						domain: result.organizations[0].domains[0],
 					});
-				} else {
-					useorganizationStore.clearOrganization();
-					useorganizationStore.setOrganization(result.organizations[0]);
-					await createEncryptedCookie("organization", {
-						domain: result.organizations[0].domains[0],
-					});
 				}
+				//  else {
+				// 	useorganizationStore.clearOrganization();
+				// 	useorganizationStore.setOrganization(result.organizations[0]);
+				// 	await createEncryptedCookie("organization", {
+				// 		domain: result.organizations[0].domains[0],
+				// 	});
+				// }
 			}
 
 			return result.organizations;

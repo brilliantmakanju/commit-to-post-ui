@@ -1,8 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
 // import { TeamMembers } from "@/components/settings/team-members"
 import { BillingSettings } from "@/components/settings/billing-settings";
@@ -10,7 +12,11 @@ import { GeneralSettings } from "@/components/settings/general-settings";
 import { ProfileSettings } from "@/components/settings/profile-settings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 import { checkOrganizationOwnership } from "@/server-actions/organizations/check-owner-ship";
+import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
+
+import SocialConnectCallback from "./general-settings/connection-organization";
 
 const tabTitles = {
 	general: "General Settings",
@@ -37,11 +43,32 @@ function LoadingState() {
 	);
 }
 
+const onConnectAccount = async (
+	values: z.infer<typeof connectAccountSchema>,
+) => {
+	try {
+		const response = await postLinkedInConnection(values);
+
+		if (response.success) {
+			toast.success("Your LinkedIn account has been connected successfully.");
+			return response;
+		} else {
+			toast.error(response.message);
+		}
+	} catch {
+		toast.error("Linkedin connection failed.");
+	}
+};
+
 export function SettingsTabs() {
 	const router = useRouter();
+	const pathname = usePathname();
 	const searchParams = useSearchParams();
+
 	const [mounted, setMounted] = useState(false);
+	const [socialCode, setSocialCode] = useState("");
 	const [activeTab, setActiveTab] = useState("general");
+	const [codeConnecting, setCodeConnecting] = useState(false);
 
 	const { data: ownershipData, isLoading } = useQuery({
 		queryKey: ["organization-ownership"],
@@ -57,24 +84,84 @@ export function SettingsTabs() {
 
 	const isOwner = ownershipData?.isOwner;
 
+	// useEffect(() => {
+	// 	const tab = searchParams.get("tab");
+	// 	const code = searchParams.get("code");
+
+	// 	if (code) {
+	// 		const connectionRequest = await onConnectAccount({
+	// 			code,
+	// 		});
+
+	// 		if (connectionRequest?.success) {
+	// 			const nextSearchParams = new URLSearchParams(searchParams.toString());
+	// 			nextSearchParams.delete("code");
+
+	// 			router.replace(`${pathname}?${nextSearchParams}`);
+	// 		}
+	// 	}
+
+	// 	if (code) {
+	// 		try {
+	// 			const connectionRequest = await onConnectAccount({ code });
+
+	// 			if (connectionRequest?.success) {
+	// 				const nextSearchParams = new URLSearchParams(searchParams.toString());
+	// 				nextSearchParams.delete("code");
+
+	// 				router.replace(`${pathname}?${nextSearchParams}`);
+	// 			}
+	// 		} catch (error) {
+	// 			console.error("Failed to connect account:", error);
+	// 		}
+	// 		return;
+	// 	}
+
+	// 	if (isOwner === true) {
+	// 		if (tab && tab in tabTitles) {
+	// 			setActiveTab(tab);
+	// 		} else {
+	// 			setActiveTab("general");
+	// 			router.push("/settings?tab=general", { scroll: false });
+	// 		}
+	// 	} else if (isOwner === false) {
+	// 		// Default to profile tab for non-owners and error cases
+	// 		setActiveTab("profile");
+	// 		router.push("/settings?tab=profile", { scroll: false });
+	// 	}
+
+	// 	setMounted(true);
+	// }, [searchParams, isOwner, router]);
+
 	useEffect(() => {
-		const tab = searchParams.get("tab");
+		const handleConnection = async () => {
+			const tab = searchParams.get("tab");
+			const code = searchParams.get("code");
 
-		if (isOwner === true) {
-			if (tab && tab in tabTitles) {
-				setActiveTab(tab);
-			} else {
-				setActiveTab("general");
-				router.push("/settings?tab=general", { scroll: false });
+			if (code) {
+				setSocialCode(code);
+				setCodeConnecting(true);
+				// return;
 			}
-		} else if (isOwner === false) {
-			// Default to profile tab for non-owners and error cases
-			setActiveTab("profile");
-			router.push("/settings?tab=profile", { scroll: false });
-		}
 
-		setMounted(true);
-	}, [searchParams, isOwner, router]);
+			if (isOwner === true) {
+				if (tab && tab in tabTitles) {
+					setActiveTab(tab);
+				} else {
+					setActiveTab("general");
+					router.push("/settings?tab=general", { scroll: false });
+				}
+			} else if (isOwner === false) {
+				// Default to profile tab for non-owners and error cases
+				setActiveTab("profile");
+				router.push("/settings?tab=profile", { scroll: false });
+			}
+
+			setMounted(true);
+		};
+
+		handleConnection();
+	}, [searchParams, isOwner, router, pathname]);
 
 	const handleTabChange = (value: string) => {
 		setActiveTab(value);
@@ -151,6 +238,14 @@ export function SettingsTabs() {
 					</>
 				</Tabs>
 			</div>
+
+			{codeConnecting && (
+				<SocialConnectCallback
+					closeModal={setCodeConnecting}
+					code={socialCode}
+					connecting={codeConnecting}
+				/>
+			)}
 		</div>
 	);
 }

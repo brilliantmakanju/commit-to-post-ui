@@ -5,7 +5,7 @@ import { WebHookSettings } from "@/components/settings/general-settings/web-hook
 import { Separator } from "@/components/ui/separator";
 
 import { GeneralSettingsForm } from "./general-settings/general-settings-form";
-import { SocialConnectionSettings } from "./general-settings/social-connection";
+import SocialConnectionSettings from "./general-settings/social-connection";
 
 export function GeneralSettings() {
 	return (

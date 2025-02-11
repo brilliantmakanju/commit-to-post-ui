@@ -23,7 +23,7 @@ export async function getBaseUrl(): Promise<string> {
 		if (orgDomain) {
 			domainWithPort =
 				process.env.NODE_ENV === "development"
-					? `https://${orgDomain}:8000`
+					? `http://${orgDomain}:8000`
 					: `https://${orgDomain}`;
 		}
 

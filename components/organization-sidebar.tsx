@@ -143,12 +143,14 @@ export function TeamSwitcher({
 		});
 		organizationStore.clearOrganization();
 		setOrganization(team);
+		queryClient.fetchQuery({ queryKey: ["posts"] });
+		queryClient.invalidateQueries({ queryKey: ["posts"] });
+		queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+		queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
+		queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+		queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 		queryClient.invalidateQueries({ queryKey: ["organization-ownership"] });
 		queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
-		queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-		queryClient.invalidateQueries({ queryKey: ["posts"] });
-		queryClient.fetchQuery({ queryKey: ["posts"] });
-		queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
 	};
 
 	// Only access store after mounting

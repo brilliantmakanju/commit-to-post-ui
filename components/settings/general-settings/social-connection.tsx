@@ -1,84 +1,28 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Linkedin, Twitter } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 import { getLinkedInConnection } from "@/server-actions/organizations/get-linkedin-connection";
 import { getSocialStatus } from "@/server-actions/organizations/get-social-status";
-import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
 
-export function SocialConnectionSettings() {
-	const [isConnectAccountDialogOpen, setIsConnectAccountDialogOpen] =
-		useState(false);
+const openConnectAccountDialog = async () => {
+	try {
+		const response = await getLinkedInConnection();
 
-	const connectAccountForm = useForm<z.infer<typeof connectAccountSchema>>({
-		resolver: zodResolver(connectAccountSchema),
-	});
-
-	const openConnectAccountDialog = async () => {
-		try {
-			const response = await getLinkedInConnection();
-
-			if (response.success) {
-				// Clear previous state
-
-				// Set new state
-				setIsConnectAccountDialogOpen(true);
-				window.open(response.url, "_blank");
-			} else {
-				toast.error(response.message);
-			}
-		} catch {
-			toast.error("Failed to connect LinkedIn account, try again later");
+		if (response.success) {
+			window.open(response.url, "_blank");
+		} else {
+			toast.error(response.message);
 		}
-	};
-
-	async function onConnectAccount(
-		values: z.infer<typeof connectAccountSchema>,
-	) {
-		try {
-			const response = await postLinkedInConnection(values);
-
-			if (response.success) {
-				setIsLinkedInConnected(true);
-				setIsConnectAccountDialogOpen(false);
-				connectAccountForm.reset();
-				toast.success("Your LinkedIn account has been connected successfully.");
-			} else {
-				toast.error(response.message);
-			}
-		} catch {
-			toast.error("Linkedin connection failed.");
-		}
+	} catch {
+		toast.error("Failed to connect LinkedIn account, try again later");
 	}
-
-	const {
-		data: social_status,
-		isFetching,
-		isLoading,
-	} = useQuery({
+};
+const SocialConnectionSettings = () => {
+	const { data: social_status } = useQuery({
 		queryKey: ["retrieving_social_status"],
 		queryFn: async () => {
 			const result = await getSocialStatus();
@@ -94,18 +38,12 @@ export function SocialConnectionSettings() {
 			return result.data.has_linkedin;
 		},
 		staleTime: Infinity, // Keep the data fresh indefinitely
-		refetchOnMount: true,
-		refetchOnWindowFocus: true,
-		refetchOnReconnect: true,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false,
 	});
 
-	console.log(isFetching, "IS fetching");
-	console.log(isLoading, "IS Loading");
-	console.log(social_status, "Datas");
-
-	const [isLinkedInConnected, setIsLinkedInConnected] = useState<
-		boolean | undefined
-	>(social_status);
+	console.log(social_status, "Social");
 
 	return (
 		<div className="flex w-full flex-col">
@@ -159,40 +97,8 @@ export function SocialConnectionSettings() {
 					</ul>
 				</div>
 			</div>
-
-			<Dialog
-				open={isConnectAccountDialogOpen}
-				onOpenChange={setIsConnectAccountDialogOpen}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Connect LinkedIn Account</DialogTitle>
-						<DialogDescription>
-							Please enter the 6-digit code you received from LinkedIn.
-						</DialogDescription>
-					</DialogHeader>
-					<Form {...connectAccountForm}>
-						<form
-							onSubmit={connectAccountForm.handleSubmit(onConnectAccount)}
-							className="space-y-4"
-						>
-							<FormField
-								control={connectAccountForm.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormControl>
-											<Input {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<Button>Submit</Button>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
-}
+};
+
+export default SocialConnectionSettings;

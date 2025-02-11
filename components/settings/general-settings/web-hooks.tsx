@@ -2,9 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@radix-ui/react-label";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Copy, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -62,7 +62,6 @@ const blurSecretKey = (key: string) => {
 };
 
 export function WebHookSettings() {
-	const queryClient = useQueryClient();
 	const { organization } = useOrganizationStore();
 	const [webhook, setWebhook] = useState<string | null>();
 	const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -143,45 +142,80 @@ export function WebHookSettings() {
 		</div>
 	);
 
-	const getSocialStatus = async () => {
-		setIsWebhookLoading(true);
-		// Retrieve the cached connection status.
-		const connectionStatus = queryClient.getQueryData([
-			"retrieving_social_status",
-		]) as boolean;
-		setIsConnected(connectionStatus);
-
-		// Only make the webhook request if the connection is true.
-		if (connectionStatus === true) {
+	const { data } = useQuery({
+		queryKey: ["retrieving_webhooks"],
+		queryFn: async () => {
 			const hooks = await retriveWebhook();
+			setWebhook(undefined);
+			setSecretKey(undefined);
+			setIsWebhookLoading(false);
+
 			if (!hooks.success) {
 				setWebhook(undefined);
 				setSecretKey(undefined);
 				setIsWebhookLoading(false);
 				return [];
 			}
+
 			setWebhook(hooks.data.secret_key_url);
 			setSecretKey(hooks.data.private_secret);
 			setIsWebhookLoading(false);
 			return hooks;
-		} else {
-			setWebhook(undefined);
-			setSecretKey(undefined);
-			setIsWebhookLoading(false);
-			return;
-		}
-	};
+		},
+		staleTime: Infinity, // Keep the data fresh indefinitely
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false,
+	});
 
-	// Get the cached social status once (this value will update when the cache changes)
-	const socialStatus = queryClient.getQueryData([
-		"retrieving_social_status",
-	]) as boolean;
+	// const getSocialStatus = async ({ connection }: { connection: boolean }) => {
+	// 	setIsWebhookLoading(true);
+	// 	// Retrieve the cached connection status.
+	// 	// const connectionStatus = queryClient.getQueryData([
+	// 	// 	"retrieving_social_status",
+	// 	// ]) as boolean;
+	// 	const connectionStatus = connection;
+	// 	setIsConnected(connectionStatus);
+	// 	setWebhook(undefined);
+	// 	setSecretKey(undefined);
+	// 	setIsWebhookLoading(false);
 
-	// Run getSocialStatus() whenever the cached social status changes.
-	useEffect(() => {
-		getSocialStatus();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [socialStatus]);
+	// 	console.log("Devinsadasdaaaaaaaaaa");
+
+	// 	// Only make the webhook request if the connection is true.
+	// 	if (connectionStatus === true) {
+	// 		const hooks = await retriveWebhook();
+	// 		if (!hooks.success) {
+	// 			setWebhook(undefined);
+	// 			setSecretKey(undefined);
+	// 			setIsWebhookLoading(false);
+	// 			return [];
+	// 		}
+	// 		console.log(hooks);
+	// 		setWebhook(hooks.data.secret_key_url);
+	// 		setSecretKey(hooks.data.private_secret);
+	// 		setIsWebhookLoading(false);
+	// 		return hooks;
+	// 	} else {
+	// 		setWebhook(undefined);
+	// 		setSecretKey(undefined);
+	// 		setIsWebhookLoading(false);
+	// 		return;
+	// 	}
+	// };
+
+	// // Get the cached social status once (this value will update when the cache changes)
+	// const socialStatus = queryClient.getQueryData([
+	// 	"retrieving_social_status",
+	// ]) as boolean;
+
+	// // Run getSocialStatus() whenever the cached social status changes.
+	// useEffect(() => {
+	// 	getSocialStatus({
+	// 		connection: socialStatus,
+	// 	});
+	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, [socialStatus]);
 
 	// Render a loading screen while the webhook data is being fetched
 	if (isWebhookLoading) {
