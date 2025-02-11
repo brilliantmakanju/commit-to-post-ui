@@ -151,6 +151,8 @@ export function TeamSwitcher({
 		queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 		queryClient.invalidateQueries({ queryKey: ["organization-ownership"] });
 		queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
+
+		router.refresh();
 	};
 
 	// Only access store after mounting

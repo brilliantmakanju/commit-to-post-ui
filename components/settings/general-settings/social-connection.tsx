@@ -22,7 +22,7 @@ const openConnectAccountDialog = async () => {
 	}
 };
 const SocialConnectionSettings = () => {
-	const { data: social_status } = useQuery({
+	const { data: social_status, isFetching } = useQuery({
 		queryKey: ["retrieving_social_status"],
 		queryFn: async () => {
 			const result = await getSocialStatus();
@@ -48,23 +48,29 @@ const SocialConnectionSettings = () => {
 			<div className="w-full space-y-4 text-white">
 				<h2 className="text-lg font-semibold">Connected Accounts</h2>
 				<div className="flex flex-wrap gap-5 sm:space-x-4">
-					<Button
-						onClick={() => openConnectAccountDialog()}
-						disabled={social_status !== false}
-						className={`w-full flex-1 justify-start ${
-							social_status ? "bg-green-500 text-white hover:bg-green-600" : ""
-						}`}
-					>
-						<Linkedin className="mr-2 h-4 w-4" />
-						{social_status ? "LinkedIn Connected" : "Connect LinkedIn"}
-					</Button>
-					<Button
-						disabled
-						className="w-full flex-1 cursor-not-allowed justify-start opacity-50"
-					>
-						<Twitter className="mr-2 h-4 w-4" />
-						Twitter (Coming Soon)
-					</Button>
+					{!isFetching && (
+						<>
+							<Button
+								onClick={() => openConnectAccountDialog()}
+								disabled={social_status !== false}
+								className={`w-full flex-1 justify-start ${
+									social_status
+										? "bg-green-500 text-white hover:bg-green-600"
+										: ""
+								}`}
+							>
+								<Linkedin className="mr-2 h-4 w-4" />
+								{social_status ? "LinkedIn Connected" : "Connect LinkedIn"}
+							</Button>
+							<Button
+								disabled
+								className="w-full flex-1 cursor-not-allowed justify-start opacity-50"
+							>
+								<Twitter className="mr-2 h-4 w-4" />
+								Twitter (Coming Soon)
+							</Button>
+						</>
+					)}
 				</div>
 				<div className="space-y-2">
 					<h3 className="text-sm font-medium">How to connect your account</h3>
