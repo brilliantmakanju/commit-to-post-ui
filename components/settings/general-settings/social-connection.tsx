@@ -38,12 +38,10 @@ const SocialConnectionSettings = () => {
 			return result.data.has_linkedin;
 		},
 		staleTime: Infinity, // Keep the data fresh indefinitely
-		refetchOnMount: false,
-		refetchOnWindowFocus: false,
-		refetchOnReconnect: false,
+		refetchOnMount: true,
+		refetchOnWindowFocus: true,
+		refetchOnReconnect: true,
 	});
-
-	console.log(social_status, "Social");
 
 	return (
 		<div className="flex w-full flex-col">

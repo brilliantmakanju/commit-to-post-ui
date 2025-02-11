@@ -76,14 +76,18 @@ const SocialConnectCallback = ({
 					setStatus("success");
 					setMessage("Your account has been successfully connected!");
 					closeModal(false);
-					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+					queryClient.invalidateQueries({
+						queryKey: ["retrieving_webhooks"],
+					});
 					queryClient.invalidateQueries({
 						queryKey: ["organization-ownership"],
 					});
 					queryClient.invalidateQueries({
 						queryKey: ["retrieving_social_status"],
 					});
+					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
 				}
 			} catch (error) {
 				console.error("Failed to connect account:", error);
