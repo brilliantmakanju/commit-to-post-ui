@@ -1,44 +1,29 @@
+/* eslint-disable unicorn/consistent-function-scoping */
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Linkedin, Twitter } from "lucide-react";
-import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useSocialStatus } from "@/hooks/settings/use-social-status";
 import { getLinkedInConnection } from "@/server-actions/organizations/get-linkedin-connection";
-import { getSocialStatus } from "@/server-actions/organizations/get-social-status";
 
-const openConnectAccountDialog = async () => {
-	try {
-		const response = await getLinkedInConnection();
+export function SocialConnectionSettings() {
+	const { data: socialStatus, isFetching } = useSocialStatus();
 
-		if (response.success) {
-			window.open(response.url, "_blank");
-		} else {
-			toast.error(response.message);
-		}
-	} catch {
-		toast.error("Failed to connect LinkedIn account, try again later");
-	}
-};
-const SocialConnectionSettings = () => {
-	const { data: social_status, isFetching } = useQuery({
-		queryKey: ["retrieving_social_status"],
-		queryFn: async () => {
-			console.log("Query function is running...");
-			const result = await getSocialStatus();
-			console.log(result, "Results");
+	const openConnectAccountDialog = async () => {
+		try {
+			const response = await getLinkedInConnection();
 
-			if (!result.success || !result.data) {
-				return false;
+			if (response.success) {
+				window.open(response.url);
+			} else {
+				toast.error(response.message);
 			}
-
-			return result.data.has_linkedin;
-		},
-		enabled: true,
-		staleTime: Infinity,
-	});
+		} catch {
+			toast.error("Failed to connect LinkedIn account, try again later");
+		}
+	};
 
 	return (
 		<div className="flex w-full flex-col">
@@ -49,15 +34,13 @@ const SocialConnectionSettings = () => {
 						<>
 							<Button
 								onClick={() => openConnectAccountDialog()}
-								disabled={social_status !== false}
-								className={`w-full flex-1 justify-start ${
-									social_status
-										? "bg-green-500 text-white hover:bg-green-600"
-										: ""
+								disabled={socialStatus !== false}
+								className={`w-full flex-1 justify-start disabled:opacity-100 ${
+									socialStatus ? "bg-[#058C42] text-white" : ""
 								}`}
 							>
 								<Linkedin className="mr-2 h-4 w-4" />
-								{social_status ? "LinkedIn Connected" : "Connect LinkedIn"}
+								{socialStatus ? "LinkedIn Connected" : "Connect LinkedIn"}
 							</Button>
 							<Button
 								disabled
@@ -100,6 +83,4 @@ const SocialConnectionSettings = () => {
 			</div>
 		</div>
 	);
-};
-
-export default SocialConnectionSettings;
+}

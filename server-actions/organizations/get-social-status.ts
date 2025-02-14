@@ -15,7 +15,6 @@ export const getSocialStatus = async (): Promise<{
 	try {
 		// Make the API call to get organizations
 		const response = await apiClient.get("/api/v1/organizations/status/");
-		console.log(response, "Responsed");
 
 		// Check if the request was successful
 		if (response.error) {

@@ -13,7 +13,6 @@ const fetchPostsSchema = z.object({
 
 export const fetchPosts = async (page_size?: unknown) => {
 	try {
-		console.log(page_size);
 		// Validate the incoming data against the schema.
 		// const validatedData = fetchPostsSchema.parse(page_size_no);
 		// const { page_size } = validatedData;
@@ -25,8 +24,6 @@ export const fetchPosts = async (page_size?: unknown) => {
 		if (response.status !== 200) {
 			throw new Error("The request to retrieve posts was unsuccessful.");
 		}
-
-		console.log(response, "Response");
 
 		// Return the retrieved post data.
 		return response;

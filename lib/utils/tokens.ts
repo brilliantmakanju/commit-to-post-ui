@@ -57,8 +57,6 @@ export const getTokenExpiration = (token: string): Date | undefined => {
  */
 export const isTokenExpired = (token: string): boolean => {
 	const expirationDate = getTokenExpiration(token);
-	console.log(expirationDate, "Expired");
-
 	if (expirationDate === undefined) {
 		return false;
 	}

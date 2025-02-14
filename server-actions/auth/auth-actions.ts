@@ -11,9 +11,6 @@ export async function confirmMagicLink(token: string) {
 			`/api/v1/managements/magic-link/confirm/?token=${token}`,
 		);
 
-		console.log("-----------------------------------------------");
-		console.log(response, "Devinds");
-		console.log("-----------------------------------------------");
 		return response;
 	} catch {
 		return;

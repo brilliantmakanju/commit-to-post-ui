@@ -30,21 +30,10 @@ import {
 } from "@/resolvers/auth-resolvers";
 import { updateProfileSetup } from "@/server-actions/onboarding/update-profile";
 
-export function ProfileSettings() {
+export default function ProfileSettings() {
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const { data } = useSession();
 	const userStore = useUserStore();
-
-	// // Update userStore if empty when component mounts
-	// useEffect(() => {
-	//   if (!userStore.full_name && data?.user) {
-	//     const fullName = `${data.user.first_name} ${data.user.last_name}`.trim();
-	//     userStore.setUser({
-	//       ...userStore,
-	//       full_name: fullName
-	//     });
-	//   }
-	// }, [data, userStore]);
 
 	// Split full name into first and last name if available
 	const [firstNameFromFull, lastNameFromFull] = userStore.full_name

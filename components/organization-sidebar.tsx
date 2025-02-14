@@ -52,69 +52,6 @@ export function TeamSwitcher({
 		setMounted(true);
 	}, []);
 
-	// // Single consolidated effect for organization setup
-	// React.useEffect(() => {
-	// 	const setupOrganization = async () => {
-	// 		if (!mounted || hasSetup.current) return;
-	// 		hasSetup.current = true;
-
-	// 		const storedOrg = useOrganizationStore.getState().organization;
-	// 		console.log("Current stored organization:", storedOrg);
-	// 		console.log("Available teams from backend:", teams);
-	// 		console.log(
-	// 			"Is stored organization valid?",
-	// 			storedOrg && storedOrg.name !== "",
-	// 		);
-	// 		console.log("Total teams available:", teams.length);
-
-	// 		// If we have a valid stored org, just set it in state
-	// 		if (storedOrg && storedOrg.name !== "") {
-	// 			organizationStore.clearOrganization();
-	// 			setOrganization(storedOrg);
-	// 			console.log("Setting organization to stored organization:", storedOrg);
-	// 		}
-	// 		// If we have teams and no valid org, set the first team
-	// 		else if (teams.length > 0) {
-	// 			organizationStore.clearOrganization();
-	// 			setOrganization(teams[0]);
-	// 			await createEncryptedCookie("organization", {
-	// 				domain: teams[0].domains[0],
-	// 			});
-	// 			console.log(
-	// 				"No valid organization found. Setting to first team:",
-	// 				teams[0],
-	// 			);
-	// 		}
-	// 		// If we have no teams and no organization, show error and redirect
-	// 		else if (!isLoading) {
-	// 			logoutStore.setLogout(true);
-	// 			// Sign out from NextAuth
-	// 			await clearCookies(); // Clear all cookies
-	// 			userStore.clearUser(); // Clear user information from Zustand store
-	// 			organizationStore.clearOrganization();
-	// 			await signOut();
-	// 			logoutStore.clearLogout();
-	// 			router.push("/auth");
-	// 			toast.error("No organization found. Please contact support.");
-	// 			console.log("Redirecting to auth page due to no organization found.");
-	// 			return;
-	// 		}
-	// 	};
-
-	// 	setupOrganization();
-	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	// }, [
-	// 	mounted,
-	// 	organization,
-	// 	router,
-	// 	userStore,
-	// 	organizationStore,
-	// 	hasSetup,
-	// 	teams,
-	// 	isLoading,
-	// 	queryClient,
-	// ]);
-
 	const activeTeam =
 		mounted && !isLoading && organization && organization.name !== ""
 			? organization

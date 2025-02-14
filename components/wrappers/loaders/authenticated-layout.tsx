@@ -47,12 +47,14 @@ export function AuthenticatedLayout({
 				<main
 					className={`relative h-screen w-full overflow-hidden md:h-auto ${
 						status === "loading" || !isClient || logout
-							? ""
+							? "h-auto"
 							: "overflow-y-auto bg-[#232528] px-7 text-[#EAF6FF]"
 					}`}
 				>
 					<LogoutModal />
-					{status === "loading" || !isClient ? (
+					{logout ? (
+						<> </>
+					) : status === "loading" || !isClient ? (
 						<LoadingScreen
 							backgroundColor="#0A0E17"
 							iconColor="#4FD1C5"
@@ -69,6 +71,7 @@ export function AuthenticatedLayout({
 							{children}
 						</>
 					)}
+
 					<Toaster />
 					<AppSidebar />
 				</main>

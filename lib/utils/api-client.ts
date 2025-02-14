@@ -38,7 +38,6 @@ export class ApiClient {
 	// Method to retrieve the session token dynamically
 	private async getSessionToken() {
 		const { access_token } = await getAuthTokens();
-		console.log(access_token, "AccessToken");
 		return access_token || ""; // Return the token or an empty string if not available
 	}
 
@@ -140,11 +139,7 @@ export class ApiClient {
 		const mergedHeader = await this.getAuthorizationHeader(headers);
 		const accessToken = (await this.getSessionToken()) || "";
 
-		console.log(url, "URL");
-
 		const isExpired = isTokenExpired(accessToken);
-		console.log(isExpired, "Is Expired");
-
 		try {
 			let response = await fetch(url, {
 				method,
@@ -164,13 +159,7 @@ export class ApiClient {
 				);
 			}
 
-			console.log(url, "API URL");
 			const responseBody = await response.json().catch(() => {});
-			console.log("-----------------------------------------------");
-			console.log(response, "Responses Devindse");
-			console.log("-----------------------------------------------");
-			console.log(responseBody, "Responssses -------- Devindse");
-			console.log("-----------------------------------------------");
 
 			return response.ok
 				? {

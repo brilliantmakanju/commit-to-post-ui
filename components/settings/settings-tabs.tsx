@@ -1,26 +1,33 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
 
-// import { TeamMembers } from "@/components/settings/team-members"
-import { BillingSettings } from "@/components/settings/billing-settings";
-import { GeneralSettings } from "@/components/settings/general-settings";
-import { ProfileSettings } from "@/components/settings/profile-settings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
-import { checkOrganizationOwnership } from "@/server-actions/organizations/check-owner-ship";
-import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
+import useOrganizationOwnership from "@/hooks/settings/use-ownership";
 
-import SocialConnectCallback from "./general-settings/connection-organization";
+// Dynamically import UI components
+const BillingSettings = dynamic(
+	() => import("@/components/settings/billing-settings"),
+	{ ssr: false },
+);
+const GeneralSettings = dynamic(
+	() => import("@/components/settings/general-settings"),
+	{ ssr: false },
+);
+const ProfileSettings = dynamic(
+	() => import("@/components/settings/profile-settings"),
+	{ ssr: false },
+);
+const SocialConnectCallback = dynamic(
+	() => import("./general-settings/connection-organization"),
+	{ ssr: false },
+);
 
 const tabTitles = {
 	general: "General Settings",
-	// "team-members": "Team Members",
 	billing: "Billing Settings",
 	profile: "Profile Settings",
 } as const;
@@ -43,27 +50,9 @@ function LoadingState() {
 	);
 }
 
-const onConnectAccount = async (
-	values: z.infer<typeof connectAccountSchema>,
-) => {
-	try {
-		const response = await postLinkedInConnection(values);
-
-		if (response.success) {
-			toast.success("Your LinkedIn account has been connected successfully.");
-			return response;
-		} else {
-			toast.error(response.message);
-		}
-	} catch {
-		toast.error("Linkedin connection failed.");
-	}
-};
-
 export function SettingsTabs() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const queryClient = useQueryClient();
 	const searchParams = useSearchParams();
 
 	const [mounted, setMounted] = useState(false);
@@ -71,74 +60,10 @@ export function SettingsTabs() {
 	const [activeTab, setActiveTab] = useState("general");
 	const [codeConnecting, setCodeConnecting] = useState(false);
 
-	const { data: ownershipData, isLoading } = useQuery({
-		queryKey: ["organization-ownership"],
-		queryFn: async () => {
-			const result = await checkOrganizationOwnership();
-			return {
-				isOwner: (result.success && result.is_owner) || false,
-			};
-		},
-		staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-		refetchOnWindowFocus: false,
-	});
-
+	const { data: ownershipData, isLoading } = useOrganizationOwnership();
 	const isOwner = ownershipData?.isOwner;
 
-	// useEffect(() => {
-	// 	const tab = searchParams.get("tab");
-	// 	const code = searchParams.get("code");
-
-	// 	if (code) {
-	// 		const connectionRequest = await onConnectAccount({
-	// 			code,
-	// 		});
-
-	// 		if (connectionRequest?.success) {
-	// 			const nextSearchParams = new URLSearchParams(searchParams.toString());
-	// 			nextSearchParams.delete("code");
-
-	// 			router.replace(`${pathname}?${nextSearchParams}`);
-	// 		}
-	// 	}
-
-	// 	if (code) {
-	// 		try {
-	// 			const connectionRequest = await onConnectAccount({ code });
-
-	// 			if (connectionRequest?.success) {
-	// 				const nextSearchParams = new URLSearchParams(searchParams.toString());
-	// 				nextSearchParams.delete("code");
-
-	// 				router.replace(`${pathname}?${nextSearchParams}`);
-	// 			}
-	// 		} catch (error) {
-	// 			console.error("Failed to connect account:", error);
-	// 		}
-	// 		return;
-	// 	}
-
-	// 	if (isOwner === true) {
-	// 		if (tab && tab in tabTitles) {
-	// 			setActiveTab(tab);
-	// 		} else {
-	// 			setActiveTab("general");
-	// 			router.push("/settings?tab=general", { scroll: false });
-	// 		}
-	// 	} else if (isOwner === false) {
-	// 		// Default to profile tab for non-owners and error cases
-	// 		setActiveTab("profile");
-	// 		router.push("/settings?tab=profile", { scroll: false });
-	// 	}
-
-	// 	setMounted(true);
-	// }, [searchParams, isOwner, router]);
-
 	useEffect(() => {
-		queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
-		queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
-		// queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
-		// queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
 		const handleConnection = async () => {
 			const tab = searchParams.get("tab");
 			const code = searchParams.get("code");
@@ -146,7 +71,6 @@ export function SettingsTabs() {
 			if (code) {
 				setSocialCode(code);
 				setCodeConnecting(true);
-				// return;
 			}
 
 			if (isOwner === true) {
@@ -157,7 +81,6 @@ export function SettingsTabs() {
 					router.push("/settings?tab=general", { scroll: false });
 				}
 			} else if (isOwner === false) {
-				// Default to profile tab for non-owners and error cases
 				setActiveTab("profile");
 				router.push("/settings?tab=profile", { scroll: false });
 			}
@@ -166,7 +89,7 @@ export function SettingsTabs() {
 		};
 
 		handleConnection();
-	}, [searchParams, isOwner, router, pathname, queryClient]);
+	}, [searchParams, isOwner, router, pathname]);
 
 	const handleTabChange = (value: string) => {
 		setActiveTab(value);
@@ -216,7 +139,6 @@ export function SettingsTabs() {
 						{isOwner && (
 							<>
 								<TabsTrigger value="general">General</TabsTrigger>
-								{/* <TabsTrigger value="team-members">Team Members</TabsTrigger> */}
 								<TabsTrigger value="billing">Billing</TabsTrigger>
 							</>
 						)}
@@ -229,9 +151,6 @@ export function SettingsTabs() {
 								<TabsContent value="general">
 									<GeneralSettings />
 								</TabsContent>
-								{/* <TabsContent value="team-members">
-                                    <TeamMembers />
-                                </TabsContent> */}
 								<TabsContent value="billing">
 									<BillingSettings />
 								</TabsContent>

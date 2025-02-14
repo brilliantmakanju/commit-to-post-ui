@@ -123,7 +123,10 @@ export function DeleteOrganization() {
 			}}
 		>
 			<DialogTrigger asChild>
-				<Button variant="destructive" className="w-full gap-2 sm:w-auto">
+				<Button
+					variant="destructive"
+					className="w-full gap-2 opacity-60 sm:w-auto"
+				>
 					<Trash2 className="h-4 w-4" />
 					Delete Organization
 				</Button>

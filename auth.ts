@@ -24,25 +24,14 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 			authorize: async credentials => {
 				if (credentials === null) return;
 
-				console.log(
-					credentials.magicLink,
-					"Maric Link",
-					credentials.token,
-					"Tokens",
-				);
-
 				try {
 					if (credentials.magicLink && credentials.token) {
 						const token = credentials.token as string;
 						const response = await confirmMagicLink(token);
 
-						console.log(response, "Response");
-
 						if (response.success === false || response.status === 401) {
 							return;
 						}
-
-						console.log("Starting to enter the others");
 
 						const users = {
 							access: response.data.access,
@@ -58,21 +47,16 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 							type: "magic",
 						};
 
-						console.log("Reacning almose end");
-
 						const userInfo = {
 							data: users,
 							status: 200,
 							success: true,
 						};
-						console.log(userInfo, "User Info");
 						return userInfo;
 					} else if (credentials.email && credentials.password) {
 						const email = credentials.email as string;
 						const password = credentials.password as string;
 						const response = await loginWithCredentials(email, password);
-
-						console.log(response, "Responses");
 
 						if (response.success === false || response.status === 401) {
 							return;
