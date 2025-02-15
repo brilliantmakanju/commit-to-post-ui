@@ -32,16 +32,3 @@ export default function Layout({
 		</html>
 	);
 }
-
-//
-// {/*<SidebarProvider className={'rounded-[30px] overflow-hidden'}>*/}
-// {/*	<AppSidebar />*/}
-// {/*	<SidebarInset className={'bg-[#b3eabc] rounded-[30px] overflow-hidden'}>*/}
-// {/*		<main className={'rounded-[30px] overflow-hidden'}>*/}
-// {/*			<SidebarTrigger />*/}
-// {/*			{children}*/}
-//
-// {/*			/!*<AppSidebar />*!/*/}
-// {/*		</main>*/}
-// {/*	</SidebarInset>*/}
-// {/*</SidebarProvider>*/}
