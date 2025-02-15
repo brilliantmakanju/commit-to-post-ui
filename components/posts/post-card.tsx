@@ -1,8 +1,8 @@
 "use client";
 
-import { format, formatDistanceToNow } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import { format, formatDistanceToNow, parseISO } from "date-fns";
 import {
-	CalendarIcon as IconCalendar,
 	Clock,
 	Edit,
 	Linkedin,
@@ -11,7 +11,9 @@ import {
 	Trash2,
 	Twitter,
 } from "lucide-react";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,35 +35,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { deletePost } from "@/server-actions/core/delete-post";
+import { updatePost } from "@/server-actions/core/edit-post";
+import { reschedulePost } from "@/server-actions/core/reschedule-post";
 
 interface Post {
 	id: string;
 	content: string;
-	created_at: string;
+	platform: "twitter" | "linkedin";
+	status: "published" | "scheduled" | "drafted";
+	original_status: string | null;
 	image_urls: string[];
+	video_url: string | null;
 	is_deleted: boolean;
 	is_inactive: boolean;
-	organization: string;
-	original_status: string | null;
-	platform: "linkedin" | "twitter";
 	post_group: string | null;
-	status: "published" | "scheduled" | "drafted";
+	created_at: string;
 	updated_at: string;
-	video_url: string | null;
+	scheduled_publish_time: string | null;
+	actual_publish_time: string | null;
+	organization: string;
 }
 
 interface PostCardProps {
@@ -75,24 +69,27 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({
 	post,
 	showFullDate = false,
-	onEdit,
 	onReschedule,
 	onDelete,
 }) => {
+	const queryClient = useQueryClient();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [editedPost, setEditedPost] = useState<Post>({ ...post });
 	const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>(
-		new Date(post.created_at),
+		post.actual_publish_time
+			? parseISO(post.actual_publish_time)
+			: post.scheduled_publish_time
+				? parseISO(post.scheduled_publish_time)
+				: parseISO(post.created_at),
 	);
-
 	// Helper function to format the date.
 	const formatDate = (date: string) => {
-		const d = new Date(date);
+		const d = parseISO(date);
 		return showFullDate
-			? format(d, "MMM d, yyyy")
+			? format(d, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
 			: formatDistanceToNow(d, { addSuffix: true });
 	};
 
@@ -107,11 +104,17 @@ const PostCard: React.FC<PostCardProps> = ({
 	const handleDelete = async () => {
 		setIsLoading(true);
 		try {
-			await onDelete?.(post);
-			setIsDeleteDialogOpen(false);
-		} catch (error) {
-			console.error("Error deleting post:", error);
-			// Handle error (e.g., show error message to user)
+			const deletedPost = await deletePost(post.id);
+			if (deletedPost.success) {
+				setIsDeleteDialogOpen(false);
+				queryClient.fetchQuery({ queryKey: ["posts"] });
+				queryClient.invalidateQueries({ queryKey: ["posts"] });
+				toast.success("Post deleted successfully");
+			} else {
+				toast.error("Failed to delete post. Please try again.");
+			}
+		} catch {
+			toast.error("Failed to delete post. Please try again.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -119,13 +122,22 @@ const PostCard: React.FC<PostCardProps> = ({
 
 	const handleReschedule = async () => {
 		if (rescheduleDate) {
+			const date = new Date(rescheduleDate);
+			const isoDate = date.toISOString();
 			setIsLoading(true);
 			try {
-				await onReschedule?.(post, rescheduleDate);
-				setIsRescheduleDialogOpen(false);
-			} catch (error) {
-				console.error("Error rescheduling post:", error);
-				// Handle error (e.g., show error message to user)
+				// await onReschedule?.(post, isoDate);
+				const updatedSchedule = await reschedulePost(post.id, isoDate);
+				if (updatedSchedule.success) {
+					queryClient.fetchQuery({ queryKey: ["posts"] });
+					queryClient.invalidateQueries({ queryKey: ["posts"] });
+					setIsRescheduleDialogOpen(false);
+					toast.success("Post rescheduled successfully");
+				} else {
+					toast.error("Failed to reschedule post. Please try again.");
+				}
+			} catch {
+				toast.error("Failed to reschedule post. Please try again.");
 			} finally {
 				setIsLoading(false);
 			}
@@ -135,11 +147,17 @@ const PostCard: React.FC<PostCardProps> = ({
 	const handleEdit = async () => {
 		setIsLoading(true);
 		try {
-			await onEdit?.(editedPost);
-			setIsEditDialogOpen(false);
-		} catch (error) {
-			console.error("Error editing post:", error);
-			// Handle error (e.g., show error message to user)
+			const updatedPost = await updatePost(post.id, editedPost.content);
+			if (updatedPost.success) {
+				setIsEditDialogOpen(false);
+				queryClient.fetchQuery({ queryKey: ["posts"] });
+				queryClient.invalidateQueries({ queryKey: ["posts"] });
+				toast.success("Post updated successfully");
+			} else {
+				toast.error("Failed to update post. Please try again.");
+			}
+		} catch {
+			toast.error("Failed to update post. Please try again.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -310,25 +328,6 @@ const PostCard: React.FC<PostCardProps> = ({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
-						<div className="flex flex-col items-start justify-start gap-4">
-							<Label htmlFor="platform" className="text-right">
-								Platform
-							</Label>
-							<Select
-								value={editedPost.platform}
-								onValueChange={(value: "twitter" | "linkedin") =>
-									setEditedPost({ ...editedPost, platform: value })
-								}
-							>
-								<SelectTrigger className="col-span-3">
-									<SelectValue placeholder="Select platform" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="twitter">Twitter</SelectItem>
-									<SelectItem value="linkedin">LinkedIn</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
 						<div className="flex flex-col items-start justify-center gap-4">
 							<Label htmlFor="content" className="text-right">
 								Content

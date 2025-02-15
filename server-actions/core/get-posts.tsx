@@ -11,15 +11,21 @@ const fetchPostsSchema = z.object({
 	}),
 });
 
-export const fetchPosts = async (page_size?: unknown) => {
+export const fetchPosts = async ({ page_size }: { page_size: number }) => {
 	try {
 		// Validate the incoming data against the schema.
-		// const validatedData = fetchPostsSchema.parse(page_size_no);
+		const validatedData = fetchPostsSchema.parse({
+			page_size: page_size,
+		});
 		// const { page_size } = validatedData;
+		// console.log(page_size, "Page_size");
 
 		// Build query parameters (default page to 1 if not provided).
-		const response = await apiClient.get("/api/v1/posts/");
-
+		const response = await apiClient.get(
+			validatedData.page_size === 1
+				? "/api/v1/posts/"
+				: `/api/v1/posts/?page=${validatedData.page_size}`,
+		);
 		// Check for a successful status code.
 		if (response.status !== 200) {
 			throw new Error("The request to retrieve posts was unsuccessful.");
