@@ -18,7 +18,6 @@ export const fetchPosts = async ({ page_size }: { page_size: number }) => {
 			page_size: page_size,
 		});
 		// const { page_size } = validatedData;
-		// console.log(page_size, "Page_size");
 
 		// Build query parameters (default page to 1 if not provided).
 		const response = await apiClient.get(

@@ -9,11 +9,14 @@ import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useSocialStatus } from "@/hooks/settings/use-social-status";
 import useRetrieveWebhook from "@/hooks/settings/use-webhook";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import { regenerateWebhookSchema } from "@/resolvers/organizations/organization-schema";
 import { createRegenerateWebhook } from "@/server-actions/organizations/create-web-hook";
+
+import WebHookOptions from "./webhook-options";
 
 const copyToClipboard = (text: string) => {
 	navigator.clipboard.writeText(text);
@@ -122,6 +125,18 @@ export function WebHookSettings() {
 				) : (
 					<p>No webhook URL or secret key generated yet.</p>
 				)}
+
+				{webhook && (
+					<Alert>
+						<AlertTriangle className="h-4 w-4" />
+						<AlertTitle>Warning</AlertTitle>
+						<AlertDescription>
+							Regenerating the webhook will invalidate the previous URL. Only do
+							this if you suspect it has been compromised.
+						</AlertDescription>
+					</Alert>
+				)}
+
 				<div className="flex w-full justify-end pt-4">
 					<Button
 						onClick={() => handleWebhook(!!webhook)}
@@ -133,16 +148,10 @@ export function WebHookSettings() {
 						{webhook ? "Regenerate Webhook" : "Generate Webhook"}
 					</Button>
 				</div>
-				{webhook && (
-					<Alert>
-						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>Warning</AlertTitle>
-						<AlertDescription>
-							Regenerating the webhook will invalidate the previous URL. Only do
-							this if you suspect it has been compromised.
-						</AlertDescription>
-					</Alert>
-				)}
+
+				<Separator />
+
+				{isConnected && <WebHookOptions />}
 			</div>
 		</div>
 	);

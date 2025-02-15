@@ -70,8 +70,7 @@ export default function Posts() {
 		setCurrentPage(1); // Reset to first page when filters change
 	};
 
-	const totalPages = data ? Math.ceil(data.count / 2) : 0; // Assuming 5 posts per page
-
+	const totalPages = data ? Math.ceil(data.count / 50) : 0;
 	return (
 		<div className="p-4">
 			<div className="mb-6">
