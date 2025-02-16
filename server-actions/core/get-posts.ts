@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { apiClient } from "@/lib/utils/api-client";
+import { apiClient } from "../../lib/utils/api-client";
 
 // Define a schema for the pagination query parameters.
 const fetchPostsSchema = z.object({

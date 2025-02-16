@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -23,17 +24,24 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { clearCookies } from "@/lib/cookies/create-cookies";
+import useLogoutStore from "@/lib/zustand/logout-store";
+import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
 import {
 	passwordFormSchema,
 	profileFormSchema,
 } from "@/resolvers/auth-resolvers";
 import { updateProfileSetup } from "@/server-actions/onboarding/update-profile";
+import { changePassword } from "@/server-actions/profile/updated-password";
 
 export default function ProfileSettings() {
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const { data } = useSession();
 	const userStore = useUserStore();
+	const router = useRouter();
+	const logoutStore = useLogoutStore();
+	const organizationStore = useOrganizationStore();
 
 	// Split full name into first and last name if available
 	const [firstNameFromFull, lastNameFromFull] = userStore.full_name
@@ -115,10 +123,27 @@ export default function ProfileSettings() {
 		values: z.infer<typeof passwordFormSchema>,
 	) => {
 		try {
-			// Add your password change logic here
-			setIsPasswordModalOpen(false);
+			const response = await changePassword(values);
+
+			if (response.success === true) {
+				setIsPasswordModalOpen(false);
+				passwordForm.resetField("confirmPassword");
+				passwordForm.resetField("newPassword");
+				passwordForm.resetField("oldPassword");
+				toast.success("Password changed successfully!");
+				logoutStore.setLogout(true);
+				// Sign out from NextAuth
+				await clearCookies(); // Clear all cookies
+				userStore.clearUser(); // Clear user information from Zustand store
+				organizationStore.clearOrganization();
+				await signOut();
+				router.push("/auth");
+			} else {
+				toast.error("Something went wrong. Please try again.");
+			}
 		} catch (error) {
 			console.error(error);
+			toast.error("Failed to change password. Please try again.");
 		}
 	};
 
@@ -127,7 +152,7 @@ export default function ProfileSettings() {
 			<div className="mb-6 flex items-center justify-between">
 				{authenticationType === "email_password" && (
 					<Button
-						variant="outline"
+						variant="secondary"
 						onClick={() => setIsPasswordModalOpen(true)}
 					>
 						Change Password
@@ -195,11 +220,9 @@ export default function ProfileSettings() {
 								name="oldPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-white">
-											Current Password
-										</FormLabel>
+										<FormLabel>Current Password</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} className="bg-white" />
+											<Input type="password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -211,9 +234,9 @@ export default function ProfileSettings() {
 								name="newPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-white">New Password</FormLabel>
+										<FormLabel>New Password</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} className="bg-white" />
+											<Input type="password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -225,11 +248,9 @@ export default function ProfileSettings() {
 								name="confirmPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-white">
-											Confirm New Password
-										</FormLabel>
+										<FormLabel>Confirm New Password</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} className="bg-white" />
+											<Input type="password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

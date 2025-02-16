@@ -32,8 +32,8 @@ export default function NotificationCard({
 				<CardTitle className="text-sm font-medium">
 					{notification.title}
 				</CardTitle>
-				<Badge variant={notification.is_read_by ? "secondary" : "default"}>
-					{notification.is_read_by ? "Read" : "Unread"}
+				<Badge variant={notification.is_read ? "secondary" : "default"}>
+					{notification.is_read ? "Read" : "Unread"}
 				</Badge>
 			</CardHeader>
 			<CardContent>
@@ -41,7 +41,7 @@ export default function NotificationCard({
 					{notification.message}
 				</p>
 			</CardContent>
-			<CardFooter className="flex flex-col-reverse items-start justify-center gap-3">
+			<CardFooter className="flex items-end justify-between gap-3">
 				<div className="flex items-center text-sm text-muted-foreground">
 					{/* <Avatar className="mr-2 h-8 w-8">
 						<AvatarFallback>

@@ -38,6 +38,7 @@ export default function NotificationModal({
 
 	useEffect(() => {
 		readNotification();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (
@@ -45,14 +46,6 @@ export default function NotificationModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{notification.title}</DialogTitle>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={onClose}
-						className="absolute right-4 top-4"
-					>
-						<X className="h-4 w-4" />
-					</Button>
 				</DialogHeader>
 				<div className="mt-2">
 					<p className="text-sm text-muted-foreground">
@@ -61,11 +54,6 @@ export default function NotificationModal({
 				</div>
 				<DialogFooter className="mt-4 flex items-center justify-between">
 					<div className="flex items-center text-sm text-muted-foreground">
-						<Avatar className="mr-2 h-8 w-8">
-							<AvatarFallback>
-								{notification.triggered_by.charAt(0)}
-							</AvatarFallback>
-						</Avatar>
 						{notification.triggered_by}
 					</div>
 					<div className="flex items-center text-sm text-muted-foreground">

@@ -163,7 +163,7 @@ export class ApiClient {
 			const responseBody = await response.json().catch(() => {});
 
 			if (
-				responseBody.detail === "Authentication credentials were not provided."
+				responseBody?.detail === "Authentication credentials were not provided."
 			) {
 				await clearCookies();
 			}

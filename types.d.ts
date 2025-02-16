@@ -50,6 +50,6 @@ export interface Notification {
 	title: string;
 	message: string;
 	triggered_by: string;
-	is_read_by: boolean;
+	is_read: boolean;
 	created_at: string;
 }

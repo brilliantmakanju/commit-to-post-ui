@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -69,8 +69,6 @@ export function NavUser() {
 						lastName: lastNameFromFull || data?.user?.last_name || "",
 						email: userStore.email || data?.user?.email || "",
 					};
-
-	const avatar = "/avatars/shadcn.jpg";
 
 	const logoutClient = async () => {
 		// Call the API to invalidate the user's session (blacklist token)

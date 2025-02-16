@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { apiClient } from "@/lib/utils/api-client";
+import { apiClient } from "../../lib/utils/api-client";
 
 // Define a schema for the update post parameters
 const updatePostSchema = z.object({
@@ -14,8 +14,8 @@ const updatePostSchema = z.object({
 		.min(1, {
 			message: "Content must not be empty.",
 		})
-		.max(280, {
-			message: "Content must not exceed 280 characters.",
+		.max(1500, {
+			message: "Content must not exceed 1500 characters.",
 		}),
 });
 
@@ -24,6 +24,7 @@ export const updatePost = async (
 	content: string,
 ): Promise<{
 	success: boolean;
+	data: any;
 }> => {
 	try {
 		// Validate the incoming data against the schema
@@ -48,7 +49,10 @@ export const updatePost = async (
 		}
 
 		// Return the updated post data
-		return response.data;
+		return {
+			success: true,
+			data: response.data,
+		};
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			const errorMessages = error.errors.map(error_ => ({

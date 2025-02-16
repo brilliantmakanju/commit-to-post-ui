@@ -24,7 +24,7 @@ export const deletePost = async (
 
 		const response = await apiClient.delete(url);
 
-		if (response.status !== 204) {
+		if (response.status !== 200) {
 			throw new Error(
 				`Failed to delete post. Server responded with status ${response.status}`,
 			);
