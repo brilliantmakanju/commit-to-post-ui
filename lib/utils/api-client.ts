@@ -5,7 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { refreshToken } from "@/server-actions/auth/auth-actions";
 
-import { updateCookie } from "../cookies/create-cookies";
+import { clearCookies, updateCookie } from "../cookies/create-cookies";
 import { getBaseUrl } from "./getbase-url";
 import { getAuthTokens } from "./gettokens";
 import { isTokenExpired } from "./tokens";
@@ -109,11 +109,12 @@ export class ApiClient {
 					credentials: "include",
 				});
 			} else {
+				await clearCookies();
 				throw new Error("Token refresh failed");
 			}
 		} catch {
 			// Force sign out on refresh failure
-			// await signOut({ callbackUrl: "/auth?view=login" });
+			await clearCookies();
 			throw new Error("Authentication failed. Please login again.");
 		}
 	}
@@ -160,6 +161,12 @@ export class ApiClient {
 			}
 
 			const responseBody = await response.json().catch(() => {});
+
+			if (
+				responseBody.detail === "Authentication credentials were not provided."
+			) {
+				await clearCookies();
+			}
 
 			return response.ok
 				? {

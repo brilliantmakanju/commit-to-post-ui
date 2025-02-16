@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Bot, Settings2, SquareTerminal } from "lucide-react";
+import { BellDotIcon, Bot, Settings2, SquareTerminal } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -31,6 +31,12 @@ const data = {
 			title: "Post",
 			url: "/posts",
 			icon: Bot,
+			items: [],
+		},
+		{
+			title: "Notifications",
+			url: "/notifications",
+			icon: BellDotIcon,
 			items: [],
 		},
 		// {

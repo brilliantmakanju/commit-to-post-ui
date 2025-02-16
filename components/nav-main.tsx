@@ -20,6 +20,7 @@ import {
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import useLogoutStore from "@/lib/zustand/logout-store";
 
 export function NavMain({
@@ -37,8 +38,9 @@ export function NavMain({
 	}[];
 }) {
 	const { status } = useSession();
-	const isLoading = status === "loading";
 	const logoutStore = useLogoutStore();
+	const isLoading = status === "loading";
+	const { has_unread } = useRetrieveUnreadCount();
 
 	return (
 		<SidebarGroup>
@@ -66,6 +68,10 @@ export function NavMain({
 									}
 								>
 									<item.icon />
+
+									{has_unread && item.title === "Notifications" && (
+										<span className="absolute left-[18px] top-[10px] h-1.5 w-1.5 rounded-full bg-red-600" />
+									)}
 									<span>{item.title}</span>
 								</Link>
 							</SidebarMenuButton>
@@ -99,6 +105,9 @@ export function NavMain({
 																	: ""
 															}
 														>
+															{has_unread && (
+																<span className="absolute left-[18px] top-[10px] h-1.5 w-1.5 rounded-full bg-red-600" />
+															)}
 															<span>{subItem.title}</span>
 														</Link>
 													</SidebarMenuSubButton>

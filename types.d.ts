@@ -1,3 +1,5 @@
+import { UUID } from "node:crypto";
+
 type HeroBannerTopProps = {
 	// The icon to display in the banner, it defaults to null
 	icon?: any | null;
@@ -41,3 +43,13 @@ export type FooterProps = {
 export type AuthModalProps = {
 	trigger: any;
 };
+
+export interface Notification {
+	id: UUID;
+	organization: string;
+	title: string;
+	message: string;
+	triggered_by: string;
+	is_read_by: boolean;
+	created_at: string;
+}

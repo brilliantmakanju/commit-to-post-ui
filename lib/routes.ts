@@ -5,4 +5,5 @@ export const PROTECTED_SUB_ROUTES = [
 	"/setup",
 	"/settings",
 	"/posts",
+	"/notifications",
 ];
