@@ -21,6 +21,7 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
 import {
 	createEncryptedCookie,
 	deleteCookie,
@@ -40,6 +41,7 @@ export function TeamSwitcher({
 	}[];
 	isLoading: boolean;
 }) {
+	const hasAccess = useCheckAccess();
 	const { isMobile } = useSidebar();
 	const logoutStore = useLogoutStore();
 	const queryClient = useQueryClient();
@@ -226,7 +228,9 @@ export function TeamSwitcher({
 									<Plus className="size-4" />
 								</div>
 								<div className="font-medium text-muted-foreground">
-									Create Organization
+									{hasAccess
+										? "Create Organization"
+										: "Upgrade to Create Organization"}
 								</div>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -263,7 +267,9 @@ export function TeamSwitcher({
 									<Plus className="size-4" />
 								</div>
 								<div className="font-medium text-muted-foreground">
-									Create Organization
+									{hasAccess
+										? "Create Organization"
+										: "Upgrade to Create Organization"}
 								</div>
 							</DropdownMenuItem>
 						</DropdownMenuContent>

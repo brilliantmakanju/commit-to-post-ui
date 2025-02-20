@@ -21,6 +21,13 @@ export const updateTones = async (tones: string[], shuffle_tones: boolean) => {
 			},
 		);
 
+		if (response.status === 403) {
+			return {
+				success: false,
+				data: response.error.message,
+			};
+		}
+
 		if (response.status !== 200) {
 			throw new Error(
 				`Failed to update tones. Server responded with status ${response.status}`,

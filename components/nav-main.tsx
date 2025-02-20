@@ -3,6 +3,7 @@
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 import {
 	Collapsible,
@@ -21,7 +22,11 @@ import {
 	SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { useBillingPortal } from "@/hooks/settings/use-billing";
+import hasAccess from "@/lib/utils/check-plan";
 import useLogoutStore from "@/lib/zustand/logout-store";
+import useUserStore from "@/lib/zustand/useuser-store";
 
 export function NavMain({
 	items,
@@ -38,8 +43,11 @@ export function NavMain({
 	}[];
 }) {
 	const { status } = useSession();
+
+	const { data } = useBillingPortal();
 	const logoutStore = useLogoutStore();
 	const isLoading = status === "loading";
+	const hasAccess = useCheckAccess();
 	const { has_unread } = useRetrieveUnreadCount();
 
 	return (
@@ -55,17 +63,29 @@ export function NavMain({
 							>
 								<Link
 									prefetch={false}
-									href={item.url}
+									href={`${
+										item.title === "Billing"
+											? hasAccess
+												? (data ?? item.url)
+												: "#"
+											: item.url
+									}`}
 									onClick={event_ => {
-										if (isLoading || logoutStore.logout) {
+										// Prevent default behavior if the link is disabled
+										if (
+											(isLoading || logoutStore.logout || !hasAccess) &&
+											item.title === "Billing"
+										) {
 											event_.preventDefault();
 										}
 									}}
-									className={
-										isLoading || logoutStore.logout
+									className={`${
+										isLoading ||
+										logoutStore.logout ||
+										(item.title === "Billing" && hasAccess === false)
 											? "pointer-events-none opacity-50"
 											: ""
-									}
+									}`}
 								>
 									<item.icon />
 
@@ -92,20 +112,37 @@ export function NavMain({
 												<SidebarMenuSubItem key={subItem.title}>
 													<SidebarMenuSubButton asChild>
 														<Link
-															href={subItem.url}
 															prefetch={false}
+															href={`${
+																item.title === "Billing"
+																	? hasAccess
+																		? (data ?? item.url)
+																		: "#"
+																	: item.url
+															}`}
 															onClick={event_ => {
-																if (isLoading || logoutStore.logout) {
+																// Prevent default behavior if the link is disabled
+																if (
+																	(isLoading ||
+																		logoutStore.logout ||
+																		!hasAccess) &&
+																	item.title === "Billing"
+																) {
 																	event_.preventDefault();
 																}
 															}}
-															className={
-																isLoading || logoutStore.logout
+															className={`${
+																isLoading ||
+																logoutStore.logout ||
+																(item.title === "Billing" &&
+																	hasAccess === false)
 																	? "pointer-events-none opacity-50"
 																	: ""
-															}
+															}`}
 														>
-															{has_unread && (
+															<item.icon />
+
+															{has_unread && item.title === "Notifications" && (
 																<span className="absolute left-[18px] top-[10px] h-1.5 w-1.5 rounded-full bg-red-600" />
 															)}
 															<span>{subItem.title}</span>

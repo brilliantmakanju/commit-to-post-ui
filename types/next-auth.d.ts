@@ -16,15 +16,16 @@ declare module "next-auth" {
 		google_connected: boolean;
 		new_user: boolean;
 		type: string;
+		plan: string;
+		subscription_status: string;
+		subscription_end_date: Date | undefined;
 	}
 
 	interface Session {
-		// user: {
-			access: string;
-			refresh: string;
-			user: User; // This is the actual user data
-			id: string;
-		// };
+		access: string;
+		refresh: string;
+		user: User; // This is the actual user data
+		id: string;
 		expires: string;
 	}
 }

@@ -7,16 +7,19 @@ interface UserPreferences {
 }
 
 interface UserState {
+	bio: string;
+	plan: string;
+	email: string;
+	last_name: string;
 	full_name: string;
 	first_name: string;
-	last_name: string;
-	bio: string;
-	email: string;
-	preferences: UserPreferences; // Adjust type as necessary
-	stripe_subscription_id: string;
+	justUpdated: boolean;
 	github_connected: boolean;
 	google_connected: boolean;
-	justUpdated: boolean;
+	subscription_status: string;
+	preferences: UserPreferences;
+	stripe_subscription_id: string;
+	subscription_end_date: Date | undefined;
 }
 
 interface UserActions {
@@ -28,16 +31,19 @@ interface UserActions {
 const useUserStore = create<UserState & UserActions>()(
 	persist(
 		set => ({
-			full_name: "",
-			first_name: "",
-			last_name: "",
 			bio: "",
+			plan: "",
 			email: "",
+			full_name: "",
+			last_name: "",
+			first_name: "",
 			preferences: {},
-			stripe_subscription_id: "",
+			justUpdated: false,
 			github_connected: false,
 			google_connected: false,
-			justUpdated: false,
+			subscription_status: "",
+			stripe_subscription_id: "",
+			subscription_end_date: undefined,
 			setUser: user => {
 				set(state => ({ ...state, ...user }));
 			},
@@ -46,16 +52,19 @@ const useUserStore = create<UserState & UserActions>()(
 			},
 			clearUser: () =>
 				set({
-					full_name: "",
-					first_name: "",
-					last_name: "",
 					bio: "",
+					plan: "",
 					email: "",
+					full_name: "",
+					last_name: "",
+					first_name: "",
 					preferences: {},
-					stripe_subscription_id: "",
+					justUpdated: false,
 					github_connected: false,
 					google_connected: false,
-					justUpdated: false,
+					subscription_status: "",
+					stripe_subscription_id: "",
+					subscription_end_date: undefined,
 				}),
 		}),
 		{

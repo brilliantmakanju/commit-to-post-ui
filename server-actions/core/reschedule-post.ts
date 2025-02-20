@@ -32,6 +32,13 @@ export const reschedulePost = async (
 			scheduled_publish_time: validatedData.scheduled_publish_time,
 		});
 
+		if (response.status === 403) {
+			return {
+				success: false,
+				data: response.error.message,
+			};
+		}
+
 		if (response.status !== 200) {
 			throw new Error(
 				`Failed to reschedule post. Server responded with status ${response.status}`,

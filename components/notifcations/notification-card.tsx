@@ -21,8 +21,6 @@ export default function NotificationCard({
 	notification,
 	onClick,
 }: NotificationCardProps) {
-	console.log(notification, "Notifications");
-
 	return (
 		<Card
 			className="cursor-pointer transition-shadow hover:shadow-md"

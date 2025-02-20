@@ -8,11 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useOrganizationOwnership from "@/hooks/settings/use-ownership";
 
-// Dynamically import UI components
-const BillingSettings = dynamic(
-	() => import("@/components/settings/billing-settings"),
-	{ ssr: false },
-);
 const GeneralSettings = dynamic(
 	() => import("@/components/settings/general-settings"),
 	{ ssr: false },
@@ -139,7 +134,6 @@ export function SettingsTabs() {
 						{isOwner && (
 							<>
 								<TabsTrigger value="general">General</TabsTrigger>
-								<TabsTrigger value="billing">Billing</TabsTrigger>
 							</>
 						)}
 						<TabsTrigger value="profile">Profile</TabsTrigger>
@@ -150,9 +144,6 @@ export function SettingsTabs() {
 							<>
 								<TabsContent value="general">
 									<GeneralSettings />
-								</TabsContent>
-								<TabsContent value="billing">
-									<BillingSettings />
 								</TabsContent>
 							</>
 						)}

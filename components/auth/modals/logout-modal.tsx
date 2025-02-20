@@ -3,10 +3,15 @@
 import LoadingScreen from "@/components/wrappers/loaders/logo-loading";
 import useLogoutStore from "@/lib/zustand/logout-store";
 
-export function LogoutModal() {
+interface LogoutModalProps {
+	showByDefault?: boolean; // Optional prop to control showing the modal by default
+}
+
+export function LogoutModal({ showByDefault = false }: LogoutModalProps) {
 	const { logout } = useLogoutStore();
 
-	if (!logout) {
+	// If the `showByDefault` prop is true or `logout` is true, display the modal
+	if (!logout && !showByDefault) {
 		return;
 	}
 

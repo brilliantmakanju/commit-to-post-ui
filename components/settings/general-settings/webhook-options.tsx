@@ -43,6 +43,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useRetrieveOrganizationTone from "@/hooks/organization/use-organization-tone";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
 import useRetrieveWebhookSettings from "@/hooks/settings/use-webhook-settings";
 import { cn } from "@/lib/utils";
 import { updateBranch } from "@/server-actions/organizations/update-hook-options";
@@ -75,21 +76,22 @@ function retrieveTone(
 }
 
 const WebHookOptions: React.FC = () => {
-	const {
-		branch: branchData,
-		isWebhookLoading,
-		refetchWebhook,
-	} = useRetrieveWebhookSettings();
+	const hasAccess = useCheckAccess();
+	const { branch: branchData, refetchWebhook } = useRetrieveWebhookSettings();
 	const { selected_tone, shuffle_tone, available_tones } =
 		useRetrieveOrganizationTone();
 
 	const [open, setOpen] = useState(false);
+	function openTonesModal() {
+		if (hasAccess) {
+			setOpen(!open);
+		}
+	}
 	const [selectedTones, setSelectedTones] = useState<string[]>([]);
 	const [availableTones, setAvailableTones] = useState<
 		{ value: string; display: string }[]
 	>([]);
 	const [useHashtags, setUseHashtags] = useState(false);
-	const [userPlan] = useState<UserPlan>("basic");
 	const [branch, setBranch] = useState<BranchState>({
 		name: "",
 		isEditing: false,
@@ -130,7 +132,7 @@ const WebHookOptions: React.FC = () => {
 					setSelectedTones(newTones);
 					toast.success("Tones updated successfully");
 				} else {
-					toast.error("Failed to update tones");
+					toast.error(result.data ?? "Failed to update tones");
 				}
 			} catch (error) {
 				console.error("Error updating tones:", error);
@@ -253,7 +255,7 @@ const WebHookOptions: React.FC = () => {
 					<h3 className="text-lg font-medium text-[#232528]">AI Tone</h3>
 					<div className="grid grid-cols-1 space-y-2 sm:space-x-4 md:grid-cols-3">
 						<div className="flex-grow">
-							<Popover open={open} onOpenChange={setOpen}>
+							<Popover open={open && hasAccess} onOpenChange={openTonesModal}>
 								<PopoverTrigger asChild>
 									<Button
 										variant="outline"
@@ -342,6 +344,7 @@ const WebHookOptions: React.FC = () => {
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="shuffle"
+								disabled={!hasAccess}
 								checked={shuffleAll}
 								onCheckedChange={handleShuffleChange}
 								className="data-[state=checked]:bg-[#058C42]"

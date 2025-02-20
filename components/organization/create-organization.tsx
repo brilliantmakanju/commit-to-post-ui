@@ -14,6 +14,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from "@/components/ui/dialog";
 import {
 	Form,
@@ -24,10 +25,12 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
 import {
 	OrganizationFormValues,
 	organizationSchema,
 } from "@/resolvers/organizations/organization-schema";
+import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 import { createOrganization } from "@/server-actions/organizations/create-organization";
 
 import { Textarea } from "../ui/textarea";
@@ -38,12 +41,19 @@ interface CreateOrganizationModalProps {
 	onSuccess?: () => void;
 }
 
+const subscribePlan = async () => {
+	const response = await subscriptionsCreation();
+	globalThis.window.open(response.data?.checkout_url);
+	console.log(response);
+};
+
 export function CreateOrganizationModal({
 	open,
 	onOpenChange,
 	onSuccess,
 }: CreateOrganizationModalProps) {
 	const queryClient = useQueryClient();
+	const hasAccess = useCheckAccess();
 
 	const form = useForm<OrganizationFormValues>({
 		resolver: zodResolver(organizationSchema),
@@ -68,7 +78,10 @@ export function CreateOrganizationModal({
 				// Function to invalidate organizations query
 				queryClient.invalidateQueries({ queryKey: ["organizations"] });
 			} else {
-				toast.error(response.error.details.non_field_errors[0]);
+				toast.error(
+					response.error.details?.non_field_errors?.[0] ??
+						response.error.message,
+				);
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -81,67 +94,98 @@ export function CreateOrganizationModal({
 
 	if (!open) return;
 
+	console.log(hasAccess, "Access");
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
-					<DialogTitle>Create Organization</DialogTitle>
-					<DialogDescription>
-						Create a new organization by providing a name and description.
-					</DialogDescription>
-				</DialogHeader>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Organization Name</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="Enter organization name"
-											{...field}
-											disabled={isSubmitting}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Description</FormLabel>
-									<FormControl>
-										<Textarea
-											placeholder="Enter organization description"
-											rows={5}
-											{...field}
-											disabled={isSubmitting}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<DialogFooter>
-							<Button type="submit" disabled={isSubmitting}>
-								{isSubmitting ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Creating...
-									</>
-								) : (
-									"Create"
+			{/* <DialogTrigger asChild>
+				<Button disabled={!hasAccess}>
+					{hasAccess ? "Create Organization" : "Upgrade to Create Organization"}
+				</Button>
+			</DialogTrigger> */}
+			{hasAccess ? (
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>Create Organizations</DialogTitle>
+						<DialogDescription>
+							Create a new organization by providing a name and description.
+						</DialogDescription>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Organization Name</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="Enter organization name"
+												{...field}
+												disabled={isSubmitting}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
 								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</DialogContent>
+							/>
+							<FormField
+								control={form.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Description</FormLabel>
+										<FormControl>
+											<Textarea
+												placeholder="Enter organization description"
+												rows={5}
+												{...field}
+												disabled={isSubmitting}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<DialogFooter>
+								<Button type="submit" disabled={isSubmitting}>
+									{isSubmitting ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Creating...
+										</>
+									) : (
+										"Create"
+									)}
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			) : (
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Upgrade Your Plan</DialogTitle>
+						<DialogDescription>
+							Upgrade your plan to create and manage organizations.
+						</DialogDescription>
+					</DialogHeader>
+					<p className="text-center text-sm text-gray-500 dark:text-gray-400">
+						Unlock the ability to create and manage organizations by upgrading
+						to our premium plan.
+					</p>
+					<DialogFooter>
+						<Button
+							onClick={() => {
+								subscribePlan();
+							}}
+						>
+							Upgrade Now
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			)}
 		</Dialog>
 	);
 }

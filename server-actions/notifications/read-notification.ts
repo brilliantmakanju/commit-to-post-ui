@@ -13,13 +13,11 @@ export const readNotifications = async ({
 	message?: string;
 }> => {
 	try {
-		console.log(id, "ID");
 		// Make the API call to get all Notifications
 		const response = await apiClient.post(
 			`/api/v1/notifications/?notification_id=${id}`,
 			{},
 		);
-		console.log(response, "Responseeskaoiodioaioiaiids");
 
 		// Check if the request was successful
 		if (response.error) {

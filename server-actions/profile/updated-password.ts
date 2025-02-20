@@ -26,7 +26,6 @@ export const changePassword = async ({
 			re_new_password: validatedData.confirmPassword,
 			current_password: validatedData.oldPassword,
 		});
-		console.log(response, "Responsed");
 
 		if (response.status !== 204) {
 			throw new Error(

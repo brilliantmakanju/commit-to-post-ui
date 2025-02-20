@@ -36,6 +36,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { deletePost } from "@/server-actions/core/delete-post";
 import { updatePost } from "@/server-actions/core/edit-post";
 import { reschedulePost } from "@/server-actions/core/reschedule-post";
@@ -73,6 +74,7 @@ const PostCard: React.FC<PostCardProps> = ({
 	onDelete,
 }) => {
 	const queryClient = useQueryClient();
+	const hasAccess = useCheckAccess();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -134,7 +136,10 @@ const PostCard: React.FC<PostCardProps> = ({
 					setIsRescheduleDialogOpen(false);
 					toast.success("Post rescheduled successfully");
 				} else {
-					toast.error("Failed to reschedule post. Please try again.");
+					toast.error(
+						updatedSchedule.data ??
+							"Failed to reschedule post. Please try again.",
+					);
 				}
 			} catch {
 				toast.error("Failed to reschedule post. Please try again.");
@@ -180,12 +185,17 @@ const PostCard: React.FC<PostCardProps> = ({
 									<Edit className="mr-2 h-4 w-4" />
 									<span>Edit</span>
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => setIsRescheduleDialogOpen(true)}
-								>
-									<Clock className="mr-2 h-4 w-4" />
-									<span>Reschedule</span>
-								</DropdownMenuItem>
+								{hasAccess ? (
+									<DropdownMenuItem
+										disabled={!hasAccess}
+										onClick={() => setIsRescheduleDialogOpen(true)}
+									>
+										<Clock className="mr-2 h-4 w-4" />
+										<span>Reschedule</span>
+									</DropdownMenuItem>
+								) : (
+									<></>
+								)}
 								<DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
 									<Trash2 className="mr-2 h-4 w-4" />
 									<span>Delete</span>
@@ -249,7 +259,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
 			{/* Reschedule Dialog */}
 			<Dialog
-				open={isRescheduleDialogOpen}
+				open={isRescheduleDialogOpen && hasAccess}
 				onOpenChange={setIsRescheduleDialogOpen}
 			>
 				<DialogContent>

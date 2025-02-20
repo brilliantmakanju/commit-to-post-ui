@@ -29,11 +29,11 @@ import useUserStore from "@/lib/zustand/useuser-store";
 import { logout, signOut } from "@/server-actions/auth/signout";
 
 export function NavUser() {
-	const { isMobile } = useSidebar();
-	const { data, status } = useSession();
 	const router = useRouter();
 	const userStore = useUserStore();
+	const { isMobile } = useSidebar();
 	const logoutStore = useLogoutStore();
+	const { data, status } = useSession();
 	const organizationStore = useOrganizationStore();
 
 	useEffect(() => {

@@ -36,14 +36,18 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 						const users = {
 							access: response.data.access,
 							refresh: response.data.refresh,
-							first_name: response.data.user?.first_name ?? null,
-							last_name: response.data.user?.last_name ?? null,
+							plan: response.data.user?.plan,
 							bio: response.data.user?.bio ?? null,
 							email: response.data.user?.email ?? null,
+							new_user: response.data.user?.new_user ?? true,
+							last_name: response.data.user?.last_name ?? null,
+							first_name: response.data.user?.first_name ?? null,
 							preferences: response.data.user?.preferences ?? null,
+							subscription_status: response.data.user?.subscription_status,
 							github_connected: response.data.user?.github_connected ?? false,
 							google_connected: response.data.user?.google_connected ?? false,
-							new_user: response.data.user?.new_user ?? true,
+							subscription_end_date:
+								response.data.user?.subscription_end_date ?? undefined,
 							type: "magic",
 						};
 
@@ -99,17 +103,21 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 						// @ts-ignore
 						refreshToken: userData.refresh,
 						user: {
-							first_name: userData.first_name,
-							last_name: userData.last_name,
 							bio: userData.bio,
+							type: userData.type,
+							plan: userData.plan,
 							email: userData.email,
-							preferences: userData.preferences,
-							github_connected: userData.github_connected,
-							google_connected: userData.google_connected,
 							access: userData.access,
 							refresh: userData.refresh,
 							new_user: userData.new_user,
-							type: userData.type,
+							last_name: userData.last_name,
+							first_name: userData.first_name,
+							preferences: userData.preferences,
+							github_connected: userData.github_connected,
+							google_connected: userData.google_connected,
+							subscription_status: userData?.subscription_status,
+							subscription_end_date:
+								userData?.subscription_end_date ?? undefined,
 						},
 					};
 				} else {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import AuthButtons from "./auth-buttons";
 import Logo from "./logo";
@@ -23,12 +24,14 @@ const TopNavigation = () => {
 					<NavLinks />
 					{/* Right Section: Auth Buttons */}
 					<div className="flex items-center">
-						{status !== "loading" && !session ? (
-							<AuthButtons />
-						) : (
+						{status === "loading" ? (
+							<Skeleton className="h-[40px] w-[100px] rounded-md" />
+						) : session ? (
 							<Link href="/dashboard">
 								<Button variant="default">Dashboard</Button>
 							</Link>
+						) : (
+							<AuthButtons />
 						)}
 					</div>
 				</div>
