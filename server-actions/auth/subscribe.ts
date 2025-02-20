@@ -3,7 +3,6 @@
 import dotenv from "dotenv";
 
 import { apiClient } from "@/lib/utils/api-client";
-// import { signupSchema } from "@/resolvers/auth-resolvers";
 
 dotenv.config();
 
@@ -28,6 +27,7 @@ export const subscriptionsCreation = async (): Promise<{
 				plan_id: "plan_id",
 			},
 		);
+		console.log(response, "Response");
 		// Check if the registration was successful (status 200 or 201)
 		if (response.error) {
 			throw new Error(response?.error.email || "Failed to register user.");
