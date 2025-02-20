@@ -17,7 +17,7 @@ export const subscriptionsCreation = async (): Promise<{
 }> => {
 	// Validate the data using Zod schema
 	// const parsedData = signupSchema.parse(data);
-
+	console.log(process.env.NEXT_PULSE_PRO_PLAN, "Price Pro Id");
 	try {
 		// Make the API call using the apiClient
 		const response = await apiClient.post(
