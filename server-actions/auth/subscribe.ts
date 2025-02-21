@@ -17,7 +17,6 @@ export const subscriptionsCreation = async (): Promise<{
 }> => {
 	// Validate the data using Zod schema
 	// const parsedData = signupSchema.parse(data);
-	console.log(process.env.NEXT_PULSE_PRO_PLAN, "Price Pro Id");
 	try {
 		// Make the API call using the apiClient
 		const response = await apiClient.post(
@@ -27,7 +26,6 @@ export const subscriptionsCreation = async (): Promise<{
 				plan_id: "plan_id",
 			},
 		);
-		console.log(response, "Response");
 		// Check if the registration was successful (status 200 or 201)
 		if (response.error) {
 			throw new Error(response?.error.email || "Failed to register user.");

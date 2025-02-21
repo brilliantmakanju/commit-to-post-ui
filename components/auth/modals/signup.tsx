@@ -1,13 +1,11 @@
 "use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { FaGithub, FaGoogle } from "react-icons/fa";
-// import { useToast } from "@/hooks/use-toast";
-import { toast } from "sonner";
-import { z } from "zod";
 
-import LoadingButton from "@/components/general/button/pending-button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { GithubIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -21,13 +19,11 @@ import { Input } from "@/components/ui/input";
 import { signupSchema } from "@/resolvers/auth-resolvers";
 import { registerUser } from "@/server-actions/auth/signup";
 
-type ViewType = "login" | "signup" | "forgot";
-
-interface FormProps {
-	setView: (view: ViewType) => void;
+interface SignupFormProps {
+	setView: (view: "login" | "signup" | "forgot") => void;
 }
 
-const SignupForm = ({ setView }: FormProps) => {
+export default function SignupForm({ setView }: SignupFormProps) {
 	const form = useForm<z.infer<typeof signupSchema>>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: {
@@ -38,20 +34,15 @@ const SignupForm = ({ setView }: FormProps) => {
 			re_password: "",
 		},
 	});
-	const [showSocial, setShowSocial] = useState(false);
 
-	const submittin = async (values: z.infer<typeof signupSchema>) => {
+	const onSubmit = async (values: z.infer<typeof signupSchema>) => {
 		try {
 			const apiRequest = await registerUser(values);
-			if (apiRequest.success == true) {
+			if (apiRequest.success === true) {
 				toast.success(
-					"User successfully registered, Check your Inbox to verify your account",
+					"User successfully registered. Check your inbox to verify your account",
 				);
-				globalThis.globalThis.window.history.pushState(
-					undefined,
-					"",
-					"/auth?view=login",
-				);
+				globalThis.window.history.pushState(undefined, "", "/auth?view=login");
 			} else {
 				toast.error(apiRequest.message);
 			}
@@ -61,98 +52,55 @@ const SignupForm = ({ setView }: FormProps) => {
 	};
 
 	return (
-		<div className="w-full max-w-md space-y-4 p-8">
-			<h2 className="text-center text-2xl font-bold text-[#1E3A8A] dark:text-white">
-				Sign Up
-			</h2>
-			{showSocial && (
-				<>
-					<Button
-						className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
-						variant="outline"
-						onClick={() =>
-							(globalThis.window.location.href =
-								"/api/auth/login?connection=google-oauth2")
-						}
-					>
-						<FaGoogle className="mr-2" /> Continue with Google
-					</Button>
-					<Button
-						className="w-full bg-white text-[#4B5563] hover:bg-[#F3F4F6] dark:bg-[#3B82F6] dark:text-white dark:hover:bg-[#60A5FA]"
-						variant="outline"
-						onClick={() =>
-							(globalThis.window.location.href =
-								"/api/auth/login?connection=github")
-						}
-					>
-						<FaGithub className="mr-2" /> Continue with GitHub
-					</Button>
-				</>
-			)}
-			<div className="relative">
-				<div className="absolute inset-0 flex items-center">
-					<span className="w-full border-t border-[#4B5563] dark:border-[#E5E7EB]" />
-				</div>
-				<div className="relative flex justify-center text-xs uppercase">
-					<span className="bg-[#F0F4F8] px-2 text-[#4B5563] dark:bg-[#1E3A8A] dark:text-[#E5E7EB]">
-						Or continue with
-					</span>
-				</div>
+		<div className="grid gap-6">
+			<div className="flex flex-col space-y-2 text-center">
+				<h1 className="text-2xl font-semibold tracking-tight">
+					Create an account
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Enter your details below to create your account
+				</p>
 			</div>
 			<Form {...form}>
-				<form className={"space-y-6"} onSubmit={form.handleSubmit(submittin)}>
+				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<div className="grid gap-4 sm:grid-cols-2">
+						<FormField
+							control={form.control}
+							name="first_name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>First name</FormLabel>
+									<FormControl>
+										<Input placeholder="John" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="last_name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Last name</FormLabel>
+									<FormControl>
+										<Input placeholder="Doe" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
 					<FormField
-						name={"first_name"}
 						control={form.control}
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>First Name</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										autoComplete={"off"}
-										placeholder="Enter your first name"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						name={"last_name"}
-						control={form.control}
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Last Name</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										autoComplete={"off"}
-										placeholder="Enter your last name"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						name={"email"}
-						control={form.control}
+						name="email"
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>Email</FormLabel>
 								<FormControl>
 									<Input
+										placeholder="name@example.com"
 										type="email"
-										autoComplete={"off"}
-										placeholder="Enter your email"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
 										{...field}
 									/>
 								</FormControl>
@@ -160,63 +108,46 @@ const SignupForm = ({ setView }: FormProps) => {
 							</FormItem>
 						)}
 					/>
-
 					<FormField
-						name={"password"}
 						control={form.control}
+						name="password"
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>Password</FormLabel>
 								<FormControl>
-									<Input
-										type="password"
-										autoComplete={"off"}
-										placeholder="Enter your password"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
+									<Input type="password" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-
 					<FormField
-						name={"re_password"}
 						control={form.control}
+						name="re_password"
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>Confirm Password</FormLabel>
 								<FormControl>
-									<Input
-										type="password"
-										autoComplete={"off"}
-										placeholder="Confirm your password"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
+									<Input type="password" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-					<LoadingButton
-						pending={form.formState.isSubmitting}
-						label={"Sign up"}
-					/>
+					<Button type="submit" className="w-full">
+						Create account
+					</Button>
 				</form>
 			</Form>
-			<div className="text-center">
-				<span className="text-sm">Already have an account? </span>
+			<div className="text-center text-sm text-muted-foreground">
+				Already have an account?{" "}
 				<button
 					onClick={() => setView("login")}
-					className="text-sm text-[#3B82F6] hover:underline dark:text-[#60A5FA]"
+					className="text-primary underline-offset-4 hover:underline"
 				>
-					Log in
+					Sign in
 				</button>
 			</div>
 		</div>
 	);
-};
-
-export default SignupForm;
+}

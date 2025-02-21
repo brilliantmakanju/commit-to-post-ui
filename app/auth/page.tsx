@@ -1,19 +1,17 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { GalleryVerticalEnd } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 
-// eslint-disable-next-line import/namespace,import/default,import/no-named-as-default,import/no-named-as-default-member
-import ForgotPasswordForm from "@/components/auth/modals/forgotpassword";
-// eslint-disable-next-line import/namespace,import/default,import/no-named-as-default,import/no-named-as-default-member
 import LoginForm from "@/components/auth/modals/login";
-// eslint-disable-next-line import/namespace,import/default,import/no-named-as-default,import/no-named-as-default-member
 import SignupForm from "@/components/auth/modals/signup";
-import { magicLinkSchemaToken } from "@/resolvers/auth-resolvers";
+import type { magicLinkSchemaToken } from "@/resolvers/auth-resolvers";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 
 type ViewType = "login" | "signup" | "forgot";
@@ -38,10 +36,9 @@ const submitMagicLink = async (
 	}
 };
 
-const AuthPage = () => {
+export default function AuthPage() {
 	const [view, setView] = useState<ViewType>("login");
 	const searchParams = useSearchParams();
-	const router = useRouter();
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
@@ -62,11 +59,7 @@ const AuthPage = () => {
 
 	const handleSetView = (newView: ViewType) => {
 		setView(newView);
-		globalThis.globalThis.window.history.pushState(
-			undefined,
-			"",
-			`/auth?view=${newView}`,
-		);
+		globalThis.window.history.pushState(undefined, "", `/auth?view=${newView}`);
 	};
 
 	const slideVariants = {
@@ -79,7 +72,7 @@ const AuthPage = () => {
 
 	return (
 		<Suspense fallback={<div>Loading</div>}>
-			<div className="flex h-screen flex-col overflow-hidden bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB] md:flex-row">
+			<div className="flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
 				<AnimatePresence initial={false} mode="wait">
 					{view === "signup" ? (
 						<>
@@ -90,9 +83,22 @@ const AuthPage = () => {
 								animate="center"
 								exit="exitLeft"
 								transition={{ duration: 0.5 }}
-								className="absolute bottom-0 left-0 top-0 z-10 flex w-full items-center justify-center bg-[#F0F4F8] py-[33em] dark:bg-[#1E3A8A] md:relative md:w-1/2"
+								className="absolute inset-0 z-10 flex items-center justify-center bg-muted md:relative md:w-1/2"
 							>
-								<SignupForm setView={handleSetView} />
+								<div className="w-full max-w-[350px] p-4">
+									<div className="mb-8 flex items-center justify-center gap-2 md:justify-start">
+										<Link
+											href="/"
+											className="flex items-center gap-2 font-medium"
+										>
+											<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+												<GalleryVerticalEnd className="h-4 w-4" />
+											</div>
+											DevPulse
+										</Link>
+									</div>
+									<SignupForm setView={handleSetView} />
+								</div>
 							</motion.div>
 							<motion.div
 								key="signup-image"
@@ -102,13 +108,13 @@ const AuthPage = () => {
 								exit={{ x: "100%" }}
 								transition={{ duration: 0.5 }}
 							>
-								<div className="absolute inset-0 bg-[#3B82F6] opacity-100 dark:bg-[#60A5FA]" />
-								<div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-[#F97316]" />
 								<Image
-									src={"/Anime-Girl1.png"}
-									alt={"signup-image"}
-									fill
-									className={"object-cover"}
+									src="/Anime-Girl1.png"
+									alt="Cover"
+									className="absolute inset-0 h-full w-full object-cover"
+									width={1920}
+									height={1080}
+									priority
 								/>
 							</motion.div>
 						</>
@@ -122,8 +128,14 @@ const AuthPage = () => {
 								exit={{ x: "-100%" }}
 								transition={{ duration: 0.5 }}
 							>
-								<div className="absolute inset-0 bg-[#3B82F6] opacity-100 dark:bg-[#60A5FA]" />
-								<div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-[#F97316]" />
+								<Image
+									src="/Anime-Girl2.png"
+									alt="Cover"
+									className="absolute inset-0 h-full w-full object-cover"
+									width={1920}
+									height={1080}
+									priority
+								/>
 							</motion.div>
 							<motion.div
 								key="login-form"
@@ -132,24 +144,27 @@ const AuthPage = () => {
 								animate="center"
 								exit="exitRight"
 								transition={{ duration: 0.5 }}
-								className="absolute bottom-0 right-0 top-0 z-10 flex w-full items-center justify-center bg-[#F0F4F8] dark:bg-[#1E3A8A] md:relative md:w-1/2"
+								className="absolute inset-0 z-10 flex items-center justify-center bg-muted md:relative md:w-1/2"
 							>
-								{view === "login" && <LoginForm setView={handleSetView} />}
-								{view === "forgot" && (
-									<ForgotPasswordForm setView={handleSetView} />
-								)}
+								<div className="w-full max-w-[350px] p-4">
+									<div className="mb-8 flex items-center justify-center gap-2 md:justify-start">
+										<Link
+											href="/"
+											className="flex items-center gap-2 font-medium"
+										>
+											<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+												<GalleryVerticalEnd className="h-4 w-4" />
+											</div>
+											DevPulse
+										</Link>
+									</div>
+									<LoginForm setView={handleSetView} />
+								</div>
 							</motion.div>
 						</>
 					)}
 				</AnimatePresence>
-
-				{/* Mobile background image */}
-				<div className="fixed inset-0 z-0 md:hidden">
-					<div className="absolute inset-0 bg-[#3B82F6] opacity-70 dark:bg-[#60A5FA]" />
-				</div>
 			</div>
 		</Suspense>
 	);
-};
-
-export default AuthPage;
+}

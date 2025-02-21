@@ -7,7 +7,6 @@ interface User {
 
 export default async function hasAccess(user: User): Promise<boolean> {
 	const today = new Date();
-	console.log(user.subscription_end_date, "ENdiing");
 	const subscriptionEndDate = user.subscription_end_date
 		? new Date(user.subscription_end_date)
 		: undefined;

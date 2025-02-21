@@ -44,7 +44,6 @@ interface CreateOrganizationModalProps {
 const subscribePlan = async () => {
 	const response = await subscriptionsCreation();
 	globalThis.window.open(response.data?.checkout_url);
-	console.log(response);
 };
 
 export function CreateOrganizationModal({
@@ -93,8 +92,6 @@ export function CreateOrganizationModal({
 	}
 
 	if (!open) return;
-
-	console.log(hasAccess, "Access");
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
