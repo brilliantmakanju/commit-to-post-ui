@@ -1,11 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MailIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import LoadingButton from "@/components/general/button/pending-button";
+import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -52,14 +54,16 @@ const ForgotPasswordForm: React.FC<FormProps> = ({ setView }) => {
 	};
 
 	return (
-		<div className="w-full max-w-md space-y-4 p-8">
-			<h2 className="text-center text-2xl font-bold text-[#1E3A8A] dark:text-white">
-				Forgot Password
-			</h2>
-			<p className="text-center text-sm text-[#4B5563] dark:text-[#E5E7EB]">
-				Enter your email address and we&#39;ll send you a link to reset your
-				password.
-			</p>
+		<div className="grid gap-6">
+			<div className="flex flex-col space-y-2 text-center">
+				<h1 className="text-2xl font-semibold tracking-tight">
+					Forgot Password
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Enter your email address and we&#39;ll send you a link to reset your
+					password.
+				</p>
+			</div>
 
 			<Form {...form}>
 				<form className={"space-y-6"} onSubmit={form.handleSubmit(submittin)}>
@@ -70,13 +74,14 @@ const ForgotPasswordForm: React.FC<FormProps> = ({ setView }) => {
 							<FormItem>
 								<FormLabel>Email</FormLabel>
 								<FormControl>
-									<Input
-										type="email"
-										autoComplete={"off"}
-										placeholder="Enter your email"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
+									<div className="relative">
+										<MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+										<Input
+											placeholder="name@example.com"
+											className="pl-10"
+											{...field}
+										/>
+									</div>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -90,12 +95,14 @@ const ForgotPasswordForm: React.FC<FormProps> = ({ setView }) => {
 				</form>
 			</Form>
 			<div className="text-center">
-				<button
+				<Button
+					type="button"
+					variant="link"
+					className="w-full"
 					onClick={() => setView("login")}
-					className="text-sm text-[#3B82F6] hover:underline dark:text-[#60A5FA]"
 				>
-					Back to Log In
-				</button>
+					Sign in with password
+				</Button>
 			</div>
 		</div>
 	);

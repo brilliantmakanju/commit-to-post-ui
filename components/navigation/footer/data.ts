@@ -1,7 +1,7 @@
 import { FooterProps } from "@/types";
 
 export const footerData: FooterProps = {
-	companyName: "DevLock Inc",
+	companyName: "DevPulse",
 	tagline: "Building the future of web development, one component at a time.",
 	sections: [
 		{
@@ -9,7 +9,6 @@ export const footerData: FooterProps = {
 			links: [
 				{ label: "Features", href: "#" },
 				{ label: "Pricing", href: "#" },
-				{ label: "Docs", href: "#" },
 			],
 		},
 		{
@@ -17,7 +16,6 @@ export const footerData: FooterProps = {
 			links: [
 				{ label: "About", href: "#" },
 				{ label: "Blog", href: "#" },
-				{ label: "Careers", href: "#" },
 			],
 		},
 	],
@@ -25,5 +23,5 @@ export const footerData: FooterProps = {
 		{ label: "Terms of Service", href: "#" },
 		{ label: "Privacy Policy", href: "#" },
 	],
-	copyright: "© 2024 Devlock Inc. All rights reserved.",
+	copyright: "© 2024 DevPulse. All rights reserved.",
 };

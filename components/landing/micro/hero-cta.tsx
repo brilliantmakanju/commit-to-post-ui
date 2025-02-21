@@ -58,7 +58,7 @@ const HeroButtons: React.FC<HeroButtonsProps> = ({
 			} justify-center gap-4`}
 		>
 			<Button
-				className="bg-emerald-500 hover:bg-emerald-600"
+				className="bg-gray-900 text-white hover:bg-gray-800"
 				onClick={onPrimaryClick}
 			>
 				{primaryLabel}

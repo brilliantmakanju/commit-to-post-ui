@@ -9,7 +9,9 @@ import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import ForgotPasswordForm from "@/components/auth/modals/forgotpassword";
 import LoginForm from "@/components/auth/modals/login";
+import { LogoutModal } from "@/components/auth/modals/logout-modal";
 import SignupForm from "@/components/auth/modals/signup";
 import type { magicLinkSchemaToken } from "@/resolvers/auth-resolvers";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
@@ -71,7 +73,7 @@ export default function AuthPage() {
 	};
 
 	return (
-		<Suspense fallback={<div>Loading</div>}>
+		<Suspense fallback={<LogoutModal showByDefault />}>
 			<div className="flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
 				<AnimatePresence initial={false} mode="wait">
 					{view === "signup" ? (
@@ -115,6 +117,10 @@ export default function AuthPage() {
 									width={1920}
 									height={1080}
 									priority
+									quality={85}
+									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+									placeholder="blur"
+									blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkLUEwLi0tLTAtQFBGPzpQRT4tLS9gVkVMS1BJTTYyU15CTUVNTUz/2wBDARUXFx4aHR4eHUxCQU1MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 								/>
 							</motion.div>
 						</>
@@ -135,6 +141,10 @@ export default function AuthPage() {
 									width={1920}
 									height={1080}
 									priority
+									quality={85}
+									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+									placeholder="blur"
+									blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkLUEwLi0tLTAtQFBGPzpQRT4tLS9gVkVMS1BJTTYyU15CTUVNTUz/2wBDARUXFx4aHR4eHUxCQU1MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 								/>
 							</motion.div>
 							<motion.div
@@ -158,7 +168,11 @@ export default function AuthPage() {
 											DevPulse
 										</Link>
 									</div>
-									<LoginForm setView={handleSetView} />
+									{view === "login" ? (
+										<LoginForm setView={handleSetView} />
+									) : (
+										<ForgotPasswordForm setView={handleSetView} />
+									)}
 								</div>
 							</motion.div>
 						</>

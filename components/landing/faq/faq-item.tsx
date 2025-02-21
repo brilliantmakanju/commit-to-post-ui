@@ -12,11 +12,15 @@ type FAQItemProps = {
 
 const FAQItem = ({ question, answer, value }: FAQItemProps) => {
 	return (
-		<AccordionItem key={value} value={value} className="mb-4">
-			<AccordionTrigger className="px-4 py-3 text-[#8B4513] hover:text-[#D35400]">
+		<AccordionItem
+			key={value}
+			value={value}
+			className="border-b border-gray-200 last:border-none dark:border-gray-700"
+		>
+			<AccordionTrigger className="px-4 py-3 text-gray-900 transition-colors duration-200 hover:text-emerald-500 dark:text-gray-100">
 				{question}
 			</AccordionTrigger>
-			<AccordionContent className="px-4 pb-3 text-[#666666]">
+			<AccordionContent className="px-4 pb-3 text-gray-600 dark:text-gray-400">
 				{answer}
 			</AccordionContent>
 		</AccordionItem>

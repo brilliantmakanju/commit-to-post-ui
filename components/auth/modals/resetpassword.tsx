@@ -57,13 +57,15 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 	};
 
 	return (
-		<div className="w-full max-w-md space-y-4 p-8">
-			<h2 className="text-center text-2xl font-bold text-[#1E3A8A] dark:text-white">
-				Reset Password
-			</h2>
-			<p className="text-center text-sm text-[#4B5563] dark:text-[#E5E7EB]">
-				Enter your new password below. Make sure it&#39;s strong and unique.
-			</p>
+		<div className="grid gap-6">
+			<div className="flex flex-col space-y-2 text-center">
+				<h1 className="text-2xl font-semibold tracking-tight">
+					Reset Password
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Enter your new password below. Make sure it&#39;s strong and unique.
+				</p>
+			</div>
 
 			<Form {...form}>
 				<form className={"space-y-6"} onSubmit={form.handleSubmit(submittin)}>
@@ -74,13 +76,14 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 							<FormItem>
 								<FormLabel>Password</FormLabel>
 								<FormControl>
-									<Input
-										type="password"
-										autoComplete={"off"}
-										placeholder="Enter your password"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
+									<div className="relative">
+										<Input
+											type="password"
+											autoComplete={"off"}
+											placeholder="Enter your password"
+											{...field}
+										/>
+									</div>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -94,13 +97,14 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 							<FormItem>
 								<FormLabel>Confirm Password</FormLabel>
 								<FormControl>
-									<Input
-										type="password"
-										autoComplete={"off"}
-										placeholder="Confirm your password"
-										className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
-										{...field}
-									/>
+									<div className="relative">
+										<Input
+											type="password"
+											autoComplete={"off"}
+											placeholder="Enter your password"
+											{...field}
+										/>
+									</div>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
