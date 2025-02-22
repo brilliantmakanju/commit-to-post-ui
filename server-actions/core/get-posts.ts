@@ -25,6 +25,7 @@ export const fetchPosts = async ({ page_size }: { page_size: number }) => {
 				? "/api/v1/posts/"
 				: `/api/v1/posts/?page=${validatedData.page_size}`,
 		);
+		console.log(response, "Response Post");
 		// Check for a successful status code.
 		if (response.status !== 200) {
 			throw new Error("The request to retrieve posts was unsuccessful.");

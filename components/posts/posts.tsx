@@ -69,6 +69,7 @@ export default function Posts() {
 		setFilters(previous => ({ ...previous, [key]: value }));
 		setCurrentPage(1); // Reset to first page when filters change
 	};
+	console.log(data, "Datas");
 
 	const totalPages = data ? Math.ceil(data.count / 50) : 0;
 	return (
