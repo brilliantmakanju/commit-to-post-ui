@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
 
+import GroupedPostCard from "./grouped-posts";
 import PostCard from "./post-card";
 
 interface Post {
@@ -103,9 +104,18 @@ export default function PostList({ posts, showFullDate }: PostListProps) {
 	return (
 		<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{posts.map(post => {
-				return "group_id" in post
-					? renderGroupedPosts(post)
-					: renderSinglePost(post);
+				if ("group_id" in post) {
+					return (
+						<GroupedPostCard
+							key={post.group_id}
+							group={post}
+							showFullDate={showFullDate}
+						/>
+					);
+				}
+				return (
+					<PostCard key={post.id} post={post} showFullDate={showFullDate} />
+				);
 			})}
 		</div>
 	);
