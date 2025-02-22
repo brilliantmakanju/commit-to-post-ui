@@ -113,7 +113,7 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 
 					<LoadingButton
 						pending={form.formState.isSubmitting}
-						label={"Reset Password"}
+						label={"Reset Passwords"}
 					/>
 				</form>
 			</Form>
