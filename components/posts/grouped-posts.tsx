@@ -2,16 +2,7 @@
 "use client";
 
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import {
-	ChevronDown,
-	Clock,
-	Edit,
-	Linkedin,
-	Loader2,
-	MoreHorizontal,
-	Trash2,
-	Twitter,
-} from "lucide-react";
+import { ChevronDown, Linkedin, Loader2, Twitter } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,12 +22,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { deletePost } from "@/server-actions/core/delete-post";
 
 import PostCard from "./post-card";
@@ -148,30 +133,8 @@ export default function GroupedPostCard({
 								</Badge>
 							))}
 						</div>
-						{/* <DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="h-8 w-8 p-0">
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
-									<Trash2 className="mr-2 h-4 w-4" />
-									<span>Delete Group</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<Clock className="mr-2 h-4 w-4" />
-									<span>Schedule All</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<Edit className="mr-2 h-4 w-4" />
-									<span>Edit All</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu> */}
 					</div>
 				</CardHeader>
-
 				<CardContent className="pb-2">
 					<div className="mb-4">
 						<p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-300">
