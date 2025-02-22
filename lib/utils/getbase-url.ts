@@ -34,9 +34,8 @@ export async function getBaseUrl(): Promise<string> {
 			"http://localhost:8000";
 
 		return baseUrl;
-	} catch (error) {
+	} catch {
 		// If any error occurs, fallback to the environment variable or localhost.
-		console.error("Error retrieving base URL:", error);
 		return process.env.BASE_URL_API_CALL || "http://localhost:8000";
 	}
 }

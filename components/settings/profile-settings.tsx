@@ -141,8 +141,7 @@ export default function ProfileSettings() {
 			} else {
 				toast.error("Something went wrong. Please try again.");
 			}
-		} catch (error) {
-			console.error(error);
+		} catch {
 			toast.error("Failed to change password. Please try again.");
 		}
 	};

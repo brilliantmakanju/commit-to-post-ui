@@ -41,7 +41,6 @@ export const updateTones = async (tones: string[], shuffle_tones: boolean) => {
 				field: error_.path.join("."),
 				message: error_.message,
 			}));
-			console.error("Validation failed:", errorMessages);
 			return {
 				success: false,
 				error: "Validation failed",
@@ -50,11 +49,9 @@ export const updateTones = async (tones: string[], shuffle_tones: boolean) => {
 		}
 
 		if (error instanceof Error) {
-			console.error("Failed to update tones:", error.message);
 			return { success: false, error: "Failed to update tones" };
 		}
 
-		console.error("An unexpected error occurred while updating the tones");
 		return { success: false, error: "An unexpected error occurred" };
 	}
 };

@@ -43,7 +43,7 @@ export default function PostFilters({
 	onToggleFullDate,
 }: PostFiltersProps) {
 	return (
-		<div className="mb-6 flex flex-wrap gap-4 sm:grid sm:grid-cols-3">
+		<div className="mb-6 flex flex-wrap gap-4 sm:grid sm:grid-cols-2">
 			<Popover>
 				<PopoverTrigger asChild>
 					<Button
@@ -88,7 +88,7 @@ export default function PostFilters({
 					<SelectItem value="published">Published</SelectItem>
 				</SelectContent>
 			</Select>
-			<Button
+			{/* <Button
 				variant="outline"
 				size="sm"
 				onClick={onToggleFullDate}
@@ -100,7 +100,7 @@ export default function PostFilters({
 					<CalendarIcon2 className="mr-2 h-4 w-4" />
 				)}
 				{showFullDate ? "Show Relative Date" : "Show Full Date"}
-			</Button>
+			</Button> */}
 		</div>
 	);
 }

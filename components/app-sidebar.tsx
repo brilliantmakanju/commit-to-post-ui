@@ -104,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			if (result.organizations && result.organizations.length > 0) {
 				// Only set organization if it's not already set
 				const currentOrg = useOrganizationStore.getState().organization;
-				if (currentOrg.name === "") {
+				if (currentOrg.name === "" || currentOrg.name === undefined) {
 					useorganizationStore.clearOrganization();
 					useorganizationStore.setOrganization(result.organizations[0]);
 					await createEncryptedCookie("organization", {

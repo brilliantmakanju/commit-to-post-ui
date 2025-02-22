@@ -56,7 +56,6 @@ export async function refreshToken(refreshToken: string) {
 			data: responseBody,
 		};
 	} catch (error) {
-		console.error("Error refreshing token:", error);
 		return {
 			success: false,
 			error: error,

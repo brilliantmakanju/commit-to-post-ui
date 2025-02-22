@@ -32,7 +32,6 @@ export const updateBranch = async (branchName: string) => {
 				field: error_.path.join("."),
 				message: error_.message,
 			}));
-			console.error("Validation failed:", errorMessages);
 			return {
 				success: false,
 				error: "Validation failed",
@@ -41,11 +40,9 @@ export const updateBranch = async (branchName: string) => {
 		}
 
 		if (error instanceof Error) {
-			console.error("Failed to update branch:", error.message);
 			return { success: false, error: "Failed to update branch" };
 		}
 
-		console.error("An unexpected error occurred while updating the branch");
 		return { success: false, error: "An unexpected error occurred" };
 	}
 };

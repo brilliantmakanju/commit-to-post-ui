@@ -25,8 +25,7 @@ export const decodeJwt = (token: string): Record<string, any> | undefined => {
 		// atob decodes a Base64 encoded string (available in browsers)
 		const decodedPayload = atob(payload);
 		return JSON.parse(decodedPayload);
-	} catch (error) {
-		console.error("Failed to decode token:", error);
+	} catch {
 		return undefined;
 	}
 };

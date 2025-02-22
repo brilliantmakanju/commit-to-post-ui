@@ -25,7 +25,6 @@ export async function checkOrganizationOwnership(): Promise<OwnershipResponse> {
 			is_owner: response.data.is_owner,
 		};
 	} catch (error) {
-		console.error("Error checking organization ownership:", error);
 		return {
 			success: false,
 			message: "An error occurred while checking organization ownership",

@@ -40,7 +40,6 @@ export const changePassword = async ({
 				field: error_.path.join("."),
 				message: error_.message,
 			}));
-			console.error("Validation failed:", errorMessages);
 			return {
 				success: false,
 				error: "Validation failed",
@@ -49,11 +48,9 @@ export const changePassword = async ({
 		}
 
 		if (error instanceof Error) {
-			console.error("Failed to update tones:", error.message);
 			return { success: false, error: "Failed to change password" };
 		}
 
-		console.error("An unexpected error occurred while changing password");
 		return { success: false, error: "An unexpected error occurred" };
 	}
 };

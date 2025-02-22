@@ -89,8 +89,7 @@ const SocialConnectCallback = ({
 						queryKey: ["retrieving_social_status"],
 					});
 				}
-			} catch (error) {
-				console.error("Failed to connect account:", error);
+			} catch {
 				closeModal(false);
 			}
 			closeModal(false);
