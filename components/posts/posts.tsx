@@ -8,6 +8,7 @@ import { fetchPosts } from "@/server-actions/core/get-posts";
 import Pagination from "./pagination";
 import PostFilters from "./post-filter";
 import PostList from "./post-list";
+import SkeletonPostCard from "./post-skeleton";
 
 interface Post {
 	id: string;
@@ -85,7 +86,11 @@ export default function Posts() {
 			/>
 
 			{isLoading ? (
-				<div>Loading...</div>
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{Array.from({ length: 20 }).map((_, index) => (
+						<SkeletonPostCard key={index} />
+					))}
+				</div>
 			) : error ? (
 				<div>Error: {error.message}</div>
 			) : (

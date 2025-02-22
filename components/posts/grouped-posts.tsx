@@ -148,7 +148,7 @@ export default function GroupedPostCard({
 								</Badge>
 							))}
 						</div>
-						<DropdownMenu>
+						{/* <DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" className="h-8 w-8 p-0">
 									<MoreHorizontal className="h-4 w-4" />
@@ -168,7 +168,7 @@ export default function GroupedPostCard({
 									<span>Edit All</span>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
-						</DropdownMenu>
+						</DropdownMenu> */}
 					</div>
 				</CardHeader>
 
