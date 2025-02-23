@@ -139,8 +139,10 @@ export function WebHookSettings() {
 
 				<div className="flex w-full justify-end pt-4">
 					<Button
+						variant={"outline"}
 						onClick={() => handleWebhook(!!webhook)}
 						disabled={isGeneratingWebhook || !isConnected}
+						className="text-black disabled:opacity-80"
 					>
 						{isGeneratingWebhook && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin text-black" />
@@ -148,8 +150,6 @@ export function WebHookSettings() {
 						{webhook ? "Regenerate Webhook" : "Generate Webhook"}
 					</Button>
 				</div>
-
-				<Separator />
 
 				{isConnected && <WebHookOptions />}
 			</div>

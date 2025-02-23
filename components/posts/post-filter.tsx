@@ -34,6 +34,7 @@ interface PostFiltersProps {
 		value: string | Date | undefined,
 	) => void;
 	onToggleFullDate: () => void;
+	disabled: boolean;
 }
 
 export default function PostFilters({
@@ -41,13 +42,15 @@ export default function PostFilters({
 	showFullDate,
 	onFilterChange,
 	onToggleFullDate,
+	disabled,
 }: PostFiltersProps) {
 	return (
-		<div className="mb-6 flex flex-wrap gap-4 sm:grid sm:grid-cols-2">
+		<div className="mb-6 flex flex-wrap gap-4 sm:grid sm:grid-cols-3">
 			<Popover>
-				<PopoverTrigger asChild>
+				<PopoverTrigger disabled={disabled} asChild>
 					<Button
 						variant="outline"
+						disabled={disabled}
 						className="w-full justify-start bg-transparent text-left font-normal"
 					>
 						<CalendarIcon className="mr-2 h-4 w-4" />
@@ -64,20 +67,35 @@ export default function PostFilters({
 						selected={filters.date}
 						onSelect={date => onFilterChange("date", date)}
 						initialFocus
+						disabled={date => {
+							const today = new Date();
+							today.setHours(0, 0, 0, 0); // normalize today's time to midnight
+							const checkDate = new Date(date);
+							checkDate.setHours(0, 0, 0, 0); // normalize the date being checked
+							return checkDate > today;
+						}}
 					/>
 				</PopoverContent>
 			</Popover>
-			{/* <Select onValueChange={value => onFilterChange("platform", value)}>
+			<Select
+				disabled={disabled}
+				onValueChange={value => onFilterChange("platform", value)}
+			>
 				<SelectTrigger className="w-full">
 					<SelectValue placeholder="Select platform" />
 				</SelectTrigger>
 				<SelectContent>
 					<SelectItem value="all">All Platforms</SelectItem>
-					<SelectItem value="twitter">Twitter</SelectItem>
 					<SelectItem value="linkedin">LinkedIn</SelectItem>
+					<SelectItem value="twitter" disabled>
+						Twitter ( Coming Soon )
+					</SelectItem>
 				</SelectContent>
-			</Select> */}
-			<Select onValueChange={value => onFilterChange("status", value)}>
+			</Select>
+			<Select
+				disabled={disabled}
+				onValueChange={value => onFilterChange("status", value)}
+			>
 				<SelectTrigger className="w-full">
 					<SelectValue placeholder="Select status" />
 				</SelectTrigger>

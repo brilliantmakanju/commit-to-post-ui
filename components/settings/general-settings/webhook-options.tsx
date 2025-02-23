@@ -43,13 +43,10 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useRetrieveOrganizationTone from "@/hooks/organization/use-organization-tone";
-import { useCheckAccess } from "@/hooks/plans/use-billing";
 import useRetrieveWebhookSettings from "@/hooks/settings/use-webhook-settings";
 import { cn } from "@/lib/utils";
 import { updateBranch } from "@/server-actions/organizations/update-hook-options";
 import { updateTones } from "@/server-actions/organizations/update-tone";
-
-type UserPlan = "free" | "basic";
 
 type BranchState = {
 	name: string;
@@ -76,17 +73,11 @@ function retrieveTone(
 }
 
 const WebHookOptions: React.FC = () => {
-	const hasAccess = useCheckAccess();
 	const { branch: branchData, refetchWebhook } = useRetrieveWebhookSettings();
 	const { selected_tone, shuffle_tone, available_tones } =
 		useRetrieveOrganizationTone();
 
 	const [open, setOpen] = useState(false);
-	function openTonesModal() {
-		if (hasAccess) {
-			setOpen(!open);
-		}
-	}
 	const [selectedTones, setSelectedTones] = useState<string[]>([]);
 	const [availableTones, setAvailableTones] = useState<
 		{ value: string; display: string }[]
@@ -98,6 +89,7 @@ const WebHookOptions: React.FC = () => {
 	});
 	const [isLoading, setIsLoading] = useState(false);
 	const [shuffleAll, setShuffleAll] = useState(false);
+	const [hasAccess, setHasAccess] = useState(true);
 
 	useEffect(() => {
 		setBranch({
@@ -132,9 +124,10 @@ const WebHookOptions: React.FC = () => {
 					setSelectedTones(newTones);
 					toast.success("Tones updated successfully");
 				} else {
-					toast.error(result.data ?? "Failed to update tones");
+					toast.error("Failed to update tones");
 				}
-			} catch {
+			} catch (error) {
+				console.error("Error updating tones:", error);
 				toast.error("An error occurred while updating tones");
 			} finally {
 				setIsLoading(false);
@@ -163,7 +156,8 @@ const WebHookOptions: React.FC = () => {
 			} else {
 				toast.error("Failed to update branch name");
 			}
-		} catch {
+		} catch (error) {
+			console.error("Error updating branch name:", error);
 			toast.error("An error occurred while updating branch name");
 		} finally {
 			setIsLoading(false);
@@ -186,7 +180,8 @@ const WebHookOptions: React.FC = () => {
 			} else {
 				toast.error("Failed to update shuffle setting");
 			}
-		} catch {
+		} catch (error) {
+			console.error("Error updating shuffle setting:", error);
 			toast.error("An error occurred while updating shuffle setting");
 		} finally {
 			setIsLoading(false);
@@ -195,18 +190,18 @@ const WebHookOptions: React.FC = () => {
 
 	return (
 		<Card className="w-full">
-			<CardHeader className="space-y-1 border-b border-[#058C42]/20">
-				<CardTitle className="text-2xl font-bold text-[#232528]">
+			<CardHeader className="space-y-1 border-b border-gray-200">
+				<CardTitle className="text-2xl font-bold text-gray-900">
 					AI Settings
 				</CardTitle>
-				<CardDescription className="text-[#232528]/70">
+				<CardDescription className="text-gray-600">
 					Customize your AI&apos;s configuration and preferences
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6 pt-6">
 				<div className="space-y-4">
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-						<h3 className="mb-2 text-lg font-medium text-[#232528] sm:mb-0">
+						<h3 className="mb-2 text-lg font-medium text-gray-900 sm:mb-0">
 							Branch Name
 						</h3>
 						<div className="flex h-10 items-center space-x-2">
@@ -215,11 +210,12 @@ const WebHookOptions: React.FC = () => {
 									<Input
 										value={branch.name}
 										onChange={handleBranchChange}
-										className="flex-grow rounded-r-none border-[#058C42] bg-white text-[#232528]"
+										className="flex-grow rounded-r-none border-gray-300 bg-gray-50 text-gray-900"
+										disabled={isLoading}
 									/>
 									<Button
 										onClick={handleBranchSave}
-										className="rounded-l-none bg-[#058C42] text-white hover:bg-[#058C42]/90"
+										className="rounded-l-none bg-gray-900 text-gray-50 hover:bg-gray-800"
 										disabled={isLoading}
 									>
 										{isLoading ? (
@@ -231,14 +227,15 @@ const WebHookOptions: React.FC = () => {
 								</div>
 							) : (
 								<>
-									<span className="min-w-[100px] font-medium text-[#232528]">
+									<span className="min-w-[100px] font-medium text-gray-900">
 										{branch.name}
 									</span>
 									<Button
 										onClick={handleBranchEdit}
 										variant="outline"
 										size="sm"
-										className="border-[#058C42] text-[#058C42]"
+										className="border-gray-300 text-gray-700"
+										disabled={isLoading}
 									>
 										<Edit2 className="h-4 w-4" />
 									</Button>
@@ -249,16 +246,16 @@ const WebHookOptions: React.FC = () => {
 				</div>
 
 				<div className="space-y-4">
-					<h3 className="text-lg font-medium text-[#232528]">AI Tone</h3>
+					<h3 className="text-lg font-medium text-gray-900">AI Tone</h3>
 					<div className="grid grid-cols-1 space-y-2 sm:space-x-4 md:grid-cols-3">
 						<div className="flex-grow">
-							<Popover open={open && hasAccess} onOpenChange={openTonesModal}>
+							<Popover open={open} onOpenChange={setOpen}>
 								<PopoverTrigger asChild>
 									<Button
 										variant="outline"
 										role="combobox"
 										aria-expanded={open}
-										className="w-full justify-between border-[#058C42] bg-white text-[#232528]"
+										className="w-full justify-between border-gray-300 bg-gray-50 text-gray-900"
 										disabled={isLoading}
 									>
 										{isLoading ? (
@@ -282,11 +279,11 @@ const WebHookOptions: React.FC = () => {
 										<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="w-full border-[#058C42] bg-white p-0">
+								<PopoverContent className="w-full border-gray-300 bg-gray-50 p-0">
 									<Command>
 										<CommandInput
 											placeholder="Search tones..."
-											className="text-[#232528]"
+											className="text-gray-900"
 										/>
 										<CommandList>
 											<CommandEmpty>No tone found.</CommandEmpty>
@@ -295,7 +292,7 @@ const WebHookOptions: React.FC = () => {
 													<CommandItem
 														key={tone.value}
 														onSelect={() => handleToneSelect(tone.value)}
-														className="text-[#232528]"
+														className="text-gray-900"
 													>
 														<Check
 															className={cn(
@@ -319,16 +316,16 @@ const WebHookOptions: React.FC = () => {
 								id="hashtags"
 								checked={useHashtags}
 								onCheckedChange={handleHashtagToggle}
-								disabled={true}
-								className="data-[state=checked]:bg-[#058C42]"
+								disabled={isLoading || !hasAccess}
+								className="data-[state=checked]:bg-gray-900"
 							/>
-							<Label htmlFor="hashtags" className="text-[#232528]">
+							<Label htmlFor="hashtags" className="text-gray-900">
 								Use Hashtags
 							</Label>
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger asChild>
-										<Info className="h-4 w-4 cursor-help text-[#058C42]" />
+										<Info className="h-4 w-4 cursor-help text-gray-700" />
 									</TooltipTrigger>
 									<TooltipContent>
 										<p>
@@ -341,12 +338,12 @@ const WebHookOptions: React.FC = () => {
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="shuffle"
-								disabled={!hasAccess}
 								checked={shuffleAll}
 								onCheckedChange={handleShuffleChange}
-								className="data-[state=checked]:bg-[#058C42]"
+								className="data-[state=checked]:bg-gray-900"
+								disabled={isLoading}
 							/>
-							<Label htmlFor="shuffle" className="text-[#232528]">
+							<Label htmlFor="shuffle" className="text-gray-900">
 								Shuffle All Tones
 							</Label>
 						</div>
@@ -354,10 +351,10 @@ const WebHookOptions: React.FC = () => {
 				</div>
 
 				<div>
-					<h3 className="mb-2 text-lg font-medium text-[#232528]">
+					<h3 className="mb-2 text-lg font-medium text-gray-900">
 						Current Settings
 					</h3>
-					<pre className="overflow-x-auto rounded border border-[#058C42]/20 bg-white p-2 text-sm text-[#232528]">
+					<pre className="overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 text-sm text-gray-900">
 						{JSON.stringify(
 							{
 								branchName: branch.name,
@@ -372,7 +369,7 @@ const WebHookOptions: React.FC = () => {
 					</pre>
 				</div>
 
-				<div className="text-sm text-[#232528]/70">
+				<div className="text-sm text-gray-600">
 					<p>Plan Restrictions:</p>
 					<ul className="list-inside list-disc">
 						<li>Free: Can only use the Professional tone</li>

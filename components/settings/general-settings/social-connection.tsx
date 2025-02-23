@@ -26,25 +26,25 @@ export function SocialConnectionSettings() {
 	};
 
 	return (
-		<div className="flex w-full flex-col">
-			<div className="w-full space-y-4 text-white">
+		<div className="flex w-full flex-col text-white">
+			<div className="w-full space-y-4">
 				<h2 className="text-lg font-semibold">Connected Accounts</h2>
-				<div className="flex flex-wrap gap-5 sm:space-x-4">
+				<div className="flex flex-wrap gap-4">
 					{!isFetching && (
 						<>
 							<Button
 								onClick={() => openConnectAccountDialog()}
 								disabled={socialStatus !== false}
-								className={`w-full flex-1 justify-start disabled:opacity-100 ${
-									socialStatus ? "bg-[#058C42] text-white" : ""
-								}`}
+								className={
+									"w-full flex-1 justify-start border border-white bg-transparent text-white transition-all hover:bg-white hover:text-black disabled:opacity-50"
+								}
 							>
 								<Linkedin className="mr-2 h-4 w-4" />
 								{socialStatus ? "LinkedIn Connected" : "Connect LinkedIn"}
 							</Button>
 							<Button
 								disabled
-								className="w-full flex-1 cursor-not-allowed justify-start opacity-50"
+								className="w-full flex-1 cursor-not-allowed justify-start border border-white text-white opacity-50"
 							>
 								<Twitter className="mr-2 h-4 w-4" />
 								Twitter (Coming Soon)
@@ -54,16 +54,16 @@ export function SocialConnectionSettings() {
 				</div>
 				<div className="space-y-2">
 					<h3 className="text-sm font-medium">How to connect your account</h3>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-gray-400">
 						Learn how to connect your LinkedIn account:
 					</p>
-					<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-muted-foreground md:gap-8">
+					<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
 						<li>
 							<a
 								href="http://www.youtube.com/watch?v=dQw4w9WgXcQ"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-blue-500 hover:underline"
+								className="text-white underline hover:text-gray-300"
 							>
 								Watch our tutorial video
 							</a>
@@ -73,7 +73,7 @@ export function SocialConnectionSettings() {
 								href="http://example.com/blog/how-to-connect-linkedin"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-blue-500 hover:underline"
+								className="text-white underline hover:text-gray-300"
 							>
 								Read our step-by-step guide
 							</a>

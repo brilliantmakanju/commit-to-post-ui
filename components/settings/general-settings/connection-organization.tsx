@@ -3,10 +3,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
 	Card,
@@ -15,7 +14,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
+import type { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
 
 interface connectionStatus {
@@ -40,7 +39,7 @@ const onConnectAccount = async (
 			};
 		}
 	} catch {
-		toast.error("Linkedin connection failed.");
+		toast.error("LinkedIn connection failed.");
 		return {
 			success: false,
 		};
@@ -60,7 +59,6 @@ const SocialConnectCallback = ({
 	const [status, setStatus] = useState<"connecting" | "success" | "error">(
 		"connecting",
 	);
-
 	const [message, setMessage] = useState<string>("");
 
 	useEffect(() => {
@@ -76,12 +74,12 @@ const SocialConnectCallback = ({
 					setStatus("success");
 					setMessage("Your account has been successfully connected!");
 					closeModal(false);
+
+					// Refresh queries
 					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
 					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
 					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
-					queryClient.invalidateQueries({
-						queryKey: ["retrieving_webhooks"],
-					});
+					queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 					queryClient.invalidateQueries({
 						queryKey: ["organization-ownership"],
 					});
@@ -101,32 +99,38 @@ const SocialConnectCallback = ({
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
 		return () => {
-			document.body.style.overflow = "auto"; // Restore scrolling when unmounting
+			document.body.style.overflow = "auto";
 		};
 	}, []);
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4">
-			<Card className="relative w-full max-w-md rounded-lg bg-white shadow-lg">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+			<Card className="relative w-full max-w-md bg-white shadow-lg">
 				<CardHeader>
-					<CardTitle>Social Account Connection</CardTitle>
-					<CardDescription>We&#39;re processing your request</CardDescription>
+					<CardTitle className="text-gray-900">
+						Social Account Connection
+					</CardTitle>
+					<CardDescription className="text-gray-600">
+						We&apos;re processing your request
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{status === "connecting" && (
 						<div className="flex flex-col items-center space-y-4">
-							<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-							<p>Connecting your account... Please wait.</p>
+							<Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+							<p className="text-gray-200">
+								Connecting your account... Please wait.
+							</p>
 						</div>
 					)}
 					{status === "success" && (
-						<div className="text-center text-green-600">
-							<p>{message}</p>
+						<div className="text-center">
+							<p className="text-gray-900">{message}</p>
 						</div>
 					)}
 					{status === "error" && (
-						<div className="text-center text-red-600">
-							<p>{message}</p>
+						<div className="text-center">
+							<p className="text-gray-900">{message}</p>
 						</div>
 					)}
 				</CardContent>

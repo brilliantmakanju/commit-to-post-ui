@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -20,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateCookie } from "@/lib/cookies/create-cookies";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import {
-	OrganizationSettingsFormValues,
+	type OrganizationSettingsFormValues,
 	organizationSettingsSchema,
 } from "@/resolvers/organizations/organization-settings-schema";
 import { updateOrganization } from "@/server-actions/organizations/update-organization";
@@ -28,6 +29,7 @@ import { updateOrganization } from "@/server-actions/organizations/update-organi
 export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 	const { organization, setOrganization } = useOrganizationStore();
 	const queryClient = useQueryClient();
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<OrganizationSettingsFormValues>({
 		resolver: zodResolver(organizationSettingsSchema),
@@ -37,7 +39,6 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 		},
 	});
 
-	// Update form values when organization changes
 	useEffect(() => {
 		if (organization) {
 			form.reset({
@@ -48,8 +49,8 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 	}, [organization, form]);
 
 	const onSubmit = async (data: OrganizationSettingsFormValues) => {
+		setIsSubmitting(true);
 		try {
-			// Create an object with only the changed fields
 			const changedFields: Partial<OrganizationSettingsFormValues> = {};
 
 			if (data.name !== organization.name) {
@@ -59,18 +60,12 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 			if (data.description !== organization.description) {
 				changedFields.description = data.description;
 			}
-			// Only make the API call if there are changes
+
 			if (Object.keys(changedFields).length > 0) {
 				const response = await updateOrganization(changedFields);
 
 				if (response.success) {
-					// Clear previous state
-					// useOrganizationStore.getState().clearOrganization();
-
-					// Function to invalidate organizations query
 					queryClient.invalidateQueries({ queryKey: ["organizations"] });
-
-					// Set new state
 					setOrganization(response.data.organization);
 					await updateCookie("organization", {
 						domain: response.data.organization.domain,
@@ -84,10 +79,11 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 			}
 		} catch {
 			toast.error("Failed to update organization");
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
-	// Check if form values are different from current organization
 	const isFormChanged =
 		form.watch("name") !== organization.name ||
 		form.watch("description") !== organization.description;
@@ -102,14 +98,12 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 					name="name"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel className="text-[#6B7280]">
-								Organization Name
-							</FormLabel>
+							<FormLabel className="text-gray-300">Organization Name</FormLabel>
 							<FormControl>
 								<Input
 									{...field}
-									className="border-gray-200 bg-transparent"
-									disabled={isFetching}
+									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+									disabled={isFetching || isSubmitting}
 								/>
 							</FormControl>
 							<FormMessage />
@@ -121,13 +115,13 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 					name="description"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel className="text-[#6B7280]">Description</FormLabel>
+							<FormLabel className="text-gray-300">Description</FormLabel>
 							<FormControl>
 								<Textarea
 									{...field}
 									rows={4}
-									disabled={isFetching}
-									className="border-gray-200 bg-transparent"
+									disabled={isFetching || isSubmitting}
+									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 								/>
 							</FormControl>
 							<FormMessage />
@@ -135,8 +129,14 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 					)}
 				/>
 				<div className="flex justify-end pt-4">
-					<Button type="submit" disabled={!isFormChanged || isFetching}>
-						Save Changes
+					<Button
+						type="submit"
+						variant={"outline"}
+						disabled={!isFormChanged || isFetching || isSubmitting}
+						className="text-black disabled:opacity-80"
+					>
+						{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						{isSubmitting ? "Saving..." : "Save Changes"}
 					</Button>
 				</div>
 			</form>

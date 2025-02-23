@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { deleteCookie } from "@/lib/cookies/create-cookies";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import {
-	DeleteOrganizationFormValues,
+	type DeleteOrganizationFormValues,
 	deleteOrganizationSchema,
 } from "@/resolvers/organizations/organization-settings-schema";
 import { deleteOrganization } from "@/server-actions/organizations/delete-organization";
@@ -48,7 +48,6 @@ export function DeleteOrganization() {
 		},
 	});
 
-	// Check if this is the only organization when dialog opens
 	const checkOrganizationCount = async () => {
 		const organizations = await queryClient.fetchQuery<
 			{
@@ -75,10 +74,8 @@ export function DeleteOrganization() {
 				toast.success(response.message || "Organization deleted successfully");
 				await deleteCookie("organization");
 
-				// Function to invalidate organizations query
 				await queryClient.invalidateQueries({ queryKey: ["organizations"] });
 
-				// Fetch the updated organizations data to ensure we have fresh data
 				const updatedOrganizations = await queryClient.fetchQuery<
 					{
 						id: string;
@@ -93,11 +90,10 @@ export function DeleteOrganization() {
 				if (updatedOrganizations && updatedOrganizations.length > 0) {
 					organizationStore.setOrganization({
 						...updatedOrganizations[0],
-						domains: updatedOrganizations[0].domains[0], // Take first domain as string
+						domains: updatedOrganizations[0].domains[0],
 					});
 				}
 
-				// Reset form after successful deletion
 				form.reset({
 					organizationName: "",
 				});
@@ -125,31 +121,34 @@ export function DeleteOrganization() {
 			<DialogTrigger asChild>
 				<Button
 					variant="destructive"
-					className="w-full gap-2 opacity-60 sm:w-auto"
+					className="w-full gap-2 bg-opacity-80 text-white sm:w-auto"
 				>
 					<Trash2 className="h-4 w-4" />
 					Delete Organization
 				</Button>
 			</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="bg-white">
 				<DialogHeader>
 					<DialogTitle>Delete Organization</DialogTitle>
 					{isOnlyOrganization ? (
-						<DialogDescription>
+						<DialogDescription className="text-gray-600">
 							You cannot delete your only organization. Please create another
 							organization first before deleting this one.
 						</DialogDescription>
 					) : (
-						<DialogDescription>
+						<DialogDescription className="text-gray-600">
 							This action cannot be undone. Please type{" "}
-							<strong>{organization?.name}</strong> to confirm.
+							<strong className="font-semibold text-gray-900">
+								{organization?.name}
+							</strong>{" "}
+							to confirm.
 						</DialogDescription>
 					)}
 				</DialogHeader>
 				{isDeleting ? (
 					<div className="flex h-32 items-center justify-center">
-						<Loader2 className="h-8 w-8 animate-spin" />
-						<span className="ml-2">Deleting organization...</span>
+						<Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+						<span className="ml-2 text-gray-600">Deleting organization...</span>
 					</div>
 				) : (
 					!isOnlyOrganization && (
@@ -168,6 +167,7 @@ export function DeleteOrganization() {
 													{...field}
 													placeholder="Enter organization name"
 													disabled={isDeleting}
+													className="border-gray-200 bg-white focus:border-gray-900 focus:ring-gray-900"
 												/>
 											</FormControl>
 											<FormMessage />
@@ -177,7 +177,8 @@ export function DeleteOrganization() {
 								<DialogFooter>
 									<Button
 										type="submit"
-										variant="destructive"
+										variant="outline"
+										className="border-gray-200 bg-black text-white hover:bg-gray-800 disabled:bg-gray-200"
 										disabled={
 											form.watch("organizationName") !== organization?.name ||
 											isDeleting

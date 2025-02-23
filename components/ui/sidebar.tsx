@@ -3,7 +3,7 @@
 import { Slot } from "@radix-ui/react-slot";
 // eslint-disable-next-line import/named
 import { cva, VariantProps } from "class-variance-authority";
-import { PanelLeft } from "lucide-react";
+import { Loader2, PanelLeft, PanelRightClose } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -273,7 +273,7 @@ const SidebarTrigger = React.forwardRef<
 	React.ElementRef<typeof Button>,
 	React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-	const { toggleSidebar } = useSidebar();
+	const { toggleSidebar, state } = useSidebar();
 
 	return (
 		<Button
@@ -288,8 +288,10 @@ const SidebarTrigger = React.forwardRef<
 			}}
 			{...props}
 		>
-			<PanelLeft />
-			<span className="sr-only">Toggle Sidebar</span>
+			{state === "collapsed" ? <PanelRightClose /> : <PanelLeft />}
+			<span className="sr-only">
+				{state === "collapsed" ? "Expand Sidebar" : "Collapse Sidebar"}
+			</span>
 		</Button>
 	);
 });

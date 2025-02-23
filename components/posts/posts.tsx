@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
 import { useState } from "react";
 
 import { fetchPosts } from "@/server-actions/core/get-posts";
@@ -41,6 +42,8 @@ interface PageData {
 	results: Post[];
 }
 
+const PAGE_SIZE = 50;
+
 export default function Posts() {
 	const [filters, setFilters] = useState<FilterState>({
 		date: undefined,
@@ -50,8 +53,8 @@ export default function Posts() {
 	const [showFullDate, setShowFullDate] = useState(false);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 
-	const { data, isLoading, error } = useQuery<PageData, Error>({
-		queryKey: ["posts", currentPage, filters],
+	const { data, isLoading, error } = useQuery({
+		queryKey: ["posts", currentPage],
 		queryFn: async () => {
 			const result = await fetchPosts({
 				page_size: currentPage,
@@ -63,6 +66,78 @@ export default function Posts() {
 		},
 	});
 
+	// Frontend filtering: flatten groups and filter both single posts and grouped posts
+	const filteredResults =
+		data?.results.reduce<any[]>((accumulator, item) => {
+			// Check if item is a group by checking for the "posts" property
+			if ("posts" in item && Array.isArray(item.posts)) {
+				// If no filter is applied, return the entire group as is
+				if (
+					filters.platform === "all" &&
+					filters.status === "all" &&
+					!filters.date
+				) {
+					accumulator.push(item);
+					return accumulator;
+				}
+
+				// Apply filters to the posts inside the group
+				const filteredGroupPosts = (item.posts as unknown as Post[]).filter(
+					(post: Post) => {
+						if (
+							filters.platform !== "all" &&
+							post.platform !== filters.platform
+						) {
+							return false;
+						}
+						if (filters.status !== "all" && post.status !== filters.status) {
+							return false;
+						}
+						if (filters.date) {
+							const postDate = new Date(post.created_at).toDateString();
+							const filterDate = new Date(filters.date).toDateString();
+							if (postDate !== filterDate) {
+								return false;
+							}
+						}
+						return true;
+					},
+				);
+
+				// If posts match the filter inside the group, return the filtered group
+				if (filteredGroupPosts.length > 0) {
+					accumulator.push({ ...item, posts: filteredGroupPosts });
+				}
+
+				return accumulator;
+			} else {
+				// Single post item
+				const post = item as unknown as Post;
+				if (filters.platform !== "all" && post.platform !== filters.platform) {
+					return accumulator;
+				}
+				if (filters.status !== "all" && post.status !== filters.status) {
+					return accumulator;
+				}
+				if (filters.date) {
+					const postDate = new Date(post.created_at).toDateString();
+					const filterDate = new Date(filters.date).toDateString();
+					if (postDate !== filterDate) {
+						return accumulator;
+					}
+				}
+				accumulator.push(post);
+				return accumulator;
+			}
+		}, []) || [];
+
+	// Pagination of filtered results
+	const totalPages = Math.ceil(filteredResults.length / PAGE_SIZE);
+	const paginatedResults = filteredResults.slice(
+		(currentPage - 1) * PAGE_SIZE,
+		currentPage * PAGE_SIZE,
+	);
+
 	const handleFilterChange = (
 		key: keyof FilterState,
 		value: string | Date | undefined,
@@ -71,15 +146,40 @@ export default function Posts() {
 		setCurrentPage(1); // Reset to first page when filters change
 	};
 
-	const totalPages = data ? Math.ceil(data.count / 50) : 0;
+	const EmptyState = () => (
+		<div className="flex h-[52vh] flex-col items-center justify-center">
+			<div className="flex h-12 w-12 items-center justify-center">
+				<FileText className="h-16 w-16 text-gray-200" />
+			</div>
+			<h3 className="text-md mt-2 text-center font-medium text-gray-300">
+				No AI-generated posts yet
+			</h3>
+			<p className="mt-2 max-w-sm text-center text-sm text-gray-400">
+				No posts have been generated. Please visit the settings page to connect
+				your account and start generating posts.
+			</p>
+		</div>
+	);
+
+	const EmptyStateFilter = () => (
+		<div className="flex h-[52vh] flex-col items-center justify-center">
+			<div className="flex h-12 w-12 items-center justify-center">
+				<FileText className="h-16 w-16 text-gray-200" />
+			</div>
+			<h3 className="text-md mt-2 text-center font-medium text-gray-300">
+				No posts found for this filter
+			</h3>
+			<p className="mt-2 max-w-sm text-center text-sm text-gray-400">
+				Try adjusting your filters or check back later for new posts.
+			</p>
+		</div>
+	);
+
 	return (
 		<div className="p-4">
-			<div className="mb-6">
-				<h1 className="text-2xl font-bold">Posts</h1>
-			</div>
-
 			<PostFilters
 				filters={filters}
+				disabled={isLoading}
 				showFullDate={showFullDate}
 				onFilterChange={handleFilterChange}
 				onToggleFullDate={() => setShowFullDate(!showFullDate)}
@@ -93,16 +193,24 @@ export default function Posts() {
 				</div>
 			) : error ? (
 				<div>Error: {error.message}</div>
+			) : data?.results.length === 0 ? (
+				<EmptyState />
+			) : filteredResults.length === 0 ? (
+				<EmptyStateFilter />
 			) : (
 				<>
-					<PostList posts={data?.results || []} showFullDate={showFullDate} />
-					<Pagination
-						currentPage={currentPage}
-						totalPages={totalPages}
-						onPageChange={setCurrentPage}
+					<PostList
+						posts={paginatedResults || []}
+						showFullDate={showFullDate}
 					/>
 				</>
 			)}
+			<Pagination
+				disabled={isLoading}
+				currentPage={currentPage}
+				totalPages={totalPages}
+				onPageChange={setCurrentPage}
+			/>
 		</div>
 	);
 }

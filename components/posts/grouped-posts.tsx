@@ -156,16 +156,17 @@ export default function GroupedPostCard({
 					</div>
 				</CardContent>
 
-				<CardFooter className="pt-2">
+				{/* Overlay that appears on hover */}
+				<div className="absolute inset-0 flex items-center justify-center bg-transparent opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
 					<Button
-						variant="ghost"
-						className="w-full justify-center"
+						variant="outline"
+						className="text-black"
 						onClick={() => setShowPostsDialog(true)}
 					>
 						<ChevronDown className="mr-2 h-4 w-4" />
 						Show All Posts ({group.posts.length})
 					</Button>
-				</CardFooter>
+				</div>
 			</Card>
 
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

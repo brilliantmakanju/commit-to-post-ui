@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
@@ -148,7 +149,7 @@ export default function ProfileSettings() {
 
 	return (
 		<div className="space-y-6">
-			<div className="mb-6 flex items-center justify-between">
+			<div className="mb-6 flex w-full items-center justify-end">
 				{authenticationType === "email_password" && (
 					<Button
 						variant="secondary"
@@ -166,11 +167,12 @@ export default function ProfileSettings() {
 						name="firstName"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel className="text-white">First Name</FormLabel>
+								<FormLabel className="text-gray-300">First Name</FormLabel>
 								<FormControl>
 									<Input
 										{...field}
-										className="border-gray-200 bg-transparent"
+										disabled={form.formState.isSubmitting}
+										className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 									/>
 								</FormControl>
 								<FormMessage />
@@ -183,11 +185,12 @@ export default function ProfileSettings() {
 						name="lastName"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel className="text-white">Last Name</FormLabel>
+								<FormLabel className="text-gray-300">Last Name</FormLabel>
 								<FormControl>
 									<Input
 										{...field}
-										className="border-gray-200 bg-transparent"
+										disabled={form.formState.isSubmitting}
+										className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 									/>
 								</FormControl>
 								<FormMessage />
@@ -197,17 +200,22 @@ export default function ProfileSettings() {
 
 					<Button
 						type="submit"
+						variant={"outline"}
 						disabled={form.formState.isSubmitting || !isDirty()}
+						className="text-black disabled:opacity-80"
 					>
+						{form.formState.isSubmitting && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
 						{form.formState.isSubmitting ? "Saving..." : "Save Changes"}
 					</Button>
 				</form>
 			</Form>
 
 			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-				<DialogContent>
+				<DialogContent className="border border-gray-700 bg-[#1A1C20] text-gray-200">
 					<DialogHeader>
-						<DialogTitle>Change Password</DialogTitle>
+						<DialogTitle className="text-gray-300">Change Password</DialogTitle>
 					</DialogHeader>
 					<Form {...passwordForm}>
 						<form
@@ -219,9 +227,16 @@ export default function ProfileSettings() {
 								name="oldPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Current Password</FormLabel>
+										<FormLabel className="text-gray-300">
+											Current Password
+										</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} />
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -233,9 +248,16 @@ export default function ProfileSettings() {
 								name="newPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>New Password</FormLabel>
+										<FormLabel className="text-gray-300">
+											New Password
+										</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} />
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -247,9 +269,16 @@ export default function ProfileSettings() {
 								name="confirmPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Confirm New Password</FormLabel>
+										<FormLabel className="text-gray-300">
+											Confirm New Password
+										</FormLabel>
 										<FormControl>
-											<Input type="password" {...field} />
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -258,7 +287,9 @@ export default function ProfileSettings() {
 
 							<Button
 								type="submit"
+								variant={"outline"}
 								disabled={passwordForm.formState.isSubmitting}
+								className="text-black disabled:opacity-80"
 							>
 								{passwordForm.formState.isSubmitting
 									? "Changing Password..."
