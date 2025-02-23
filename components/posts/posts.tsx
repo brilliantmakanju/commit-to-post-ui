@@ -44,6 +44,66 @@ interface PageData {
 
 const PAGE_SIZE = 50;
 
+// Helper function to filter posts (both grouped and single)
+function filterPosts(results: any[], filters: FilterState): any[] {
+	return results.reduce((accumulator: any[], item: any) => {
+		// Check if item is a group (has "posts" property)
+		if ("posts" in item && Array.isArray(item.posts)) {
+			// If no filter is applied, return the entire group as is
+			if (
+				filters.platform === "all" &&
+				filters.status === "all" &&
+				!filters.date
+			) {
+				accumulator.push(item);
+				return accumulator;
+			}
+
+			// Filter posts inside the group
+			const filteredGroupPosts = (item.posts as Post[]).filter((post: Post) => {
+				if (filters.platform !== "all" && post.platform !== filters.platform) {
+					return false;
+				}
+				if (filters.status !== "all" && post.status !== filters.status) {
+					return false;
+				}
+				if (filters.date) {
+					const postDate = new Date(post.created_at).toDateString();
+					const filterDate = new Date(filters.date).toDateString();
+					if (postDate !== filterDate) {
+						return false;
+					}
+				}
+				return true;
+			});
+
+			// Only include group if any posts match the filters
+			if (filteredGroupPosts.length > 0) {
+				accumulator.push({ ...item, posts: filteredGroupPosts });
+			}
+			return accumulator;
+		} else {
+			// Single post item
+			const post = item as Post;
+			if (filters.platform !== "all" && post.platform !== filters.platform) {
+				return accumulator;
+			}
+			if (filters.status !== "all" && post.status !== filters.status) {
+				return accumulator;
+			}
+			if (filters.date) {
+				const postDate = new Date(post.created_at).toDateString();
+				const filterDate = new Date(filters.date).toDateString();
+				if (postDate !== filterDate) {
+					return accumulator;
+				}
+			}
+			accumulator.push(post);
+			return accumulator;
+		}
+	}, []);
+}
+
 export default function Posts() {
 	const [filters, setFilters] = useState<FilterState>({
 		date: undefined,
@@ -67,71 +127,8 @@ export default function Posts() {
 	});
 
 	// Frontend filtering: flatten groups and filter both single posts and grouped posts
-	const filteredResults =
-		data?.results.reduce<any[]>((accumulator, item) => {
-			// Check if item is a group by checking for the "posts" property
-			if ("posts" in item && Array.isArray(item.posts)) {
-				// If no filter is applied, return the entire group as is
-				if (
-					filters.platform === "all" &&
-					filters.status === "all" &&
-					!filters.date
-				) {
-					accumulator.push(item);
-					return accumulator;
-				}
+	const filteredResults = data ? filterPosts(data.results, filters) : [];
 
-				// Apply filters to the posts inside the group
-				const filteredGroupPosts = (item.posts as unknown as Post[]).filter(
-					(post: Post) => {
-						if (
-							filters.platform !== "all" &&
-							post.platform !== filters.platform
-						) {
-							return false;
-						}
-						if (filters.status !== "all" && post.status !== filters.status) {
-							return false;
-						}
-						if (filters.date) {
-							const postDate = new Date(post.created_at).toDateString();
-							const filterDate = new Date(filters.date).toDateString();
-							if (postDate !== filterDate) {
-								return false;
-							}
-						}
-						return true;
-					},
-				);
-
-				// If posts match the filter inside the group, return the filtered group
-				if (filteredGroupPosts.length > 0) {
-					accumulator.push({ ...item, posts: filteredGroupPosts });
-				}
-
-				return accumulator;
-			} else {
-				// Single post item
-				const post = item as unknown as Post;
-				if (filters.platform !== "all" && post.platform !== filters.platform) {
-					return accumulator;
-				}
-				if (filters.status !== "all" && post.status !== filters.status) {
-					return accumulator;
-				}
-				if (filters.date) {
-					const postDate = new Date(post.created_at).toDateString();
-					const filterDate = new Date(filters.date).toDateString();
-					if (postDate !== filterDate) {
-						return accumulator;
-					}
-				}
-				accumulator.push(post);
-				return accumulator;
-			}
-		}, []) || [];
-
-	// Pagination of filtered results
 	const totalPages = Math.ceil(filteredResults.length / PAGE_SIZE);
 	const paginatedResults = filteredResults.slice(
 		(currentPage - 1) * PAGE_SIZE,
@@ -143,7 +140,6 @@ export default function Posts() {
 		value: string | Date | undefined,
 	) => {
 		setFilters(previous => ({ ...previous, [key]: value }));
-		setCurrentPage(1); // Reset to first page when filters change
 	};
 
 	const EmptyState = () => (
