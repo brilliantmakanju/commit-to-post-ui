@@ -2,7 +2,7 @@
 import { Check } from "lucide-react";
 import React from "react";
 
-import { Heading, Span } from "@/components/general/micro/typography";
+import { Heading } from "@/components/general/micro/typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
 import { pricingData } from "./data";
 
 const Pricing = () => {
-	const { title, plans } = pricingData;
+	const { plans } = pricingData;
 
 	return (
 		<div className="container mx-auto w-full">
