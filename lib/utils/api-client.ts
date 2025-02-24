@@ -5,7 +5,11 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { refreshToken } from "@/server-actions/auth/auth-actions";
 
-import { clearCookies, updateCookie } from "../cookies/create-cookies";
+import {
+	clearCookies,
+	deleteCookie,
+	updateCookie,
+} from "../cookies/create-cookies";
 import { getBaseUrl } from "./getbase-url";
 import { getAuthTokens } from "./gettokens";
 import { isTokenExpired } from "./tokens";
@@ -160,12 +164,24 @@ export class ApiClient {
 				);
 			}
 
+			// if (response.status === 403) {
+			// 	await clearCookies();
+			// 	await deleteCookie("cookie_state");
+			// 	await deleteCookie("__Host-authjs.csrf-token");
+			// 	await deleteCookie("__Secure-authjs.callback-url");
+			// 	await deleteCookie("__Secure-authjs.session-token");
+			// }
+
 			const responseBody = await response.json().catch(() => {});
 
 			if (
 				responseBody?.detail === "Authentication credentials were not provided."
 			) {
 				await clearCookies();
+				await deleteCookie("cookie_state");
+				await deleteCookie("__Host-authjs.csrf-token");
+				await deleteCookie("__Secure-authjs.callback-url");
+				await deleteCookie("__Secure-authjs.session-token");
 			}
 
 			return response.ok
