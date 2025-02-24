@@ -26,7 +26,7 @@ const TopNavigation = () => {
 					<div className="flex items-center">
 						{status === "loading" ? (
 							<Skeleton className="h-[40px] w-[100px] rounded-md" />
-						) : session ? (
+						) : status === "authenticated" ? (
 							<Link href="/dashboard">
 								<Button variant="default">Dashboard</Button>
 							</Link>
