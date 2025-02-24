@@ -39,20 +39,25 @@ export function AuthenticatedLayout({
 	}, [isClient]);
 
 	useEffect(() => {
+		// Define an async function to handle sign-out logic.
 		const checkCookieToken = async () => {
+			// If there's a valid token, do nothing.
 			if (await cookietoken) return;
+			// Otherwise, clear state and sign out.
 			logoutStore.setLogout(true);
-			// Sign out from NextAuth
 			await clearCookies(); // Clear all cookies
-			userStore.clearUser(); // Clear user information from Zustand store
+			userStore.clearUser(); // Clear user data from Zustand
 			organizationStore.clearOrganization();
 			await signOut();
 			router.push("/auth");
 		};
 
-		checkCookieToken();
+		// Ensure this runs only on the client.
+		if (typeof globalThis !== "undefined") {
+			checkCookieToken();
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [cookietoken]);
+	}, [cookietoken, router]);
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
