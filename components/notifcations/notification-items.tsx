@@ -1,8 +1,9 @@
 "use client";
+
 import { formatDistanceToNow } from "date-fns";
 import { BookMarked } from "lucide-react";
 
-import { Notification } from "../../types";
+import type { Notification } from "@/types";
 
 interface NotificationItemProps {
 	notification: Notification;
@@ -16,20 +17,20 @@ export default function NotificationItem({
 	return (
 		<div
 			onClick={onClick}
-			className="group relative flex cursor-pointer items-center justify-start gap-1 rounded-md bg-gray-50 p-1 hover:bg-gray-200"
+			className="bg-notification-bg hover:border-notification-border hover:bg-notification-hover group relative flex cursor-pointer items-start gap-3 rounded-lg border border-transparent p-4 transition-all"
 		>
-			<div
-				className={`mt-2 h-1.5 w-1.5 rounded-full ${!notification.is_read && "flex bg-[red]"}`}
-			/>
+			<div className="flex items-center gap-3">
+				{!notification.is_read && (
+					<div className="bg-notification-unread h-2 w-2 rounded-full" />
+				)}
+				<BookMarked className="text-notification-text-secondary h-5 w-5" />
+			</div>
 
-			<BookMarked className="mt-0.5 h-5 w-5 text-gray-400" />
-			{/* <BookMarkedIcon /> */}
-
-			<div className="w-full min-w-0 flex-1 md:gap-7">
-				<p className="line-clamp-1 w-full text-sm text-gray-900">
+			<div className="flex-1 space-y-1">
+				<p className="text-notification-text-primary line-clamp-2 text-sm">
 					{notification.message}
 				</p>
-				<p className="mt-1 text-xs text-gray-500">
+				<p className="text-notification-text-secondary text-xs">
 					{formatDistanceToNow(new Date(notification.created_at), {
 						addSuffix: true,
 					})}

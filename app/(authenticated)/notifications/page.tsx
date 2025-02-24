@@ -1,20 +1,12 @@
 "use client";
 
-import { BellDotIcon } from "lucide-react";
+import { BellIcon } from "lucide-react";
 import { useState } from "react";
 
 import NotificationItem from "@/components/notifcations/notification-items";
 import NotificationModal from "@/components/notifcations/notification-modal";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useRetrieveNotifications from "@/hooks/notifications/notifications";
 import type { Notification } from "@/types";
 
@@ -30,20 +22,22 @@ export default function NotificationsPage() {
 
 	if (isNotificationLoading) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<Card>
-					<CardHeader>
-						<CardTitle>Notifications</CardTitle>
-						<CardDescription>Loading your notifications...</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-2">
-							<Skeleton className="h-12 w-full" />
-							<Skeleton className="h-12 w-full" />
-							<Skeleton className="h-12 w-full" />
+			<div className="container mx-auto p-6">
+				<div className="space-y-4">
+					<div className="flex items-center justify-between">
+						<div className="h-6 w-32">
+							<Skeleton className="h-full w-full" />
 						</div>
-					</CardContent>
-				</Card>
+						<div className="h-6 w-24">
+							<Skeleton className="h-full w-full" />
+						</div>
+					</div>
+					<div className="space-y-3">
+						{[1, 2, 3].map(index => (
+							<Skeleton key={index} className="h-20 w-full" />
+						))}
+					</div>
+				</div>
 			</div>
 		);
 	}
@@ -51,6 +45,44 @@ export default function NotificationsPage() {
 	return (
 		<>
 			<div className="flex h-full flex-col">
+				<div className="border-b border-notification-border/50 p-6">
+					<div className="mb-4 flex items-center justify-between">
+						<h1 className="flex items-center gap-2 text-lg font-medium text-gray-300">
+							<BellIcon className="h-5 w-5" />
+							Notifications
+						</h1>
+						{/* {unread_count && unread_count > 0 && ( */}
+						<span className="rounded-full bg-notification-unread/10 px-2.5 py-0.5 text-xs font-medium text-notification-unread">
+							{unread_count} unread
+						</span>
+						{/* )} */}
+					</div>
+					<p className="text-sm text-notification-text-secondary">
+						You have {total_count} notification{total_count === 1 ? "" : "s"}
+					</p>
+				</div>
+
+				<ScrollArea className="flex-1 p-2 lg:p-6">
+					<div className="space-y-2">
+						{Notifications?.map(notification => (
+							<NotificationItem
+								key={notification.id}
+								notification={notification}
+								onClick={() => setSelectedNotification(notification)}
+							/>
+						))}
+					</div>
+				</ScrollArea>
+
+				{selectedNotification && (
+					<NotificationModal
+						notification={selectedNotification}
+						onClose={() => setSelectedNotification(undefined)}
+					/>
+				)}
+			</div>
+
+			{/* <div className="flex h-full flex-col">
 				<div className="border-b p-4">
 					<div className="mb-4 flex items-center justify-between">
 						<h1 className="flex items-center gap-2 text-xl font-semibold">
@@ -89,7 +121,7 @@ export default function NotificationsPage() {
 						onClose={() => setSelectedNotification(undefined)}
 					/>
 				)}
-			</div>
+			</div> */}
 		</>
 	);
 }

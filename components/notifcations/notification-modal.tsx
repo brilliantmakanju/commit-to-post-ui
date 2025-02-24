@@ -1,10 +1,10 @@
+"use client";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, X } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { Calendar } from "lucide-react";
+import { useEffect } from "react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -25,10 +25,11 @@ export default function NotificationModal({
 	onClose,
 }: NotificationModalProps) {
 	const queryClient = useQueryClient();
-	const readNotification = async () => {
-		const reponse = await readNotifications({ id: notification.id });
 
-		if (reponse.success) {
+	const readNotification = async () => {
+		const response = await readNotifications({ id: notification.id });
+
+		if (response.success) {
 			queryClient.invalidateQueries({ queryKey: ["notifications"] });
 			queryClient.invalidateQueries({
 				queryKey: ["unread_notification_counts"],
@@ -43,21 +44,23 @@ export default function NotificationModal({
 
 	return (
 		<Dialog open={true} onOpenChange={onClose}>
-			<DialogContent>
+			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>{notification.title}</DialogTitle>
+					<DialogTitle className="text-notification-text-primary">
+						{notification.title}
+					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-2">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-notification-text-secondary text-sm">
 						{notification.message}
 					</p>
 				</div>
-				<DialogFooter className="mt-4 flex items-center justify-between">
-					<div className="flex items-center text-sm text-muted-foreground">
+				<DialogFooter className="border-notification-border/50 mt-6 flex items-center justify-between border-t pt-4">
+					<div className="text-notification-text-secondary text-sm">
 						{notification.triggered_by}
 					</div>
-					<div className="flex items-center text-sm text-muted-foreground">
-						<Calendar className="mr-1 h-4 w-4" />
+					<div className="text-notification-text-secondary flex items-center gap-1.5 text-sm">
+						<Calendar className="h-4 w-4" />
 						{formatDistanceToNow(new Date(notification.created_at), {
 							addSuffix: true,
 						})}

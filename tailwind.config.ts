@@ -6,6 +6,7 @@ export default {
 		"./pages/**/*.{js,ts,jsx,tsx,mdx}",
 		"./components/**/*.{js,ts,jsx,tsx,mdx}",
 		"./app/**/*.{js,ts,jsx,tsx,mdx}",
+		"*.{js,ts,jsx,tsx,mdx}",
 	],
 	theme: {
 		extend: {
@@ -60,6 +61,16 @@ export default {
 					border: "hsl(var(--sidebar-border))",
 					ring: "hsl(var(--sidebar-ring))",
 				},
+				notification: {
+					bg: "hsl(var(--notification-bg))",
+					hover: "hsl(var(--notification-hover))",
+					unread: "hsl(var(--notification-unread))",
+					text: {
+						primary: "hsl(var(--notification-text-primary))",
+						secondary: "hsl(var(--notification-text-secondary))",
+					},
+					border: "hsl(var(--notification-border))",
+				},
 			},
 			borderRadius: {
 				lg: "var(--radius)",
@@ -68,20 +79,12 @@ export default {
 			},
 			keyframes: {
 				"accordion-down": {
-					from: {
-						height: "0",
-					},
-					to: {
-						height: "var(--radix-accordion-content-height)",
-					},
+					from: { height: "0" },
+					to: { height: "var(--radix-accordion-content-height)" },
 				},
 				"accordion-up": {
-					from: {
-						height: "var(--radix-accordion-content-height)",
-					},
-					to: {
-						height: "0",
-					},
+					from: { height: "var(--radix-accordion-content-height)" },
+					to: { height: "0" },
 				},
 			},
 			animation: {

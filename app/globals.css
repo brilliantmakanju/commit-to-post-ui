@@ -41,6 +41,12 @@ body {
 		--sidebar-accent-foreground: 240 5.9% 10%;
 		--sidebar-border: 220 13% 91%;
 		--sidebar-ring: 217.2 91.2% 59.8%;
+		--notification-bg: 210 40% 98%;
+		--notification-hover: 217 33% 95%;
+		--notification-unread: 217 91% 60%;
+		--notification-text-primary: 222 47% 11%;
+		--notification-text-secondary: 217 19% 27%;
+		--notification-border: 214 32% 91%;
 	}
 	.dark {
 		--background: 20 14.3% 4.1%;
@@ -75,6 +81,12 @@ body {
 		--sidebar-accent-foreground: 240 4.8% 95.9%;
 		--sidebar-border: 240 3.7% 15.9%;
 		--sidebar-ring: 217.2 91.2% 59.8%;
+		--notification-bg: 222 47% 11%;
+		--notification-hover: 217 19% 27%;
+		--notification-unread: 217 91% 60%;
+		--notification-text-primary: 214 32% 91%;
+		--notification-text-secondary: 217 33% 95%;
+		--notification-border: 217 19% 27%;
 	}
 }
 

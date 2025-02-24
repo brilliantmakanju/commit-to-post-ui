@@ -3,7 +3,6 @@
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 
 import {
 	Collapsible,
@@ -12,7 +11,6 @@ import {
 } from "@/components/ui/collapsible";
 import {
 	SidebarGroup,
-	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuAction,
 	SidebarMenuButton,
@@ -24,31 +22,43 @@ import {
 import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
-import hasAccess from "@/lib/utils/check-plan";
 import useLogoutStore from "@/lib/zustand/logout-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 
-export function NavMain({
-	items,
-}: {
-	items: {
+interface NavItem {
+	title: string;
+	url: string;
+	icon: LucideIcon;
+	isActive?: boolean;
+	items?: {
 		title: string;
 		url: string;
-		icon: LucideIcon;
-		isActive?: boolean;
-		items?: {
-			title: string;
-			url: string;
-		}[];
 	}[];
-}) {
-	const { status } = useSession();
+}
 
-	const { data } = useBillingPortal();
+interface NavMainProps {
+	items: NavItem[];
+}
+
+export function NavMain({ items }: NavMainProps) {
+	const { status } = useSession();
+	const { data: billingUrl } = useBillingPortal();
 	const logoutStore = useLogoutStore();
 	const isLoading = status === "loading";
 	const hasAccess = useCheckAccess();
 	const { has_unread } = useRetrieveUnreadCount();
+
+	const isDisabled = (item: NavItem) => {
+		if (isLoading || logoutStore.logout) return true;
+		if (item.title === "Billing" && !hasAccess) return true;
+		return false;
+	};
+
+	const getItemUrl = (item: NavItem) => {
+		if (item.title === "Billing" && hasAccess) {
+			return billingUrl ?? item.url;
+		}
+		return item.url;
+	};
 
 	return (
 		<SidebarGroup>
@@ -59,39 +69,26 @@ export function NavMain({
 							<SidebarMenuButton
 								asChild
 								tooltip={item.title}
-								disabled={isLoading || logoutStore.logout}
+								disabled={isDisabled(item)}
 							>
 								<Link
 									prefetch={false}
-									href={`${
-										item.title === "Billing"
-											? hasAccess
-												? (data ?? item.url)
-												: "#"
-											: item.url
-									}`}
-									onClick={event_ => {
-										// Prevent default behavior if the link is disabled
-										if (
-											(isLoading || logoutStore.logout || !hasAccess) &&
-											item.title === "Billing"
-										) {
-											event_.preventDefault();
+									href={`${getItemUrl(item)}`}
+									onClick={event => {
+										if (isDisabled(item)) {
+											event.preventDefault();
 										}
 									}}
-									className={`${
-										isLoading ||
-										logoutStore.logout ||
-										(item.title === "Billing" && hasAccess === false)
-											? "pointer-events-none opacity-50"
-											: ""
-									}`}
+									className={
+										isDisabled(item) ? "pointer-events-none opacity-50" : ""
+									}
 								>
-									<item.icon />
-
-									{has_unread && item.title === "Notifications" && (
-										<span className="absolute left-[18px] top-[10px] h-1.5 w-1.5 rounded-full bg-red-600" />
-									)}
+									<span className="relative">
+										<item.icon />
+										{has_unread && item.title === "Notifications" && (
+											<span className="absolute right-0.5 top-1 h-2 w-2 rounded-full bg-red-600" />
+										)}
+									</span>
 									<span>{item.title}</span>
 								</Link>
 							</SidebarMenuButton>
@@ -100,7 +97,7 @@ export function NavMain({
 									<CollapsibleTrigger asChild>
 										<SidebarMenuAction
 											className="data-[state=open]:rotate-90"
-											disabled={isLoading || logoutStore.logout}
+											disabled={isDisabled(item)}
 										>
 											<ChevronRight />
 											<span className="sr-only">Toggle</span>
@@ -108,43 +105,23 @@ export function NavMain({
 									</CollapsibleTrigger>
 									<CollapsibleContent>
 										<SidebarMenuSub>
-											{item.items?.map(subItem => (
+											{item.items.map(subItem => (
 												<SidebarMenuSubItem key={subItem.title}>
 													<SidebarMenuSubButton asChild>
 														<Link
 															prefetch={false}
-															href={`${
-																item.title === "Billing"
-																	? hasAccess
-																		? (data ?? item.url)
-																		: "#"
-																	: item.url
-															}`}
-															onClick={event_ => {
-																// Prevent default behavior if the link is disabled
-																if (
-																	(isLoading ||
-																		logoutStore.logout ||
-																		!hasAccess) &&
-																	item.title === "Billing"
-																) {
-																	event_.preventDefault();
+															href={`${getItemUrl(item)}`}
+															onClick={event => {
+																if (isDisabled(item)) {
+																	event.preventDefault();
 																}
 															}}
-															className={`${
-																isLoading ||
-																logoutStore.logout ||
-																(item.title === "Billing" &&
-																	hasAccess === false)
+															className={
+																isDisabled(item)
 																	? "pointer-events-none opacity-50"
 																	: ""
-															}`}
+															}
 														>
-															<item.icon />
-
-															{has_unread && item.title === "Notifications" && (
-																<span className="absolute left-[18px] top-[10px] h-1.5 w-1.5 rounded-full bg-red-600" />
-															)}
 															<span>{subItem.title}</span>
 														</Link>
 													</SidebarMenuSubButton>

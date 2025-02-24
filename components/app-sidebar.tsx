@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+	BellDot,
 	BellDotIcon,
 	Bot,
 	Settings2,
@@ -88,6 +89,36 @@ const data = {
 	],
 };
 
+const navigationItems = [
+	{
+		title: "Dashboard",
+		url: "/dashboard",
+		icon: SquareTerminal,
+		isActive: true,
+	},
+	{
+		title: "Post",
+		url: "/posts",
+		icon: Bot,
+	},
+	{
+		title: "Notifications",
+		url: "/notifications",
+		icon: BellDot,
+	},
+	{
+		title: "Billing",
+		url: "#",
+		icon: WalletMinimal,
+	},
+	{
+		title: "Settings",
+		url: "/settings",
+		icon: Settings2,
+		items: [],
+	},
+];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [mounted, setMounted] = useState(false);
 	const useorganizationStore = useOrganizationStore();
@@ -140,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<TeamSwitcher teams={organizations || []} isLoading={isFetching} />
 					</SidebarHeader>
 					<SidebarContent>
-						<NavMain items={data.navMain} />
+						<NavMain items={navigationItems} />
 					</SidebarContent>
 					<SidebarFooter>
 						<NavUser />

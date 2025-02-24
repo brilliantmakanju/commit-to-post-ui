@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, User2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -172,18 +173,25 @@ export function NavUser() {
 								</div>
 							</div>
 						</DropdownMenuLabel>
+
+						<DropdownMenuSeparator />
+						<DropdownMenuItem asChild className="p-0">
+							<Link
+								href="/settings?tab=profile"
+								prefetch={false}
+								className="flex w-full items-center gap-2 px-3 py-2"
+							>
+								<User2 className="h-4 w-4" />
+								Profile Settings
+							</Link>
+						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							className="p-0 focus:bg-transparent"
 							onClick={() => logoutClient()}
+							className="flex w-full items-center gap-2 px-3 py-2 text-destructive focus:text-destructive"
 						>
-							<Button
-								variant="destructive"
-								className="w-full justify-start rounded-none px-2 py-1.5 text-sm font-normal"
-							>
-								<LogOut className="mr-2 h-4 w-4" />
-								<span>Log out</span>
-							</Button>
+							<LogOut className="h-4 w-4" />
+							Log out
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
