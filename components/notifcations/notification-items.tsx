@@ -17,20 +17,20 @@ export default function NotificationItem({
 	return (
 		<div
 			onClick={onClick}
-			className="bg-notification-bg hover:border-notification-border hover:bg-notification-hover group relative flex cursor-pointer items-start gap-3 rounded-lg border border-transparent p-4 transition-all"
+			className="group relative flex cursor-pointer items-start gap-3 rounded-lg border border-transparent bg-notification-bg p-4 transition-all hover:border-notification-border hover:bg-notification-hover"
 		>
 			<div className="flex items-center gap-3">
 				{!notification.is_read && (
-					<div className="bg-notification-unread h-2 w-2 rounded-full" />
+					<div className="h-2 w-2 rounded-full bg-notification-unread" />
 				)}
-				<BookMarked className="text-notification-text-secondary h-5 w-5" />
+				<BookMarked className="h-5 w-5 text-notification-text-secondary" />
 			</div>
 
 			<div className="flex-1 space-y-1">
-				<p className="text-notification-text-primary line-clamp-2 text-sm">
+				<p className="line-clamp-2 text-sm text-notification-text-primary">
 					{notification.message}
 				</p>
-				<p className="text-notification-text-secondary text-xs">
+				<p className="text-xs text-notification-text-secondary">
 					{formatDistanceToNow(new Date(notification.created_at), {
 						addSuffix: true,
 					})}

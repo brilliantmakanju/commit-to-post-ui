@@ -1,7 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { Calendar } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -41,11 +40,6 @@ export default function NotificationCard({
 			</CardContent>
 			<CardFooter className="flex items-end justify-between gap-3">
 				<div className="flex items-center text-sm text-muted-foreground">
-					{/* <Avatar className="mr-2 h-8 w-8">
-						<AvatarFallback>
-							{notification.triggered_by.charAt(0)}
-						</AvatarFallback>
-					</Avatar> */}
 					{notification.triggered_by === "None"
 						? "System"
 						: notification.triggered_by}
