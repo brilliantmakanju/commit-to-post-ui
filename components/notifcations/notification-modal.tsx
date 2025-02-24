@@ -51,15 +51,15 @@ export default function NotificationModal({
 					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-2">
-					<p className="text-notification-text-secondary text-sm">
+					<p className="text-sm text-notification-text-secondary">
 						{notification.message}
 					</p>
 				</div>
-				<DialogFooter className="border-notification-border/50 mt-6 flex items-center justify-between border-t pt-4">
-					<div className="text-notification-text-secondary text-sm">
+				<DialogFooter className="mt-6 flex items-center justify-between border-t border-notification-border/50 pt-4">
+					<div className="text-sm text-notification-text-secondary">
 						{notification.triggered_by}
 					</div>
-					<div className="text-notification-text-secondary flex items-center gap-1.5 text-sm">
+					<div className="flex items-center gap-1.5 text-sm text-notification-text-secondary">
 						<Calendar className="h-4 w-4" />
 						{formatDistanceToNow(new Date(notification.created_at), {
 							addSuffix: true,
