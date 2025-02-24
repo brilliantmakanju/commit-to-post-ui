@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { SettingsTabs } from "@/components/settings/settings-tabs";
 
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function SettingsPage() {
-	return <SettingsTabs />;
+	return (
+		<Suspense>
+			<SettingsTabs />
+		</Suspense>
+	);
 }
