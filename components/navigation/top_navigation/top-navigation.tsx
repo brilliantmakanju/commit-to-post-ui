@@ -11,7 +11,7 @@ import Logo from "./logo";
 import NavLinks from "./nav-links";
 
 const TopNavigation = () => {
-	const { data: session, status } = useSession();
+	const { status } = useSession();
 
 	return (
 		<header className="sticky top-0 z-50 w-full bg-[#FAFBFF]/80 backdrop-blur-xl dark:bg-slate-700/80">

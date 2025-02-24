@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import type React from "react";
 import { useEffect, useState } from "react";
 
@@ -18,6 +18,7 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
+import { signOut } from "@/server-actions/auth/signout";
 
 import LoadingScreen from "./logo-loading";
 
