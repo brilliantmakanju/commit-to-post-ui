@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import router from "next/router";
 import { signOut, useSession } from "next-auth/react";
+import type React from "react";
 import { useEffect, useState } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
@@ -32,32 +32,42 @@ export function AuthenticatedLayout({
 	const logoutStore = useLogoutStore();
 	const [isClient, setIsClient] = useState(false);
 	const organizationStore = useOrganizationStore();
-	const cookietoken = getDecryptedCookie("cookie_state");
 
 	useEffect(() => {
 		if (!isClient) setIsClient(true);
 	}, [isClient]);
 
 	useEffect(() => {
-		// Define an async function to handle sign-out logic.
-		const checkCookieToken = async () => {
-			// If there's a valid token, do nothing.
-			if (await cookietoken) return;
-			// Otherwise, clear state and sign out.
-			logoutStore.setLogout(true);
-			await clearCookies(); // Clear all cookies
-			userStore.clearUser(); // Clear user data from Zustand
-			organizationStore.clearOrganization();
-			await signOut();
-			router.push("/auth");
+		let mounted = true;
+
+		const validateCookie = async () => {
+			try {
+				const token = await getDecryptedCookie("cookie_state");
+
+				if (!mounted) return;
+
+				if (!token) {
+					logoutStore.setLogout(true);
+					await clearCookies();
+					userStore.clearUser();
+					organizationStore.clearOrganization();
+					await signOut();
+					router.push("/auth");
+				}
+			} catch (error) {
+				console.error("Cookie validation error:", error);
+			}
 		};
 
-		// Ensure this runs only on the client.
 		if (typeof globalThis !== "undefined") {
-			checkCookieToken();
+			validateCookie();
 		}
+
+		return () => {
+			mounted = false;
+		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [cookietoken, router]);
+	}, [logoutStore, router, organizationStore, userStore]);
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
