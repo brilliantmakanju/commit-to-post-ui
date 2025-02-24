@@ -1,6 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import router from "next/router";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
@@ -11,7 +13,11 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { clearCookies } from "@/lib/cookies/create-cookies";
+import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
+import useOrganizationStore from "@/lib/zustand/useorganization-store";
+import useUserStore from "@/lib/zustand/useuser-store";
 
 import LoadingScreen from "./logo-loading";
 
@@ -20,13 +26,33 @@ export function AuthenticatedLayout({
 }: {
 	children: React.ReactNode;
 }) {
+	const router = useRouter();
 	const { status } = useSession();
+	const userStore = useUserStore();
+	const logoutStore = useLogoutStore();
 	const [isClient, setIsClient] = useState(false);
-	const { logout } = useLogoutStore();
+	const organizationStore = useOrganizationStore();
+	const cookietoken = getDecryptedCookie("cookie_state");
 
 	useEffect(() => {
 		if (!isClient) setIsClient(true);
 	}, [isClient]);
+
+	useEffect(() => {
+		const checkCookieToken = async () => {
+			if (await cookietoken) return;
+			logoutStore.setLogout(true);
+			// Sign out from NextAuth
+			await clearCookies(); // Clear all cookies
+			userStore.clearUser(); // Clear user information from Zustand store
+			organizationStore.clearOrganization();
+			await signOut();
+			router.push("/auth");
+		};
+
+		checkCookieToken();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [cookietoken]);
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
@@ -36,13 +62,13 @@ export function AuthenticatedLayout({
 				<SidebarInset className="relative flex-1 overflow-hidden bg-[#1A1C20] md:rounded-[20px]">
 					<main
 						className={`relative h-full w-full ${
-							status === "loading" || !isClient || logout
+							status === "loading" || !isClient || logoutStore.logout
 								? "flex items-center justify-center"
 								: "overflow-y-auto text-[#EAF6FF]"
 						}`}
 					>
 						<LogoutModal />
-						{logout ? (
+						{logoutStore.logout ? (
 							<></>
 						) : status === "loading" || !isClient ? (
 							<LoadingScreen

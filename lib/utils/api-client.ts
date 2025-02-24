@@ -164,14 +164,6 @@ export class ApiClient {
 				);
 			}
 
-			// if (response.status === 403) {
-			// 	await clearCookies();
-			// 	await deleteCookie("cookie_state");
-			// 	await deleteCookie("__Host-authjs.csrf-token");
-			// 	await deleteCookie("__Secure-authjs.callback-url");
-			// 	await deleteCookie("__Secure-authjs.session-token");
-			// }
-
 			const responseBody = await response.json().catch(() => {});
 
 			if (
