@@ -74,6 +74,8 @@ export function AuthenticatedLayout({
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
 			<LogoutModal />
 
+			{(!isClient || status === "loading") && <LogoutModal showByDefault />}
+
 			<div className="flex h-screen w-full">
 				<AppSidebar />
 
@@ -85,23 +87,8 @@ export function AuthenticatedLayout({
 								: "overflow-y-auto text-[#EAF6FF]"
 						}`}
 					>
-						{status === "loading" || !isClient ? (
-							<LoadingScreen
-								backgroundColor="#0A0E17"
-								iconColor="#4FD1C5"
-								splashColor="rgba(79, 209, 197, 0.3)"
-								bubbleColor="rgba(79, 209, 197, 0.2)"
-								iconSize={80}
-								bounceHeight={40}
-								bounceDuration={1.8}
-								splashDuration={1}
-							/>
-						) : (
-							<>
-								<SidebarTrigger />
-								{children}
-							</>
-						)}
+						<SidebarTrigger />
+						{children}
 
 						<Toaster />
 					</main>
