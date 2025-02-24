@@ -83,10 +83,12 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 			setIsSubmitting(false);
 		}
 	};
+	const nameChanged = form.watch("name") !== organization.name;
+	const descriptionValue = form.watch("description");
+	const descriptionChanged =
+		descriptionValue !== "" && descriptionValue !== organization.description;
 
-	const isFormChanged =
-		form.watch("name") !== organization.name ||
-		form.watch("description") !== organization.description;
+	const isFormChanged = nameChanged || descriptionChanged;
 
 	if (!organization) return;
 
@@ -120,6 +122,7 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 								<Textarea
 									{...field}
 									rows={4}
+									value={field.value || ""}
 									disabled={isFetching || isSubmitting}
 									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 								/>

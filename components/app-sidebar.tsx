@@ -79,10 +79,10 @@ const data = {
 				// 	title: "Billing",
 				// 	url: "settings?tab=billing",
 				// },
-				{
-					title: "Profile",
-					url: "settings?tab=profile",
-				},
+				// {
+				// 	title: "Profile",
+				// 	url: "settings?tab=profile",
+				// },
 			],
 		},
 	],

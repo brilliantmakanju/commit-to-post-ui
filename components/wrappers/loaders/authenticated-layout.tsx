@@ -55,8 +55,8 @@ export function AuthenticatedLayout({
 					await signOut();
 					router.push("/auth");
 				}
-			} catch (error) {
-				console.error("Cookie validation error:", error);
+			} catch {
+				return;
 			}
 		};
 
@@ -72,6 +72,8 @@ export function AuthenticatedLayout({
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
+			<LogoutModal />
+
 			<div className="flex h-screen w-full">
 				<AppSidebar />
 
@@ -83,10 +85,7 @@ export function AuthenticatedLayout({
 								: "overflow-y-auto text-[#EAF6FF]"
 						}`}
 					>
-						<LogoutModal />
-						{logoutStore.logout ? (
-							<></>
-						) : status === "loading" || !isClient ? (
+						{status === "loading" || !isClient ? (
 							<LoadingScreen
 								backgroundColor="#0A0E17"
 								iconColor="#4FD1C5"
