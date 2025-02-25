@@ -38,39 +38,37 @@ export function AuthenticatedLayout({
 		if (!isClient) setIsClient(true);
 	}, [isClient]);
 
-	const validateCookie = async () => {
-		// try {
-		// 	const token = await getDecryptedCookie("cookie_state");
+	useEffect(() => {
+		let mounted = true;
 
-		// if (!mounted) return;
+		const validateCookie = async () => {
+			try {
+				const token = await getDecryptedCookie("cookie_state");
 
-		// if (!token) {
-		logoutStore.setLogout(true);
-		await clearCookies();
-		userStore.clearUser();
-		organizationStore.clearOrganization();
-		await signOut();
-		router.push("/auth");
-		// 	}
-		// } catch {
-		// 	return;
-		// }
-	};
+				if (!mounted) return;
 
-	validateCookie();
+				if (!token) {
+					logoutStore.setLogout(true);
+					await clearCookies();
+					userStore.clearUser();
+					organizationStore.clearOrganization();
+					await signOut();
+					router.push("/auth");
+				}
+			} catch {
+				return;
+			}
+		};
 
-	// useEffect(() => {
-	// 	let mounted = true;
+		if (typeof globalThis !== "undefined") {
+			validateCookie();
+		}
 
-	// 	if (typeof globalThis !== "undefined") {
-	// 		validateCookie();
-	// 	}
-
-	// 	return () => {
-	// 		mounted = false;
-	// 	};
-	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	// }, [logoutStore, router, organizationStore, userStore]);
+		return () => {
+			mounted = false;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [logoutStore, router, organizationStore, userStore]);
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
