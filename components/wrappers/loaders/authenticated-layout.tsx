@@ -38,41 +38,39 @@ export function AuthenticatedLayout({
 		if (!isClient) setIsClient(true);
 	}, [isClient]);
 
-	useEffect(() => {
-		let mounted = true;
+	const validateCookie = async () => {
+		// try {
+		// 	const token = await getDecryptedCookie("cookie_state");
 
-		const validateCookie = async () => {
-			try {
-				const token = await getDecryptedCookie("cookie_state");
+		// if (!mounted) return;
 
-				if (!mounted) return;
+		// if (!token) {
+		logoutStore.setLogout(true);
+		await clearCookies();
+		userStore.clearUser();
+		organizationStore.clearOrganization();
+		await signOut();
+		router.push("/auth");
+		// 	}
+		// } catch {
+		// 	return;
+		// }
+	};
 
-				if (!token) {
-					logoutStore.setLogout(true);
-					await clearCookies();
-					userStore.clearUser();
-					organizationStore.clearOrganization();
-					await signOut();
-					router.push("/auth");
-				}
-			} catch {
-				return;
-			}
-		};
+	validateCookie();
 
-		if (typeof globalThis !== "undefined") {
-			validateCookie();
-		}
+	// useEffect(() => {
+	// 	let mounted = true;
 
-		return () => {
-			mounted = false;
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [logoutStore, router, organizationStore, userStore]);
-	console.log(isClient, "Is Client");
-	console.log(!isClient, "Is not with Client");
-	console.log(status, "Client Status");
-	console.log(logoutStore.logout, "Logout State");
+	// 	if (typeof globalThis !== "undefined") {
+	// 		validateCookie();
+	// 	}
+
+	// 	return () => {
+	// 		mounted = false;
+	// 	};
+	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, [logoutStore, router, organizationStore, userStore]);
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
