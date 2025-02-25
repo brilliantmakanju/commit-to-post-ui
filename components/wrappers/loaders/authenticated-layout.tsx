@@ -74,7 +74,9 @@ export function AuthenticatedLayout({
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
 			<LogoutModal />
 
-			{(!isClient || status === "loading") && <LogoutModal showByDefault />}
+			{(!isClient || status === "loading") && (
+				<LogoutModal showByDefault={!isClient || status === "loading"} />
+			)}
 
 			<div className="flex h-screen w-full">
 				<AppSidebar />
