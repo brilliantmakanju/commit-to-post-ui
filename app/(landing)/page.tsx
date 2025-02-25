@@ -3,11 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import CTASection from "@/components/landing/cta/cta-section";
 import FAQSection from "@/components/landing/faq/faq-section";
 import BenefitCards from "@/components/landing/feature/benefit-cards";
-import CoreFeaturesSection from "@/components/landing/feature_alternative/coreFeature/core-feature-section";
-import HeroFeatureSectionAlt from "@/components/landing/feature_alternative/hero-feature-section-alt";
 import HeroSection from "@/components/landing/micro/hero-section";
 import Pricing from "@/components/landing/pricing/pricing-alt";
 import { deleteCookie } from "@/lib/cookies/create-cookies";
@@ -32,9 +29,6 @@ export default function Home() {
 		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)] md:mt-20">
 			<HeroSection />
 			<BenefitCards />
-			{/* <HeroFeatureSectionAlt /> */}
-			{/* <CoreFeaturesSection /> */}
-			{/* <CTASection /> */}
 			<Pricing />
 			<FAQSection />
 		</div>

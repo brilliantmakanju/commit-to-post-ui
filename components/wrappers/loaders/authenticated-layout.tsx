@@ -69,6 +69,10 @@ export function AuthenticatedLayout({
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [logoutStore, router, organizationStore, userStore]);
+	console.log(isClient, "Is Client");
+	console.log(!isClient, "Is not with Client");
+	console.log(status, "Client Status");
+	console.log(logoutStore.logout, "Logout State");
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">

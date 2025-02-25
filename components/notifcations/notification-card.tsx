@@ -40,7 +40,7 @@ export default function NotificationCard({
 			</CardContent>
 			<CardFooter className="flex items-end justify-between gap-3">
 				<div className="flex items-center text-sm text-muted-foreground">
-					{notification.triggered_by === "None"
+					{notification.triggered_by === ""
 						? "System"
 						: notification.triggered_by}
 				</div>

@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Calendar } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import {
 	Dialog,
@@ -26,7 +26,7 @@ export default function NotificationModal({
 }: NotificationModalProps) {
 	const queryClient = useQueryClient();
 
-	const readNotification = async () => {
+	const readNotification = useCallback(async () => {
 		const response = await readNotifications({ id: notification.id });
 
 		if (response.success) {
@@ -35,31 +35,30 @@ export default function NotificationModal({
 				queryKey: ["unread_notification_counts"],
 			});
 		}
-	};
+	}, [notification.id, queryClient]);
 
 	useEffect(() => {
 		readNotification();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [readNotification]);
 
 	return (
 		<Dialog open={true} onOpenChange={onClose}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="text-notification-text-primary">
+					<DialogTitle className="text-primary-foreground/90">
 						{notification.title}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-2">
-					<p className="text-sm text-notification-text-secondary">
+					<p className="text-sm text-muted-foreground">
 						{notification.message}
 					</p>
 				</div>
-				<DialogFooter className="mt-6 flex items-center justify-between border-t border-notification-border/50 pt-4">
-					<div className="text-sm text-notification-text-secondary">
+				<DialogFooter className="mt-6 flex items-center justify-between border-t border-border/5 pt-4">
+					<div className="text-sm text-muted-foreground">
 						{notification.triggered_by}
 					</div>
-					<div className="flex items-center gap-1.5 text-sm text-notification-text-secondary">
+					<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
 						<Calendar className="h-4 w-4" />
 						{formatDistanceToNow(new Date(notification.created_at), {
 							addSuffix: true,

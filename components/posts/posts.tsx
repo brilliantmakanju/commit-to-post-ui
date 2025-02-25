@@ -143,17 +143,19 @@ export default function Posts() {
 	};
 
 	const EmptyState = () => (
-		<div className="flex h-[52vh] flex-col items-center justify-center">
-			<div className="flex h-12 w-12 items-center justify-center">
-				<FileText className="h-16 w-16 text-gray-200" />
+		<div className="flex h-[450px] flex-col items-center justify-center space-y-4 text-center">
+			<div className="rounded-full bg-muted/10 p-4">
+				<FileText className="h-6 w-6 text-muted-foreground/80" />
 			</div>
-			<h3 className="text-md mt-2 text-center font-medium text-gray-300">
-				No AI-generated posts yet
-			</h3>
-			<p className="mt-2 max-w-sm text-center text-sm text-gray-400">
-				No posts have been generated. Please visit the settings page to connect
-				your account and start generating posts.
-			</p>
+			<div className="flex flex-col items-center justify-center space-y-2 text-center">
+				<h3 className="text-lg font-medium text-muted-foreground/90">
+					No AI-generated posts yet
+				</h3>
+				<p className="w-[50%] text-center text-sm text-muted-foreground/60">
+					No posts have been generated. Please visit the settings page to
+					connect your account and start generating posts.
+				</p>
+			</div>
 		</div>
 	);
 
