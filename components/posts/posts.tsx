@@ -160,16 +160,18 @@ export default function Posts() {
 	);
 
 	const EmptyStateFilter = () => (
-		<div className="flex h-[52vh] flex-col items-center justify-center">
-			<div className="flex h-12 w-12 items-center justify-center">
-				<FileText className="h-16 w-16 text-gray-200" />
+		<div className="flex h-[450px] flex-col items-center justify-center space-y-4 text-center">
+			<div className="rounded-full bg-muted/10 p-4">
+				<FileText className="h-6 w-6 text-muted-foreground/80" />
 			</div>
-			<h3 className="text-md mt-2 text-center font-medium text-gray-300">
-				No posts found for this filter
-			</h3>
-			<p className="mt-2 max-w-sm text-center text-sm text-gray-400">
-				Try adjusting your filters or check back later for new posts.
-			</p>
+			<div className="flex flex-col items-center justify-center space-y-2 text-center">
+				<h3 className="text-lg font-medium text-muted-foreground/90">
+					No posts found for this filter
+				</h3>
+				<p className="w-[50%] text-center text-sm text-muted-foreground/60">
+					Try adjusting your filters or check back later for new posts.
+				</p>
+			</div>
 		</div>
 	);
 
@@ -185,7 +187,7 @@ export default function Posts() {
 
 			{isLoading ? (
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-					{Array.from({ length: 20 }).map((_, index) => (
+					{Array.from({ length: 6 }).map((_, index) => (
 						<SkeletonPostCard key={index} />
 					))}
 				</div>

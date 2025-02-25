@@ -1,8 +1,8 @@
 import "../globals.css";
 
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 
-// import { AppSidebar } from '@/components/app-sidebar';
 import Footer from "@/components/navigation/footer/footer";
 import TopNavigation from "@/components/navigation/top_navigation/top-navigation";
 
@@ -37,6 +37,7 @@ export default function Layout({
 				>
 					{children}
 				</main>
+				<Toaster />
 				<Footer />
 			</body>
 		</html>

@@ -1,6 +1,11 @@
+"use client";
 /* eslint-disable import/no-unresolved */
+
 import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React from "react";
+import { toast } from "sonner";
 
 import { Heading } from "@/components/general/micro/typography";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +17,64 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 
 import { pricingData } from "./data";
 
+const proPlanAction = async ({ plan }: { plan: "Pro" | "Free" }) => {
+	await createEncryptedCookie("subscribing", {
+		plan: plan,
+	});
+};
+
 const Pricing = () => {
 	const { plans } = pricingData;
+	const router = useRouter();
+	const { status } = useSession();
+	const hasAccess = useCheckAccess();
+
+	async function activatePlan({ plan }: { plan: "Pro" | "Free" }) {
+		try {
+			if (status === "authenticated") {
+				console.log(plan);
+				await proPlanAction({ plan });
+
+				// Check if user already has access
+				if (hasAccess) {
+					toast.info("You already have access to the Pro plan.");
+					router.push("/dashboard");
+					return;
+				}
+
+				if (plan === "Pro") {
+					const response = await subscriptionsCreation();
+
+					if (response?.success && response?.data?.checkout_url) {
+						globalThis.window.open(response.data.checkout_url, "_blank");
+						return;
+					} else {
+						console.error("Error: Checkout URL not found in response.");
+						toast.error("Something went wrong. Please try again later.");
+						return;
+					}
+				}
+
+				// Redirect to dashboard after handling subscription
+				router.push("/dashboard");
+			} else {
+				// If the user is not authenticated, follow the existing flow
+				await proPlanAction({ plan });
+				router.push("/auth?view=signup");
+			}
+		} catch (error) {
+			console.error("Error in activatePlan:", error);
+			toast.error(
+				"An error occurred while processing your request. Please try again.",
+			);
+		}
+	}
 
 	return (
 		<div className="container mx-auto w-full">
@@ -60,6 +118,9 @@ const Pricing = () => {
 								<span className="ml-1 text-sm text-gray-500">/mo</span>
 							</div>
 							<Button
+								onClick={() =>
+									activatePlan({ plan: plan.name as "Pro" | "Free" })
+								}
 								className={`mt-6 w-full rounded-lg ${
 									plan.popular
 										? "bg-gray-900 text-white hover:bg-gray-800"

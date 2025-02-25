@@ -138,6 +138,7 @@ export default function ProfileSettings() {
 				userStore.clearUser(); // Clear user information from Zustand store
 				organizationStore.clearOrganization();
 				await signOut();
+				logoutStore.setLogout(false);
 				router.push("/auth");
 			} else {
 				toast.error("Something went wrong. Please try again.");

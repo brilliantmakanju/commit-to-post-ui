@@ -63,6 +63,7 @@ export default function PaymentSuccessPage() {
 				await createEncryptedCookie("payment_success", {
 					paid: true,
 				});
+				logoutStore.setLogout(false);
 
 				// Start countdown after logout is successful
 				setShowCountdown(true);

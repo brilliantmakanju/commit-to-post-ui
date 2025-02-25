@@ -42,7 +42,6 @@ export function PasswordLoginForm({
 		},
 	});
 
-	const router = useRouter();
 	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
 	const organizationStore = useOrganizationStore();
