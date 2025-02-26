@@ -11,7 +11,7 @@ const TopNavigation = ({ children }: { children: React.ReactNode }) => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.2 }}
-			className="sticky left-0 right-0 top-0 z-50 mb-5 border-b border-[#E5E7EB]/5 bg-[#1A1C20]/80 backdrop-blur-sm md:hidden"
+			className="sticky -top-3 left-0 right-0 z-50 mb-5 border-b border-[#E5E7EB]/5 bg-[#1A1C20]/80 backdrop-blur-sm md:hidden"
 		>
 			<div className="mx-auto flex h-14 items-center justify-between px-5 py-4">
 				{/* Left Section: Logo + Nav Links */}

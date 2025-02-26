@@ -4,7 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
 
-import { getAuthTokens } from "./lib/utils/gettokens";
 import {
 	confirmMagicLink,
 	loginWithCredentials,

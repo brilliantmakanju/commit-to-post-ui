@@ -1,4 +1,5 @@
 "use client";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { Check } from "lucide-react";
 import { useState } from "react";
 
@@ -11,23 +12,12 @@ import useRetrieveNotifications from "@/hooks/notifications/notifications";
 
 import { EmptyState } from "../notifcations/empty-state";
 
-type Notification = {
-	id: number;
-	message: string;
-	createdAt: string;
-	read: boolean;
-	creator: {
-		name: string;
-		avatar: string;
-		initials: string;
-	};
+const formatDate = (date: string) => {
+	const d = parseISO(date);
+	return formatDistanceToNow(d, { addSuffix: true });
 };
-
 export function NotificationsList({ isPaid }: { isPaid: boolean }) {
-	const { total_count, unread_count, notifications, isNotificationLoading } =
-		useRetrieveNotifications();
-	const [selectedNotification, setSelectedNotification] =
-		useState<Notification | null>();
+	const { notifications, isNotificationLoading } = useRetrieveNotifications();
 
 	if (isNotificationLoading) {
 		return <NotificationsSkeleton />;
@@ -48,27 +38,17 @@ export function NotificationsList({ isPaid }: { isPaid: boolean }) {
 						}`}
 					>
 						<Avatar className="h-8 w-8">
-							<AvatarImage src={"/System_icon.png"} />
+							<AvatarImage src={"/System_icon.jpg"} />
 							<AvatarFallback>{"PP"}</AvatarFallback>
 						</Avatar>
 						<div className="flex-1 space-y-1">
 							<p className="text-sm text-zinc-200">{notification.message}</p>
 							<div className="flex items-center gap-4">
 								<p className="text-xs text-zinc-500">
-									{new Date(notification.createdAt).toLocaleDateString(
-										"en-US",
-										{
-											hour: "numeric",
-											minute: "numeric",
-											day: "numeric",
-											month: "short",
-										},
-									)}
+									{formatDate(notification.created_at)}
 								</p>
-								<p className="text-xs text-zinc-500">
-									By {notification.creator.name}
-								</p>
-								{notification.read && (
+								<p className="text-xs text-zinc-500">By System</p>
+								{notification.is_read && (
 									<span className="flex items-center text-xs text-zinc-500">
 										<Check className="mr-1 h-3 w-3" /> Read
 									</span>

@@ -1,12 +1,11 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { format, formatDistanceToNow, parseISO } from "date-fns";
-import { FileText, Linkedin, MoreVertical, Sparkles } from "lucide-react";
+import { formatDistanceToNow, parseISO } from "date-fns";
+import { FileText, Linkedin } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchPosts } from "@/server-actions/core/get-posts";
