@@ -35,13 +35,6 @@ interface FilterState {
 	status: string;
 }
 
-interface PageData {
-	count: number;
-	next: string | null;
-	previous: string | null;
-	results: Post[];
-}
-
 const PAGE_SIZE = 50;
 
 // Helper function to filter posts (both grouped and single)

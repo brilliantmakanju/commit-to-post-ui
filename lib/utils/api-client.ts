@@ -7,6 +7,7 @@ import { refreshToken } from "@/server-actions/auth/auth-actions";
 
 import {
 	clearCookies,
+	createEncryptedCookie,
 	deleteCookie,
 	updateCookie,
 } from "../cookies/create-cookies";
@@ -145,6 +146,7 @@ export class ApiClient {
 		const accessToken = (await this.getSessionToken()) || "";
 
 		const isExpired = isTokenExpired(accessToken);
+		await deleteCookie("throttled");
 		try {
 			let response = await fetch(url, {
 				method,
@@ -165,6 +167,21 @@ export class ApiClient {
 			}
 
 			const responseBody = await response.json().catch(() => {});
+			// console.log(responseBody);
+
+			if (responseBody?.detail?.includes("Request was throttled")) {
+				// Extract wait time if available
+				const regex = /in (\d+) seconds/;
+				const match = regex.exec(responseBody.detail);
+				const waitTime = match ? match[1] : undefined;
+				const errorMessage = waitTime
+					? `Too many requests. Please try again in ${waitTime} seconds.`
+					: "Too many requests. Please try again later.";
+				await createEncryptedCookie("throttled", {
+					waitTime: waitTime,
+					errorMessage: errorMessage,
+				});
+			}
 
 			if (
 				responseBody?.detail === "Authentication credentials were not provided."

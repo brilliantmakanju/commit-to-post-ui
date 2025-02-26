@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	BellDot,
 	BellDotIcon,
@@ -20,6 +20,7 @@ import {
 	SidebarHeader,
 } from "@/components/ui/sidebar";
 import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import { getOrganizations } from "@/server-actions/organizations/get-organizations";
 
@@ -120,37 +121,61 @@ const navigationItems = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const queryClient = useQueryClient();
 	const [mounted, setMounted] = useState(false);
 	const useorganizationStore = useOrganizationStore();
-
 	const { data: organizations, isFetching } = useQuery({
 		queryKey: ["organizations"],
 		queryFn: async () => {
 			const result = await getOrganizations();
 
+			// Log the result for debugging
+			console.log("Fetched organizations:", result);
+
+			// If the API call fails, return an empty array
 			if (!result.success) {
+				console.warn("Failed to fetch organizations");
 				return [];
 			}
 
+			// Ensure there are organizations before proceeding
 			if (result.organizations && result.organizations.length > 0) {
-				// Only set organization if it's not already set
-				const currentOrg = useOrganizationStore.getState().organization;
-				if (currentOrg.name === "" || currentOrg.name === undefined) {
-					useorganizationStore.clearOrganization();
+				// Retrieve stored organization domain from cookies
+				const domain = await getDecryptedCookie("organization");
+				// If there's no stored organization, set the first available one
+				if (domain?.domain === undefined) {
 					useorganizationStore.setOrganization(result.organizations[0]);
+
+					// Store the organization in cookies
 					await createEncryptedCookie("organization", {
 						domain: result.organizations[0].domains[0],
 					});
+					const domains = await getDecryptedCookie("organization");
+					console.log(domains, "Domains");
+					queryClient.fetchQuery({ queryKey: ["posts"] });
+					queryClient.invalidateQueries({ queryKey: ["posts"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
+					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+					queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
+					queryClient.invalidateQueries({
+						queryKey: ["organization-ownership"],
+					});
+					queryClient.invalidateQueries({
+						queryKey: ["retrieving_social_status"],
+					});
+
+					return result.organizations;
+				} else {
+					console.info(
+						"Organization already set, returning fetched organizations.",
+					);
+					return result.organizations;
 				}
-				//  else {
-				// 	useorganizationStore.clearOrganization();
-				// 	useorganizationStore.setOrganization(result.organizations[0]);
-				// 	await createEncryptedCookie("organization", {
-				// 		domain: result.organizations[0].domains[0],
-				// 	});
-				// }
 			}
 
+			// Return organizations, even if empty
+			console.info("No organizations found.");
 			return result.organizations;
 		},
 		staleTime: Infinity, // Keep the data fresh indefinitely

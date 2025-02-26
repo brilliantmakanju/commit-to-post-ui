@@ -106,22 +106,15 @@ const WebHookOptions: React.FC = () => {
 		async (tone: string) => {
 			setIsLoading(true);
 			try {
-				let newTones: string[];
-				if (selectedTones.includes(tone)) {
-					// Prevent deselecting the last tone
-					if (selectedTones.length === 1) {
-						toast.error("At least one tone must be selected");
-						setIsLoading(false);
-						return;
-					}
-					newTones = selectedTones.filter(t => t !== tone);
-				} else {
-					newTones = [...selectedTones, tone];
+				// Prevent deselecting the last tone
+				if (selectedTones[0] === tone) {
+					setIsLoading(false);
+					return;
 				}
 
-				const result = await updateTones(newTones, shuffleAll);
+				const result = await updateTones(tone, shuffleAll);
 				if (result.success) {
-					setSelectedTones(newTones);
+					setSelectedTones([tone]);
 					toast.success("Tones updated successfully");
 				} else {
 					toast.error("Failed to update tones");
@@ -171,7 +164,7 @@ const WebHookOptions: React.FC = () => {
 	const handleShuffleChange = async (checked: boolean) => {
 		setIsLoading(true);
 		try {
-			const result = await updateTones(selectedTones, checked);
+			const result = await updateTones(selectedTones[0], checked);
 			if (result.success) {
 				setShuffleAll(checked);
 				toast.success(

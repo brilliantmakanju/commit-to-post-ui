@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
+import TopNavigation from "@/components/dashboard/nav-top";
+import { RequestInterceptor } from "@/components/interceptor";
 import {
 	SidebarInset,
 	SidebarProvider,
@@ -19,8 +21,6 @@ import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
 import { signOut } from "@/server-actions/auth/signout";
-
-import LoadingScreen from "./logo-loading";
 
 export function AuthenticatedLayout({
 	children,
@@ -83,15 +83,17 @@ export function AuthenticatedLayout({
 
 				<SidebarInset className="relative flex-1 overflow-hidden bg-[#1A1C20] md:rounded-[20px]">
 					<main
-						className={`relative h-full w-full ${
+						className={`relative h-full w-full py-3 ${
 							status === "loading" || !isClient || logoutStore.logout
 								? "flex items-center justify-center"
 								: "overflow-y-auto text-[#EAF6FF]"
 						}`}
 					>
-						<SidebarTrigger />
+						<TopNavigation>
+							<SidebarTrigger />
+						</TopNavigation>
 						{children}
-
+						<RequestInterceptor />
 						<Toaster />
 					</main>
 				</SidebarInset>

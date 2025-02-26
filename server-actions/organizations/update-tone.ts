@@ -5,11 +5,11 @@ import { z } from "zod";
 import { apiClient } from "@/lib/utils/api-client";
 
 const updateTonesSchema = z.object({
-	tones: z.array(z.string()),
+	tones: z.string(),
 	shuffle_tones: z.boolean(),
 });
 
-export const updateTones = async (tones: string[], shuffle_tones: boolean) => {
+export const updateTones = async (tones: string, shuffle_tones: boolean) => {
 	try {
 		const validatedData = updateTonesSchema.parse({ tones, shuffle_tones });
 

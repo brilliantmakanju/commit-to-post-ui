@@ -1,9 +1,20 @@
 "use client";
-import { Loader2, ShieldCheck, Sparkles } from "lucide-react";
-import React from "react";
+import { Calendar, Crown, Loader2, Sparkles } from "lucide-react";
+import React, { Suspense } from "react";
 import { toast } from "sonner";
 
+import {
+	NotificationsList,
+	NotificationsSkeleton,
+} from "@/components/dashboard/notification-card";
+import StatsCard from "@/components/dashboard/stats-card";
+import StatsCardSkeleton from "@/components/dashboard/stats-card-loader";
+import {
+	UpcomingPosts,
+	UpcomingPostsSkeleton,
+} from "@/components/dashboard/upcoming-post";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
@@ -45,36 +56,106 @@ const Page = () => {
 
 	return (
 		<section className="flex h-full w-full flex-col px-3">
-			<h1>Dashboard Pages Updated</h1>
+			<div className="flex h-full flex-col px-4 md:px-6 lg:px-8">
+				<header className="mb-8">
+					<div className="mb-2 flex items-center justify-between">
+						<h1 className="text-2xl font-bold text-zinc-100">
+							Welcome to AI Commit
+						</h1>
+					</div>
+					<p className="text-zinc-400">
+						Your AI-powered LinkedIn content assistant
+					</p>
+				</header>
 
-			{hasAccess ? (
-				<Button
-					className="w-full bg-green-500/10 text-green-400 hover:bg-green-500/20"
-					variant="outline"
-					disabled
-				>
-					<ShieldCheck className="mr-2 h-4 w-4" />
-					Active Subscription
-				</Button>
-			) : (
-				<Button
-					variant={"outline"}
-					className="bg-subscription-accent-primary text-white"
-					onClick={subscribePlan}
-					disabled={isLoading || hasAccess === null}
-				>
-					{isLoading ? (
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-					) : (
-						<Sparkles className="mr-2 h-4 w-4" />
-					)}
-					{hasAccess === null
-						? "Checking subscription..."
-						: isLoading
-							? "Preparing checkout..."
-							: "Upgrade to Pro"}
-				</Button>
-			)}
+				<div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+					<Suspense fallback={<StatsCardSkeleton />}>
+						<StatsCard
+							title="Scheduled Posts"
+							value={hasAccess ? "12" : "2"}
+							icon={<Calendar className="h-4 w-4" />}
+							description="Posts scheduled for this week"
+						/>
+					</Suspense>
+
+					<Suspense fallback={<StatsCardSkeleton />}>
+						<StatsCard
+							title="Writing Style"
+							value="Professional"
+							icon={<Sparkles className="h-4 w-4" />}
+							description="AI-optimized for your audience"
+						/>
+					</Suspense>
+
+					<Suspense fallback={<StatsCardSkeleton />}>
+						<StatsCard
+							title="AI Generated Posts"
+							value={hasAccess ? "24" : "3"}
+							icon={<Loader2 className="h-4 w-4" />}
+							description="Created in the last 7 days"
+						/>
+					</Suspense>
+
+					<Card className="border-zinc-700/50 bg-zinc-800/50 p-1">
+						<CardHeader className="p-3">
+							<div className="flex items-center justify-between">
+								<CardTitle className="text-sm font-medium text-zinc-300">
+									{hasAccess ? "Pro Plan" : "Free Plan"}
+								</CardTitle>
+								<Crown
+									className={`h-4 w-4 ${hasAccess ? "text-amber-400" : "text-zinc-400"}`}
+								/>
+							</div>
+						</CardHeader>
+						<CardContent className="p-3">
+							{hasAccess ? (
+								<Button
+									size="sm"
+									onClick={subscribePlan}
+									disabled
+									className="w-full bg-zinc-700/50 text-zinc-200 transition-colors hover:bg-zinc-700"
+								>
+									Active Pro Plan
+								</Button>
+							) : (
+								<Button
+									size="sm"
+									disabled={isLoading}
+									className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-zinc-100 hover:from-violet-700 hover:to-indigo-700"
+								>
+									Upgrade to Pro
+								</Button>
+							)}
+						</CardContent>
+					</Card>
+				</div>
+
+				<div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2">
+					<Card className="border-zinc-700/50 bg-zinc-800/50">
+						<CardHeader>
+							<CardTitle className="text-zinc-100">
+								Recent Notifications
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="p-0">
+							<Suspense fallback={<NotificationsSkeleton />}>
+								<NotificationsList isPaid={hasAccess} />
+							</Suspense>
+						</CardContent>
+					</Card>
+
+					<Card className="border-zinc-700/50 bg-zinc-800/50">
+						<CardHeader>
+							<CardTitle className="text-zinc-100">Upcoming Posts</CardTitle>
+						</CardHeader>
+						<CardContent className="p-0">
+							<Suspense fallback={<UpcomingPostsSkeleton />}>
+								<UpcomingPosts />
+							</Suspense>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
 		</section>
 	);
 };
