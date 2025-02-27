@@ -167,8 +167,6 @@ export class ApiClient {
 			}
 
 			const responseBody = await response.json().catch(() => {});
-			// console.log(responseBody);
-
 			if (responseBody?.detail?.includes("Request was throttled")) {
 				// Extract wait time if available
 				const regex = /in (\d+) seconds/;

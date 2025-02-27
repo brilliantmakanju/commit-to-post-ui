@@ -129,12 +129,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		queryFn: async () => {
 			const result = await getOrganizations();
 
-			// Log the result for debugging
-			console.log("Fetched organizations:", result);
-
 			// If the API call fails, return an empty array
 			if (!result.success) {
-				console.warn("Failed to fetch organizations");
 				return [];
 			}
 
@@ -151,7 +147,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						domain: result.organizations[0].domains[0],
 					});
 					const domains = await getDecryptedCookie("organization");
-					console.log(domains, "Domains");
 					queryClient.fetchQuery({ queryKey: ["posts"] });
 					queryClient.invalidateQueries({ queryKey: ["posts"] });
 					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
@@ -167,15 +162,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 					return result.organizations;
 				} else {
-					console.info(
-						"Organization already set, returning fetched organizations.",
-					);
 					return result.organizations;
 				}
 			}
 
 			// Return organizations, even if empty
-			console.info("No organizations found.");
 			return result.organizations;
 		},
 		staleTime: Infinity, // Keep the data fresh indefinitely

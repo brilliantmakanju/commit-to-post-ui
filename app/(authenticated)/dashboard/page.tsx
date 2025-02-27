@@ -15,13 +15,24 @@ import {
 } from "@/components/dashboard/upcoming-post";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
 	const hasAccess = useCheckAccess();
+	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
+		useRetrieveMetrics();
 	const [isLoading, setIsLoading] = React.useState(false);
+
+	// {
+	// 	"plan": "Lifetime Deal",
+	// 	"type": "monthly",
+	// 	"iat": 1740625472,
+	// 	"exp": 1740711872,
+	// 	"jti": "vzFlGy_hAziiCDHxQ1X4Y"
+	// }
 
 	async function subscribePlan() {
 		try {
@@ -46,8 +57,7 @@ const Page = () => {
 					toast.error("Something went wrong. Please try again.");
 				}
 			}
-		} catch (error) {
-			console.error("Error in subscribePlan:", error);
+		} catch {
 			toast.error("An error occurred. Please try again.");
 		} finally {
 			setIsLoading(false);
@@ -55,8 +65,8 @@ const Page = () => {
 	}
 
 	return (
-		<section className="flex h-full w-full flex-col px-3">
-			<div className="flex h-full flex-col px-4 md:px-6 lg:px-8">
+		<section className="flex h-full w-full flex-col px-3 md:px-6">
+			<div className="flex h-full flex-col">
 				<header className="mb-8">
 					<div className="mb-2 flex items-center justify-between">
 						<h1 className="text-2xl font-bold text-zinc-100">
@@ -68,16 +78,20 @@ const Page = () => {
 					</p>
 				</header>
 
-				<div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+				<div className="mb-6 grid gap-6 sm:grid-cols-3">
 					<Suspense fallback={<StatsCardSkeleton />}>
-						<StatsCard
-							title="Scheduled Posts"
-							value={hasAccess ? "12" : "2"}
-							icon={<Calendar className="h-4 w-4" />}
-							description="Posts scheduled for this week"
-						/>
+						{isMetricsLoading ? (
+							<StatsCardSkeleton />
+						) : (
+							<StatsCard
+								title="Scheduled Posts"
+								value={scheduledPostsCount}
+								icon={<Calendar className="h-4 w-4" />}
+								description="Posts scheduled for this week"
+							/>
+						)}
 					</Suspense>
-
+					{/* 
 					<Suspense fallback={<StatsCardSkeleton />}>
 						<StatsCard
 							title="Writing Style"
@@ -85,15 +99,19 @@ const Page = () => {
 							icon={<Sparkles className="h-4 w-4" />}
 							description="AI-optimized for your audience"
 						/>
-					</Suspense>
+					</Suspense> */}
 
 					<Suspense fallback={<StatsCardSkeleton />}>
-						<StatsCard
-							title="AI Generated Posts"
-							value={hasAccess ? "24" : "3"}
-							icon={<Loader2 className="h-4 w-4" />}
-							description="Created in the last 7 days"
-						/>
+						{isMetricsLoading ? (
+							<StatsCardSkeleton />
+						) : (
+							<StatsCard
+								title="AI Generated Posts"
+								value={generatedPostsCount}
+								icon={<Loader2 className="h-4 w-4" />}
+								description="Created in the last 7 days"
+							/>
+						)}
 					</Suspense>
 
 					<Card className="border-zinc-700/50 bg-zinc-800/50 p-1">

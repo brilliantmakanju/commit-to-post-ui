@@ -1,15 +1,14 @@
 "use client";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Check } from "lucide-react";
-import { useState } from "react";
 
 // eslint-disable-next-line import/no-unresolved
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // eslint-disable-next-line import/no-unresolved
 import { ScrollArea } from "@/components/ui/scroll-area";
-// eslint-disable-next-line import/no-unresolved
-import useRetrieveNotifications from "@/hooks/notifications/notifications";
+import useRetrieveRecentNotifications from "@/hooks/notifications/recent";
 
+// eslint-disable-next-line import/no-unresolved
 import { EmptyState } from "../notifcations/empty-state";
 
 const formatDate = (date: string) => {
@@ -17,13 +16,14 @@ const formatDate = (date: string) => {
 	return formatDistanceToNow(d, { addSuffix: true });
 };
 export function NotificationsList({ isPaid }: { isPaid: boolean }) {
-	const { notifications, isNotificationLoading } = useRetrieveNotifications();
+	const { notifications, isNotificationLoading } =
+		useRetrieveRecentNotifications();
 
 	if (isNotificationLoading) {
 		return <NotificationsSkeleton />;
 	}
 
-	if (notifications?.length === 0) {
+	if (notifications && notifications.length === 0) {
 		return <EmptyState />;
 	}
 
@@ -42,7 +42,10 @@ export function NotificationsList({ isPaid }: { isPaid: boolean }) {
 							<AvatarFallback>{"PP"}</AvatarFallback>
 						</Avatar>
 						<div className="flex-1 space-y-1">
-							<p className="text-sm text-zinc-200">{notification.message}</p>
+							<h4 className="text-sm font-medium text-zinc-100">
+								{notification.title}
+							</h4>
+							<p className="text-sm text-zinc-400">{notification.message}</p>
 							<div className="flex items-center gap-4">
 								<p className="text-xs text-zinc-500">
 									{formatDate(notification.created_at)}

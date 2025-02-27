@@ -37,8 +37,8 @@ export default function Home() {
 					logoutStore.setLogout(false);
 					router.replace("/auth"); // Use replace to avoid history stacking
 				}
-			} catch (error) {
-				console.error("Error fetching cookies:", error);
+			} catch {
+				return;
 			}
 		};
 

@@ -119,8 +119,7 @@ const WebHookOptions: React.FC = () => {
 				} else {
 					toast.error("Failed to update tones");
 				}
-			} catch (error) {
-				console.error("Error updating tones:", error);
+			} catch {
 				toast.error("An error occurred while updating tones");
 			} finally {
 				setIsLoading(false);
@@ -149,8 +148,7 @@ const WebHookOptions: React.FC = () => {
 			} else {
 				toast.error("Failed to update branch name");
 			}
-		} catch (error) {
-			console.error("Error updating branch name:", error);
+		} catch {
 			toast.error("An error occurred while updating branch name");
 		} finally {
 			setIsLoading(false);
@@ -173,8 +171,7 @@ const WebHookOptions: React.FC = () => {
 			} else {
 				toast.error("Failed to update shuffle setting");
 			}
-		} catch (error) {
-			console.error("Error updating shuffle setting:", error);
+		} catch {
 			toast.error("An error occurred while updating shuffle setting");
 		} finally {
 			setIsLoading(false);

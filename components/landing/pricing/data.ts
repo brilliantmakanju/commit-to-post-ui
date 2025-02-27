@@ -1,16 +1,57 @@
-export const pricingData = {
+export interface PricingFeature {
+	name: string;
+	available: boolean;
+}
+
+export interface PlanPrice {
+	monthly: number;
+	annual: number;
+	previous?: {
+		monthly?: number;
+		annual?: number;
+	};
+}
+
+export interface LifetimeDeal {
+	price: number;
+	previousPrice?: number;
+	spotsLeft?: number;
+	endsIn: number; // hours
+}
+
+export interface Plan {
+	name: "Free" | "Pro" | "Lifetime Deal" | "Custom";
+	badge: string;
+	price: PlanPrice;
+	features: (string | PricingFeature)[];
+	buttonText: string;
+	buttonVariant: "outline" | "default" | "success";
+	popular?: boolean;
+	lifetime?: LifetimeDeal;
+}
+
+export interface PricingData {
+	title: string;
+	plans: Plan[];
+}
+
+export const pricingData: PricingData = {
 	title: "AI Commit-to-Post Pricing",
 	plans: [
 		{
 			name: "Free",
 			badge: "Free Plan",
-			price: "0",
+			price: {
+				monthly: 0,
+				annual: 0,
+			},
 			features: [
-				"Generate up to 5 posts/month (editable)",
-				"Connect GitHub and LinkedIn",
-				"Single project integration",
-				"Default post generation tone",
-				"No post rescheduling",
+				{ name: "Generate up to 5 posts/month", available: true },
+				{ name: "Connect GitHub and LinkedIn", available: true },
+				{ name: "Single project integration", available: true },
+				{ name: "Default post generation tone", available: true },
+				{ name: "Post rescheduling", available: false },
+				{ name: "Priority support", available: false },
 			],
 			buttonText: "Start for Free",
 			buttonVariant: "outline",
@@ -18,18 +59,45 @@ export const pricingData = {
 		{
 			name: "Pro",
 			badge: "Premium",
-			price: "25",
+			price: {
+				monthly: 15,
+				annual: 144,
+				previous: {
+					monthly: 25,
+					annual: 240,
+				},
+			},
 			features: [
-				"Unlimited post generation",
-				"Multi-project integration",
-				"Post rescheduling",
-				"Priority customer support",
-				"Multiple tones & shuffle tone feature",
-				"Team collaboration (Coming soon)",
+				{ name: "Unlimited post generation", available: true },
+				{ name: "Multi-project integration", available: true },
+				{ name: "Post rescheduling", available: true },
+				{ name: "Priority customer support", available: true },
+				{ name: "Multiple tones & shuffle tone", available: true },
+				{ name: "Team collaboration (Coming Soon)", available: true },
 			],
 			buttonText: "Go Pro",
 			buttonVariant: "success",
 			popular: true,
+		},
+		{
+			name: "Lifetime Deal",
+			badge: "Limited Offer",
+			price: {
+				monthly: 0,
+				annual: 0,
+			},
+			lifetime: {
+				price: 249,
+				previousPrice: 399,
+				spotsLeft: 30, // Limited to 30 users
+				endsIn: 72, // 72-hour countdown
+			},
+			features: [
+				{ name: "Everything in Pro", available: true },
+				{ name: "Future feature upgrades", available: true },
+			],
+			buttonText: "Claim Lifetime Access",
+			buttonVariant: "default",
 		},
 	],
 };

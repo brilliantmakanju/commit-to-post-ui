@@ -10,15 +10,13 @@ export const RequestInterceptor = () => {
 		const checkThrottledCookie = async () => {
 			try {
 				const throttled = await getDecryptedCookie("throttled");
-				console.log("Throttled cookie:", throttled);
 				if (throttled?.errorMessage) {
-					console.log("Throttle cookie found:", throttled);
 					toast.info(`${throttled.errorMessage}`);
 					// Optionally clear the cookie after showing the toast
 					// await clearCookie("throttled");
 				}
-			} catch (error) {
-				console.error("Error reading throttled cookie:", error);
+			} catch {
+				return;
 			}
 		};
 

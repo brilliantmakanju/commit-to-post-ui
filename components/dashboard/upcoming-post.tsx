@@ -3,11 +3,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { FileText, Linkedin } from "lucide-react";
-import { useState } from "react";
+import {
+	AwaitedReactNode,
+	JSXElementConstructor,
+	Key,
+	ReactElement,
+	ReactNode,
+	ReactPortal,
+	useState,
+} from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import useRetrieveUpcomingPost from "@/hooks/core/upcoming";
 import { fetchPosts } from "@/server-actions/core/get-posts";
 
 interface Post {
@@ -34,24 +43,12 @@ const formatDate = (date: string) => {
 };
 
 export function UpcomingPosts() {
-	const [posts, setPosts] = useState<Post[]>([]);
-	const { data, isLoading, error } = useQuery({
-		queryKey: ["posts"],
-		queryFn: async () => {
-			const result = await fetchPosts({ page_size: 0 });
-			if (!result.success) {
-				throw new Error("Failed to fetch posts");
-			}
-			setPosts(result.data);
-			return result.data;
-		},
-	});
-
-	if (isLoading) {
+	const { posts, isMetricsLoading } = useRetrieveUpcomingPost();
+	if (isMetricsLoading) {
 		return <UpcomingPostsSkeleton />;
 	}
 
-	if (posts.length === 0) {
+	if (posts && posts.length === 0) {
 		return (
 			<div className="flex h-[450px] flex-col items-center justify-center space-y-4 text-center">
 				<div className="rounded-full bg-muted/10 p-4">
@@ -73,36 +70,65 @@ export function UpcomingPosts() {
 	return (
 		<ScrollArea className="h-full">
 			<div className="space-y-4 p-4">
-				{posts.map(post => (
-					<div
-						key={post.id}
-						className="flex flex-col gap-2 rounded-lg bg-zinc-700/30 p-4"
-					>
-						<p className="line-clamp-3 text-xs text-zinc-400">{post.content}</p>
-						<div className="flex flex-wrap items-center gap-2">
-							<Badge
-								variant="outline"
-								className={` ${post.status === "published" ? "bg-green-900/30 text-green-400" : ""} ${post.status === "scheduled" ? "bg-blue-900/30 text-blue-400" : ""} ${post.status === "drafted" ? "bg-zinc-700 text-zinc-300" : ""} `}
-							>
-								{post.status}
-							</Badge>
+				{posts.map(
+					(post: {
+						id: Key | null | undefined;
+						content:
+							| string
+							| number
+							| bigint
+							| boolean
+							| ReactElement<any, string | JSXElementConstructor<any>>
+							| Iterable<ReactNode>
+							| ReactPortal
+							| Promise<AwaitedReactNode>
+							| null
+							| undefined;
+						status:
+							| string
+							| number
+							| bigint
+							| boolean
+							| ReactElement<any, string | JSXElementConstructor<any>>
+							| Iterable<ReactNode>
+							| Promise<AwaitedReactNode>
+							| null
+							| undefined;
+						created_at: string;
+						scheduled_publish_time: any;
+					}) => (
+						<div
+							key={post.id}
+							className="flex flex-col gap-2 rounded-lg bg-zinc-700/30 p-4"
+						>
+							<p className="line-clamp-3 text-xs text-zinc-400">
+								{post.content}
+							</p>
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge
+									variant="outline"
+									className={` ${post.status === "published" ? "bg-green-900/30 text-green-400" : ""} ${post.status === "scheduled" ? "bg-blue-900/30 text-blue-400" : ""} ${post.status === "drafted" ? "bg-zinc-700 text-zinc-300" : ""} `}
+								>
+									{post.status}
+								</Badge>
 
-							<div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-								<div className="flex items-center">
-									<Linkedin className="mr-1 h-4 w-4 text-blue-600" />
+								<div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+									<div className="flex items-center">
+										<Linkedin className="mr-1 h-4 w-4 text-blue-600" />
+									</div>
 								</div>
-							</div>
-							<span className="text-xs text-zinc-500">
-								Created {formatDate(post.created_at)}
-							</span>
-							{post.status === "scheduled" && (
 								<span className="text-xs text-zinc-500">
-									Scheduled for {formatDate(`${post.scheduled_publish_time}`)}
+									Created {formatDate(post.created_at)}
 								</span>
-							)}
+								{post.status === "scheduled" && (
+									<span className="text-xs text-zinc-500">
+										Scheduled {formatDate(`${post.scheduled_publish_time}`)}
+									</span>
+								)}
+							</div>
 						</div>
-					</div>
-				))}
+					),
+				)}
 			</div>
 		</ScrollArea>
 	);

@@ -1,3 +1,4 @@
+"use client";
 import { BellOff } from "lucide-react";
 
 export function EmptyState() {

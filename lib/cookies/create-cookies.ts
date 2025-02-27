@@ -84,7 +84,7 @@ export const clearCookies = async () => {
 		for (const cookie of allCookies) {
 			await deleteCookie(cookie.name);
 		}
-	} catch (error) {
-		console.error("Error clearing cookies:", error);
+	} catch {
+		return;
 	}
 };
