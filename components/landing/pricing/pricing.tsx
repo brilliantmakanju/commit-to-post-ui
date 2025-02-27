@@ -23,7 +23,7 @@ const Pricing = () => {
 				{title}
 			</Heading>
 			<div className="flex w-full flex-col items-center justify-center gap-12 px-4 md:grid md:grid-cols-3 md:gap-6 md:px-3">
-				{plans.map(plan => (
+				{/* {plans.map(plan => (
 					<Card
 						key={plan.name}
 						className={`relative flex w-full flex-col ${
@@ -82,7 +82,7 @@ const Pricing = () => {
 							</Button>
 						</CardFooter>
 					</Card>
-				))}
+				))} */}
 			</div>
 		</div>
 	);
