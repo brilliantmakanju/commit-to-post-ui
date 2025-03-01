@@ -14,7 +14,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default function Error404() {
+export default function NotFound() {
 	const [isHovered, setIsHovered] = useState(false);
 	const [terminalOpen, setTerminalOpen] = useState(false);
 	const [currentCommand, setCurrentCommand] = useState(0);
