@@ -9,15 +9,9 @@ const nextConfig: NextConfig = {
 	async redirects() {
 		return [
 			{
-				source: "/:path*", // Catch all unmatched routes
-				destination: "/not-found", // Your custom 404 page
+				source: "/((?!not-found).*)", // Exclude the not-found page from the redirect
+				destination: "/not-found",
 				permanent: false,
-				missing: [
-					{
-						type: "query",
-						key: "path", // Providing the required 'key' property
-					},
-				],
 			},
 		];
 	},
