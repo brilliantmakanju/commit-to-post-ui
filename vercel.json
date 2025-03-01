@@ -1,0 +1,22 @@
+{
+    "redirects": [
+      {
+        "source": "/(.*)",
+        "has": [
+          {
+            "type": "missing",
+            "value": "404"
+          }
+        ],
+        "destination": "/not-found",
+        "permanent": false
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/fakepath",
+        "destination": "/not-found"
+      }
+    ]
+  }
+  

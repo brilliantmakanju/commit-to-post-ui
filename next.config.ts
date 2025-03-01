@@ -6,15 +6,6 @@ const nextConfig: NextConfig = {
 		defaultLocale: "en-US",
 	},
 	reactStrictMode: true,
-	async redirects() {
-		return [
-			{
-				source: "/((?!not-found).*)", // Exclude the not-found page from the redirect
-				destination: "/not-found",
-				permanent: false,
-			},
-		];
-	},
 };
 
 export default nextConfig;
