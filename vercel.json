@@ -1,20 +1,7 @@
 {
-    "redirects": [
-      {
-        "source": "/(.*)",
-        "has": [
-          {
-            "type": "missing",
-            "value": "404"
-          }
-        ],
-        "destination": "/not-found",
-        "permanent": false
-      }
-    ],
     "rewrites": [
       {
-        "source": "/fakepath",
+        "source": "/(.*)",
         "destination": "/not-found"
       }
     ]
