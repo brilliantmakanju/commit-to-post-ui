@@ -146,7 +146,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					await createEncryptedCookie("organization", {
 						domain: result.organizations[0].domains[0],
 					});
-					const domains = await getDecryptedCookie("organization");
 					queryClient.fetchQuery({ queryKey: ["posts"] });
 					queryClient.invalidateQueries({ queryKey: ["posts"] });
 					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
@@ -172,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		staleTime: Infinity, // Keep the data fresh indefinitely
 		refetchOnMount: false,
 		refetchOnWindowFocus: false,
-		refetchOnReconnect: false,
+		refetchOnReconnect: true,
 	});
 
 	useEffect(() => {

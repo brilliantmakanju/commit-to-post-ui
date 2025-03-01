@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MailIcon } from "lucide-react";
+import { Loader2, MailIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -76,6 +76,7 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 								<div className="relative">
 									<MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 									<Input
+										disabled={form.formState.isSubmitting}
 										placeholder="name@example.com"
 										className="pl-10"
 										{...field}
@@ -88,9 +89,12 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 				/>
 				<Button
 					type="submit"
-					className="w-full"
+					className="flex w-full items-center justify-center gap-2"
 					disabled={form.formState.isSubmitting}
 				>
+					{form.formState.isSubmitting && (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					)}
 					Send Magic Link
 				</Button>
 				<Button

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LockIcon, MailIcon } from "lucide-react";
+import { Loader2, LockIcon, MailIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -88,6 +88,7 @@ export function PasswordLoginForm({
 									<MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 									<Input
 										placeholder="name@example.com"
+										disabled={form.formState.isSubmitting}
 										className="pl-10"
 										{...field}
 									/>
@@ -108,6 +109,7 @@ export function PasswordLoginForm({
 									<LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 									<Input
 										type="password"
+										disabled={form.formState.isSubmitting}
 										placeholder="Enter your password"
 										className="pl-10"
 										{...field}
@@ -120,9 +122,12 @@ export function PasswordLoginForm({
 				/>
 				<Button
 					type="submit"
-					className="w-full"
+					className="flex w-full items-center justify-center gap-2"
 					disabled={form.formState.isSubmitting}
 				>
+					{form.formState.isSubmitting && (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					)}
 					Sign in
 				</Button>
 				<div className="flex items-center justify-between">

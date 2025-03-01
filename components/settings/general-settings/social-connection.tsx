@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/consistent-function-scoping */
 "use client";
 
-import { Linkedin, Twitter } from "lucide-react";
+import { Linkedin, Loader2, Twitter } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,40 @@ export function SocialConnectionSettings() {
 			toast.error("Failed to connect LinkedIn account, try again later");
 		}
 	};
+
+	if (isFetching) {
+		return (
+			<div className="flex w-full flex-col text-white">
+				<div className="w-full space-y-4">
+					<h2 className="text-lg font-semibold">Connected Accounts</h2>
+					<div className="flex flex-wrap gap-4">
+						<Button
+							disabled
+							className="w-full flex-1 justify-start border border-white bg-transparent text-white opacity-50"
+						>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Loading...
+						</Button>
+						<Button
+							disabled
+							className="w-full flex-1 cursor-not-allowed justify-start border border-white text-white opacity-50"
+						>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Loading...
+						</Button>
+					</div>
+					<div className="space-y-2">
+						<h3 className="text-sm font-medium">How to connect your account</h3>
+						<p className="text-sm text-gray-400">Loading instructions...</p>
+						<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
+							<li className="opacity-50">Loading tutorial...</li>
+							<li className="opacity-50">Loading guide...</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex w-full flex-col text-white">

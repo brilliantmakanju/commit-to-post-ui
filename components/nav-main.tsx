@@ -72,7 +72,6 @@ export function NavMain({ items }: NavMainProps) {
 								disabled={isDisabled(item)}
 							>
 								<Link
-									prefetch={false}
 									href={`${getItemUrl(item)}`}
 									onClick={event => {
 										if (isDisabled(item)) {
@@ -109,7 +108,6 @@ export function NavMain({ items }: NavMainProps) {
 												<SidebarMenuSubItem key={subItem.title}>
 													<SidebarMenuSubButton asChild>
 														<Link
-															prefetch={false}
 															href={`${getItemUrl(item)}`}
 															onClick={event => {
 																if (isDisabled(item)) {

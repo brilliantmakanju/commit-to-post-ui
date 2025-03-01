@@ -168,59 +168,72 @@ const PostCard: React.FC<PostCardProps> = ({
 		}
 	};
 
+	const buttonCase = editedPost.content.trim === post.content.trim;
+
 	return (
 		<>
-			<Card className="single-post">
-				<CardContent className="p-4">
-					<div className="mb-2 flex items-center justify-between">
-						<Badge variant={badgeVariant}>{post.status}</Badge>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="h-8 w-8 p-0">
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-									<Edit className="mr-2 h-4 w-4" />
-									<span>Edit</span>
-								</DropdownMenuItem>
-								{hasAccess ? (
-									<DropdownMenuItem
-										disabled={!hasAccess}
-										onClick={() => setIsRescheduleDialogOpen(true)}
-									>
-										<Clock className="mr-2 h-4 w-4" />
-										<span>Reschedule</span>
-									</DropdownMenuItem>
-								) : (
-									<></>
-								)}
-								<DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
-									<Trash2 className="mr-2 h-4 w-4" />
-									<span>Delete</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-					<p className="mb-2 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
-						{post.content}
-					</p>
-					<div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-						<div className="flex items-center">
-							{post.platform === "twitter" ? (
-								<Twitter className="mr-1 h-4 w-4 text-blue-400" />
-							) : (
+			<div
+				key={post.id}
+				className="single-post flex flex-col gap-2 rounded-lg bg-zinc-700/30 p-4"
+			>
+				<div className="flex w-full items-center justify-between">
+					<div className="flex items-center justify-start gap-4">
+						<Badge
+							variant="outline"
+							className={` ${post.status === "published" ? "bg-green-900/30 text-green-400" : ""} ${post.status === "scheduled" ? "bg-blue-900/30 text-blue-400" : ""} ${post.status === "drafted" ? "bg-zinc-700 text-zinc-300" : ""} `}
+						>
+							{post.status}
+						</Badge>
+						<div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+							<div className="flex items-center">
 								<Linkedin className="mr-1 h-4 w-4 text-blue-600" />
-							)}
-							<span>
-								{post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
-							</span>
+							</div>
 						</div>
-						<span>{formatDate(post.created_at)}</span>
 					</div>
-				</CardContent>
-			</Card>
+
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" className="h-8 w-8 p-0">
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+								<Edit className="mr-2 h-4 w-4" />
+								<span>Edit</span>
+							</DropdownMenuItem>
+							{hasAccess ? (
+								<DropdownMenuItem
+									disabled={!hasAccess}
+									onClick={() => setIsRescheduleDialogOpen(true)}
+								>
+									<Clock className="mr-2 h-4 w-4" />
+									<span>Reschedule</span>
+								</DropdownMenuItem>
+							) : (
+								<></>
+							)}
+							<DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
+								<Trash2 className="mr-2 h-4 w-4" />
+								<span>Delete</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+				<p className="mb-2 line-clamp-3 text-sm text-zinc-400">
+					{post.content}
+				</p>
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<span className="text-xs text-zinc-500">
+						Created {formatDate(post.created_at)}
+					</span>
+					{post.status === "scheduled" && (
+						<span className="text-xs text-zinc-500">
+							Scheduled {formatDate(`${post.scheduled_publish_time}`)}
+						</span>
+					)}
+				</div>
+			</div>
 
 			{/* Delete Confirmation Dialog */}
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -262,7 +275,7 @@ const PostCard: React.FC<PostCardProps> = ({
 				open={isRescheduleDialogOpen && hasAccess}
 				onOpenChange={setIsRescheduleDialogOpen}
 			>
-				<DialogContent>
+				<DialogContent className="w-auto">
 					<DialogHeader>
 						<DialogTitle>Reschedule Post</DialogTitle>
 						<DialogDescription>
@@ -330,7 +343,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
 			{/* Edit Dialog */}
 			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-				<DialogContent className="sm:max-w-[425px]">
+				<DialogContent className="w-full">
 					<DialogHeader>
 						<DialogTitle>Edit Post</DialogTitle>
 						<DialogDescription>
@@ -348,7 +361,7 @@ const PostCard: React.FC<PostCardProps> = ({
 								onChange={event =>
 									setEditedPost({ ...editedPost, content: event.target.value })
 								}
-								rows={6}
+								rows={12}
 								className="col-span-3"
 							/>
 						</div>

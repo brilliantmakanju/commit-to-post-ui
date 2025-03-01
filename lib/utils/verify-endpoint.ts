@@ -18,33 +18,28 @@ export async function validateEndpointAndMethod(
 	method: string,
 ): Promise<boolean> {
 	try {
-		// Retrieve the configured endpoint-methods map from environment variables
+		// Retrieve and parse the endpoint-methods map from the environment variable
 		const endpointMethods = process.env.NEXT_PUBLIC_ENDPOINTS_JSON
 			? JSON.parse(process.env.NEXT_PUBLIC_ENDPOINTS_JSON)
 			: {};
 
-		// Log a message if no configuration is found
-		if (Object.keys(endpointMethods).length === 0) {
-			console.warn(
-				"No endpoint-methods configuration found in environment variables.",
-			);
+		// Check if the endpoint exists in the configuration
+		const methodsConfig = endpointMethods[endpoint];
+		if (!methodsConfig || !Array.isArray(methodsConfig)) {
+			console.warn(`No configuration found for endpoint: ${endpoint}`);
+			return false;
 		}
 
-		// Check if the provided endpoint exists in the endpointMethods configuration
-		const endpointConfig = endpointMethods[endpoint];
-		if (!endpointConfig) {
-			return false; // Endpoint not found
-		}
+		// Check if the method exists in the allowed methods for the endpoint
+		const isMethodAllowed = methodsConfig.some(
+			(config: { method: string }) => config.method === method,
+		);
 
-		// Check if the provided method matches the allowed method for this endpoint
-		if (endpointConfig.method !== method) {
-			return false; // Method mismatch
-		}
+		// Log the result of method matching
 
-		// If both endpoint and method match, return true
-		return true;
-	} catch {
-		// Handle any unexpected errors
-		return false; // Return false if there was an error in processing
+		return isMethodAllowed;
+	} catch (error) {
+		console.error("Error validating endpoint and method:", error);
+		return false;
 	}
 }

@@ -104,8 +104,8 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 							<FormControl>
 								<Input
 									{...field}
-									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 									disabled={isFetching || isSubmitting}
+									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
 								/>
 							</FormControl>
 							<FormMessage />

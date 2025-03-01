@@ -77,6 +77,7 @@ const ForgotPasswordForm: React.FC<FormProps> = ({ setView }) => {
 									<div className="relative">
 										<MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 										<Input
+											disabled={form.formState.isSubmitting}
 											placeholder="name@example.com"
 											className="pl-10"
 											{...field}

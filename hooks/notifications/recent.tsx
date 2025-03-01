@@ -11,13 +11,11 @@ const useRetrieveRecentNotifications = () => {
 
 			if (response.success) {
 				return {
-					notifications: response.data?.notifications ?? [],
+					notifications: response.data?.notifications,
 				};
 			}
 
 			return {
-				total_count: 0,
-				unread_count: 0,
 				notifications: [],
 			};
 		},

@@ -68,12 +68,12 @@ export function TeamSwitcher({
 			: [];
 
 	const handleTeamChange = async (team: (typeof teams)[0]) => {
+		organizationStore.clearOrganization();
+		setOrganization(team);
 		await deleteCookie("organization");
 		await createEncryptedCookie("organization", {
 			domain: team.domains[0],
 		});
-		organizationStore.clearOrganization();
-		setOrganization(team);
 		queryClient.fetchQuery({ queryKey: ["posts"] });
 		queryClient.invalidateQueries({ queryKey: ["posts"] });
 		queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
@@ -82,6 +82,18 @@ export function TeamSwitcher({
 		queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 		queryClient.invalidateQueries({ queryKey: ["organization-ownership"] });
 		queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
+
+		queryClient.fetchQuery({ queryKey: ["dashboard_metrics"] });
+		queryClient.invalidateQueries({ queryKey: ["dashboard_metrics"] });
+
+		queryClient.fetchQuery({ queryKey: ["upcoming_posts_metrics"] });
+		queryClient.invalidateQueries({ queryKey: ["upcoming_posts_metrics"] });
+
+		queryClient.fetchQuery({ queryKey: ["recent_notifications"] });
+		queryClient.invalidateQueries({ queryKey: ["recent_notifications"] });
+
+		queryClient.fetchQuery({ queryKey: ["notifications"] });
+		queryClient.invalidateQueries({ queryKey: ["notifications"] });
 	};
 
 	// Only access store after mounting

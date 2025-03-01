@@ -5,7 +5,6 @@ import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 interface ProfileFormProps {
 	register: UseFormRegister<{
@@ -34,6 +33,7 @@ const ProfileForm = ({
 					id="fullName"
 					placeholder="e.g. John Smith"
 					className="border-neutral-200 bg-white"
+					disabled={isSubmitting}
 					{...register("fullName")}
 				/>
 				{errors.fullName && (

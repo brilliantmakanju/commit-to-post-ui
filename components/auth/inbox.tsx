@@ -156,6 +156,7 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 													type="email"
 													autoComplete={"off"}
 													placeholder="Enter your email"
+													disabled={form.formState.isSubmitting}
 													className="mb-4 bg-white text-[#4B5563] dark:bg-[#0A1930] dark:text-[#E5E7EB]"
 													{...field}
 												/>

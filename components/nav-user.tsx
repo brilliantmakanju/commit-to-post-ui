@@ -178,7 +178,6 @@ export function NavUser() {
 						<DropdownMenuItem asChild className="p-0">
 							<Link
 								href="/settings?tab=profile"
-								prefetch={false}
 								className="flex w-full items-center gap-2 px-3 py-2"
 							>
 								<User2 className="h-4 w-4" />

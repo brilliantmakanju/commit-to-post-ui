@@ -81,6 +81,7 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 											type="password"
 											autoComplete={"off"}
 											placeholder="Enter your password"
+											disabled={form.formState.isSubmitting}
 											{...field}
 										/>
 									</div>
@@ -100,6 +101,7 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 									<div className="relative">
 										<Input
 											type="password"
+											disabled={form.formState.isSubmitting}
 											autoComplete={"off"}
 											placeholder="Enter your password"
 											{...field}

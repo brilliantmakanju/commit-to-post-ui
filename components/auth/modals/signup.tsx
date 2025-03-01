@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GithubIcon } from "lucide-react";
+import { GithubIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -71,7 +71,11 @@ export default function SignupForm({ setView }: SignupFormProps) {
 								<FormItem>
 									<FormLabel>First name</FormLabel>
 									<FormControl>
-										<Input placeholder="John" {...field} />
+										<Input
+											placeholder="John"
+											disabled={form.formState.isSubmitting}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -84,7 +88,11 @@ export default function SignupForm({ setView }: SignupFormProps) {
 								<FormItem>
 									<FormLabel>Last name</FormLabel>
 									<FormControl>
-										<Input placeholder="Doe" {...field} />
+										<Input
+											placeholder="Doe"
+											disabled={form.formState.isSubmitting}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -101,6 +109,7 @@ export default function SignupForm({ setView }: SignupFormProps) {
 									<Input
 										placeholder="name@example.com"
 										type="email"
+										disabled={form.formState.isSubmitting}
 										{...field}
 									/>
 								</FormControl>
@@ -115,7 +124,11 @@ export default function SignupForm({ setView }: SignupFormProps) {
 							<FormItem>
 								<FormLabel>Password</FormLabel>
 								<FormControl>
-									<Input type="password" {...field} />
+									<Input
+										type="password"
+										disabled={form.formState.isSubmitting}
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -128,13 +141,24 @@ export default function SignupForm({ setView }: SignupFormProps) {
 							<FormItem>
 								<FormLabel>Confirm Password</FormLabel>
 								<FormControl>
-									<Input type="password" {...field} />
+									<Input
+										type="password"
+										disabled={form.formState.isSubmitting}
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-					<Button type="submit" className="w-full">
+					<Button
+						disabled={form.formState.isSubmitting}
+						type="submit"
+						className="flex w-full items-center justify-center gap-2"
+					>
+						{form.formState.isSubmitting && (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						)}
 						Create account
 					</Button>
 				</form>

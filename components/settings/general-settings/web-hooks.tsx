@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useSocialStatus } from "@/hooks/settings/use-social-status";
 import useRetrieveWebhook from "@/hooks/settings/use-webhook";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
@@ -17,6 +16,7 @@ import { regenerateWebhookSchema } from "@/resolvers/organizations/organization-
 import { createRegenerateWebhook } from "@/server-actions/organizations/create-web-hook";
 
 import WebHookOptions from "./webhook-options";
+import AISettingsLoader from "./webhook-options-loader";
 
 const copyToClipboard = (text: string) => {
 	navigator.clipboard.writeText(text);
@@ -51,6 +51,46 @@ const BlurredValue = ({ value, label }: { value: string; label: string }) => (
 				onClick={() => copyToClipboard(value)}
 			>
 				<Copy className="h-4 w-4" />
+			</Button>
+		</div>
+	</div>
+);
+
+const BlurredValueLoader = ({ label }: { label: string }) => (
+	<div className="w-full space-y-2 text-black">
+		<Label className="text-white">{label}</Label>
+		<div className="flex items-center space-x-2">
+			<div className="w-full flex-grow overflow-hidden rounded-md bg-muted p-2 font-mono text-sm">
+				<span className="flex items-center">
+					<span className="select-all">••••••••••••••••••••</span>
+					<span className="select-all blur-sm transition-all duration-200">
+						***************
+					</span>
+				</span>
+			</div>
+			<Button variant="outline" size="icon" disabled>
+				<Loader2 className="h-4 w-4 animate-spin" />
+			</Button>
+		</div>
+	</div>
+);
+
+const WebhookLoader = () => (
+	<div className="space-y-4">
+		<Alert>
+			<AlertTriangle className="h-4 w-4" />
+			<AlertTitle>Warning</AlertTitle>
+			<AlertDescription>Loading webhook information...</AlertDescription>
+		</Alert>
+
+		<div className="flex w-full justify-end pt-4">
+			<Button
+				variant="outline"
+				disabled
+				className="text-black disabled:opacity-80"
+			>
+				<Loader2 className="mr-2 h-4 w-4 animate-spin text-black" />
+				Loading...
 			</Button>
 		</div>
 	</div>
@@ -105,8 +145,21 @@ export function WebHookSettings() {
 
 	if (isWebhookLoading) {
 		return (
-			<div className="flex h-full w-full items-center justify-center">
-				Loading...
+			<div className="flex w-full flex-col">
+				<div className="w-full space-y-4 text-white">
+					<h2 className="text-lg font-semibold">
+						Webhook for {organization.name}
+					</h2>
+
+					<div className="w-full space-y-4">
+						<BlurredValueLoader label="Webhook URL" />
+						<BlurredValueLoader label="Secret Key" />
+					</div>
+
+					<WebhookLoader />
+
+					{isConnected && <AISettingsLoader />}
+				</div>
 			</div>
 		);
 	}
