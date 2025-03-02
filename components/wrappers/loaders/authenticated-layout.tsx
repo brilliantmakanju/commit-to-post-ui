@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
+import SubPlanCheckout from "@/components/auth/subscription/sub-plan-checkout";
 import TopNavigation from "@/components/dashboard/nav-top";
 import { RequestInterceptor } from "@/components/interceptor";
 import {
@@ -93,6 +94,7 @@ export function AuthenticatedLayout({
 							<SidebarTrigger />
 						</TopNavigation>
 						{children}
+						<SubPlanCheckout />
 						<RequestInterceptor />
 						<Toaster />
 					</main>

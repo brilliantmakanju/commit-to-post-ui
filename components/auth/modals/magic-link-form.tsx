@@ -16,7 +16,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clearCookies } from "@/lib/cookies/create-cookies";
+import {
+	clearCookies,
+	createEncryptedCookie,
+} from "@/lib/cookies/create-cookies";
+import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
@@ -41,7 +45,12 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 	const logoutStore = useLogoutStore();
 
 	const submitMagicLink = async (values: z.infer<typeof magicLinkSchema>) => {
+		const planData = await getDecryptedCookie("subscribing");
 		await clearCookies();
+		await createEncryptedCookie("subscribing", {
+			plan: planData?.plan,
+			type: planData?.type,
+		});
 		userStore.clearUser();
 		organizationStore.clearOrganization();
 		logoutStore.clearLogout();

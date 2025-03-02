@@ -1,5 +1,5 @@
 "use client";
-import { Calendar, Crown, Loader2, Sparkles } from "lucide-react";
+import { Calendar, Crown, Loader2 } from "lucide-react";
 import React, { Suspense } from "react";
 import { toast } from "sonner";
 
@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
+import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
 	const hasAccess = useCheckAccess();
@@ -26,20 +26,12 @@ const Page = () => {
 		useRetrieveMetrics();
 	const [isLoading, setIsLoading] = React.useState(false);
 
-	// {
-	// 	"plan": "Lifetime Deal",
-	// 	"type": "monthly",
-	// 	"iat": 1740625472,
-	// 	"exp": 1740711872,
-	// 	"jti": "vzFlGy_hAziiCDHxQ1X4Y"
-	// }
-
 	async function subscribePlan() {
 		try {
 			const planData = await getDecryptedCookie("subscribing");
 
 			if (hasAccess) {
-				toast.info("You already have access to the Pro plan.");
+				toast.info("You already have an ACTIVELY paid plan.");
 				return;
 			}
 
@@ -47,7 +39,20 @@ const Page = () => {
 			const toastId = toast.loading("Preparing your checkout...");
 
 			if (planData?.plan === "Pro") {
-				const response = await subscriptionsCreation();
+				const response = await authSubscribe({
+					plans: "Pro",
+					billingCycle: planData.type as unknown as "monthly" | "annual",
+				});
+
+				if (response?.success && response?.data?.checkout_url) {
+					toast.dismiss(toastId);
+					toast.success("Redirecting to checkout...");
+					window.open(response.data.checkout_url, "_blank");
+				} else {
+					toast.error("Something went wrong. Please try again.");
+				}
+			} else if (planData?.plan === "Lifetime Deal") {
+				const response = await authSubscribe({ plans: "Lifetime Deal" });
 
 				if (response?.success && response?.data?.checkout_url) {
 					toast.dismiss(toastId);

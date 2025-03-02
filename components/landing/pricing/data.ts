@@ -60,11 +60,11 @@ export const pricingData: PricingData = {
 			name: "Pro",
 			badge: "Premium",
 			price: {
-				monthly: 15,
-				annual: 144,
+				monthly: 12,
+				annual: 120,
 				previous: {
-					monthly: 25,
-					annual: 240,
+					monthly: 19,
+					annual: 180,
 				},
 			},
 			features: [
@@ -87,9 +87,9 @@ export const pricingData: PricingData = {
 				annual: 0,
 			},
 			lifetime: {
-				price: 249,
-				previousPrice: 399,
-				spotsLeft: 30, // Limited to 30 users
+				price: 199,
+				previousPrice: 299,
+				spotsLeft: 50, // Keeping the spots limited for exclusivity
 				endsIn: 72, // 72-hour countdown
 			},
 			features: [

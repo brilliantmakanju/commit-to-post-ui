@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
-import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import {
+	createEncryptedCookie,
+	deleteCookie,
+} from "@/lib/cookies/create-cookies";
 import { cn } from "@/lib/utils";
 import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 
@@ -52,13 +55,11 @@ async function proPlanAction({
 	plan: "Free" | "Pro" | "Lifetime Deal" | "Custom";
 	type: "monthly" | "annual";
 }) {
-	// This is a placeholder. Replace with your actual logic.
-	const createSubCookie = await createEncryptedCookie("subscribing", {
+	await deleteCookie("subscribing");
+	await createEncryptedCookie("subscribing", {
 		plan: plan,
 		type: type,
 	});
-	await new Promise(resolve => setTimeout(resolve, 500)); // Simulate an async operation
-	toast.success(`Plan ${plan} activated!`);
 }
 
 const Pricing = () => {
@@ -117,18 +118,6 @@ const Pricing = () => {
 					toast.info("You already have access to the Pro plan.");
 					router.push("/dashboard");
 					return;
-				}
-
-				if (plan === "Pro") {
-					const response = await subscriptionsCreation();
-
-					if (response?.success && response?.data?.checkout_url) {
-						globalThis.window.open(response.data.checkout_url, "_blank");
-						return;
-					} else {
-						toast.error("Something went wrong. Please try again later.");
-						return;
-					}
 				}
 
 				router.push("/dashboard");
