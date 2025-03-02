@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, LockIcon, MailIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -17,12 +16,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	clearCookies,
-	createEncryptedCookie,
-	deleteCookie,
-} from "@/lib/cookies/create-cookies";
-import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+import { deleteCookie } from "@/lib/cookies/create-cookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
@@ -53,12 +47,6 @@ export function PasswordLoginForm({
 
 	const submitPasswordLogin = async (values: z.infer<typeof loginSchema>) => {
 		await deleteCookie("firstLogin");
-		const planData = await getDecryptedCookie("subscribing");
-		await clearCookies();
-		await createEncryptedCookie("subscribing", {
-			plan: planData?.plan,
-			type: planData?.type,
-		});
 		userStore.clearUser();
 		organizationStore.clearOrganization();
 		logoutStore.clearLogout();

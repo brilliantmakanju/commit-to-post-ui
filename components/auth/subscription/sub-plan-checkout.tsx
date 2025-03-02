@@ -72,12 +72,12 @@ const SubPlanCheckout = () => {
 		try {
 			const planData = await getDecryptedCookie("subscribing");
 
-			if (hasAccess) {
-				toast.info("You already have an ACTIVELY paid plan.");
+			if (planData === undefined) {
 				return;
 			}
 
-			if (planData === undefined) {
+			if (hasAccess) {
+				toast.info("You already have an ACTIVELY paid plan.");
 				return;
 			}
 
