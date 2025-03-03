@@ -55,12 +55,12 @@ const SubPlanCheckout = () => {
 		// Clear all toasts
 		toast.dismiss();
 		// Delete cookie
-		await deleteCookie("subscribing");
 		// Close modal
 		setShowModal(false);
 		// Reset states
 		setShowFinalConfirm(false);
 		setIsRedirecting(false);
+		await deleteCookie("subscribing");
 	}, []);
 
 	const subscribePlan = useCallback(async () => {
@@ -78,6 +78,7 @@ const SubPlanCheckout = () => {
 
 			if (hasAccess) {
 				toast.info("You already have an ACTIVELY paid plan.");
+				await deleteCookie("subscribing");
 				return;
 			}
 
@@ -94,8 +95,10 @@ const SubPlanCheckout = () => {
 					toast.success("Checkout ready!");
 					setCheckoutUrl(response.data.checkout_url);
 					setShowModal(true);
+					await deleteCookie("subscribing");
 				} else {
 					toast.error("Something went wrong. Please try again.");
+					await deleteCookie("subscribing");
 				}
 			} else if (planData?.plan === "Lifetime Deal") {
 				const response = await authSubscribe({ plans: "Lifetime Deal" });
@@ -105,12 +108,15 @@ const SubPlanCheckout = () => {
 					toast.success("Checkout ready!");
 					setCheckoutUrl(response.data.checkout_url);
 					setShowModal(true);
+					await deleteCookie("subscribing");
 				} else {
 					toast.error("Something went wrong. Please try again.");
+					await deleteCookie("subscribing");
 				}
 			}
 		} catch {
 			toast.error("An error occurred. Please try again.");
+			await deleteCookie("subscribing");
 		}
 	}, [hasAccess]);
 
