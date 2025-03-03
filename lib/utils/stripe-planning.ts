@@ -1,5 +1,5 @@
 const pulseProPlan = JSON.parse(
-	(process.env.NEXT_PULSE_PRO_PLAN || "{}").replaceAll("'", '"'),
+	(process.env.NEXT_PULSE_PRO_PLAN || "{}").replaceAll(/^'|'$/g, ""),
 );
 
 export const getPriceId = ({

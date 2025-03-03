@@ -21,7 +21,9 @@ export async function validateEndpointAndMethod(
 		// Retrieve and parse the endpoint-methods map from the environment variable
 
 		const endpointMethods = process.env.NEXT_PUBLIC_ENDPOINTS_JSON
-			? JSON.parse(process.env.NEXT_PUBLIC_ENDPOINTS_JSON.replaceAll("'", '"'))
+			? JSON.parse(
+					process.env.NEXT_PUBLIC_ENDPOINTS_JSON.replaceAll(/^'|'$/g, ""),
+				)
 			: {};
 
 		console.log(process.env.NEXT_PUBLIC_ENDPOINTS_JSON, "Key testing");
