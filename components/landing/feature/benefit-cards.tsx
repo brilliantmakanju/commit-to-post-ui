@@ -35,7 +35,7 @@ const BenefitCards: React.FC = () => {
 								</Span>
 							</div>
 							<h3 className="mb-2 bg-gradient-to-r from-gray-700 to-gray-500 bg-clip-text text-3xl font-semibold text-transparent">
-								DevPulse
+								Push to Post
 							</h3>
 							<p className="max-w-[200px] text-center text-sm text-gray-600 dark:text-gray-400">
 								Your AI-powered social media automation for developers

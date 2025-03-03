@@ -19,7 +19,6 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const SubPlanCheckout = () => {
-	const router = useRouter();
 	const hasAccess = useCheckAccess();
 	const [showModal, setShowModal] = useState(false);
 	const [countdown, setCountdown] = useState(10);
@@ -52,6 +51,7 @@ const SubPlanCheckout = () => {
 	}, [checkoutUrl]);
 
 	const handleClose = useCallback(async () => {
+		await deleteCookie("subscribing");
 		// Clear all toasts
 		toast.dismiss();
 		// Delete cookie
@@ -60,7 +60,6 @@ const SubPlanCheckout = () => {
 		// Reset states
 		setShowFinalConfirm(false);
 		setIsRedirecting(false);
-		await deleteCookie("subscribing");
 	}, []);
 
 	const subscribePlan = useCallback(async () => {
@@ -77,8 +76,8 @@ const SubPlanCheckout = () => {
 			}
 
 			if (hasAccess) {
-				toast.info("You already have an ACTIVELY paid plan.");
 				await deleteCookie("subscribing");
+				toast.info("You already have an ACTIVELY paid plan.");
 				return;
 			}
 
@@ -91,32 +90,32 @@ const SubPlanCheckout = () => {
 				});
 
 				if (response?.success && response?.data?.checkout_url) {
+					await deleteCookie("subscribing");
 					toast.dismiss(toastId);
 					toast.success("Checkout ready!");
 					setCheckoutUrl(response.data.checkout_url);
 					setShowModal(true);
-					await deleteCookie("subscribing");
 				} else {
-					toast.error("Something went wrong. Please try again.");
 					await deleteCookie("subscribing");
+					toast.error("Something went wrong. Please try again.");
 				}
 			} else if (planData?.plan === "Lifetime Deal") {
 				const response = await authSubscribe({ plans: "Lifetime Deal" });
 
 				if (response?.success && response?.data?.checkout_url) {
+					await deleteCookie("subscribing");
 					toast.dismiss(toastId);
 					toast.success("Checkout ready!");
 					setCheckoutUrl(response.data.checkout_url);
 					setShowModal(true);
-					await deleteCookie("subscribing");
 				} else {
-					toast.error("Something went wrong. Please try again.");
 					await deleteCookie("subscribing");
+					toast.error("Something went wrong. Please try again.");
 				}
 			}
 		} catch {
-			toast.error("An error occurred. Please try again.");
 			await deleteCookie("subscribing");
+			toast.error("An error occurred. Please try again.");
 		}
 	}, [hasAccess]);
 

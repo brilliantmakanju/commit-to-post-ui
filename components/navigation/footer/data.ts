@@ -1,7 +1,7 @@
 import { FooterProps } from "@/types";
 
 export const footerData: FooterProps = {
-	companyName: "DevPulse",
+	companyName: "Push to Post",
 	tagline: "Building the future of web development, one component at a time.",
 	sections: [
 		{
@@ -23,5 +23,5 @@ export const footerData: FooterProps = {
 		{ label: "Terms of Service", href: "#" },
 		{ label: "Privacy Policy", href: "#" },
 	],
-	copyright: "© 2024 DevPulse. All rights reserved.",
+	copyright: "© 2024 Push to Post. All rights reserved.",
 };

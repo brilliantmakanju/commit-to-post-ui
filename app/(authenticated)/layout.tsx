@@ -6,16 +6,16 @@ import { AuthenticatedLayout } from "@/components/wrappers/loaders/authenticated
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://devpulse.jolexhive.com/"),
-	title: "Dashboard - DevPulse",
+	title: "Dashboard - Push to Post",
 	description:
-		"DevPulse Dashboard for authenticated pages. Manage your posts, settings, and account details effortlessly.",
+		"Push to Post Dashboard for authenticated pages. Manage your posts, settings, and account details effortlessly.",
 	openGraph: {
-		title: "Dashboard - DevPulse",
+		title: "Dashboard - Push to Post",
 		description:
-			"DevPulse Dashboard for authenticated pages. Manage your posts, settings, and account details effortlessly.",
+			"Push to Post Dashboard for authenticated pages. Manage your posts, settings, and account details effortlessly.",
 		type: "website",
 		url: "https://devpulse.jolexhive.com/dashboard",
-		siteName: "DevPulse",
+		siteName: "Push to Post",
 		locale: "en_US",
 	},
 };
