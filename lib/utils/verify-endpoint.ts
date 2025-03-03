@@ -22,6 +22,8 @@ export async function validateEndpointAndMethod(
 		const endpointMethods = process.env.NEXT_PUBLIC_ENDPOINTS_JSON
 			? JSON.parse(process.env.NEXT_PUBLIC_ENDPOINTS_JSON)
 			: {};
+		console.log(process.env.NEXT_PUBLIC_ENDPOINTS_JSON, "Key testing");
+		console.log(endpointMethods, "Endpoint ENV json");
 
 		// Check if the endpoint exists in the configuration
 		const methodsConfig = endpointMethods[endpoint];
