@@ -1,4 +1,5 @@
 const pulseProPlan = JSON.parse(process.env.NEXT_PULSE_PRO_PLAN || "{}");
+console.log(pulseProPlan, "Json path");
 
 export const getPriceId = ({
 	planType,
