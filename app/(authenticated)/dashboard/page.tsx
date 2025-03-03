@@ -75,12 +75,10 @@ const Page = () => {
 				<header className="mb-8">
 					<div className="mb-2 flex items-center justify-between">
 						<h1 className="text-2xl font-bold text-zinc-100">
-							Welcome to AI Commit
+							Welcome to Push to Post
 						</h1>
 					</div>
-					<p className="text-zinc-400">
-						Your AI-powered LinkedIn content assistant
-					</p>
+					<p className="text-zinc-400">Your AI-powered content assistant</p>
 				</header>
 
 				<div className="mb-6 grid gap-6 sm:grid-cols-3">
