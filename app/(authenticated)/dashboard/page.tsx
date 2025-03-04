@@ -18,19 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import { hasLifetimeAccess } from "@/lib/utils/check-plan";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
 	const hasAccess = useCheckAccess();
-	const { data: userDetails, status } = useSession();
-	const userStore = useUserStore();
-	const userHasLifetimeAccess = hasLifetimeAccess(
-		userStore.plan,
-		userDetails?.user.plan,
-	);
+	const userHasLifetimeAccess = useLifetimeAccess();
 	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
 		useRetrieveMetrics();
 	const [isLoading, setIsLoading] = React.useState(false);

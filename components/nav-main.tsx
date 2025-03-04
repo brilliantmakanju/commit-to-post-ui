@@ -21,10 +21,9 @@ import {
 } from "@/components/ui/sidebar";
 import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
-import { hasLifetimeAccess } from "@/lib/utils/check-plan";
 import useLogoutStore from "@/lib/zustand/logout-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 
 interface NavItem {
 	title: string;
@@ -42,17 +41,13 @@ interface NavMainProps {
 }
 
 export function NavMain({ items }: NavMainProps) {
-	const { data: userDetails, status } = useSession();
+	const { status } = useSession();
 	const { data: billingUrl } = useBillingPortal();
-	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
 	const isLoading = status === "loading";
 	const hasAccess = useCheckAccess();
 	const { has_unread } = useRetrieveUnreadCount();
-	const userHasLifetimeAccess = hasLifetimeAccess(
-		userStore.plan,
-		userDetails?.user.plan,
-	);
+	const userHasLifetimeAccess = useLifetimeAccess();
 
 	const isDisabled = (item: NavItem) => {
 		if (isLoading || logoutStore.logout) return true;
