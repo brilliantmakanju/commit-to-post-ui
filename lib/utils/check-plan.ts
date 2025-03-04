@@ -1,4 +1,5 @@
 "use server";
+
 interface User {
 	plan: string;
 	subscription_status: string;
@@ -11,11 +12,10 @@ export default async function hasAccess(user: User): Promise<boolean> {
 		? new Date(user.subscription_end_date)
 		: undefined;
 
-	// const subscriptionEndDate = new Date(
-	// 	user.subscription_end_date as unknown as string,
-	// );
+	// Grant access if the plan is "ltd" (lifetime access)
+	if (user.plan === "ltd") return true;
 
-	// Ensure the plan is "pro" and the status is either "active" or "canceled"
+	// Grant access for "pro" plan with valid subscription status
 	if (
 		user.plan === "pro" &&
 		(user.subscription_status === "active" ||
