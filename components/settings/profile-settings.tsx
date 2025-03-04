@@ -134,10 +134,10 @@ export default function ProfileSettings() {
 				toast.success("Password changed successfully!");
 				logoutStore.setLogout(true);
 				// Sign out from NextAuth
-				await clearCookies(); // Clear all cookies
+				await signOut();
 				userStore.clearUser(); // Clear user information from Zustand store
 				organizationStore.clearOrganization();
-				await signOut();
+				await clearCookies(); // Clear all cookies
 				logoutStore.setLogout(false);
 				router.push("/auth");
 			} else {

@@ -78,10 +78,10 @@ export function NavUser() {
 		if (success) {
 			logoutStore.setLogout(true);
 			// Sign out from NextAuth
-			await clearCookies(); // Clear all cookies
+			await signOut();
 			userStore.clearUser(); // Clear user information from Zustand store
 			organizationStore.clearOrganization();
-			await signOut();
+			await clearCookies(); // Clear all cookies
 			router.push("/auth");
 			// logoutStore.clearLogout();
 		} else {

@@ -50,24 +50,30 @@ export default function PaymentSuccessPage() {
 		try {
 			const { success } = await logout();
 			if (success) {
+				setShowConfetti(true);
+				logoutStore.setLogout(true);
+				await signOut();
+				userStore.clearUser();
+				organizationStore.clearOrganization();
+				await clearCookies();
+				logoutStore.setLogout(false);
+
+				// Start countdown after logout is successful
 				setPaymentStatus({
 					status: "success",
 					message: "Payment successful! Please log in again to continue.",
 				});
-				setShowConfetti(true);
-				logoutStore.setLogout(true);
-				await clearCookies();
-				userStore.clearUser();
-				organizationStore.clearOrganization();
-				await signOut();
+				setShowCountdown(true);
+			} else {
 				await createEncryptedCookie("payment_success", {
 					paid: true,
 				});
+				logoutStore.setLogout(true);
+				await signOut();
+				userStore.clearUser();
+				organizationStore.clearOrganization();
+				await clearCookies();
 				logoutStore.setLogout(false);
-
-				// Start countdown after logout is successful
-				setShowCountdown(true);
-			} else {
 				setPaymentStatus({
 					status: "error",
 					message:

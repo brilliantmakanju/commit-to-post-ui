@@ -7,7 +7,7 @@ import FAQSection from "@/components/landing/faq/faq-section";
 import BenefitCards from "@/components/landing/feature/benefit-cards";
 import HeroSection from "@/components/landing/micro/hero-section";
 import Pricing from "@/components/landing/pricing/pricing-alt";
-import { clearCookies, deleteCookie } from "@/lib/cookies/create-cookies";
+import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
@@ -16,9 +16,7 @@ import { signOut } from "@/server-actions/auth/signout";
 
 export default function Home() {
 	const router = useRouter();
-	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
-	const organizationStore = useOrganizationStore();
 
 	useEffect(() => {
 		const getCookies = async () => {
@@ -28,13 +26,8 @@ export default function Home() {
 				const paid = await getDecryptedCookie("payment_success");
 
 				if (paid?.paid) {
-					logoutStore.setLogout(true); // Prevent redundant updates
-					await clearCookies();
-					userStore.clearUser();
-					organizationStore.clearOrganization();
 					await signOut();
-					await deleteCookie("payment_success");
-					logoutStore.setLogout(false);
+					await clearCookies();
 					router.replace("/auth"); // Use replace to avoid history stacking
 				}
 			} catch {

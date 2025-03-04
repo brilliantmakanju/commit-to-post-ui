@@ -41,11 +41,11 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 	const logoutStore = useLogoutStore();
 
 	const submitMagicLink = async (values: z.infer<typeof magicLinkSchema>) => {
-		await deleteCookie("firstLogin");
+		await signOut();
 		userStore.clearUser();
 		organizationStore.clearOrganization();
 		logoutStore.clearLogout();
-		await signOut();
+		await deleteCookie("firstLogin");
 
 		try {
 			const apiRequest = await requestMagicLink(values);
