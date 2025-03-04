@@ -30,3 +30,11 @@ export default async function hasAccess(user: User): Promise<boolean> {
 
 	return false;
 }
+
+export function hasLifetimeAccess(
+	userStorePlan?: string,
+	userDetailsPlan?: string,
+): boolean {
+	// Check if either plan is "ltd" (lifetime access)
+	return userStorePlan === "ltd" || userDetailsPlan === "ltd";
+}

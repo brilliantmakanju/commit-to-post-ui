@@ -1,5 +1,6 @@
 "use client";
-import { Calendar, Crown, Loader2 } from "lucide-react";
+import { Calendar, Crown, Loader2, Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 import React, { Suspense } from "react";
 import { toast } from "sonner";
 
@@ -18,10 +19,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+import { hasLifetimeAccess } from "@/lib/utils/check-plan";
+import useUserStore from "@/lib/zustand/useuser-store";
 import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
 	const hasAccess = useCheckAccess();
+	const { data: userDetails, status } = useSession();
+	const userStore = useUserStore();
+	const userHasLifetimeAccess = hasLifetimeAccess(
+		userStore.plan,
+		userDetails?.user.plan,
+	);
 	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
 		useRetrieveMetrics();
 	const [isLoading, setIsLoading] = React.useState(false);
@@ -117,24 +126,40 @@ const Page = () => {
 						)}
 					</Suspense>
 
-					<Card className="border-zinc-700/50 bg-zinc-800/50 p-1">
+					<Card className="border-zinc-200 bg-zinc-50/50 p-1 dark:border-zinc-800 dark:bg-zinc-900/50">
 						<CardHeader className="p-3">
 							<div className="flex items-center justify-between">
-								<CardTitle className="text-sm font-medium text-zinc-300">
-									{hasAccess ? "Pro Plan" : "Free Plan"}
+								<CardTitle className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+									{userHasLifetimeAccess
+										? "Lifetime Access"
+										: hasAccess
+											? "Pro Plan"
+											: "Free Plan"}
 								</CardTitle>
-								<Crown
-									className={`h-4 w-4 ${hasAccess ? "text-amber-400" : "text-zinc-400"}`}
-								/>
+								{userHasLifetimeAccess ? (
+									<Sparkles className="h-4 w-4 text-zinc-800 dark:text-zinc-200" />
+								) : (
+									<Crown
+										className={`h-4 w-4 ${hasAccess ? "text-zinc-800 dark:text-zinc-200" : "text-zinc-400 dark:text-zinc-600"}`}
+									/>
+								)}
 							</div>
 						</CardHeader>
 						<CardContent className="p-3">
-							{hasAccess ? (
+							{userHasLifetimeAccess ? (
+								<Button
+									size="sm"
+									disabled
+									className="w-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+								>
+									Lifetime Access
+								</Button>
+							) : hasAccess ? (
 								<Button
 									size="sm"
 									onClick={subscribePlan}
 									disabled
-									className="w-full bg-zinc-700/50 text-zinc-200 transition-colors hover:bg-zinc-700"
+									className="w-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
 								>
 									Active Pro Plan
 								</Button>
@@ -142,7 +167,7 @@ const Page = () => {
 								<Button
 									size="sm"
 									disabled={isLoading}
-									className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-zinc-100 hover:from-violet-700 hover:to-indigo-700"
+									className="w-full bg-zinc-800 text-zinc-100 hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-800 dark:hover:bg-zinc-300"
 								>
 									Upgrade to Pro
 								</Button>

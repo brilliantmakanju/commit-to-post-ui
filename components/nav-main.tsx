@@ -22,7 +22,9 @@ import {
 import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
+import { hasLifetimeAccess } from "@/lib/utils/check-plan";
 import useLogoutStore from "@/lib/zustand/logout-store";
+import useUserStore from "@/lib/zustand/useuser-store";
 
 interface NavItem {
 	title: string;
@@ -40,12 +42,17 @@ interface NavMainProps {
 }
 
 export function NavMain({ items }: NavMainProps) {
-	const { status } = useSession();
+	const { data: userDetails, status } = useSession();
 	const { data: billingUrl } = useBillingPortal();
+	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
 	const isLoading = status === "loading";
 	const hasAccess = useCheckAccess();
 	const { has_unread } = useRetrieveUnreadCount();
+	const userHasLifetimeAccess = hasLifetimeAccess(
+		userStore.plan,
+		userDetails?.user.plan,
+	);
 
 	const isDisabled = (item: NavItem) => {
 		if (isLoading || logoutStore.logout) return true;
@@ -63,75 +70,83 @@ export function NavMain({ items }: NavMainProps) {
 	return (
 		<SidebarGroup>
 			<SidebarMenu>
-				{items.map(item => (
-					<Collapsible key={item.title} asChild defaultOpen={item.isActive}>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								asChild
-								tooltip={item.title}
-								disabled={isDisabled(item)}
-							>
-								<Link
-									href={`${getItemUrl(item)}`}
-									onClick={event => {
-										if (isDisabled(item)) {
-											event.preventDefault();
-										}
-									}}
-									className={
-										isDisabled(item) ? "pointer-events-none opacity-50" : ""
-									}
+				{items
+					.filter(item => {
+						// Filter out the "Billing" link if the user has lifetime access
+						if (userHasLifetimeAccess && item.title === "Billing") {
+							return false;
+						}
+						return true;
+					})
+					.map(item => (
+						<Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									asChild
+									tooltip={item.title}
+									disabled={isDisabled(item)}
 								>
-									<span className="relative">
-										<item.icon />
-										{has_unread && item.title === "Notifications" && (
-											<span className="absolute right-0.5 top-1 h-2 w-2 rounded-full bg-red-600" />
-										)}
-									</span>
-									<span>{item.title}</span>
-								</Link>
-							</SidebarMenuButton>
-							{item.items?.length ? (
-								<>
-									<CollapsibleTrigger asChild>
-										<SidebarMenuAction
-											className="data-[state=open]:rotate-90"
-											disabled={isDisabled(item)}
-										>
-											<ChevronRight />
-											<span className="sr-only">Toggle</span>
-										</SidebarMenuAction>
-									</CollapsibleTrigger>
-									<CollapsibleContent>
-										<SidebarMenuSub>
-											{item.items.map(subItem => (
-												<SidebarMenuSubItem key={subItem.title}>
-													<SidebarMenuSubButton asChild>
-														<Link
-															href={`${getItemUrl(item)}`}
-															onClick={event => {
-																if (isDisabled(item)) {
-																	event.preventDefault();
+									<Link
+										href={`${getItemUrl(item)}`}
+										onClick={event => {
+											if (isDisabled(item)) {
+												event.preventDefault();
+											}
+										}}
+										className={
+											isDisabled(item) ? "pointer-events-none opacity-50" : ""
+										}
+									>
+										<span className="relative">
+											<item.icon />
+											{has_unread && item.title === "Notifications" && (
+												<span className="absolute right-0.5 top-1 h-2 w-2 rounded-full bg-red-600" />
+											)}
+										</span>
+										<span>{item.title}</span>
+									</Link>
+								</SidebarMenuButton>
+								{item.items?.length ? (
+									<>
+										<CollapsibleTrigger asChild>
+											<SidebarMenuAction
+												className="data-[state=open]:rotate-90"
+												disabled={isDisabled(item)}
+											>
+												<ChevronRight />
+												<span className="sr-only">Toggle</span>
+											</SidebarMenuAction>
+										</CollapsibleTrigger>
+										<CollapsibleContent>
+											<SidebarMenuSub>
+												{item.items.map(subItem => (
+													<SidebarMenuSubItem key={subItem.title}>
+														<SidebarMenuSubButton asChild>
+															<Link
+																href={`${getItemUrl(item)}`}
+																onClick={event => {
+																	if (isDisabled(item)) {
+																		event.preventDefault();
+																	}
+																}}
+																className={
+																	isDisabled(item)
+																		? "pointer-events-none opacity-50"
+																		: ""
 																}
-															}}
-															className={
-																isDisabled(item)
-																	? "pointer-events-none opacity-50"
-																	: ""
-															}
-														>
-															<span>{subItem.title}</span>
-														</Link>
-													</SidebarMenuSubButton>
-												</SidebarMenuSubItem>
-											))}
-										</SidebarMenuSub>
-									</CollapsibleContent>
-								</>
-							) : undefined}
-						</SidebarMenuItem>
-					</Collapsible>
-				))}
+															>
+																<span>{subItem.title}</span>
+															</Link>
+														</SidebarMenuSubButton>
+													</SidebarMenuSubItem>
+												))}
+											</SidebarMenuSub>
+										</CollapsibleContent>
+									</>
+								) : undefined}
+							</SidebarMenuItem>
+						</Collapsible>
+					))}
 			</SidebarMenu>
 		</SidebarGroup>
 	);
