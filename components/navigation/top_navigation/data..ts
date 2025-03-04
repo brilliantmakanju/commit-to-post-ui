@@ -1,6 +1,12 @@
-export const links = [
-	{ name: "Home", href: "/" },
-	{ name: "About", href: "/about" },
-	{ name: "Features", href: "/features" },
-	{ name: "Contact", href: "/contact" },
+type Link = {
+	name: string;
+	href: string;
+};
+
+export const links: Link[] = [
+	{ name: "Home", href: "#home" },
+	{ name: "Features", href: "#features" },
+	{ name: "Pricing", href: "#pricing" },
+	{ name: "FAQ", href: "#faq" },
+	{ name: "Contact", href: "mailto:dev@dev.vom" },
 ];

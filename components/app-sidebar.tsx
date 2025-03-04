@@ -146,18 +146,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					await createEncryptedCookie("organization", {
 						domain: result.organizations[0].domains[0],
 					});
-					queryClient.fetchQuery({ queryKey: ["posts"] });
-					queryClient.invalidateQueries({ queryKey: ["posts"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+					// Fetch and Invalidate Core Data
 					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
-					queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
 					queryClient.invalidateQueries({
 						queryKey: ["organization-ownership"],
 					});
+
+					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+					queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
+
+					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
 					queryClient.invalidateQueries({
 						queryKey: ["retrieving_social_status"],
 					});
+
+					// Fetch and Invalidate Metrics
+					queryClient.fetchQuery({ queryKey: ["dashboard_metrics"] });
+					queryClient.invalidateQueries({ queryKey: ["dashboard_metrics"] });
+
+					queryClient.fetchQuery({ queryKey: ["upcoming_posts_metrics"] });
+					queryClient.invalidateQueries({
+						queryKey: ["upcoming_posts_metrics"],
+					});
+
+					// Fetch and Invalidate Posts
+					queryClient.fetchQuery({ queryKey: ["posts"] });
+					queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+					// Fetch and Invalidate Notifications
+					queryClient.fetchQuery({ queryKey: ["notifications"] });
+					queryClient.invalidateQueries({ queryKey: ["notifications"] });
+
+					queryClient.fetchQuery({ queryKey: ["recent_notifications"] });
+					queryClient.invalidateQueries({ queryKey: ["recent_notifications"] });
 
 					return result.organizations;
 				} else {

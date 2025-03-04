@@ -18,6 +18,7 @@ import {
 	SidebarMenuSub,
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
+	useSidebar,
 } from "@/components/ui/sidebar";
 import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
@@ -62,6 +63,8 @@ export function NavMain({ items }: NavMainProps) {
 		return item.url;
 	};
 
+	const { toggleSidebar, state, isMobile } = useSidebar();
+
 	return (
 		<SidebarGroup>
 			<SidebarMenu>
@@ -84,6 +87,9 @@ export function NavMain({ items }: NavMainProps) {
 									<Link
 										href={`${getItemUrl(item)}`}
 										onClick={event => {
+											if (isMobile) {
+												toggleSidebar();
+											}
 											if (isDisabled(item)) {
 												event.preventDefault();
 											}

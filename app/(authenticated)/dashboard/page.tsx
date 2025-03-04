@@ -20,6 +20,7 @@ import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+import useUserStore from "@/lib/zustand/useuser-store";
 import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
@@ -28,6 +29,12 @@ const Page = () => {
 	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
 		useRetrieveMetrics();
 	const [isLoading, setIsLoading] = React.useState(false);
+	const { data: userDetails } = useSession();
+	const userStore = useUserStore();
+	const userName =
+		userDetails?.user?.first_name && userDetails?.user?.last_name
+			? `${userDetails.user.first_name} ${userDetails.user.last_name}`
+			: userStore.full_name || "";
 
 	async function subscribePlan() {
 		try {
@@ -77,11 +84,14 @@ const Page = () => {
 			<div className="flex h-full flex-col">
 				<header className="mb-8">
 					<div className="mb-2 flex items-center justify-between">
-						<h1 className="text-2xl font-bold text-zinc-100">
-							Welcome to Push to Post
+						<h1 className="text-2xl font-medium tracking-tight text-zinc-100">
+							Hey, {userName}! Welcome back to Push to Post
 						</h1>
 					</div>
-					<p className="text-zinc-400">Your AI-powered content assistant</p>
+					<p className="text-zinc-400 dark:text-zinc-400">
+						Your AI-powered content assistant is ready to help you shine. Here
+						are your latest metrics and insights:
+					</p>
 				</header>
 
 				<div className="mb-6 grid gap-6 sm:grid-cols-3">
@@ -173,6 +183,17 @@ const Page = () => {
 				<div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2">
 					<Card className="border-zinc-700/50 bg-zinc-800/50">
 						<CardHeader>
+							<CardTitle className="text-zinc-100">Upcoming Posts</CardTitle>
+						</CardHeader>
+						<CardContent className="p-0">
+							<Suspense fallback={<UpcomingPostsSkeleton />}>
+								<UpcomingPosts />
+							</Suspense>
+						</CardContent>
+					</Card>
+
+					<Card className="border-zinc-700/50 bg-zinc-800/50">
+						<CardHeader>
 							<CardTitle className="text-zinc-100">
 								Recent Notifications
 							</CardTitle>
@@ -180,17 +201,6 @@ const Page = () => {
 						<CardContent className="p-0">
 							<Suspense fallback={<NotificationsSkeleton />}>
 								<NotificationsList isPaid={hasAccess} />
-							</Suspense>
-						</CardContent>
-					</Card>
-
-					<Card className="border-zinc-700/50 bg-zinc-800/50">
-						<CardHeader>
-							<CardTitle className="text-zinc-100">Upcoming Posts</CardTitle>
-						</CardHeader>
-						<CardContent className="p-0">
-							<Suspense fallback={<UpcomingPostsSkeleton />}>
-								<UpcomingPosts />
 							</Suspense>
 						</CardContent>
 					</Card>

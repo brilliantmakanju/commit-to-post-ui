@@ -1,27 +1,56 @@
-import { FooterProps } from "@/types";
+export interface FooterLink {
+	label: string;
+	href: string;
+}
 
-export const footerData: FooterProps = {
+export interface FooterSection {
+	title: string;
+	links: FooterLink[];
+}
+
+export interface FooterData {
+	companyName: string;
+	tagline: string;
+	sections: FooterSection[];
+	legalLinks: FooterLink[];
+	copyright: string;
+}
+
+export const footerData: FooterData = {
 	companyName: "Push to Post",
-	tagline: "Building the future of web development, one component at a time.",
+	tagline: "Transform your Git commits into engaging posts with AI.",
 	sections: [
 		{
 			title: "Product",
 			links: [
-				{ label: "Features", href: "#" },
-				{ label: "Pricing", href: "#" },
+				{ label: "Features", href: "#features" },
+				{ label: "Pricing", href: "#pricing" },
+				{ label: "Integrations", href: "/integrations" },
+				// { label: "Changelog", href: "/changelog" },
 			],
 		},
-		{
-			title: "Company",
-			links: [
-				{ label: "About", href: "#" },
-				{ label: "Blog", href: "#" },
-			],
-		},
+		//   {
+		// 	title: "Resources",
+		// 	links: [
+		// 	  { label: "Documentation", href: "/docs" },
+		// 	  { label: "API", href: "/api" },
+		// 	  { label: "Blog", href: "/blog" },
+		// 	  { label: "Guides", href: "/guides" },
+		// 	],
+		//   },
+		//   {
+		// 	title: "Company",
+		// 	links: [
+		// 	  { label: "About", href: "/about" },
+		// 	  { label: "Contact", href: "/contact" },
+		// 	  { label: "Careers", href: "/careers" },
+		// 	],
+		//   },
 	],
 	legalLinks: [
-		{ label: "Terms of Service", href: "#" },
-		{ label: "Privacy Policy", href: "#" },
+		{ label: "Privacy Policy", href: "/privacy" },
+		{ label: "Terms of Service", href: "/terms" },
+		// { label: "Cookie Policy", href: "/cookies" },
 	],
 	copyright: "© 2024 Push to Post. All rights reserved.",
 };

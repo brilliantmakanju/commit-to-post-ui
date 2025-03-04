@@ -12,7 +12,10 @@ import { benefits } from "@/components/landing/data";
 
 const BenefitCards: React.FC = () => {
 	return (
-		<section className="w-full bg-gray-50 dark:bg-gray-900 lg:pt-32">
+		<section
+			id="features"
+			className="w-full bg-gray-50 dark:bg-gray-900 lg:pt-32"
+		>
 			<div className="container mx-auto px-4">
 				<h2 className="mb-12 text-center text-4xl font-semibold text-gray-800 dark:text-gray-200">
 					Supercharge Your Project Updates

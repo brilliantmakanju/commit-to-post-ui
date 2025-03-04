@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
 					</div>
 
 					{/* Footer Sections */}
-					<div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+					<div className="flex flex-row-reverse items-start justify-between gap-6">
 						{sections.map((section, index) => (
 							<div key={index}>
 								<Span className="mb-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
