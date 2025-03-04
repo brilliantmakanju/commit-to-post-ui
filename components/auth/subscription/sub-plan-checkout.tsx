@@ -1,7 +1,5 @@
 "use client";
 
-import { deleteCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -15,6 +13,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { deleteCookie } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { authSubscribe } from "@/server-actions/auth/subscribe";
 

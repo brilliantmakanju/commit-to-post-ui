@@ -77,11 +77,11 @@ export function NavUser() {
 		const { success } = await logout();
 		if (success) {
 			logoutStore.setLogout(true);
-			// Sign out from NextAuth
-			await signOut();
 			userStore.clearUser(); // Clear user information from Zustand store
 			organizationStore.clearOrganization();
 			await clearCookies(); // Clear all cookies
+			// Sign out from NextAuth
+			await signOut();
 			router.push("/auth");
 			// logoutStore.clearLogout();
 		} else {

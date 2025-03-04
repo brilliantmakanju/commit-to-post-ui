@@ -46,11 +46,11 @@ export function PasswordLoginForm({
 	const organizationStore = useOrganizationStore();
 
 	const submitPasswordLogin = async (values: z.infer<typeof loginSchema>) => {
-		await signOut();
-		userStore.clearUser();
 		organizationStore.clearOrganization();
-		logoutStore.clearLogout();
 		await deleteCookie("firstLogin");
+		logoutStore.clearLogout();
+		userStore.clearUser();
+		await signOut();
 
 		try {
 			const apiRequest = await loginUser({

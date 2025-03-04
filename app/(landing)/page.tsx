@@ -10,8 +10,6 @@ import Pricing from "@/components/landing/pricing/pricing-alt";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { signOut } from "@/server-actions/auth/signout";
 
 export default function Home() {
@@ -26,9 +24,9 @@ export default function Home() {
 				const paid = await getDecryptedCookie("payment_success");
 
 				if (paid?.paid) {
-					await signOut();
 					await clearCookies();
-					router.replace("/auth"); // Use replace to avoid history stacking
+					await signOut();
+					router.replace("/auth");
 				}
 			} catch {
 				return;

@@ -133,11 +133,11 @@ export default function ProfileSettings() {
 				passwordForm.resetField("oldPassword");
 				toast.success("Password changed successfully!");
 				logoutStore.setLogout(true);
+				organizationStore.clearOrganization();
+				userStore.clearUser(); // Clear user information from Zustand store
+				await clearCookies(); // Clear all cookies
 				// Sign out from NextAuth
 				await signOut();
-				userStore.clearUser(); // Clear user information from Zustand store
-				organizationStore.clearOrganization();
-				await clearCookies(); // Clear all cookies
 				logoutStore.setLogout(false);
 				router.push("/auth");
 			} else {

@@ -50,10 +50,10 @@ export function AuthenticatedLayout({
 
 				if (!token) {
 					logoutStore.setLogout(true);
-					await signOut();
-					userStore.clearUser();
 					organizationStore.clearOrganization();
+					userStore.clearUser();
 					await clearCookies();
+					await signOut();
 					router.push("/auth");
 				}
 			} catch {

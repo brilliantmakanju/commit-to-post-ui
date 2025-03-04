@@ -52,10 +52,11 @@ export default function PaymentSuccessPage() {
 			if (success) {
 				setShowConfetti(true);
 				logoutStore.setLogout(true);
-				await signOut();
 				userStore.clearUser();
 				organizationStore.clearOrganization();
+
 				await clearCookies();
+				await signOut();
 				logoutStore.setLogout(false);
 
 				// Start countdown after logout is successful
@@ -69,10 +70,11 @@ export default function PaymentSuccessPage() {
 					paid: true,
 				});
 				logoutStore.setLogout(true);
-				await signOut();
 				userStore.clearUser();
 				organizationStore.clearOrganization();
+
 				await clearCookies();
+				await signOut();
 				logoutStore.setLogout(false);
 				setPaymentStatus({
 					status: "error",
