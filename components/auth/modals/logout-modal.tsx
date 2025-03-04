@@ -16,7 +16,7 @@ export function LogoutModal({ showByDefault = false }: LogoutModalProps) {
 	}
 
 	return (
-		<div className="absolute left-0 top-0 z-50 h-full w-full">
+		<div className="absolute left-0 top-0 z-[130] h-full w-full">
 			<LoadingScreen
 				backgroundColor="#0A0E17"
 				iconColor="#4FD1C5"

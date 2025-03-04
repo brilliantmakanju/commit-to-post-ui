@@ -1,18 +1,38 @@
 [
 	{
-		"question": "Is my journal data secure?",
-		"answer": "Yes, we use enterprise-grade encryption to protect your journal entries."
+		"question": "What is Push to Post?",
+		"answer": "Push to Post is an AI-powered tool that automatically generates and schedules social media posts based on your GitHub commits, keeping your professional profiles active and engaging."
 	},
 	{
-		"question": "Can I organize my journal entries?",
-		"answer": "Yes, you can use tags, categories, and custom organization systems."
+		"question": "How does Push to Post work?",
+		"answer": "Simply connect your GitHub and LinkedIn accounts. Push to Post will analyze your commit messages, generate tailored social media posts, and schedule them for optimal visibility."
 	},
 	{
-		"question": "How does the mood tracking work?",
-		"answer": "Each entry can be tagged with a mood, and our analytics tool creates visual representations of your emotional journey over time."
+		"question": "Is my data secure with Push to Post?",
+		"answer": "Absolutely! We use enterprise-grade encryption to ensure your data and account information remain safe and confidential."
 	},
 	{
-		"question": "Is there a mobile app?",
-		"answer": "Yes, we have iOS and Android apps available for journaling on the go."
+		"question": "Can I customize the generated posts?",
+		"answer": "Yes, Push to Post offers multiple tones and styles for your posts. You can also edit and reschedule posts as needed."
+	},
+	{
+		"question": "What social media platforms does Push to Post support?",
+		"answer": "Currently, Push to Post integrates with LinkedIn, with plans to expand to more platforms like Twitter and GitHub Pages in the future."
+	},
+	{
+		"question": "Is there a free plan available?",
+		"answer": "Yes, our Free plan allows you to generate up to 5 posts per month with basic features. Upgrade to the Pro plan for unlimited posts and advanced features."
+	},
+	{
+		"question": "How can I upgrade to a Pro or Lifetime plan?",
+		"answer": "You can upgrade directly from your Push to Post dashboard. We support both monthly, annual, and a limited Lifetime Deal for early adopters."
+	},
+	{
+		"question": "Does Push to Post support team collaboration?",
+		"answer": "Team collaboration is not available yet, but it's coming soon! Stay tuned for updates."
+	},
+	{
+		"question": "What if I need help or support?",
+		"answer": "Our support team is ready to assist you. Pro users get priority support, ensuring your queries are resolved quickly."
 	}
 ]

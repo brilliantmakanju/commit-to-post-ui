@@ -89,7 +89,7 @@ export const pricingData: PricingData = {
 			lifetime: {
 				price: 199,
 				previousPrice: 299,
-				spotsLeft: 50, // Keeping the spots limited for exclusivity
+				spotsLeft: 30, // Keeping the spots limited for exclusivity
 				endsIn: 72, // 72-hour countdown
 			},
 			features: [

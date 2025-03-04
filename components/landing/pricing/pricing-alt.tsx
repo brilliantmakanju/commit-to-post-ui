@@ -1,12 +1,11 @@
 "use client";
 
-import { Check, Clock, Sparkles, Users, X } from "lucide-react";
+import { Check, Clock, Users, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Heading } from "@/components/general/micro/typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,22 +22,12 @@ import {
 	deleteCookie,
 } from "@/lib/cookies/create-cookies";
 import { cn } from "@/lib/utils";
-import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 
 import { pricingData } from "./data";
 
 const calculateDiscount = (oldPrice: number, newPrice: number) => {
 	const discount = ((oldPrice - newPrice) / oldPrice) * 100;
 	return Math.round(discount);
-};
-
-const formatPrice = (price: number) => {
-	return new Intl.NumberFormat("en-US", {
-		style: "currency",
-		currency: "USD",
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(price);
 };
 
 const formatTimeLeft = (seconds: number) => {
@@ -143,17 +132,14 @@ const Pricing = () => {
 
 	return (
 		<div className="container mx-auto w-full py-12">
-			<Heading
-				as="h2"
-				className="mb-6 text-center text-4xl font-semibold text-gray-800 dark:text-gray-200"
-			>
+			<h2 className="mb-6 text-center text-3xl font-medium text-zinc-900 dark:text-zinc-100">
 				{pricingData.title}
-			</Heading>
+			</h2>
 
 			<div className="mb-8 flex justify-center">
-				<div className="flex items-center gap-4 rounded-full bg-gray-100/50 p-2 dark:bg-gray-800/50">
+				<div className="flex items-center gap-4 rounded-full border border-zinc-200 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-900">
 					<span
-						className={`text-sm ${interval === "monthly" ? "text-gray-900 dark:text-gray-100" : "text-gray-500"}`}
+						className={`px-3 py-1 text-sm ${interval === "monthly" ? "rounded-full bg-zinc-100 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" : "text-zinc-500"}`}
 					>
 						Monthly
 					</span>
@@ -164,98 +150,53 @@ const Pricing = () => {
 						}
 					/>
 					<span
-						className={`text-sm ${interval === "annual" ? "text-gray-900 dark:text-gray-100" : "text-gray-500"}`}
+						className={`px-3 py-1 text-sm ${interval === "annual" ? "rounded-full bg-zinc-100 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" : "text-zinc-500"}`}
 					>
 						Annual
 					</span>
 				</div>
 			</div>
 
-			<div
-				className={cn(
-					"mx-auto grid max-w-7xl gap-8 px-4 md:px-6",
-					gridCols,
-					plans.length === 3 && "lg:px-8",
-				)}
-			>
-				{sortedPlans.map((plan, index) => (
+			<div className="mx-auto grid max-w-6xl gap-6 px-4 md:grid-cols-3 md:px-0">
+				{sortedPlans.map(plan => (
 					<Card
 						key={plan.name}
 						className={cn(
-							"relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-gray-800 dark:bg-gray-900",
-							plan.popular && "lg:-mt-4 lg:scale-105",
-							plans.length === 3 && index === 1 && "lg:col-span-1",
+							"relative border-zinc-200 bg-white transition-all dark:border-zinc-800 dark:bg-zinc-900",
+							plan.popular && "border-2 border-zinc-900 dark:border-zinc-100",
 						)}
 					>
 						{plan.popular && (
-							<div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-violet-600 to-indigo-600" />
+							<div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+								<Badge className="border border-zinc-200 bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900">
+									POPULAR
+								</Badge>
+							</div>
 						)}
-						{plan.popular && (
-							<Badge className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-medium text-white">
-								POPULAR
-							</Badge>
-						)}
-						<CardHeader className="pb-0">
+						<CardHeader className="pb-0 pt-6">
 							<Badge
-								variant="secondary"
-								className={cn(
-									"mb-2 w-fit rounded-full",
-									plan.popular
-										? "bg-gray-900/5 text-gray-900 dark:bg-gray-100/10 dark:text-gray-100"
-										: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-								)}
+								variant="outline"
+								className="mb-2 w-fit border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
 							>
 								{plan.badge}
 							</Badge>
-							<CardTitle className="text-xl font-medium text-gray-900 dark:text-gray-100">
+							<CardTitle className="text-xl font-medium text-zinc-900 dark:text-zinc-100">
 								{plan.name}
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="pt-6">
-							<div className="flex items-baseline">
-								<span className="text-2xl font-medium text-gray-600 dark:text-gray-400">
-									$
-								</span>
-								<span className="text-5xl font-semibold text-gray-900 dark:text-gray-100">
-									{interval === "monthly"
-										? plan.price.monthly
-										: plan.price.annual}
-								</span>
-								<span className="ml-1 text-sm text-gray-500">
-									/{interval === "monthly" ? "mo" : "yr"}
-								</span>
-								{plan.price.previous && plan.price.previous[interval] && (
-									<span className="ml-2 text-sm text-gray-400 line-through">
-										${plan.price.previous[interval]}
-									</span>
-								)}
-							</div>
-							{plan.price.previous && plan.price.previous[interval] && (
-								<span className="mt-1 block text-sm text-green-600 dark:text-green-400">
-									Save{" "}
-									{calculateDiscount(
-										plan.price.previous[interval]!,
-										interval === "monthly"
-											? plan.price.monthly
-											: plan.price.annual,
-									)}
-									%
-								</span>
-							)}
-
-							{plan.lifetime && (
-								<div className="mt-4 rounded-lg bg-gray-900 p-4 dark:bg-gray-800">
+							{plan.name === "Lifetime Deal" ? (
+								<div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
 									<div className="mb-2 flex items-center justify-between">
 										<div className="flex items-center gap-2">
-											<Sparkles className="h-4 w-4 text-amber-400" />
-											<span className="text-sm font-medium text-white">
+											<span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
 												Lifetime Access
 											</span>
 										</div>
-										{plan.lifetime.spotsLeft && (
+										{plan.lifetime?.spotsLeft && (
 											<Badge
-												variant="secondary"
-												className="bg-gray-800 text-gray-100 dark:bg-gray-700"
+												variant="outline"
+												className="border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
 											>
 												<Users className="mr-1 h-3 w-3" />
 												{plan.lifetime.spotsLeft} spots left
@@ -263,15 +204,18 @@ const Pricing = () => {
 										)}
 									</div>
 									<div className="flex items-baseline">
-										<span className="text-xl font-semibold text-white">
-											{formatPrice(plan.lifetime.price)}
+										<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
+											$
 										</span>
-										{plan.lifetime.previousPrice && (
+										<span className="text-4xl font-semibold text-zinc-900 dark:text-zinc-100">
+											{plan.lifetime?.price}
+										</span>
+										{plan.lifetime?.previousPrice && (
 											<>
-												<span className="ml-2 text-sm text-gray-400 line-through">
-													{formatPrice(plan.lifetime.previousPrice)}
+												<span className="ml-2 text-sm text-zinc-400 line-through">
+													${plan.lifetime.previousPrice}
 												</span>
-												<span className="ml-2 text-sm text-green-400">
+												<span className="ml-2 text-sm text-zinc-700 dark:text-zinc-300">
 													Save{" "}
 													{calculateDiscount(
 														plan.lifetime.previousPrice,
@@ -283,12 +227,45 @@ const Pricing = () => {
 										)}
 									</div>
 									{timeLeft[plan.name] > 0 && (
-										<div className="mt-2 flex items-center text-sm text-gray-300">
+										<div className="mt-2 flex items-center text-sm text-zinc-600 dark:text-zinc-400">
 											<Clock className="mr-1 h-3 w-3" />
 											Ends in {formatTimeLeft(timeLeft[plan.name])}
 										</div>
 									)}
 								</div>
+							) : (
+								<div className="flex items-baseline">
+									<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
+										$
+									</span>
+									<span className="text-5xl font-semibold text-zinc-900 dark:text-zinc-100">
+										{interval === "monthly"
+											? plan.price.monthly
+											: plan.price.annual}
+									</span>
+									<span className="ml-1 text-sm text-zinc-500">
+										{plan.price.monthly > 0 &&
+											`/${interval === "monthly" ? "mo" : "yr"}`}
+									</span>
+									{plan.price.previous && plan.price.previous[interval] && (
+										<span className="ml-2 text-sm text-zinc-400 line-through">
+											${plan.price.previous[interval]}
+										</span>
+									)}
+								</div>
+							)}
+
+							{plan.price.previous && plan.price.previous[interval] && (
+								<span className="mt-1 block text-sm text-zinc-700 dark:text-zinc-300">
+									Save{" "}
+									{calculateDiscount(
+										plan.price.previous[interval]!,
+										interval === "monthly"
+											? plan.price.monthly
+											: plan.price.annual,
+									)}
+									%
+								</span>
 							)}
 
 							<Button
@@ -303,17 +280,17 @@ const Pricing = () => {
 									})
 								}
 								className={cn(
-									"mt-6 w-full rounded-lg",
+									"mt-6 w-full",
 									plan.popular
-										? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700"
-										: "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+										? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+										: "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
 								)}
 								variant={plan.popular ? "default" : "outline"}
 							>
 								{plan.buttonText}
 							</Button>
 
-							<ul className="mt-8 space-y-3">
+							<ul className="mt-6 space-y-3">
 								{plan.features.map(feature => (
 									<li
 										key={typeof feature === "string" ? feature : feature.name}
@@ -321,24 +298,24 @@ const Pricing = () => {
 									>
 										{typeof feature === "string" ? (
 											<>
-												<Check className="h-5 w-5 text-gray-500" />
-												<span className="text-sm text-gray-700 dark:text-gray-300">
+												<Check className="h-5 w-5 text-zinc-700 dark:text-zinc-400" />
+												<span className="text-sm text-zinc-700 dark:text-zinc-300">
 													{feature}
 												</span>
 											</>
 										) : (
 											<>
 												{feature.available ? (
-													<Check className="h-5 w-5 text-gray-500" />
+													<Check className="h-5 w-5 text-zinc-700 dark:text-zinc-400" />
 												) : (
-													<X className="h-5 w-5 text-gray-400" />
+													<X className="h-5 w-5 text-zinc-400 dark:text-zinc-600" />
 												)}
 												<span
 													className={cn(
 														"text-sm",
 														feature.available
-															? "text-gray-700 dark:text-gray-300"
-															: "text-gray-400 dark:text-gray-500",
+															? "text-zinc-700 dark:text-zinc-300"
+															: "text-zinc-400 dark:text-zinc-600",
 													)}
 												>
 													{feature.name}
