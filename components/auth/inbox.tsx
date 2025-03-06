@@ -180,15 +180,18 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 											<>Resend Link</>
 										)}
 									</Button>
-									<Button
-										variant="outline"
-										className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
-										onClick={() =>
-											(globalThis.window.location.href = "/support")
-										}
-									>
-										Contact Support
-									</Button>
+									<Link href={"mailto:dev@dev.com"}>
+										<Button
+											type="button"
+											variant="outline"
+											className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
+											// onClick={() =>
+											// 	(globalThis.window.location.href = "/support")
+											// }
+										>
+											Contact Support
+										</Button>
+									</Link>
 								</div>
 							</form>
 						</Form>
@@ -209,6 +212,7 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 					{verificationStatus === "success" && (
 						<Link href={"mailto:dev@dev.com"}>
 							<Button
+								type="button"
 								variant="outline"
 								className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
 								// onClick={() => (globalThis.window.location.href = "/support")}
