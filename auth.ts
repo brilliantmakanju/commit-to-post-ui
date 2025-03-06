@@ -137,7 +137,8 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 		},
 	},
 	pages: {
-		signIn: "/auth?view=login",
+		signIn: "/auth",
+		// signIn: "/auth?view=login",
 	},
 	trustHost: true,
 });

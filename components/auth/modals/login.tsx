@@ -20,8 +20,8 @@ export default function LoginForm({ setView }: LoginFormProps) {
 					Sign in to your account to continue
 				</p>
 			</div>
-			{isMagicLink ? (
-				<MagicLinkForm onToggleForm={() => setIsMagicLink(false)} />
+			<MagicLinkForm onToggleForm={() => setIsMagicLink(false)} />
+			{/* {isMagicLink ? (
 			) : (
 				<PasswordLoginForm
 					onToggleForm={() => setIsMagicLink(true)}
@@ -43,7 +43,7 @@ export default function LoginForm({ setView }: LoginFormProps) {
 				className="text-sm text-primary underline-offset-4 hover:underline"
 			>
 				Sign up
-			</button>
+			</button> */}
 		</div>
 	);
 }

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -199,19 +200,22 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 						<Button
 							variant="secondary"
 							className="bg-white text-black hover:bg-zinc-200"
-							onClick={() => router.push("/auth?view-login")}
+							onClick={() => router.push("/auth")}
+							// onClick={() => router.push("/auth?view-login")}
 						>
 							Login
 						</Button>
 					)}
 					{verificationStatus === "success" && (
-						<Button
-							variant="outline"
-							className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
-							onClick={() => (globalThis.window.location.href = "/support")}
-						>
-							Contact Support
-						</Button>
+						<Link href={"mailto:dev@dev.com"}>
+							<Button
+								variant="outline"
+								className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
+								// onClick={() => (globalThis.window.location.href = "/support")}
+							>
+								Contact Support
+							</Button>
+						</Link>
 					)}
 				</div>
 			</div>

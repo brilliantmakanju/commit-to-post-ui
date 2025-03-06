@@ -42,7 +42,8 @@ export default function SignupForm({ setView }: SignupFormProps) {
 				toast.success(
 					"User successfully registered. Check your inbox to verify your account",
 				);
-				globalThis.window.history.pushState(undefined, "", "/auth?view=login");
+				globalThis.window.history.pushState(undefined, "", "/auth");
+				// globalThis.window.history.pushState(undefined, "", "/auth?view=login");
 			} else {
 				toast.error(apiRequest.message);
 			}

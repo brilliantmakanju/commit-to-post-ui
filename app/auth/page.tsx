@@ -60,7 +60,8 @@ export default function AuthPage() {
 
 	const handleSetView = (newView: ViewType) => {
 		setView(newView);
-		globalThis.window.history.pushState(undefined, "", `/auth?view=${newView}`);
+		globalThis.window.history.pushState(undefined, "", "/auth");
+		// globalThis.window.history.pushState(undefined, "", `/auth?view=${newView}`);
 	};
 
 	const slideVariants = {
@@ -75,7 +76,7 @@ export default function AuthPage() {
 		<Suspense fallback={<LogoutModal showByDefault />}>
 			<div className="flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
 				<AnimatePresence initial={false} mode="wait">
-					{view === "signup" ? (
+					{/* {view === "signup" ? (
 						<>
 							<motion.div
 								key="signup-form"
@@ -109,7 +110,7 @@ export default function AuthPage() {
 								exit={{ x: "100%" }}
 								transition={{ duration: 0.5 }}
 							>
-								{/* <Image
+								<Image
 									src="/Anime-Girl1.png"
 									alt="Cover"
 									className="absolute inset-0 h-full w-full object-cover"
@@ -120,20 +121,20 @@ export default function AuthPage() {
 									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 									placeholder="blur"
 									blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkLUEwLi0tLTAtQFBGPzpQRT4tLS9gVkVMS1BJTTYyU15CTUVNTUz/2wBDARUXFx4aHR4eHUxCQU1MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-								/> */}
+								/>
 							</motion.div>
 						</>
-					) : (
-						<>
-							<motion.div
-								key="login-image"
-								className="relative hidden w-1/2 bg-[black] bg-opacity-90 md:block"
-								initial={{ x: "-100%" }}
-								animate={{ x: "0%" }}
-								exit={{ x: "-100%" }}
-								transition={{ duration: 0.5 }}
-							>
-								{/* <Image
+					) : ( */}
+					{/* <> */}
+					<motion.div
+						key="login-image"
+						className="relative hidden w-1/2 bg-[black] bg-opacity-90 md:block"
+						initial={{ x: "-100%" }}
+						animate={{ x: "0%" }}
+						exit={{ x: "-100%" }}
+						transition={{ duration: 0.5 }}
+					>
+						{/* <Image
 									src="/Anime-Girl2.png"
 									alt="Cover"
 									className="absolute inset-0 h-full w-full object-cover"
@@ -145,37 +146,34 @@ export default function AuthPage() {
 									placeholder="blur"
 									blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkLUEwLi0tLTAtQFBGPzpQRT4tLS9gVkVMS1BJTTYyU15CTUVNTUz/2wBDARUXFx4aHR4eHUxCQU1MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 								/> */}
-							</motion.div>
-							<motion.div
-								key="login-form"
-								variants={slideVariants}
-								initial="enterRight"
-								animate="center"
-								exit="exitRight"
-								transition={{ duration: 0.5 }}
-								className="absolute inset-0 z-10 flex items-center justify-center bg-muted md:relative md:w-1/2"
-							>
-								<div className="w-full max-w-[350px] p-4">
-									<div className="mb-8 flex items-center justify-center gap-2 md:justify-start">
-										<Link
-											href="/"
-											className="flex items-center gap-2 font-medium"
-										>
-											<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-												<GalleryVerticalEnd className="h-4 w-4" />
-											</div>
-											Push to Post
-										</Link>
+					</motion.div>
+					<motion.div
+						key="login-form"
+						variants={slideVariants}
+						initial="enterRight"
+						animate="center"
+						exit="exitRight"
+						transition={{ duration: 0.5 }}
+						className="absolute inset-0 z-10 flex items-center justify-center bg-muted md:relative md:w-1/2"
+					>
+						<div className="w-full max-w-[350px] p-4">
+							<div className="mb-8 flex items-center justify-center gap-2 md:justify-start">
+								<Link href="/" className="flex items-center gap-2 font-medium">
+									<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+										<GalleryVerticalEnd className="h-4 w-4" />
 									</div>
-									{view === "login" ? (
-										<LoginForm setView={handleSetView} />
+									Push to Post
+								</Link>
+							</div>
+							<LoginForm setView={handleSetView} />
+							{/* {view === "login" ? (
 									) : (
 										<ForgotPasswordForm setView={handleSetView} />
-									)}
-								</div>
-							</motion.div>
-						</>
-					)}
+									)} */}
+						</div>
+					</motion.div>
+					{/* </>
+					)} */}
 				</AnimatePresence>
 			</div>
 		</Suspense>

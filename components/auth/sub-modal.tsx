@@ -18,7 +18,8 @@ const SubAuthPage = () => {
 
 	const handleSetView = (newView: ViewType) => {
 		setView(newView);
-		globalThis.window.history.pushState(undefined, "", `/auth?view=${newView}`);
+		globalThis.window.history.pushState(undefined, "", "/auth");
+		// globalThis.window.history.pushState(undefined, "", `/auth?view=${newView}`);
 		if (newView === "forgot" || newView === "signup") {
 			const modalOverlay = globalThis.document.querySelector(
 				'[data-state="open"]',
@@ -26,7 +27,8 @@ const SubAuthPage = () => {
 			if (modalOverlay) {
 				modalOverlay.click(); // This simulates the click on the modal overlay
 			}
-			router.push(`/auth?view=${newView}`);
+			router.push("/auth");
+			// router.push(`/auth?view=${newView}`);
 		}
 	};
 

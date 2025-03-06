@@ -97,14 +97,14 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 					)}
 					Send Magic Link
 				</Button>
-				<Button
+				{/* <Button
 					type="button"
 					variant="link"
 					className="w-full"
 					onClick={onToggleForm}
 				>
 					Sign in with password
-				</Button>
+				</Button> */}
 			</form>
 		</Form>
 	);
