@@ -50,6 +50,8 @@ export const footerData: FooterData = {
 	legalLinks: [
 		{ label: "Privacy Policy", href: "/privacy" },
 		{ label: "Terms of Service", href: "/terms" },
+		{ label: "Refund Policy", href: "/refund-policy" },
+
 		// { label: "Cookie Policy", href: "/cookies" },
 	],
 	copyright: "© 2025 Push to Post. All rights reserved.",
