@@ -1,8 +1,7 @@
 "use client";
-import Link from "next/link";
 import React, { useState } from "react";
 
-import { links } from "./data.";
+import { links } from "./data";
 
 const handleScroll = (
 	event_: React.MouseEvent<HTMLAnchorElement>,

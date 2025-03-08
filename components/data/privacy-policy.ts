@@ -5,7 +5,7 @@ export interface PrivacySection {
 
 export const privacyData = {
 	title: "Privacy Policy",
-	lastUpdated: "March 4, 2024",
+	lastUpdated: "March 4, 2025",
 	introduction:
 		"At Push to Post, accessible at commit.jolexhive.com, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.",
 	sections: [

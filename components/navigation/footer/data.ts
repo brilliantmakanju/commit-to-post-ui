@@ -52,5 +52,5 @@ export const footerData: FooterData = {
 		{ label: "Terms of Service", href: "/terms" },
 		// { label: "Cookie Policy", href: "/cookies" },
 	],
-	copyright: "© 2024 Push to Post. All rights reserved.",
+	copyright: "© 2025 Push to Post. All rights reserved.",
 };

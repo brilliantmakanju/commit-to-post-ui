@@ -5,7 +5,7 @@ export interface TermsSection {
 
 export const termsData = {
 	title: "Push to Post Terms and Conditions",
-	lastUpdated: "March 4, 2024",
+	lastUpdated: "March 4, 2025",
 	introduction:
 		"Welcome to Push to Post! These Terms and Conditions govern your access to and use of our website and services. By using Push to Post, you agree to comply with these Terms. Please read them carefully.",
 	sections: [
