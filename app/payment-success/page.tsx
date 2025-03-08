@@ -236,7 +236,7 @@ export default function PaymentSuccessPage() {
 					</CardContent>
 					<CardFooter className="flex justify-center border-t pt-6">
 						<p className="text-xs text-gray-500">
-							Need help? Contact our support team at support@example.com
+							Need help? Contact our support team at brilliant@jolexhive.com
 						</p>
 					</CardFooter>
 				</Card>
@@ -323,7 +323,7 @@ export default function PaymentSuccessPage() {
 // 				<CardFooter className="flex justify-center border-t pt-6">
 // 					<p className="text-center text-xs text-gray-500">
 // 						Your card has not been charged. If you continue to experience
-// 						issues, please contact our support team at support@example.com
+// 						issues, please contact our support team at brilliant@jolexhive.com
 // 					</p>
 // 				</CardFooter>
 // 			</Card>

@@ -102,7 +102,7 @@ export const termsData = {
 		{
 			title: "13. Contact Information",
 			content: [
-				"If you have any questions or concerns regarding these Terms and Conditions, please contact us at support@jolexhive.com.",
+				"If you have any questions or concerns regarding these Terms and Conditions, please contact us at brilliant@jolexhive.com.",
 			],
 		},
 	],

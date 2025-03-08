@@ -47,7 +47,7 @@ export const privacyData = {
 			title: "5. Data Retention",
 			content: [
 				"We retain your account information and generated posts for as long as your account is active or as needed to provide you with our services.",
-				"If you wish to request data deletion or unlink your LinkedIn account, please contact us directly at privacy@pushtopost.com.",
+				"If you wish to request data deletion or unlink your LinkedIn account, please contact us directly at brilliant@jolexhive.com.",
 			],
 		},
 		{
@@ -68,7 +68,7 @@ export const privacyData = {
 		{
 			title: "8. Your Rights and Choices",
 			content: [
-				"While our platform currently does not provide direct options to delete your account or revoke your LinkedIn integration, you can contact us at privacy@pushtopost.com to request these actions.",
+				"While our platform currently does not provide direct options to delete your account or revoke your LinkedIn integration, you can contact us at brilliant@jolexhive.com to request these actions.",
 				"You may also have additional rights under applicable data protection laws, such as the right to access, correct, or delete your personal information.",
 			],
 		},
@@ -106,7 +106,7 @@ export const privacyData = {
 		{
 			title: "13. Contact Us",
 			content: [
-				"If you have any questions about this Privacy Policy or wish to request account deletion or revoke LinkedIn access, please contact us at privacy@pushtopost.com.",
+				"If you have any questions about this Privacy Policy or wish to request account deletion or revoke LinkedIn access, please contact us at brilliant@jolexhive.com.",
 			],
 		},
 	],

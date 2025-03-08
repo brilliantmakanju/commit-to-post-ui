@@ -180,7 +180,7 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 											<>Resend Link</>
 										)}
 									</Button>
-									<Link href={"mailto:dev@dev.com"}>
+									<Link href={"brilliant@jolexhive.com"}>
 										<Button
 											type="button"
 											variant="outline"
@@ -210,7 +210,7 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 						</Button>
 					)}
 					{verificationStatus === "success" && (
-						<Link href={"mailto:dev@dev.com"}>
+						<Link href={"brilliant@jolexhive.com"}>
 							<Button
 								type="button"
 								variant="outline"

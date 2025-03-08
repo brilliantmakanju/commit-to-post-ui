@@ -8,5 +8,5 @@ export const links: Link[] = [
 	{ name: "Features", href: "#features" },
 	{ name: "Pricing", href: "#pricing" },
 	{ name: "FAQ", href: "#faq" },
-	{ name: "Contact", href: "mailto:dev@dev.vom" },
+	{ name: "Contact", href: "mailto:brilliant@jolexhive.com" },
 ];
