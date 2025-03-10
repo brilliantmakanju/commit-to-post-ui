@@ -1,29 +1,16 @@
 /* eslint-disable import/no-unresolved */
-import type { Metadata } from "next";
+"use client";
+import { useSearchParams } from "next/navigation";
 
 import { BankDetails } from "@/components/payment/bank-details";
 import { PaymentForm } from "@/components/payment/payment-form";
 
-export const metadata: Metadata = {
-	title: "Complete Payment - Push to Post",
-	description:
-		"Complete your payment to upgrade your Push to Post subscription",
-};
-
-interface SearchParams {
-	plan?: string;
-	cycle?: string;
-}
-
-export default async function PaymentPage({
-	searchParams,
-}: {
-	searchParams: SearchParams;
-}) {
+export default function PaymentPage() {
 	// Await the searchParams to properly handle it as a dynamic API
-	const params = await Promise.resolve(searchParams);
-	const plan = params.plan || "pro";
-	const cycle = params.cycle || "monthly";
+	const searchParams = useSearchParams();
+
+	const plan = searchParams.get("plan") || "pro";
+	const cycle = searchParams.get("cycle") || "monthly";
 
 	return (
 		<div className="min-h-screen w-full items-center justify-center">
