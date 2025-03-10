@@ -7,4 +7,5 @@ export const PROTECTED_SUB_ROUTES = [
 	"/posts",
 	"/notifications",
 	"/payment-success",
+	"/payment",
 ];

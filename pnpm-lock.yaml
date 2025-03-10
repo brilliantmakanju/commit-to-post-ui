@@ -511,6 +511,12 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@esbuild/linux-arm@0.25.0':
+    resolution: {integrity: sha512-vkB3IYj2IDo3g9xX7HqhPYxVkNQe8qTK55fraQyTzTX/fxaDtXiEnavv9geOsonh2Fd2RMB+i5cbhu2zMNWJwg==}
+    engines: {node: '>=18'}
+    cpu: [arm]
+    os: [linux]
+
   '@esbuild/linux-ia32@0.25.0':
     resolution: {integrity: sha512-43ET5bHbphBegyeqLb7I1eYn2P/JYGNmzzdidq/w0T8E2SsYL1U6un2NFROFRg1JZLTzdCoRomg8Rvf9M6W6Gg==}
     engines: {node: '>=18'}
@@ -4689,6 +4695,9 @@ snapshots:
   '@esbuild/linux-arm64@0.25.0':
     optional: true
 
+  '@esbuild/linux-arm@0.25.0':
+    optional: true
+
   '@esbuild/linux-ia32@0.25.0':
     optional: true
 
@@ -6549,6 +6558,7 @@ snapshots:
       '@esbuild/darwin-x64': 0.25.0
       '@esbuild/freebsd-arm64': 0.25.0
       '@esbuild/freebsd-x64': 0.25.0
+      '@esbuild/linux-arm': 0.25.0
       '@esbuild/linux-arm64': 0.25.0
       '@esbuild/linux-ia32': 0.25.0
       '@esbuild/linux-loong64': 0.25.0

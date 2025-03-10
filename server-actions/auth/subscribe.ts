@@ -4,8 +4,53 @@ import dotenv from "dotenv";
 
 import { apiClient } from "@/lib/utils/api-client";
 import { getPriceId } from "@/lib/utils/stripe-planning";
+import {
+	SubscriptionData,
+	subscriptionSchema,
+} from "@/resolvers/auth-resolvers";
 
 dotenv.config();
+
+export const PaymentCreation = async (
+	data: SubscriptionData,
+): Promise<{
+	success: boolean;
+	message: string;
+}> => {
+	try {
+		// Validate the data using Zod schema
+		const parsedData = subscriptionSchema.parse(data);
+		console.log(parsedData.paymentProof, "Parsed Data");
+
+		// Make the API call using the apiClient
+		const response = await apiClient.post(
+			"/api/v1/managements/payment/create/",
+			{
+				plan: parsedData.plan,
+				period: parsedData.period,
+				transaction_ref: parsedData.trancantRef,
+				proof_of_payment: parsedData.paymentProof,
+				additional_note: parsedData.additionalNote,
+			},
+		);
+
+		if (response.error) {
+			throw new Error(
+				response?.error.email || "Failed to create subscription.",
+			);
+		}
+
+		return {
+			success: true,
+			message: response.message,
+		};
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error.message || "An unexpected error occurred.",
+		};
+	}
+};
 
 export const subscriptionsCreation = async (): Promise<{
 	success: boolean;

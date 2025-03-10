@@ -1,18 +1,9 @@
 "use client";
+import Link from "next/link";
 import React, { useState } from "react";
 
 import { links } from "./data";
 
-const handleScroll = (
-	event_: React.MouseEvent<HTMLAnchorElement>,
-	href: string,
-) => {
-	event_.preventDefault();
-	const targetElement = document.querySelector(href);
-	if (targetElement) {
-		targetElement.scrollIntoView({ behavior: "smooth" });
-	}
-};
 const NavLinks = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	// const [darkMode, setDarkMode] = useState(false);
@@ -36,22 +27,22 @@ const NavLinks = () => {
 				{links.map((link, index) => (
 					<li key={index}>
 						{link.href.startsWith("mailto:") ? (
-							<a
+							<Link
 								href={link.href}
 								className="group relative hover:text-emerald-500"
 							>
 								{link.name}
 								<span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-emerald-500 transition-all group-hover:w-full"></span>
-							</a>
+							</Link>
 						) : (
-							<a
+							<Link
 								href={link.href}
-								onClick={event_ => handleScroll(event_, link.href)}
+								// onClick={event_ => handleScroll(event_, link.href)}
 								className="group relative cursor-pointer hover:text-emerald-500"
 							>
 								{link.name}
 								<span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-emerald-500 transition-all group-hover:w-full"></span>
-							</a>
+							</Link>
 						)}
 					</li>
 				))}

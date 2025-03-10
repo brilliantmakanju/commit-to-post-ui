@@ -64,6 +64,7 @@ export function PasswordLoginForm({
 			} else {
 				globalThis.window.location.reload();
 				toast.success("Welcome back!");
+				form.reset();
 			}
 		} catch (error) {
 			toast.error((error as Error).message);

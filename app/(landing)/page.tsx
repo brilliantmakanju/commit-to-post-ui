@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import FAQSection from "@/components/landing/faq/faq-section";
 import BenefitCards from "@/components/landing/feature/benefit-cards";
 import HeroSection from "@/components/landing/micro/hero-section";
-import Pricing from "@/components/landing/pricing/pricing-alt";
+import PricingSection from "@/components/landing/pricing/v3/payment-section";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
@@ -41,7 +41,7 @@ export default function Home() {
 		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)] md:mt-20">
 			<HeroSection />
 			<BenefitCards />
-			<Pricing />
+			<PricingSection />
 			<FAQSection />
 		</div>
 	);

@@ -51,6 +51,7 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 			const apiRequest = await requestMagicLink(values);
 			if (apiRequest.success) {
 				toast.success("Magic link sent to your email!");
+				form.reset();
 			} else {
 				toast.error(
 					apiRequest.message === "fetch failed"

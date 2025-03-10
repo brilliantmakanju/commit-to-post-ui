@@ -158,5 +158,16 @@ export const passwordFormSchema = z
 		path: ["confirmPassword"],
 	});
 
+// Zod schema for validating subscription creation data
+export const subscriptionSchema = z.object({
+	plan: z.string().min(1, "Plan is required"),
+	period: z.string().min(1, "Period is required"),
+	trancantRef: z.string().min(1, "Transaction reference is required"),
+	paymentProof: z.string().url("Invalid image URL").optional(),
+	additionalNote: z.string().optional(),
+});
+
+// Define TypeScript types from Zod schema
+export type SubscriptionData = z.infer<typeof subscriptionSchema>;
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type PasswordFormValues = z.infer<typeof passwordFormSchema>;
