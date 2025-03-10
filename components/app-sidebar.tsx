@@ -47,12 +47,12 @@ const data = {
 			icon: BellDotIcon,
 			items: [],
 		},
-		{
-			title: "Billing",
-			url: "#",
-			icon: WalletMinimal,
-			items: [],
-		},
+		// {
+		// 	title: "Billing",
+		// 	url: "#",
+		// 	icon: WalletMinimal,
+		// 	items: [],
+		// },
 		// {
 		// 	title: "Resources",
 		// 	url: "#",
@@ -107,11 +107,11 @@ const navigationItems = [
 		url: "/notifications",
 		icon: BellDot,
 	},
-	{
-		title: "Billing",
-		url: "#",
-		icon: WalletMinimal,
-	},
+	// {
+	// 	title: "Billing",
+	// 	url: "#",
+	// 	icon: WalletMinimal,
+	// },
 	{
 		title: "Settings",
 		url: "/settings",
