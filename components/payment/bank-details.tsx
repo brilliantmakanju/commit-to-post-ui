@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 "use client";
 
 import { Check, Copy } from "lucide-react";
@@ -18,16 +17,31 @@ export function BankDetails() {
 
 	const bankDetails = [
 		{
-			label: "Account Name",
-			value: process.env.NEXT_PUBLIC_ACCOUNT_NAME ?? "",
+			label: "Bank Name",
+			value: process.env.NEXT_PUBLIC_BANK_NAME ?? "",
 		},
-		{ label: "Bank Name", value: process.env.NEXT_PUBLIC_BANK_NAME ?? "" },
+		{
+			label: "Bank Address",
+			value: process.env.NEXT_PUBLIC_BANK_ADDRESS ?? "",
+		},
+		{
+			label: "Account Holder's Name",
+			value: process.env.NEXT_PUBLIC_ACCOUNT_HOLDER_NAME ?? "",
+		},
 		{
 			label: "Account Number",
 			value: process.env.NEXT_PUBLIC_ACCOUNT_NUMBER ?? "",
 		},
-		{ label: "Sort Code", value: process.env.NEXT_PUBLIC_SORT_CODE ?? "" },
+		{
+			label: "Routing Number (ABA)",
+			value: process.env.NEXT_PUBLIC_ROUTING_NUMBER ?? "",
+		},
+		{
+			label: "SWIFT Code",
+			value: process.env.NEXT_PUBLIC_SWIFT_CODE ?? "",
+		},
 	];
+
 	const copyToClipboard = (text: string, field: string) => {
 		navigator.clipboard.writeText(text);
 		setCopied(field);

@@ -2,7 +2,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Check, Upload, X } from "lucide-react";
+import { AlertCircle, Check, Clock, Upload, X } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useRef, useState } from "react";
@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { PaymentCreation } from "@/server-actions/auth/subscribe";
+
+import { GlobalCountdownTimer } from "../landing/pricing/v3/countdown";
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -265,6 +267,30 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 							<AlertDescription>{responseMessage.message}</AlertDescription>
 						</Alert>
 					)}
+
+					{/* Global Countdown Banner */}
+					<div className="mb-8 rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+						<div className="mb-3 flex items-center justify-center">
+							<Clock className="mr-2 h-5 w-5 text-zinc-800 dark:text-zinc-200" />
+							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
+								Limited Time Offer
+							</h3>
+						</div>
+						<p className="mb-4 text-zinc-600 dark:text-zinc-400">
+							All plans are available at a special launch price. Offer ends in:
+						</p>
+						<div className="inline-flex items-center justify-center rounded-md bg-white px-4 py-3 shadow-sm dark:bg-zinc-800">
+							<GlobalCountdownTimer
+								showLabels={true}
+								showIcon={false}
+								className="text-zinc-800 dark:text-zinc-200"
+							/>
+						</div>
+						<div className="mt-4 flex items-center justify-center text-sm text-zinc-500 dark:text-zinc-500">
+							<AlertCircle className="mr-1 h-3 w-3" />
+							<span>After this period, prices will increase</span>
+						</div>
+					</div>
 
 					{/* Plan Summary */}
 					<div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
