@@ -124,7 +124,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const queryClient = useQueryClient();
 	const [mounted, setMounted] = useState(false);
 	const useorganizationStore = useOrganizationStore();
-	const { data: organizations, isFetching } = useQuery({
+	const {
+		data: organizations,
+		isLoading,
+		isFetching,
+	} = useQuery({
 		queryKey: ["organizations"],
 		queryFn: async () => {
 			const result = await getOrganizations();
@@ -199,6 +203,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		setMounted(true);
 	}, [mounted]);
 
+	if (isFetching || isLoading) {
+		<>
+			<SidebarHeader>
+				<TeamSwitcher teams={[]} isLoading={isFetching} />
+			</SidebarHeader>
+			<SidebarContent>
+				<NavMain items={navigationItems} />
+			</SidebarContent>
+		</>;
+	}
+
 	return (
 		<Sidebar variant="inset" {...props}>
 			{mounted ? (
@@ -219,7 +234,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<TeamSwitcher teams={[]} isLoading={isFetching} />
 					</SidebarHeader>
 					<SidebarContent>
-						<NavMain items={data.navMain} />
+						<NavMain items={navigationItems} />
 					</SidebarContent>
 				</>
 			)}
