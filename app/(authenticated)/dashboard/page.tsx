@@ -1,5 +1,6 @@
 "use client";
 import { Calendar, Crown, Loader2, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { Suspense } from "react";
 import { toast } from "sonner";
@@ -159,22 +160,26 @@ const Page = () => {
 									Lifetime Access
 								</Button>
 							) : hasAccess ? (
-								<Button
-									size="sm"
-									onClick={subscribePlan}
-									disabled
-									className="w-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
-								>
-									Active Pro Plan
-								</Button>
+								<Link href={"/pricing"}>
+									<Button
+										size="sm"
+										// onClick={subscribePlan}
+										disabled
+										className="w-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+									>
+										Active Pro Plan
+									</Button>
+								</Link>
 							) : (
-								<Button
-									size="sm"
-									disabled={isLoading}
-									className="w-full bg-zinc-800 text-zinc-100 hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-800 dark:hover:bg-zinc-300"
-								>
-									Upgrade to Pro
-								</Button>
+								<Link href={"/pricing"}>
+									<Button
+										size="sm"
+										disabled={isLoading}
+										className="w-full bg-zinc-800 text-zinc-100 hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-800 dark:hover:bg-zinc-300"
+									>
+										Upgrade to Pro
+									</Button>
+								</Link>
 							)}
 						</CardContent>
 					</Card>
