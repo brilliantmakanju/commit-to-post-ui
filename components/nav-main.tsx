@@ -81,8 +81,8 @@ export function NavMain({
 					{[1, 2, 3, 4, 5].map(index => (
 						<SidebarMenuItem key={`skeleton-${index}`}>
 							<div className="flex w-full items-center gap-3 px-3 py-2">
-								<Skeleton className="h-5 w-5 rounded-md" />
-								<Skeleton className="h-4 w-24 rounded-md" />
+								<Skeleton className="h-5 w-9 rounded-md" />
+								<Skeleton className="h-5 w-full rounded-md" />
 							</div>
 						</SidebarMenuItem>
 					))}
