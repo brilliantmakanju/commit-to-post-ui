@@ -26,6 +26,8 @@ import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
 import useLogoutStore from "@/lib/zustand/logout-store";
 
+import { Skeleton } from "./ui/skeleton";
+
 interface NavItem {
 	title: string;
 	url: string;
@@ -39,19 +41,25 @@ interface NavItem {
 
 interface NavMainProps {
 	items: NavItem[];
+	isLoading?: boolean; // Added prop to accept loading state from parent
 }
 
-export function NavMain({ items }: NavMainProps) {
+export function NavMain({
+	items,
+	isLoading: parentLoading = false,
+}: NavMainProps) {
 	const { status } = useSession();
 	const { data: billingUrl } = useBillingPortal();
 	const logoutStore = useLogoutStore();
-	const isLoading = status === "loading";
+	const sessionLoading = status === "loading";
 	const hasAccess = useCheckAccess();
 	const { has_unread } = useRetrieveUnreadCount();
 	const userHasLifetimeAccess = useLifetimeAccess();
+	// Combined loading state from both session and parent
+	const isLoading = sessionLoading || parentLoading || logoutStore.logout;
 
 	const isDisabled = (item: NavItem) => {
-		if (isLoading || logoutStore.logout) return true;
+		if (isLoading) return true;
 		if (item.title === "Billing" && !hasAccess) return true;
 		return false;
 	};
@@ -63,7 +71,25 @@ export function NavMain({ items }: NavMainProps) {
 		return item.url;
 	};
 
-	const { toggleSidebar, state, isMobile } = useSidebar();
+	const { toggleSidebar, isMobile } = useSidebar();
+
+	// Loading skeleton for navigation items
+	if (isLoading) {
+		return (
+			<SidebarGroup>
+				<SidebarMenu>
+					{[1, 2, 3, 4, 5].map(index => (
+						<SidebarMenuItem key={`skeleton-${index}`}>
+							<div className="flex w-full items-center gap-3 px-3 py-2">
+								<Skeleton className="h-5 w-5 rounded-md" />
+								<Skeleton className="h-4 w-24 rounded-md" />
+							</div>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroup>
+		);
+	}
 
 	return (
 		<SidebarGroup>

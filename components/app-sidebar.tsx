@@ -209,7 +209,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<TeamSwitcher teams={[]} isLoading={isFetching} />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={navigationItems} />
+				<NavMain items={navigationItems} isLoading={isFetching || isLoading} />
 			</SidebarContent>
 		</>;
 	}
@@ -234,7 +234,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<TeamSwitcher teams={[]} isLoading={isFetching} />
 					</SidebarHeader>
 					<SidebarContent>
-						<NavMain items={navigationItems} />
+						<NavMain
+							items={navigationItems}
+							isLoading={isFetching || isLoading}
+						/>
 					</SidebarContent>
 				</>
 			)}
