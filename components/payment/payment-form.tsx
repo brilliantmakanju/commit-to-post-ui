@@ -2,7 +2,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Check, Clock, Upload, X } from "lucide-react";
+import { AlertCircle, Check, Clock, Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useRef, useState } from "react";
@@ -420,6 +420,7 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 							isSubmitting || (uploadProgress < 100 && imagePreview !== null)
 						}
 					>
+						{isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
 						{isSubmitting ? "Processing..." : "Submit Payment Proof"}
 					</Button>
 				</CardFooter>
