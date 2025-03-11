@@ -318,6 +318,7 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 					<div className="space-y-2">
 						<Label htmlFor="transactionRef">Transaction Reference</Label>
 						<Input
+							disabled={isSubmitting}
 							id="transactionRef"
 							placeholder="Enter your transaction reference or ID"
 							{...register("transactionRef")}
@@ -348,6 +349,7 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 							<input
 								type="file"
 								ref={fileInputRef}
+								disabled={isSubmitting}
 								onChange={handleFileChange}
 								accept="image/*"
 								className="hidden"
@@ -366,6 +368,7 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 											type="button"
 											variant="destructive"
 											size="icon"
+											disabled={isSubmitting}
 											className="absolute right-2 top-2 h-8 w-8"
 											onClick={event_ => {
 												event_.stopPropagation();
@@ -407,6 +410,7 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 						<Label htmlFor="additionalNote">Additional Notes (Optional)</Label>
 						<Textarea
 							id="additionalNote"
+							disabled={isSubmitting}
 							placeholder="Any additional information about your payment"
 							{...register("additionalNote")}
 						/>
