@@ -20,7 +20,6 @@ export const PaymentCreation = async (
 	try {
 		// Validate the data using Zod schema
 		const parsedData = subscriptionSchema.parse(data);
-		console.log(parsedData.paymentProof, "Parsed Data");
 
 		// Make the API call using the apiClient
 		const response = await apiClient.post(

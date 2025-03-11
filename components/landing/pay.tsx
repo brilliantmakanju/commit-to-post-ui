@@ -149,8 +149,6 @@ export function PaymentForm() {
 
 	// Handle form submission
 	const onSubmit = async (data: FormValues) => {
-		console.log("Form data before submission:", data);
-
 		// Check if payment proof exists
 		if (!imagePreview) {
 			setResponseMessage({
