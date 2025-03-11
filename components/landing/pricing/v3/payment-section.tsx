@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 
-import { Check, Users, X } from "lucide-react";
+import { AlertCircle, Check, Clock, Users, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { type Key, useEffect, useState } from "react";
@@ -90,18 +90,26 @@ export default function PricingSection() {
 				</h2>
 
 				{/* Global Countdown Banner */}
-				<div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-900 dark:bg-amber-900/20">
-					<h3 className="mb-2 text-lg font-medium text-amber-800 dark:text-amber-300">
-						Limited Time Offer
-					</h3>
-					<p className="mb-3 text-amber-700 dark:text-amber-400">
+				<div className="mb-8 rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+					<div className="mb-3 flex items-center justify-center">
+						<Clock className="mr-2 h-5 w-5 text-zinc-800 dark:text-zinc-200" />
+						<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
+							Limited Time Offer
+						</h3>
+					</div>
+					<p className="mb-4 text-zinc-600 dark:text-zinc-400">
 						All plans are available at a special launch price. Offer ends in:
 					</p>
-					<div className="flex justify-center">
+					<div className="inline-flex items-center justify-center rounded-md bg-white px-4 py-3 shadow-sm dark:bg-zinc-800">
 						<GlobalCountdownTimer
 							showLabels={true}
-							className="text-amber-800 dark:text-amber-300"
+							showIcon={false}
+							className="text-zinc-800 dark:text-zinc-200"
 						/>
+					</div>
+					<div className="mt-4 flex items-center justify-center text-sm text-zinc-500 dark:text-zinc-500">
+						<AlertCircle className="mr-1 h-3 w-3" />
+						<span>After this period, prices will increase</span>
 					</div>
 				</div>
 
