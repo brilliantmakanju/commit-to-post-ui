@@ -82,13 +82,13 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 			}
 			case "pro": {
 				planName = "Pro Plan";
-				planPrice = billingCycle === "monthly" ? "$12/month" : "$120/year";
+				planPrice = billingCycle === "monthly" ? "$5/month" : "$50/year";
 
 				break;
 			}
 			case newFunction(): {
 				planName = "Lifetime Deal";
-				planPrice = "$199 (one-time)";
+				planPrice = "$79 (one-time)";
 
 				break;
 			}
