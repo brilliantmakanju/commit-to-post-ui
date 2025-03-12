@@ -58,7 +58,7 @@ const SetupPage = () => {
 	};
 
 	return (
-		<Card className="w-[400px] bg-neutral-50">
+		<Card className="w-[400px] bg-neutral-100">
 			<CardHeader>
 				<CardTitle className="text-neutral-800">
 					Complete Your Profile
