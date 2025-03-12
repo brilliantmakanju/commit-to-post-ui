@@ -17,8 +17,8 @@ export const updateProfileSetup = async (data: SetupFormValues) => {
 			{
 				full_name: validatedData.fullName,
 			},
-			{},
-			5000000,
+			// {},
+			// 5000000000000000,
 		);
 
 		if (response.status !== 200) {
