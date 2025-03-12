@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -63,9 +65,11 @@ const HeroButtons: React.FC<HeroButtonsProps> = ({
 			>
 				{primaryLabel}
 			</Button>
-			<Button variant="outline" onClick={onSecondaryClick}>
-				{secondaryLabel}
-			</Button>
+			<Link href={"https://youtu.be/sKM3s-ZLXfo?si=haMyzRqDVMgeYWCr"}>
+				<Button variant="outline" onClick={onSecondaryClick}>
+					{secondaryLabel}
+				</Button>
+			</Link>
 		</div>
 	);
 };

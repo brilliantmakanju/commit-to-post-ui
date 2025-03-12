@@ -51,7 +51,7 @@ export function SocialConnectionSettings() {
 						<p className="text-sm text-gray-400">Loading instructions...</p>
 						<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
 							<li className="opacity-50">Loading tutorial...</li>
-							<li className="opacity-50">Loading guide...</li>
+							{/* <li className="opacity-50">Loading guide...</li> */}
 						</ul>
 					</div>
 				</div>
@@ -94,7 +94,7 @@ export function SocialConnectionSettings() {
 					<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
 						<li>
 							<a
-								href="http://www.youtube.com/watch?v=dQw4w9WgXcQ"
+								href="https://youtu.be/sKM3s-ZLXfo?si=haMyzRqDVMgeYWCr"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-white underline hover:text-gray-300"
@@ -102,7 +102,7 @@ export function SocialConnectionSettings() {
 								Watch our tutorial video
 							</a>
 						</li>
-						<li>
+						{/* <li>
 							<a
 								href="http://example.com/blog/how-to-connect-linkedin"
 								target="_blank"
@@ -111,7 +111,7 @@ export function SocialConnectionSettings() {
 							>
 								Read our step-by-step guide
 							</a>
-						</li>
+						</li> */}
 					</ul>
 				</div>
 			</div>
