@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
@@ -26,6 +27,7 @@ export default function Layout({
 					{children}
 					<Toaster />
 				</main>
+				<Analytics />
 			</body>
 		</html>
 	);

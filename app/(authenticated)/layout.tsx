@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 
 import { AuthenticatedLayout } from "@/components/wrappers/loaders/authenticated-layout";
@@ -29,6 +30,7 @@ export default async function Layout({
 		<html lang="en">
 			<body className={"grid grid-cols-1 antialiased"}>
 				<AuthenticatedLayout>{children}</AuthenticatedLayout>
+				<Analytics />
 			</body>
 		</html>
 	);

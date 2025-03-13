@@ -1,5 +1,6 @@
 import "../globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,6 +81,7 @@ export default function Layout({
 				</main>
 				<Toaster />
 				<Footer />
+				<Analytics />
 			</body>
 		</html>
 	);

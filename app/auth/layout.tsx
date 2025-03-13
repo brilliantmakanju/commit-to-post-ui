@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
 					<main className={"flex-1"}>{children}</main>
 				</Suspense>
 				<Toaster />
+				<Analytics />
 			</body>
 		</html>
 	);
