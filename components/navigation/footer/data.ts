@@ -25,7 +25,10 @@ export const footerData: FooterData = {
 			links: [
 				{ label: "Features", href: "#features" },
 				{ label: "Pricing", href: "/pricing" },
-				{ label: "Integrations", href: "/integrations" },
+				{
+					label: "Integrations",
+					href: "https://youtu.be/sKM3s-ZLXfo?si=haMyzRqDVMgeYWCr",
+				},
 				// { label: "Changelog", href: "/changelog" },
 			],
 		},
