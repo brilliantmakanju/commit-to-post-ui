@@ -13,7 +13,7 @@ interface BentoGridProps extends ComponentPropsWithoutRef<"div"> {
 interface BentoCardProps extends ComponentPropsWithoutRef<"div"> {
 	name: string;
 	className: string;
-	background: ReactNode;
+	background?: ReactNode;
 	Icon: React.ElementType;
 	description: string;
 	href: string;
