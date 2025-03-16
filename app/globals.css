@@ -51,6 +51,11 @@ body {
 		--notification-text-primary: 222 47% 11%;
 		--notification-text-secondary: 217 19% 27%;
 		--notification-border: 214 32% 91%;
+		--color-1: 0 100% 63%;
+		--color-2: 270 100% 63%;
+		--color-3: 210 100% 63%;
+		--color-4: 195 100% 63%;
+		--color-5: 90 100% 63%;
 	}
 	.dark {
 		--background: 20 14.3% 4.1%;
@@ -91,6 +96,11 @@ body {
 		--notification-text-primary: 214 32% 91%;
 		--notification-text-secondary: 217 33% 95%;
 		--notification-border: 217 19% 27%;
+		--color-1: 0 100% 63%;
+		--color-2: 270 100% 63%;
+		--color-3: 210 100% 63%;
+		--color-4: 195 100% 63%;
+		--color-5: 90 100% 63%;
 	}
 }
 
@@ -99,8 +109,12 @@ body {
 		@apply border-border;
 	}
 	body {
-		@apply bg-background text-foreground dark:bg-slate-900;
+		@apply bg-[red] text-foreground dark:bg-slate-900;
 	}
+}
+
+section{
+	background-color: #F1F5F9;
 }
 
 .dialog-title {

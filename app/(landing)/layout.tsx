@@ -58,7 +58,11 @@ export default function Layout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={"container mx-auto grid grid-cols-1 antialiased"}>
+			<body
+				className={
+					"container mx-auto grid grid-cols-1 bg-[#f4f4f4] antialiased"
+				}
+			>
 				<TopNavigation />
 				<main
 					role="main"

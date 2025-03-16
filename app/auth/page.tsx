@@ -8,10 +8,8 @@ import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { z } from "zod";
 
-import ForgotPasswordForm from "@/components/auth/modals/forgotpassword";
 import LoginForm from "@/components/auth/modals/login";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
-import SignupForm from "@/components/auth/modals/signup";
 import type { magicLinkSchemaToken } from "@/resolvers/auth-resolvers";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 

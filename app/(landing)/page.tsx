@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import FAQSection from "@/components/landing/faq/faq-section";
-import BenefitCards from "@/components/landing/feature/benefit-cards";
+import CtaSection from "@/components/call-to-action";
+import FAQs from "@/components/faqs";
+import BentoGridFeature from "@/components/landing/feature/bento-grid-features";
 import HeroSection from "@/components/landing/micro/hero-section";
-import PricingSection from "@/components/landing/pricing/v3/payment-section";
+import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
@@ -38,11 +39,12 @@ export default function Home() {
 	}, [router]); // ✅ Removed getCookies from dependencies
 
 	return (
-		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)] md:mt-20">
+		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)]">
 			<HeroSection />
-			<BenefitCards />
-			<PricingSection />
-			<FAQSection />
+			<WorkflowDemo />
+			<BentoGridFeature />
+			<CtaSection />
+			<FAQs />
 		</div>
 	);
 }
