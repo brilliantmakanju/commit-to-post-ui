@@ -90,7 +90,7 @@ export const pricingData: PricingData = {
 				price: 79,
 				previousPrice: 199,
 				spotsLeft: 200, // Increased to 200 users
-				endsIn: 72, // 72-hour countdown
+				endsIn: 79, // 72-hour countdown
 			},
 			features: [
 				{ name: "Everything in Pro", available: true },

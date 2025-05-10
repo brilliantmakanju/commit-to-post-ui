@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 export default function PricingPage() {
 	return (
 		<div className="min-h-screen w-full items-center justify-center">
-			<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-				<div className="mb-12 text-center">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				{/* <div className="mb-12 text-center">
 					<h1 className="text-4xl font-medium tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
 						Simple, transparent pricing
 					</h1>
@@ -22,16 +22,16 @@ export default function PricingPage() {
 						Choose the plan that&apos;s right for you and start turning your
 						commits into engaging LinkedIn posts.
 					</p>
-				</div>
+				</div> */}
 
 				<PricingSection />
 
-				<div className="mt-24">
+				{/* <div className="mt-24">
 					<h2 className="mb-12 text-center text-2xl font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
 						How to complete your payment
 					</h2>
 					<PaymentSteps />
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);

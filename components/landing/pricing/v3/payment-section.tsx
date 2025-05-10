@@ -26,7 +26,7 @@ const calculateDiscount = (oldPrice: number, newPrice: number) => {
 	return Math.round(discount);
 };
 
-// const formatTimeLeft = (seconds: number) => {
+// dconst formatTimeLeft = (seconds: number) => {
 // 	const hours = Math.floor(seconds / 3600);
 // 	const minutes = Math.floor((seconds % 3600) / 60);
 // 	const secs = seconds % 60;
@@ -44,8 +44,8 @@ export default function PricingSection() {
 	// Sort plans to ensure popular plan is in the middle
 	const sortedPlans = [...pricingData.plans].sort((a, b) => {
 		if (a.popular) return 0;
-		if (b.popular) return 1;
-		return -1;
+		if (b.popular) return -1;
+		return 1;
 	});
 
 	useEffect(() => {
@@ -265,11 +265,11 @@ export default function PricingSection() {
 									)}
 
 									<Button
-										onClick={() =>
-											handlePlanSelection(
-												plan.name.toLowerCase().replaceAll(/\s+/g, "-"),
-											)
-										}
+										// onClick={() =>
+										// 	handlePlanSelection(
+										// 		plan.name.toLowerCase().replaceAll(/\s+/g, "-"),
+										// 	)
+										// }
 										className={cn(
 											"mt-6 w-full",
 											isPro

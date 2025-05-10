@@ -36,7 +36,7 @@ export function GlobalCountdownTimer({
 	// This is exactly 72 hours from a predetermined start date
 	// const FIXED_END_TIME = Date.UTC(2025, 2, 14, 0, 0, 0);const now = new Date(Date.UTC(2025, 2, 13, 0, 0, 0)); // March 13, 2025, 00:00:00 UTC
 	// const FIXED_END_TIME = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 3, 0, 0, 0, 0); // 3 days later
-	const now = new Date(Date.UTC(2025, 2, 13, 0, 0, 0)); // March 13, 2025, 00:00:00 UTC
+	const now = new Date(Date.UTC(2025, 4, 13, 0, 0, 0)); // March 13, 2025, 00:00:00 UTC
 	const FIXED_END_TIME = Date.UTC(
 		now.getUTCFullYear(),
 		now.getUTCMonth(),
