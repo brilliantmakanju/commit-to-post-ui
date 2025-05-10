@@ -158,8 +158,7 @@ export default function Footer() {
 							&ldquo;,
 						</p>
 						<p className="mb-1 pl-4 text-sm text-gray-600">
-							<span className="text-amber-600">founded:</span>{" "}
-							{new Date().getFullYear()},
+							<span className="text-amber-600">founded:</span> 2025,
 						</p>
 						<p className="mb-1 pl-4 text-sm text-gray-600">
 							<span className="text-amber-600">focus:</span> &ldquo;Developer
