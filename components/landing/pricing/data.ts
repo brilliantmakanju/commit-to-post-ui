@@ -48,7 +48,7 @@ export const pricingData: PricingData = {
 			features: [
 				{ name: "Generate up to 5 posts/month", available: true },
 				{ name: "Connect GitHub and LinkedIn", available: true },
-				{ name: "Single project integration", available: true },
+				// { name: "Single project integration", available: true },
 				{ name: "Default post generation tone", available: true },
 				{ name: "Post rescheduling", available: false },
 				{ name: "Priority support", available: false },
@@ -69,7 +69,7 @@ export const pricingData: PricingData = {
 			},
 			features: [
 				{ name: "Unlimited post generation", available: true },
-				{ name: "Multi-project integration", available: true },
+				// { name: "Multi-project integration", available: true },
 				{ name: "Post rescheduling", available: true },
 				{ name: "Priority customer support", available: true },
 				{ name: "Multiple tones & shuffle tone", available: true },
