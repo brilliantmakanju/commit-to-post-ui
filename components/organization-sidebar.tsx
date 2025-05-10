@@ -125,6 +125,7 @@ export function TeamSwitcher({
 						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
+								disabled
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<Skeleton className="h-8 w-8 rounded-lg" />
@@ -144,6 +145,7 @@ export function TeamSwitcher({
 						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
+								disabled
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
@@ -171,6 +173,7 @@ export function TeamSwitcher({
 						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
+								disabled
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
