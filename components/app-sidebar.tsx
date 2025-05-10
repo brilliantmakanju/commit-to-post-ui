@@ -240,18 +240,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		setMounted(true);
 	}, [mounted]);
 
-	if (isFetching) {
-		return (
-			<Sidebar variant="inset" {...props}>
-				<SidebarHeader>
-					<TeamSwitcher teams={[]} isLoading={isFetching} />
-				</SidebarHeader>
-				<SidebarContent>
-					<NavMain items={[]} isLoading={isFetching} />
-				</SidebarContent>
-			</Sidebar>
-		);
-	}
+	// if (isFetching) {
+	// 	return (
+	// 		<Sidebar variant="inset" {...props}>
+	// 			<SidebarHeader>
+	// 				<TeamSwitcher teams={[]} isLoading={isFetching} />
+	// 			</SidebarHeader>
+	// 			<SidebarContent>
+	// 				<NavMain items={[]} isLoading={isFetching} />
+	// 			</SidebarContent>
+	// 		</Sidebar>
+	// 	);
+	// }
 
 	return (
 		<Sidebar variant="inset" collapsible="icon" {...props}>
@@ -261,10 +261,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<TeamSwitcher teams={organizations || []} isLoading={isFetching} />
 					</SidebarHeader>
 					<SidebarContent>
-						<NavMain items={navigationItems} />
+						<NavMain items={navigationItems} isLoading={isFetching} />
 					</SidebarContent>
 					<SidebarFooter>
-						<NavUser />
+						<NavUser isLoadingAttachment={isFetching} />
 					</SidebarFooter>
 				</>
 			) : (
@@ -275,6 +275,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarContent>
 						<NavMain items={navigationItems} isLoading={isFetching} />
 					</SidebarContent>
+					<SidebarFooter>
+						<NavUser isLoadingAttachment={isFetching} />
+					</SidebarFooter>
 				</>
 			)}
 			<SidebarRail />

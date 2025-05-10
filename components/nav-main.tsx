@@ -75,27 +75,27 @@ export function NavMain({
 	const { toggleSidebar, isMobile } = useSidebar();
 
 	// Loading skeleton for navigation items
-	if (isLoading) {
-		return (
-			<SidebarGroup>
-				<SidebarMenu>
-					{[1, 2, 3, 4, 5].map(index => (
-						<SidebarMenuItem key={`skeleton-${index}`}>
-							<div className="flex w-full items-center gap-3 px-3 py-2">
-								<Skeleton className="h-5 w-9 rounded-md" />
-								<Skeleton className="h-5 w-full rounded-md" />
-							</div>
-						</SidebarMenuItem>
-					))}
-				</SidebarMenu>
-			</SidebarGroup>
-		);
-	}
+	// if (isLoading) {
+	// 	return (
+	// 		<SidebarGroup>
+	// 			<SidebarMenu>
+	// 				{[1, 2, 3, 4, 5].map(index => (
+	// 					<SidebarMenuItem key={`skeleton-${index}`}>
+	// 						<div className="flex w-full items-center gap-3 px-3 py-2">
+	// 							<Skeleton className="h-5 w-9 rounded-md" />
+	// 							<Skeleton className="h-5 w-full rounded-md" />
+	// 						</div>
+	// 					</SidebarMenuItem>
+	// 				))}
+	// 			</SidebarMenu>
+	// 		</SidebarGroup>
+	// 	);
+	// }
 
 	return (
 		<SidebarGroup>
 			<SidebarGroupLabel>Navigations</SidebarGroupLabel>
-			<SidebarMenu>
+			<SidebarMenu className="gap-2">
 				{items
 					.filter(item => {
 						// Filter out the "Billing" link if the user has lifetime access
@@ -110,7 +110,7 @@ export function NavMain({
 								<SidebarMenuButton
 									asChild
 									tooltip={item.title}
-									disabled={isDisabled(item)}
+									disabled={isDisabled(item) || isLoading}
 								>
 									<Link
 										href={`${getItemUrl(item)}`}

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -108,12 +109,20 @@ export function TeamSwitcher({
 		? useOrganizationStore.getState().organization
 		: undefined;
 
+		const isDropdownDisabled =
+		!mounted ||
+		(teams.length === 0 && !storedOrg) ||
+		logoutStore.logout ||
+		(isLoading && (!storedOrg || storedOrg.name === "")) ||
+		(!isLoading && teams.length === 0 && !organization);
+
+
 	if (!mounted || (teams.length === 0 && !storedOrg) || logoutStore.logout) {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -132,7 +141,7 @@ export function TeamSwitcher({
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -159,7 +168,7 @@ export function TeamSwitcher({
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -197,7 +206,7 @@ export function TeamSwitcher({
 		<SidebarMenu>
 			<SidebarMenuItem>
 				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
+					<DropdownMenuTrigger disabled={isDropdownDisabled} asChild>
 						<SidebarMenuButton
 							size="lg"
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"

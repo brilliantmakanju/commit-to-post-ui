@@ -8,7 +8,6 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -29,7 +28,11 @@ import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
 import { logout, signOut } from "@/server-actions/auth/signout";
 
-export function NavUser() {
+export function NavUser({
+	isLoadingAttachment = false,
+}: {
+	isLoadingAttachment?: boolean;
+}) {
 	const router = useRouter();
 	const userStore = useUserStore();
 	const { isMobile } = useSidebar();
@@ -90,18 +93,18 @@ export function NavUser() {
 		}
 	};
 
-	if (status === "loading") {
+	if (status === "loading" || isLoadingAttachment) {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenuTrigger disabled asChild>
 							<SidebarMenuButton
 								size="lg"
 								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<Avatar className="h-8 w-8 rounded-lg">
-									{/* <AvatarImage src={avatar} alt={userData.firstName} /> */}
+									{/* <AvatarImage src={avatar || "/placeholder.svg"} alt={userData.firstName} /> */}
 									<AvatarFallback className="rounded-lg">
 										{userData.firstName?.charAt(0)}
 										{userData.lastName?.charAt(0)}
@@ -111,7 +114,11 @@ export function NavUser() {
 									<span className="truncate font-semibold">
 										{userData.firstName} {userData.lastName}
 									</span>
-									<span className="truncate text-xs">{userData.email}</span>
+									<span className="truncate text-xs">
+										{isLoadingAttachment
+											? "Loading attachment..."
+											: userData.email}
+									</span>
 								</div>
 							</SidebarMenuButton>
 						</DropdownMenuTrigger>
@@ -135,7 +142,7 @@ export function NavUser() {
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
 							<Avatar className="h-8 w-8 rounded-lg">
-								{/* <AvatarImage src={avatar} alt={userData.firstName} /> */}
+								{/* <AvatarImage src={avatar || "/placeholder.svg"} alt={userData.firstName} /> */}
 								<AvatarFallback className="rounded-lg">
 									{userData.firstName?.charAt(0)}
 									{userData.lastName?.charAt(0)}
@@ -159,7 +166,7 @@ export function NavUser() {
 						<DropdownMenuLabel className="p-0 font-normal">
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar className="h-8 w-8 rounded-lg">
-									{/* <AvatarImage src={avatar} alt={userData.firstName} /> */}
+									{/* <AvatarImage src={avatar || "/placeholder.svg"} alt={userData.firstName} /> */}
 									<AvatarFallback className="rounded-lg">
 										{userData.firstName?.charAt(0)}
 										{userData.lastName?.charAt(0)}
