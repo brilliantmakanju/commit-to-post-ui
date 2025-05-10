@@ -21,7 +21,10 @@ export const registerUser = async (
 
 	try {
 		// Make the API call using the apiClient
-		const response = await apiClient.post("/api/v1/auth/users/", parsedData);
+		const response = await apiClient.post(
+			"/api/v1/managements/magic-link/send/",
+			parsedData,
+		);
 		// Check if the registration was successful (status 200 or 201)
 		if (response.error) {
 			throw new Error(response?.error.email || "Failed to register user.");

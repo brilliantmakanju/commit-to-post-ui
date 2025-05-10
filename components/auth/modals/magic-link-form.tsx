@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { deleteCookie } from "@/lib/cookies/create-cookies";
+import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
@@ -37,8 +38,9 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 	});
 
 	const userStore = useUserStore();
-	const organizationStore = useOrganizationStore();
+	const { openModal } = useAuthModalStore();
 	const logoutStore = useLogoutStore();
+	const organizationStore = useOrganizationStore();
 
 	const submitMagicLink = async (values: z.infer<typeof magicLinkSchema>) => {
 		organizationStore.clearOrganization();
@@ -50,8 +52,8 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 		try {
 			const apiRequest = await requestMagicLink(values);
 			if (apiRequest.success) {
-				toast.success("Magic link sent to your email!");
 				form.reset();
+				openModal("check-email");
 			} else {
 				toast.error(
 					apiRequest.message === "fetch failed"

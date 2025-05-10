@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -109,92 +110,123 @@ export function DeleteOrganization() {
 	};
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={newOpen => {
-				if (newOpen) {
-					checkOrganizationCount();
-				}
-				setOpen(newOpen);
-			}}
-		>
-			<DialogTrigger asChild>
-				<Button
-					variant="destructive"
-					className="w-full gap-2 bg-opacity-80 text-white sm:w-auto"
-				>
-					<Trash2 className="h-4 w-4" />
-					Delete Organization
-				</Button>
-			</DialogTrigger>
-			<DialogContent className="bg-white">
-				<DialogHeader>
-					<DialogTitle>Delete Organization</DialogTitle>
-					{isOnlyOrganization ? (
-						<DialogDescription className="text-gray-600">
-							You cannot delete your only organization. Please create another
-							organization first before deleting this one.
-						</DialogDescription>
-					) : (
-						<DialogDescription className="text-gray-600">
-							This action cannot be undone. Please type{" "}
-							<strong className="font-semibold text-gray-900">
-								{organization?.name}
-							</strong>{" "}
-							to confirm.
-						</DialogDescription>
-					)}
-				</DialogHeader>
-				{isDeleting ? (
-					<div className="flex h-32 items-center justify-center">
-						<Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-						<span className="ml-2 text-gray-600">Deleting organization...</span>
+		<Card className="border-[#232323] bg-[#121212]">
+			<CardContent className="p-6">
+				<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+					<div>
+						<h3 className="mb-1 text-lg font-medium text-white">
+							Delete Organization
+						</h3>
+						<p className="text-sm text-zinc-400">
+							Permanently delete this organization and all associated data. This
+							action cannot be undone.
+						</p>
 					</div>
-				) : (
-					!isOnlyOrganization && (
-						<Form {...form}>
-							<form
-								onSubmit={form.handleSubmit(onSubmit)}
-								className="space-y-4"
+
+					<Dialog
+						open={open}
+						onOpenChange={newOpen => {
+							if (newOpen) {
+								checkOrganizationCount();
+							}
+							setOpen(newOpen);
+						}}
+					>
+						<DialogTrigger asChild>
+							<Button
+								variant="destructive"
+								className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900"
 							>
-								<FormField
-									control={form.control}
-									name="organizationName"
-									render={({ field }) => (
-										<FormItem>
-											<FormControl>
-												<Input
-													{...field}
-													placeholder="Enter organization name"
-													disabled={isDeleting}
-													className="border-gray-200 bg-white focus:border-gray-900 focus:ring-gray-900"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<DialogFooter>
-									<Button
-										type="submit"
-										variant="outline"
-										className="border-gray-200 bg-black text-white hover:bg-gray-800 disabled:bg-gray-200"
-										disabled={
-											form.watch("organizationName") !== organization?.name ||
-											isDeleting
-										}
-									>
-										{isDeleting && (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										)}
-										{isDeleting ? "Deleting..." : "Delete Organization"}
-									</Button>
-								</DialogFooter>
-							</form>
-						</Form>
-					)
-				)}
-			</DialogContent>
-		</Dialog>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Delete Organization
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="border border-[#232323] bg-[#121212] text-white">
+							<DialogHeader>
+								<DialogTitle className="flex items-center">
+									<Trash2 className="mr-2 h-5 w-5 text-red-500" />
+									Delete Organization
+								</DialogTitle>
+								{isOnlyOrganization ? (
+									<DialogDescription className="text-zinc-400">
+										You cannot delete your only organization. Please create
+										another organization first before deleting this one.
+									</DialogDescription>
+								) : (
+									<DialogDescription className="text-zinc-400">
+										This action cannot be undone. Please type{" "}
+										<strong className="font-mono font-semibold text-white">
+											{organization?.name}
+										</strong>{" "}
+										to confirm.
+									</DialogDescription>
+								)}
+							</DialogHeader>
+							{isDeleting ? (
+								<div className="flex h-32 items-center justify-center">
+									<div className="relative">
+										<Loader2 className="h-8 w-8 animate-spin text-red-500" />
+										<div className="absolute inset-0 h-8 w-8 animate-pulse rounded-full bg-red-500/20"></div>
+									</div>
+									<span className="ml-3 text-zinc-400">
+										Deleting organization...
+									</span>
+								</div>
+							) : (
+								!isOnlyOrganization && (
+									<Form {...form}>
+										<form
+											onSubmit={form.handleSubmit(onSubmit)}
+											className="space-y-4"
+										>
+											<FormField
+												control={form.control}
+												name="organizationName"
+												render={({ field }) => (
+													<FormItem>
+														<FormControl>
+															<Input
+																{...field}
+																placeholder="Enter organization name"
+																disabled={isDeleting}
+																className="border-[#232323] bg-[#121212] font-mono text-white focus:border-red-900/50 focus:ring-red-900/20"
+															/>
+														</FormControl>
+														<FormMessage className="text-red-400" />
+													</FormItem>
+												)}
+											/>
+											<DialogFooter>
+												<Button
+													type="submit"
+													variant="destructive"
+													className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900 disabled:border-[#232323] disabled:bg-[#232323] disabled:text-zinc-500"
+													disabled={
+														form.watch("organizationName") !==
+															organization?.name || isDeleting
+													}
+												>
+													{isDeleting ? (
+														<div className="flex items-center">
+															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+															<span>Deleting...</span>
+														</div>
+													) : (
+														<div className="flex items-center">
+															<Trash2 className="mr-2 h-4 w-4" />
+															<span>Delete Organization</span>
+														</div>
+													)}
+												</Button>
+											</DialogFooter>
+										</form>
+									</Form>
+								)
+							)}
+						</DialogContent>
+					</Dialog>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

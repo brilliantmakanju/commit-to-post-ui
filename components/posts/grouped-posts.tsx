@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 "use client";
 
 import { format, formatDistanceToNow, parseISO } from "date-fns";
@@ -8,12 +7,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -112,22 +106,36 @@ export default function GroupedPostCard({
 
 	const statusCounts = getStatusCounts();
 
+	// Status badge styling
+	// eslint-disable-next-line unicorn/consistent-function-scoping
+	const getBadgeStyles = (status: string) => {
+		switch (status) {
+			case "published": {
+				return "bg-zinc-900 text-zinc-100 border-zinc-700";
+			}
+			case "scheduled": {
+				return "bg-zinc-800 text-zinc-200 border-zinc-700";
+			}
+			case "drafted": {
+				return "bg-transparent text-zinc-400 border-zinc-700";
+			}
+			default: {
+				return "bg-transparent text-zinc-400 border-zinc-700";
+			}
+		}
+	};
+
 	return (
 		<>
-			<Card className="group relative overflow-hidden transition-all hover:shadow-md">
+			<Card className="group relative overflow-hidden border border-zinc-800 bg-zinc-950 transition-all hover:border-zinc-700 hover:shadow-md">
 				<CardHeader className="space-y-0 pb-2">
 					<div className="flex items-center justify-between">
 						<div className="flex gap-2">
 							{Object.entries(statusCounts).map(([status, count]) => (
 								<Badge
 									key={status}
-									variant={
-										status === "published"
-											? "default"
-											: status === "scheduled"
-												? "secondary"
-												: "outline"
-									}
+									variant="outline"
+									className={getBadgeStyles(status)}
 								>
 									{count} {status}
 								</Badge>
@@ -137,18 +145,18 @@ export default function GroupedPostCard({
 				</CardHeader>
 				<CardContent className="pb-2">
 					<div className="mb-4">
-						<p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-300">
+						<p className="line-clamp-2 text-sm text-zinc-300">
 							{latestPost.content}
 						</p>
 					</div>
-					<div className="flex items-center justify-between text-xs text-gray-500">
+					<div className="flex items-center justify-between text-xs text-zinc-500">
 						<div className="flex items-center gap-4">
-							<div className="flex items-center gap-1">
-								<Twitter className="h-4 w-4 text-blue-400" />
+							{/* <div className="flex items-center gap-1">
+								<Twitter className="h-4 w-4 text-zinc-400" />
 								<span>{platformCounts["twitter"] || 0}</span>
-							</div>
+							</div> */}
 							<div className="flex items-center gap-1">
-								<Linkedin className="h-4 w-4 text-blue-600" />
+								<Linkedin className="h-4 w-4 text-zinc-400" />
 								<span>{platformCounts["linkedin"] || 0}</span>
 							</div>
 						</div>
@@ -157,10 +165,10 @@ export default function GroupedPostCard({
 				</CardContent>
 
 				{/* Overlay that appears on hover */}
-				<div className="absolute inset-0 flex items-center justify-center bg-transparent opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+				<div className="absolute inset-0 flex items-center justify-center bg-zinc-950/80 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
 					<Button
 						variant="outline"
-						className="text-black"
+						className="border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-white"
 						onClick={() => setShowPostsDialog(true)}
 					>
 						<ChevronDown className="mr-2 h-4 w-4" />
@@ -170,10 +178,10 @@ export default function GroupedPostCard({
 			</Card>
 
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<DialogContent>
+				<DialogContent className="border border-zinc-800 bg-zinc-950 text-zinc-300">
 					<DialogHeader>
 						<DialogTitle>Delete Post Group</DialogTitle>
-						<DialogDescription>
+						<DialogDescription className="text-zinc-400">
 							Are you sure you want to delete this group of {group.posts.length}{" "}
 							posts? This action cannot be undone.
 						</DialogDescription>
@@ -182,6 +190,7 @@ export default function GroupedPostCard({
 						<Button
 							variant="outline"
 							onClick={() => setIsDeleteDialogOpen(false)}
+							className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
 						>
 							Cancel
 						</Button>
@@ -189,6 +198,7 @@ export default function GroupedPostCard({
 							variant="destructive"
 							onClick={handleDeleteGroup}
 							disabled={isLoading}
+							className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
 						>
 							{isLoading ? (
 								<>
@@ -203,10 +213,10 @@ export default function GroupedPostCard({
 				</DialogContent>
 			</Dialog>
 			<Dialog open={showPostsDialog} onOpenChange={setShowPostsDialog}>
-				<DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
+				<DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto border border-zinc-800 bg-zinc-950 text-zinc-300">
 					<DialogHeader>
 						<DialogTitle>Group Posts</DialogTitle>
-						<DialogDescription>
+						<DialogDescription className="text-zinc-400">
 							Showing all {group.posts.length} posts in this group
 						</DialogDescription>
 					</DialogHeader>

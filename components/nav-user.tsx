@@ -82,7 +82,7 @@ export function NavUser() {
 			await clearCookies(); // Clear all cookies
 			// Sign out from NextAuth
 			await signOut();
-			router.push("/auth");
+			router.push("/");
 			// logoutStore.clearLogout();
 		} else {
 			// Handle error (if any)

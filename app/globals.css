@@ -102,36 +102,36 @@ body {
 		--color-4: 195 100% 63%;
 		--color-5: 90 100% 63%;
 	}
-}
-
-@layer base {
 	* {
 		@apply border-border;
 	}
 	body {
-		@apply bg-[red] text-foreground dark:bg-slate-900;
+		@apply bg-background text-foreground;
 	}
 }
 
-section{
+
+
+
+/* section{
 	background-color: #F1F5F9;
-}
+} */
 
 .dialog-title {
-	display: none;
 	width: 0%;
-	background-color: red;
 	height: 0%;
+	display: none;
 	overflow: hidden;
+	/* background-color: red; */
 }
 
 .flip-card {
-	position: relative;
-	display: inline-flex;
-	flex-direction: column;
-	border-radius: 0.5rem;
 	line-height: 1;
 	font-weight: bold;
+	position: relative;
+	display: inline-flex;
+	border-radius: 0.5rem;
+	flex-direction: column;
 }
 
 .top,
@@ -139,9 +139,9 @@ section{
 .flip-card .top-flip,
 .flip-card .bottom-flip {
 	height: 60px;
+	padding: 20px;
 	overflow: hidden;
 	background-color: #2d3748;
-	padding: 20px;
 }
 
 .flip-card .top-flip {
@@ -153,15 +153,15 @@ section{
 .flip-card .bottom-flip {
 	display: flex;
 	align-items: flex-end;
-	border-bottom-right-radius: 0.5rem;
 	border-bottom-left-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
 }
 
 .flip-card .top-flip {
 	position: absolute;
 	width: 100%;
-	animation: flip-top 250ms ease-in;
 	transform-origin: bottom;
+	animation: flip-top 250ms ease-in;
 }
 
 @keyframes flip-top {
@@ -171,25 +171,16 @@ section{
 }
 
 .flip-card .bottom-flip {
-	position: absolute;
-	bottom: 20px;
 	width: 100%;
-	animation: flip-bottom 250ms ease-out 250ms;
+	bottom: 20px;
+	position: absolute;
 	transform-origin: top;
 	transform: rotateX(90deg);
+	animation: flip-bottom 250ms ease-out 250ms;
 }
 
 @keyframes flip-bottom {
 	100% {
 		transform: rotateX(0deg);
-	}
-}
-
-@layer base {
-	* {
-		@apply border-border;
-	}
-	body {
-		@apply bg-background text-foreground;
 	}
 }

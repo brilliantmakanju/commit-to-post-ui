@@ -1,16 +1,17 @@
-/* eslint-disable unicorn/consistent-function-scoping */
 "use client";
 
-import { Linkedin, Loader2, Twitter } from "lucide-react";
+import { ExternalLink, Github, Linkedin, Loader2, Twitter } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useSocialStatus } from "@/hooks/settings/use-social-status";
 import { getLinkedInConnection } from "@/server-actions/organizations/get-linkedin-connection";
 
 export function SocialConnectionSettings() {
 	const { data: socialStatus, isFetching } = useSocialStatus();
 
+	// eslint-disable-next-line unicorn/consistent-function-scoping
 	const openConnectAccountDialog = async () => {
 		try {
 			const response = await getLinkedInConnection();
@@ -29,31 +30,62 @@ export function SocialConnectionSettings() {
 		return (
 			<div className="flex w-full flex-col text-white">
 				<div className="w-full space-y-4">
-					<h2 className="text-lg font-semibold">Connected Accounts</h2>
-					<div className="flex flex-wrap gap-4">
-						<Button
-							disabled
-							className="w-full flex-1 justify-start border border-white bg-transparent text-white opacity-50"
-						>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							Loading...
-						</Button>
-						<Button
-							disabled
-							className="w-full flex-1 cursor-not-allowed justify-start border border-white text-white opacity-50"
-						>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							Loading...
-						</Button>
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+							<div className="flex items-center">
+								<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+									<Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+								</div>
+								<div>
+									<h3 className="text-sm font-medium text-zinc-300">
+										Loading...
+									</h3>
+									<p className="text-xs text-zinc-500">
+										Checking connection status
+									</p>
+								</div>
+							</div>
+							<Button disabled className="bg-[#232323] text-zinc-400">
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Loading...
+							</Button>
+						</Card>
+
+						<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+							<div className="flex items-center">
+								<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+									<Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+								</div>
+								<div>
+									<h3 className="text-sm font-medium text-zinc-300">
+										Loading...
+									</h3>
+									<p className="text-xs text-zinc-500">
+										Checking connection status
+									</p>
+								</div>
+							</div>
+							<Button disabled className="bg-[#232323] text-zinc-400">
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Loading...
+							</Button>
+						</Card>
 					</div>
-					<div className="space-y-2">
-						<h3 className="text-sm font-medium">How to connect your account</h3>
-						<p className="text-sm text-gray-400">Loading instructions...</p>
-						<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
-							<li className="opacity-50">Loading tutorial...</li>
-							{/* <li className="opacity-50">Loading guide...</li> */}
-						</ul>
-					</div>
+
+					<Card className="border-[#232323] bg-[#121212] p-4">
+						<h3 className="mb-2 text-sm font-medium text-zinc-300">
+							How to connect your accounts
+						</h3>
+						<p className="mb-3 text-sm text-zinc-500">
+							Connect your social accounts to automatically share your GitHub
+							commits as engaging posts.
+						</p>
+						<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-3">
+							<p className="text-xs text-zinc-400">
+								Loading connection instructions...
+							</p>
+						</div>
+					</Card>
 				</div>
 			</div>
 		);
@@ -62,58 +94,112 @@ export function SocialConnectionSettings() {
 	return (
 		<div className="flex w-full flex-col text-white">
 			<div className="w-full space-y-4">
-				<h2 className="text-lg font-semibold">Connected Accounts</h2>
-				<div className="flex flex-wrap gap-4">
-					{!isFetching && (
-						<>
-							<Button
-								onClick={() => openConnectAccountDialog()}
-								disabled={socialStatus !== false}
-								className={
-									"w-full flex-1 justify-start border border-white bg-transparent text-white transition-all hover:bg-white hover:text-black disabled:opacity-50"
-								}
-							>
-								<Linkedin className="mr-2 h-4 w-4" />
-								{socialStatus ? "LinkedIn Connected" : "Connect LinkedIn"}
-							</Button>
-							<Button
-								disabled
-								className="w-full flex-1 cursor-not-allowed justify-start border border-white text-white opacity-50"
-							>
-								<Twitter className="mr-2 h-4 w-4" />
-								Twitter (Coming Soon)
-							</Button>
-						</>
-					)}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+					<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+						<div className="flex items-center">
+							<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+								<Linkedin className="h-5 w-5 text-[#0A66C2]" />
+							</div>
+							<div>
+								<h3 className="text-sm font-medium text-zinc-300">LinkedIn</h3>
+								<p className="text-xs text-zinc-500">
+									{socialStatus ? "Connected" : "Not connected"}
+								</p>
+							</div>
+						</div>
+						<Button
+							onClick={() => openConnectAccountDialog()}
+							disabled={socialStatus !== false}
+							className={
+								socialStatus
+									? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+									: "bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+							}
+						>
+							{socialStatus ? (
+								<span className="flex items-center">
+									<ExternalLink className="mr-2 h-4 w-4" />
+									Connected
+								</span>
+							) : (
+								<span className="flex items-center">
+									<Linkedin className="mr-2 h-4 w-4" />
+									Connect
+								</span>
+							)}
+						</Button>
+					</Card>
+
+					<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+						<div className="flex items-center">
+							<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+								<Twitter className="h-5 w-5 text-[#1DA1F2]" />
+							</div>
+							<div>
+								<h3 className="text-sm font-medium text-zinc-300">Twitter</h3>
+								<p className="text-xs text-zinc-500">Coming soon</p>
+							</div>
+						</div>
+						<Button disabled className="bg-[#232323] text-zinc-400">
+							Coming Soon
+						</Button>
+					</Card>
+
+					{/* <Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+						<div className="flex items-center">
+							<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+								<Github className="h-5 w-5 text-white" />
+							</div>
+							<div>
+								<h3 className="text-sm font-medium text-zinc-300">GitHub</h3>
+								<p className="text-xs text-zinc-500">
+									Required for commit tracking
+								</p>
+							</div>
+						</div>
+						<Button className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+							<span className="flex items-center">
+								<ExternalLink className="mr-2 h-4 w-4" />
+								Connected
+							</span>
+						</Button>
+					</Card> */}
 				</div>
-				<div className="space-y-2">
-					<h3 className="text-sm font-medium">How to connect your account</h3>
-					<p className="text-sm text-gray-400">
-						Learn how to connect your LinkedIn account:
+
+				<Card className="border-[#232323] bg-[#121212] p-4">
+					<h3 className="mb-2 text-sm font-medium text-zinc-300">
+						How to connect your accounts
+					</h3>
+					<p className="mb-3 text-sm text-zinc-500">
+						Connect your social accounts to automatically share your GitHub
+						commits as engaging posts.
 					</p>
-					<ul className="flex list-none flex-wrap items-start justify-start gap-3 text-sm text-gray-400">
-						<li>
+					<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-3">
+						<p className="mb-2 text-xs text-zinc-400">
+							<span className="text-[#4F46E5]">1.</span> Click the
+							&ldquo;Connect&#34; button for the platform you want to use
+						</p>
+						<p className="mb-2 text-xs text-zinc-400">
+							<span className="text-[#4F46E5]">2.</span> Authorize Push to Post
+							to access your account
+						</p>
+						<p className="text-xs text-zinc-400">
+							<span className="text-[#4F46E5]">3.</span> Your commits will
+							automatically be formatted for that platform
+						</p>
+						<div className="mt-3 border-t border-[#232323] pt-3">
 							<a
 								href="https://youtu.be/sKM3s-ZLXfo?si=haMyzRqDVMgeYWCr"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-white underline hover:text-gray-300"
+								className="flex items-center text-xs text-[#4F46E5] hover:text-[#4338CA]"
 							>
+								<ExternalLink className="mr-1 h-3 w-3" />
 								Watch our tutorial video
 							</a>
-						</li>
-						{/* <li>
-							<a
-								href="http://example.com/blog/how-to-connect-linkedin"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-white underline hover:text-gray-300"
-							>
-								Read our step-by-step guide
-							</a>
-						</li> */}
-					</ul>
-				</div>
+						</div>
+					</div>
+				</Card>
 			</div>
 		</div>
 	);

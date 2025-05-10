@@ -185,8 +185,7 @@ export function PaymentForm() {
 					message: result.message,
 				});
 			}
-		} catch (error) {
-			console.error("Submission error:", error);
+		} catch {
 			setResponseMessage({
 				type: "error",
 				message: "An unexpected error occurred. Please try again.",

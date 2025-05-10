@@ -1,10 +1,10 @@
 "use client";
 
+import { GitBranch, SettingsIcon, User } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useOrganizationOwnership from "@/hooks/settings/use-ownership";
 
@@ -24,8 +24,7 @@ const SocialConnectCallback = dynamic(
 );
 
 const tabTitles = {
-	general: "General Settings",
-	billing: "Billing Settings",
+	general: "Organization Settings",
 	profile: "Profile Settings",
 } as const;
 
@@ -67,9 +66,12 @@ export function SettingsTabs() {
 	if (!mounted || isLoading) return <LogoutModal showByDefault />;
 
 	return (
-		<div className="w-full rounded-lg p-6">
-			<h1 className="text-2xl font-semibold">Settings</h1>
-			<p className="mb-5 text-sm text-gray-400">
+		<div className="w-full rounded-lg bg-[#0A0A0A] p-4 text-white sm:p-6">
+			<div className="mb-2 flex items-center">
+				<SettingsIcon className="mr-2 h-5 w-5 text-[#4F46E5]" />
+				<h1 className="text-2xl font-semibold text-white">Settings</h1>
+			</div>
+			<p className="mb-6 text-sm text-zinc-400">
 				Manage your {isOwner ? "account and organization" : "account"} settings
 			</p>
 
@@ -78,9 +80,23 @@ export function SettingsTabs() {
 				className="w-full"
 				onValueChange={handleTabChange}
 			>
-				<TabsList className="rounded-lg bg-gray-800 p-2">
-					{isOwner && <TabsTrigger value="general">General</TabsTrigger>}
-					<TabsTrigger value="profile">Profile</TabsTrigger>
+				<TabsList className="mb-6 rounded-lg border border-[#232323] bg-[#121212] p-1">
+					{isOwner && (
+						<TabsTrigger
+							value="general"
+							className="flex items-center text-zinc-400 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white"
+						>
+							<GitBranch className="mr-2 h-4 w-4" />
+							Organization
+						</TabsTrigger>
+					)}
+					<TabsTrigger
+						value="profile"
+						className="flex items-center text-zinc-400 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white"
+					>
+						<User className="mr-2 h-4 w-4" />
+						Profile
+					</TabsTrigger>
 				</TabsList>
 
 				{isOwner && (

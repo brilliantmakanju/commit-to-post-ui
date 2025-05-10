@@ -4,10 +4,7 @@ import dotenv from "dotenv";
 import { AuthError } from "next-auth";
 
 import { signIn } from "@/auth";
-import {
-	createEncryptedCookie,
-	deleteCookie,
-} from "@/lib/cookies/create-cookies";
+import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
 
 dotenv.config();
 

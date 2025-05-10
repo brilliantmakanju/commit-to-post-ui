@@ -23,26 +23,26 @@ export default function NotificationsPage() {
 
 	if (isNotificationLoading) {
 		return (
-			<div className="flex h-full flex-col">
-				<div className="border-b border-border/5 p-6">
+			<div className="flex h-full flex-col bg-black">
+				<div className="border-b border-zinc-800/30 p-4 sm:p-6">
 					<div className="mb-4 flex items-center justify-between">
 						<div className="flex items-center gap-2">
-							<Skeleton className="h-5 w-5 rounded-full" />
-							<Skeleton className="h-7 w-32" />
+							<Skeleton className="h-5 w-5 rounded-full bg-zinc-800" />
+							<Skeleton className="h-7 w-32 bg-zinc-800" />
 						</div>
-						<Skeleton className="h-6 w-20" />
+						<Skeleton className="h-6 w-20 bg-zinc-800" />
 					</div>
-					<Skeleton className="h-5 w-48" />
+					<Skeleton className="h-5 w-48 bg-zinc-800" />
 				</div>
-				<div className="flex-1 p-6">
+				<div className="flex-1 p-4 sm:p-6">
 					<div className="space-y-3">
 						{[1, 2, 3].map(index => (
 							<div key={index} className="flex items-start gap-3">
-								<Skeleton className="h-5 w-5 rounded-full" />
+								<Skeleton className="h-8 w-8 rounded-full bg-zinc-800" />
 								<div className="flex-1 space-y-2">
-									<Skeleton className="h-4 w-full" />
-									<Skeleton className="h-4 w-[60%]" />
-									<Skeleton className="h-3 w-24" />
+									<Skeleton className="h-4 w-full bg-zinc-800" />
+									<Skeleton className="h-4 w-[60%] bg-zinc-800" />
+									<Skeleton className="h-3 w-24 bg-zinc-800" />
 								</div>
 							</div>
 						))}
@@ -53,25 +53,25 @@ export default function NotificationsPage() {
 	}
 
 	return (
-		<div className="flex h-full flex-col">
-			<div className="border-b border-border/5 p-6">
+		<div className="flex h-full flex-col bg-black text-white">
+			<div className="border-b border-zinc-800/30 p-4 sm:p-6">
 				<div className="mb-4 flex items-center justify-between">
-					<h1 className="flex items-center gap-2 text-lg font-medium text-primary-foreground/90">
+					<h1 className="flex items-center gap-2 text-lg font-medium text-white">
 						<BellIcon className="h-5 w-5" />
 						Notifications
 					</h1>
 					{unread_count && unread_count > 0 && (
-						<span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary-foreground/90">
+						<span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-white">
 							{unread_count} unread
 						</span>
 					)}
 				</div>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-zinc-400">
 					You have {total_count} notification{total_count === 1 ? "" : "s"}
 				</p>
 			</div>
 
-			<ScrollArea className="flex-1 p-2 lg:p-6">
+			<ScrollArea className="flex-1 p-2 sm:p-4 lg:p-6">
 				{Notifications && Notifications.length > 0 ? (
 					<div className="space-y-2">
 						{Notifications.map(notification => (

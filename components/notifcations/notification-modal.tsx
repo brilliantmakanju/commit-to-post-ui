@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, X } from "lucide-react";
 import { useCallback, useEffect } from "react";
 
 import {
@@ -43,22 +43,22 @@ export default function NotificationModal({
 
 	return (
 		<Dialog open={true} onOpenChange={onClose}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle className="text-primary-foreground/90">
-						{notification.title}
-					</DialogTitle>
+			<DialogContent className="border border-zinc-800 bg-black p-0 text-white sm:max-w-md">
+				<DialogHeader className="p-4 sm:p-6">
+					<div className="flex items-start justify-between">
+						<DialogTitle className="text-white">
+							{notification.title}
+						</DialogTitle>
+					</div>
 				</DialogHeader>
-				<div className="mt-2">
-					<p className="text-sm text-muted-foreground">
-						{notification.message}
-					</p>
+				<div className="px-4 sm:px-6">
+					<p className="text-sm text-zinc-300">{notification.message}</p>
 				</div>
-				<DialogFooter className="mt-6 flex items-center justify-between border-t border-border/5 pt-4">
-					<div className="text-sm text-muted-foreground">
+				<DialogFooter className="mt-6 flex items-center justify-between border-t border-zinc-800/50 p-4 sm:p-6">
+					<div className="text-sm text-zinc-500">
 						{notification.triggered_by}
 					</div>
-					<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+					<div className="flex items-center gap-1.5 text-sm text-zinc-500">
 						<Calendar className="h-4 w-4" />
 						{formatDistanceToNow(new Date(notification.created_at), {
 							addSuffix: true,

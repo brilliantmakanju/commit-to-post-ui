@@ -240,16 +240,17 @@ export function TeamSwitcher({
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								className="gap-2 p-2"
-								onClick={() => setOpen(true)}
+								className="flex items-center justify-center gap-2 p-2"
+								// onClick={() => setOpen(true)}
 							>
-								<div className="flex size-6 items-center justify-center rounded-md border bg-background">
-									<Plus className="size-4" />
-								</div>
-								<div className="font-medium text-muted-foreground">
-									{hasAccess
+								{/* <div className="flex size-6 items-center justify-center rounded-md border bg-background"> */}
+								{/* <Plus className="size-4" /> */}
+								{/* </div> */}
+								<div className="text-center font-medium text-muted-foreground">
+									{/* {hasAccess
 										? "Create Organization"
-										: "Upgrade to Create Organization"}
+										: "Upgrade to Create Organization"} */}
+									Feature coming soon
 								</div>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -295,21 +296,7 @@ export function TeamSwitcher({
 					)}
 				</DropdownMenu>
 			</SidebarMenuItem>
-			<CreateOrganizationModal open={open} onOpenChange={setOpen} />
+			{/* <CreateOrganizationModal open={open} onOpenChange={setOpen} /> */}
 		</SidebarMenu>
 	);
 }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }
-// }

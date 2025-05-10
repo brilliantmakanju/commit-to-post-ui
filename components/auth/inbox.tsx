@@ -203,8 +203,8 @@ export default function VerifyEmailPageComponent({ uid, token }: Props) {
 						<Button
 							variant="secondary"
 							className="bg-white text-black hover:bg-zinc-200"
-							onClick={() => router.push("/auth")}
-							// onClick={() => router.push("/auth?view-login")}
+							onClick={() => router.push("/")}
+							// onClick={() => router.push("/?view-login")}
 						>
 							Login
 						</Button>

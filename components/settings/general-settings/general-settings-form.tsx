@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -83,6 +83,7 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 			setIsSubmitting(false);
 		}
 	};
+
 	const nameChanged = form.watch("name") !== organization.name;
 	const descriptionValue = form.watch("description");
 	const descriptionChanged =
@@ -94,52 +95,73 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-				<FormField
-					control={form.control}
-					name="name"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel className="text-gray-300">Organization Name</FormLabel>
-							<FormControl>
-								<Input
-									{...field}
-									disabled={isFetching || isSubmitting}
-									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="description"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel className="text-gray-300">Description</FormLabel>
-							<FormControl>
-								<Textarea
-									{...field}
-									rows={4}
-									value={field.value || ""}
-									disabled={isFetching || isSubmitting}
-									className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="font-medium text-zinc-300">
+									Organization Name
+								</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										disabled={isFetching || isSubmitting}
+										className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+										placeholder="Your organization name"
+									/>
+								</FormControl>
+								<FormMessage className="text-red-400" />
+							</FormItem>
+						)}
+					/>
+
+					<div className="md:col-span-2">
+						<FormField
+							control={form.control}
+							name="description"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="font-medium text-zinc-300">
+										Description
+									</FormLabel>
+									<FormControl>
+										<Textarea
+											{...field}
+											rows={3}
+											value={field.value || ""}
+											disabled={isFetching || isSubmitting}
+											className="resize-none border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+											placeholder="Brief description of your organization"
+										/>
+									</FormControl>
+									<FormMessage className="text-red-400" />
+								</FormItem>
+							)}
+						/>
+					</div>
+				</div>
+
 				<div className="flex justify-end pt-4">
 					<Button
 						type="submit"
-						variant={"outline"}
+						variant="default"
 						disabled={!isFormChanged || isFetching || isSubmitting}
-						className="text-black disabled:opacity-80"
+						className="bg-[#4F46E5] text-white transition-all duration-200 hover:bg-[#4338CA] disabled:bg-[#232323] disabled:text-zinc-500"
 					>
-						{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						{isSubmitting ? "Saving..." : "Save Changes"}
+						{isSubmitting ? (
+							<div className="flex items-center">
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								<span>Saving...</span>
+							</div>
+						) : (
+							<div className="flex items-center">
+								<Save className="mr-2 h-4 w-4" />
+								<span>Save Changes</span>
+							</div>
+						)}
 					</Button>
 				</div>
 			</form>

@@ -34,7 +34,7 @@ interface PostListProps {
 
 export default function PostList({ posts, showFullDate }: PostListProps) {
 	return (
-		<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 			{posts.map(post => {
 				if ("group_id" in post) {
 					return (

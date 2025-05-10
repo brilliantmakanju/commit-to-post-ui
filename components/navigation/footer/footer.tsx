@@ -117,7 +117,7 @@ export default function Footer() {
 	];
 
 	return (
-		<footer className="py-16 md:py-32">
+		<footer className="py-16 md:py-2">
 			<div className="mx-auto max-w-5xl px-6">
 				<Link href="/" aria-label="go home" className="mx-auto block size-fit">
 					<AnimatedAIIcon color={"#111827"} size={54} />

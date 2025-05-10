@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 
 import Footer from "@/components/navigation/footer/footer";
@@ -57,35 +58,37 @@ export default function Layout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<body
 				className={
 					"container mx-auto grid grid-cols-1 bg-[#f4f4f4] antialiased"
 				}
 			>
-				<TopNavigation />
-				<main
-					role="main"
-					className="relative flex w-full flex-col items-start justify-start xl:container xl:mx-auto"
-				>
-					{children}
-					<Link
-						href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
-						target="_blank"
-						className="fixed bottom-4 right-4 z-50"
+				<Suspense>
+					<TopNavigation />
+					<main
+						role="main"
+						className="relative flex w-full flex-col items-start justify-start xl:container xl:mx-auto"
 					>
-						<Image
-							src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=941497&theme=dark&t=1741847658944"
-							alt="Push&#0032;to&#0032;Post - Push&#0032;Code&#0046;&#0032;Post&#0032;Updates&#0046;&#0032;Automate&#0032;Your&#0032;Dev&#0032;Journey&#0046; | Product Hunt"
-							width={250}
-							height={54}
-							className="h-[54px] w-[250px]"
-						/>
-					</Link>
-				</main>
-				<Toaster />
-				<Footer />
-				<Analytics />
+						{children}
+						<Link
+							href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
+							target="_blank"
+							className="fixed bottom-4 right-4 z-50"
+						>
+							<Image
+								src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=941497&theme=dark&t=1741847658944"
+								alt="Push&#0032;to&#0032;Post - Push&#0032;Code&#0046;&#0032;Post&#0032;Updates&#0046;&#0032;Automate&#0032;Your&#0032;Dev&#0032;Journey&#0046; | Product Hunt"
+								width={250}
+								height={54}
+								className="h-[54px] w-[250px]"
+							/>
+						</Link>
+					</main>
+					<Toaster />
+					<Footer />
+					<Analytics />
+				</Suspense>
 			</body>
 		</html>
 	);

@@ -16,6 +16,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
 import { signupSchema } from "@/resolvers/auth-resolvers";
 import { registerUser } from "@/server-actions/auth/signup";
 
@@ -24,14 +25,15 @@ interface SignupFormProps {
 }
 
 export default function SignupForm({ setView }: SignupFormProps) {
+	const { openModal } = useAuthModalStore();
 	const form = useForm<z.infer<typeof signupSchema>>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: {
 			first_name: "",
 			last_name: "",
 			email: "",
-			password: "",
-			re_password: "",
+			// password: "",
+			// re_password: "",
 		},
 	});
 
@@ -39,11 +41,12 @@ export default function SignupForm({ setView }: SignupFormProps) {
 		try {
 			const apiRequest = await registerUser(values);
 			if (apiRequest.success === true) {
-				toast.success(
-					"User successfully registered. Check your inbox to verify your account",
-				);
-				globalThis.window.history.pushState(undefined, "", "/auth");
+				// toast.success(
+				// 	"User successfully registered. Check your inbox to verify your account",
+				// );
+				// globalThis.window.history.pushState(undefined, "", "/auth");
 				// globalThis.window.history.pushState(undefined, "", "/auth?view=login");
+				openModal("check-email");
 			} else {
 				toast.error(apiRequest.message);
 			}
@@ -53,7 +56,7 @@ export default function SignupForm({ setView }: SignupFormProps) {
 	};
 
 	return (
-		<div className="grid gap-6">
+		<div className="grid w-[400px] gap-6 px-4">
 			<div className="flex flex-col space-y-2 text-center">
 				<h1 className="text-2xl font-semibold tracking-tight">
 					Create an account
@@ -118,40 +121,40 @@ export default function SignupForm({ setView }: SignupFormProps) {
 							</FormItem>
 						)}
 					/>
-					<FormField
-						control={form.control}
-						name="password"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Password</FormLabel>
-								<FormControl>
-									<Input
-										type="password"
-										disabled={form.formState.isSubmitting}
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="re_password"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Confirm Password</FormLabel>
-								<FormControl>
-									<Input
-										type="password"
-										disabled={form.formState.isSubmitting}
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+					{/*<FormField*/}
+					{/*	control={form.control}*/}
+					{/*	name="password"*/}
+					{/*	render={({ field }) => (*/}
+					{/*		<FormItem>*/}
+					{/*			<FormLabel>Password</FormLabel>*/}
+					{/*			<FormControl>*/}
+					{/*				<Input*/}
+					{/*					type="password"*/}
+					{/*					disabled={form.formState.isSubmitting}*/}
+					{/*					{...field}*/}
+					{/*				/>*/}
+					{/*			</FormControl>*/}
+					{/*			<FormMessage />*/}
+					{/*		</FormItem>*/}
+					{/*	)}*/}
+					{/*/>*/}
+					{/*<FormField*/}
+					{/*	control={form.control}*/}
+					{/*	name="re_password"*/}
+					{/*	render={({ field }) => (*/}
+					{/*		<FormItem>*/}
+					{/*			<FormLabel>Confirm Password</FormLabel>*/}
+					{/*			<FormControl>*/}
+					{/*				<Input*/}
+					{/*					type="password"*/}
+					{/*					disabled={form.formState.isSubmitting}*/}
+					{/*					{...field}*/}
+					{/*				/>*/}
+					{/*			</FormControl>*/}
+					{/*			<FormMessage />*/}
+					{/*		</FormItem>*/}
+					{/*	)}*/}
+					{/*/>*/}
 					<Button
 						disabled={form.formState.isSubmitting}
 						type="submit"

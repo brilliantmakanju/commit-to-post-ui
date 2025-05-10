@@ -112,7 +112,7 @@ const Pricing = () => {
 				router.push("/dashboard");
 			} else {
 				await proPlanAction({ plan, type });
-				router.push("/auth");
+				router.push("/");
 				// router.push("/auth?view=signup");
 			}
 		} catch {

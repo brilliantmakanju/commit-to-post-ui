@@ -25,7 +25,7 @@ const Circle = forwardRef<
 				"z-10 flex items-center justify-center rounded-xl border backdrop-blur-sm transition-all duration-300",
 				// Responsive sizing and padding
 				"size-10 p-2 sm:size-12 sm:p-2.5 md:size-14 md:p-3 lg:size-16 lg:p-3",
-				"border-[#969DAD] bg-[#f4f4f4] shadow-lg dark:border-gray-600 dark:bg-black dark:shadow-xl",
+				"border-[#969DAD] border-opacity-15 bg-[#f4f4f4] shadow-lg dark:border-gray-600 dark:bg-black dark:shadow-xl",
 				active &&
 					"border-gray-500 bg-gray-100 dark:bg-gray-800 dark:ring-1 dark:ring-gray-500",
 				className,
@@ -54,21 +54,24 @@ const defaultSteps: Step[] = [
 		number: 1,
 		title: "Sign up & connect",
 		highlight: "your accounts",
-		description: "Log in with Magic Link and link GitHub & social platforms.",
+		description:
+			"Start by signing in securely with Magic Link. Then, seamlessly connect your GitHub and social media accounts to unlock automation.",
 		icon: CheckCircle,
 	},
 	{
 		number: 2,
 		title: "Push code to",
 		highlight: "your repository",
-		description: "Sync commits and let AI generate engaging social posts.",
+		description:
+			"Every time you push code to your GitHub repo, we detect changes, analyze commit messages, and prepare smart content drafts for your audience.",
 		icon: Github,
 	},
 	{
 		number: 3,
 		title: "Refine & preview",
 		highlight: "your content",
-		description: "Review AI-generated posts and tweak tone, style, or wording.",
+		description:
+			"Preview the AI-generated posts — fine-tune the tone, adjust the message, or personalize it to match your unique style and voice.",
 		icon: Edit,
 	},
 	{
@@ -76,7 +79,7 @@ const defaultSteps: Step[] = [
 		title: "Schedule &",
 		highlight: "auto-post",
 		description:
-			"Let AI handle posting or set custom schedules for publishing.",
+			"Publish instantly or schedule posts for later. Let the AI manage consistent posting to keep your audience engaged, even while you sleep.",
 		icon: Send,
 	},
 ];
@@ -97,11 +100,12 @@ export function WorkflowDemo({ steps = defaultSteps }: WorkflowProps) {
 					as="h3"
 					className={"text-xl font-bold text-black sm:text-2xl md:text-3xl"}
 				>
-					Seamless Automation, Effortless Results
+					Automate Your GitHub Activity with Ease
 				</Heading>
 			</div>
+
 			<div
-				className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] overflow-hidden rounded-lg border border-[#969DAD] bg-white font-sans sm:rounded-xl"
+				className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] overflow-hidden rounded-lg border border-[#969DAD] border-opacity-15 bg-white font-sans sm:rounded-xl"
 				// Responsive padding
 				style={{
 					padding: "clamp(0.5rem, 1vw, 5rem)",

@@ -1,17 +1,18 @@
 "use client";
-import { Card, CardContent, CardHeader } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
+
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StatsCardSkeleton() {
 	return (
-		<Card className="border-zinc-700/50 bg-zinc-800/50 p-1">
-			<CardHeader className="flex flex-row items-center justify-between p-3">
-				<Skeleton className="h-4 w-[100px] bg-zinc-700" />
-				<Skeleton className="h-4 w-4 rounded-full bg-zinc-700" />
+		<Card className="flex h-full flex-col overflow-hidden border border-[#232323] bg-[#121212]">
+			<CardHeader className="flex flex-row items-center justify-between pb-2">
+				<Skeleton className="h-4 w-24 bg-[#232323]" />
+				<Skeleton className="h-8 w-8 rounded-md bg-[#232323]" />
 			</CardHeader>
-			<CardContent className="p-3 pt-0">
-				<Skeleton className="mb-2 h-6 w-[60px] bg-zinc-700" />
-				<Skeleton className="h-3 w-[140px] bg-zinc-700" />
+			<CardContent className="flex flex-1 flex-col justify-between">
+				<Skeleton className="h-8 w-16 bg-[#232323]" />
+				<Skeleton className="mt-2 h-3 w-32 bg-[#232323]" />
 			</CardContent>
 		</Card>
 	);

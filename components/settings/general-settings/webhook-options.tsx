@@ -7,6 +7,7 @@ import {
 	Info,
 	Loader2,
 	Save,
+	Terminal,
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -43,6 +44,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useRetrieveOrganizationTone from "@/hooks/organization/use-organization-tone";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
 import useRetrieveWebhookSettings from "@/hooks/settings/use-webhook-settings";
 import { cn } from "@/lib/utils";
 import { updateBranch } from "@/server-actions/organizations/update-hook-options";
@@ -89,7 +91,7 @@ const WebHookOptions: React.FC = () => {
 	});
 	const [isLoading, setIsLoading] = useState(false);
 	const [shuffleAll, setShuffleAll] = useState(false);
-	const [hasAccess, setHasAccess] = useState(true);
+	const hasAccess = useCheckAccess();
 
 	useEffect(() => {
 		setBranch({
@@ -104,28 +106,34 @@ const WebHookOptions: React.FC = () => {
 
 	const handleToneSelect = useCallback(
 		async (tone: string) => {
-			setIsLoading(true);
-			try {
-				// Prevent deselecting the last tone
-				if (selectedTones[0] === tone) {
-					setIsLoading(false);
-					return;
-				}
+			if (hasAccess) {
+				setIsLoading(true);
+				try {
+					// Prevent deselecting the last tone
+					if (selectedTones[0] === tone) {
+						setIsLoading(false);
+						return;
+					}
 
-				const result = await updateTones(tone, shuffleAll);
-				if (result.success) {
-					setSelectedTones([tone]);
-					toast.success("Tones updated successfully");
-				} else {
-					toast.error("Failed to update tones");
+					const result = await updateTones(tone, shuffleAll);
+					if (result.success) {
+						setSelectedTones([tone]);
+						toast.success("Tones updated successfully");
+					} else {
+						toast.error("Failed to update tones");
+					}
+				} catch {
+					toast.error("An error occurred while updating tones");
+				} finally {
+					setIsLoading(false);
 				}
-			} catch {
-				toast.error("An error occurred while updating tones");
-			} finally {
-				setIsLoading(false);
+			} else {
+				toast.info(
+					"Sorry you need to upgrade to a pro subscription to use this feature",
+				);
 			}
 		},
-		[selectedTones, shuffleAll],
+		[selectedTones, shuffleAll, hasAccess],
 	);
 
 	const handleHashtagToggle = useCallback(() => {
@@ -160,38 +168,49 @@ const WebHookOptions: React.FC = () => {
 	};
 
 	const handleShuffleChange = async (checked: boolean) => {
-		setIsLoading(true);
-		try {
-			const result = await updateTones(selectedTones[0], checked);
-			if (result.success) {
-				setShuffleAll(checked);
-				toast.success(
-					checked ? "Shuffle all tones enabled" : "Shuffle all tones disabled",
-				);
-			} else {
-				toast.error("Failed to update shuffle setting");
+		if (hasAccess) {
+			setIsLoading(true);
+			try {
+				const result = await updateTones(selectedTones[0], checked);
+				if (result.success) {
+					setShuffleAll(checked);
+					toast.success(
+						checked
+							? "Shuffle all tones enabled"
+							: "Shuffle all tones disabled",
+					);
+				} else {
+					toast.error("Failed to update shuffle setting");
+				}
+			} catch {
+				toast.error("An error occurred while updating shuffle setting");
+			} finally {
+				setIsLoading(false);
 			}
-		} catch {
-			toast.error("An error occurred while updating shuffle setting");
-		} finally {
-			setIsLoading(false);
+		} else {
+			toast.info(
+				"Sorry you need to upgrade to a pro subscription to use this feature",
+			);
 		}
 	};
 
 	return (
-		<Card className="w-full">
-			<CardHeader className="space-y-1 border-b border-gray-200">
-				<CardTitle className="text-2xl font-bold text-gray-900">
-					AI Settings
-				</CardTitle>
-				<CardDescription className="text-gray-600">
+		<Card className="mt-6 w-full border border-zinc-800 bg-zinc-900">
+			<CardHeader className="space-y-1 border-b border-zinc-800">
+				<div className="flex items-center">
+					<Terminal className="mr-2 h-5 w-5 text-[#4F46E5]" />
+					<CardTitle className="text-xl font-bold text-white">
+						AI Settings
+					</CardTitle>
+				</div>
+				<CardDescription className="text-zinc-400">
 					Customize your AI&apos;s configuration and preferences
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6 pt-6">
 				<div className="space-y-4">
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-						<h3 className="mb-2 text-lg font-medium text-gray-900 sm:mb-0">
+						<h3 className="mb-2 text-lg font-medium text-white sm:mb-0">
 							Branch Name
 						</h3>
 						<div className="flex h-10 items-center space-x-2">
@@ -200,12 +219,12 @@ const WebHookOptions: React.FC = () => {
 									<Input
 										value={branch.name}
 										onChange={handleBranchChange}
-										className="flex-grow rounded-r-none border-gray-300 bg-gray-50 text-gray-900"
+										className="flex-grow rounded-r-none border-zinc-800 bg-zinc-900 text-white"
 										disabled={isLoading}
 									/>
 									<Button
 										onClick={handleBranchSave}
-										className="rounded-l-none bg-gray-900 text-gray-50 hover:bg-gray-800"
+										className="rounded-l-none border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
 										disabled={isLoading}
 									>
 										{isLoading ? (
@@ -217,14 +236,14 @@ const WebHookOptions: React.FC = () => {
 								</div>
 							) : (
 								<>
-									<span className="min-w-[100px] font-medium text-gray-900">
+									<span className="min-w-[100px] font-medium text-zinc-300">
 										{branch.name}
 									</span>
 									<Button
 										onClick={handleBranchEdit}
 										variant="outline"
 										size="sm"
-										className="border-gray-300 text-gray-700"
+										className="border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
 										disabled={isLoading}
 									>
 										<Edit2 className="h-4 w-4" />
@@ -236,7 +255,7 @@ const WebHookOptions: React.FC = () => {
 				</div>
 
 				<div className="space-y-4">
-					<h3 className="text-lg font-medium text-gray-900">AI Tone</h3>
+					<h3 className="text-lg font-medium text-white">AI Tone</h3>
 					<div className="grid grid-cols-1 space-y-2 sm:space-x-4 md:grid-cols-3">
 						<div className="flex-grow">
 							<Popover open={open} onOpenChange={setOpen}>
@@ -245,7 +264,7 @@ const WebHookOptions: React.FC = () => {
 										variant="outline"
 										role="combobox"
 										aria-expanded={open}
-										className="w-full justify-between border-gray-300 bg-gray-50 text-gray-900"
+										className="w-full justify-between border-zinc-700 bg-zinc-800 text-white"
 										disabled={isLoading}
 									>
 										{isLoading ? (
@@ -269,20 +288,22 @@ const WebHookOptions: React.FC = () => {
 										<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="w-full border-gray-300 bg-gray-50 p-0">
-									<Command>
+								<PopoverContent className="w-full border-zinc-700 bg-zinc-800 p-0">
+									<Command className="bg-zinc-800">
 										<CommandInput
 											placeholder="Search tones..."
-											className="text-gray-900"
+											className="border-zinc-700 text-white"
 										/>
 										<CommandList>
-											<CommandEmpty>No tone found.</CommandEmpty>
+											<CommandEmpty className="text-zinc-400">
+												No tone found.
+											</CommandEmpty>
 											<CommandGroup>
 												{availableTones.map(tone => (
 													<CommandItem
 														key={tone.value}
 														onSelect={() => handleToneSelect(tone.value)}
-														className="text-gray-900"
+														className="text-zinc-300 aria-selected:bg-zinc-700 aria-selected:text-white"
 													>
 														<Check
 															className={cn(
@@ -304,20 +325,20 @@ const WebHookOptions: React.FC = () => {
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="hashtags"
+								disabled={true}
 								checked={useHashtags}
 								onCheckedChange={handleHashtagToggle}
-								disabled={isLoading || !hasAccess}
-								className="data-[state=checked]:bg-gray-900"
+								className="data-[state=checked]:bg-zinc-700"
 							/>
-							<Label htmlFor="hashtags" className="text-gray-900">
+							<Label htmlFor="hashtags" className="text-zinc-300">
 								Use Hashtags
 							</Label>
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger asChild>
-										<Info className="h-4 w-4 cursor-help text-gray-700" />
+										<Info className="h-4 w-4 cursor-help text-zinc-500" />
 									</TooltipTrigger>
-									<TooltipContent>
+									<TooltipContent className="border border-zinc-700 bg-zinc-800 text-white">
 										<p>
 											Coming soon! This feature is currently under development.
 										</p>
@@ -328,12 +349,12 @@ const WebHookOptions: React.FC = () => {
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="shuffle"
-								checked={shuffleAll}
+								checked={hasAccess ? shuffleAll : false}
 								onCheckedChange={handleShuffleChange}
-								className="data-[state=checked]:bg-gray-900"
-								disabled={isLoading}
+								className="data-[state=checked]:bg-zinc-700"
+								disabled={isLoading || !hasAccess}
 							/>
-							<Label htmlFor="shuffle" className="text-gray-900">
+							<Label htmlFor="shuffle" className="text-zinc-300">
 								Shuffle All Tones
 							</Label>
 						</div>
@@ -341,10 +362,10 @@ const WebHookOptions: React.FC = () => {
 				</div>
 
 				<div>
-					<h3 className="mb-2 text-lg font-medium text-gray-900">
+					<h3 className="mb-2 text-lg font-medium text-white">
 						Current Settings
 					</h3>
-					<pre className="overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 text-sm text-gray-900">
+					<pre className="overflow-x-auto rounded border border-zinc-800 bg-zinc-950 p-2 text-sm text-zinc-300">
 						{JSON.stringify(
 							{
 								branchName: branch.name,
@@ -359,11 +380,17 @@ const WebHookOptions: React.FC = () => {
 					</pre>
 				</div>
 
-				<div className="text-sm text-gray-600">
-					<p>Plan Restrictions:</p>
-					<ul className="list-inside list-disc">
-						<li>Free: Can only use the Professional tone</li>
-						<li>Basic: Can select all tones</li>
+				<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-3 text-sm text-zinc-400">
+					<p className="mb-2 font-medium">Plan Restrictions:</p>
+					<ul className="list-inside space-y-1">
+						<li className="flex items-start">
+							<span className="mr-2 text-[#4F46E5]">•</span>
+							<span>Free: Can only use the Professional tone</span>
+						</li>
+						<li className="flex items-start">
+							<span className="mr-2 text-[#4F46E5]">•</span>
+							<span>Basic: Can select all tones</span>
+						</li>
 					</ul>
 				</div>
 			</CardContent>

@@ -60,10 +60,45 @@ const features = [
 		href: "#",
 		className: "col-span-3 md:col-span-2",
 		background: (
-			<AnimatedBeamMultipleOutputDemo
-				classic
-				className="absolute right-2 top-4 mt-[-10px] h-[300px] border-none bg-transparent pt-24 transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105"
-			/>
+			<div className="absolute right-[40px] top-4 mt-[-60px] h-[300px] border-none bg-transparent pt-24 transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105">
+				<div className="relative w-full max-w-[500px] overflow-hidden rounded-lg border bg-background p-4 shadow-xl">
+					<div className="space-y-4">
+						<div className="flex items-center gap-2">
+							<div className="h-3 w-3 rounded-full bg-red-500" />
+							<div className="h-3 w-3 rounded-full bg-yellow-500" />
+							<div className="h-3 w-3 rounded-full bg-green-500" />
+							<div className="ml-2 text-xs text-muted-foreground">Terminal</div>
+						</div>
+						<div className="space-y-2 font-mono text-sm">
+							<div className="text-muted-foreground">
+								$ git commit -m &#34;Add user authentication flow&#34;
+							</div>
+							<div className="text-green-500">
+								[main 3a7c2d1] Add user authentication flow
+							</div>
+							<div className="text-green-500">✓ Analyzing commit...</div>
+							<div className="text-green-500">✓ Generating content...</div>
+							<div className="text-green-500">✓ Post created for LinkedIn!</div>
+							<div className="mt-4 rounded-md border p-3">
+								<div className="text-xs text-muted-foreground">
+									LinkedIn Post Preview:
+								</div>
+								<p className="mt-2">
+									Just shipped a secure authentication system for our platform!
+									🔐
+									<br />
+									<br />• Email magic links for passwordless login
+									<br />• Session management with JWT
+									<br />• Rate limiting to prevent abuse
+									<br />
+									<br />
+									Small commits, big impact. #WebDev #Security
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		),
 	},
 	{
@@ -81,7 +116,7 @@ const features = [
 
 const BentoGridFeature = () => {
 	return (
-		<section className="container mx-auto flex w-full flex-col gap-8">
+		<section className="con ainer mx-auto flex w-full flex-col gap-8">
 			<div className="flex w-full flex-col items-center justify-center gap-2 text-center">
 				<Paragraph
 					className={
@@ -91,13 +126,13 @@ const BentoGridFeature = () => {
 					Why Choose Us
 				</Paragraph>
 				<Heading as="h3" className={"font-bold text-black"}>
-					Powerful Features for Smarter Workflow
+					Supercharge Your Workflow with Automation
 				</Heading>
 			</div>
 
 			<div
 				id="features"
-				className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] bg-[#FFFFFF] px-2 py-12 font-sans md:px-2 md:py-12 lg:px-12 lg:py-20"
+				className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-[16px] py-12 font-sans md:px-2 md:py-12 lg:px-12 lg:py-20"
 			>
 				<BentoGrid>
 					{features.map((feature, index) => (

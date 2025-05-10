@@ -29,7 +29,7 @@ export async function validateEndpointAndMethod(
 		// Check if the endpoint exists in the configuration
 		const methodsConfig = endpointMethods[endpoint];
 		if (!methodsConfig || !Array.isArray(methodsConfig)) {
-			console.warn(`No configuration found for endpoint: ${endpoint}`);
+			// console.warn(`No configuration found for endpoint: ${endpoint}`);
 			return false;
 		}
 
@@ -41,8 +41,8 @@ export async function validateEndpointAndMethod(
 		// Log the result of method matching
 
 		return isMethodAllowed;
-	} catch (error) {
-		console.error("Error validating endpoint and method:", error);
+	} catch {
+		// console.error("Error validating endpoint and method:", error);
 		return false;
 	}
 }

@@ -133,18 +133,19 @@ export default function Posts() {
 		value: string | Date | undefined,
 	) => {
 		setFilters(previous => ({ ...previous, [key]: value }));
+		setCurrentPage(1); // Reset to first page when filters change
 	};
 
 	const EmptyState = () => (
 		<div className="flex h-[450px] flex-col items-center justify-center space-y-4 text-center">
-			<div className="rounded-full bg-muted/10 p-4">
-				<FileText className="h-6 w-6 text-muted-foreground/80" />
+			<div className="rounded-full bg-zinc-900/30 p-4">
+				<FileText className="h-6 w-6 text-zinc-500" />
 			</div>
 			<div className="flex flex-col items-center justify-center space-y-2 text-center">
-				<h3 className="text-lg font-medium text-muted-foreground/90">
+				<h3 className="text-lg font-medium text-zinc-300">
 					No AI-generated posts yet
 				</h3>
-				<p className="w-[50%] text-center text-sm text-muted-foreground/60">
+				<p className="w-[50%] text-center text-sm text-zinc-500">
 					No posts have been generated. Please visit the settings page to
 					connect your account and start generating posts.
 				</p>
@@ -154,14 +155,14 @@ export default function Posts() {
 
 	const EmptyStateFilter = () => (
 		<div className="flex h-[450px] flex-col items-center justify-center space-y-4 text-center">
-			<div className="rounded-full bg-muted/10 p-4">
-				<FileText className="h-6 w-6 text-muted-foreground/80" />
+			<div className="rounded-full bg-zinc-900/30 p-4">
+				<FileText className="h-6 w-6 text-zinc-500" />
 			</div>
 			<div className="flex flex-col items-center justify-center space-y-2 text-center">
-				<h3 className="text-lg font-medium text-muted-foreground/90">
+				<h3 className="text-lg font-medium text-zinc-300">
 					No posts found for this filter
 				</h3>
-				<p className="w-[50%] text-center text-sm text-muted-foreground/60">
+				<p className="w-[50%] text-center text-sm text-zinc-500">
 					Try adjusting your filters or check back later for new posts.
 				</p>
 			</div>
@@ -169,7 +170,7 @@ export default function Posts() {
 	);
 
 	return (
-		<div className="p-4">
+		<div className="min-h-screen bg-[#000000d6] p-6">
 			<PostFilters
 				filters={filters}
 				disabled={isLoading}
@@ -179,13 +180,15 @@ export default function Posts() {
 			/>
 
 			{isLoading ? (
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{Array.from({ length: 6 }).map((_, index) => (
 						<SkeletonPostCard key={index} />
 					))}
 				</div>
 			) : error ? (
-				<div>Error: {error.message}</div>
+				<div className="rounded-md border border-zinc-800 bg-zinc-950 p-4 text-zinc-300">
+					Error: {error.message}
+				</div>
 			) : data?.results.length === 0 ? (
 				<EmptyState />
 			) : filteredResults.length === 0 ? (

@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
+import Footer from "@/components/navigation/footer/footer";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({
 				<Suspense fallback={<LogoutModal showByDefault />}>
 					<main className={"flex-1"}>{children}</main>
 				</Suspense>
+				<Footer />
 				<Toaster />
 				<Analytics />
 			</body>

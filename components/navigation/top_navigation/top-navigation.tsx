@@ -66,7 +66,7 @@ const TopNavigation = () => {
 					<div
 						className={`mx-auto rounded-xl ${
 							isScrolled
-								? "border border-[#969DAD] bg-white/70 shadow-lg backdrop-blur-xl dark:border-slate-700/30 dark:bg-slate-800/70"
+								? "border border-[#969DAD] border-opacity-15 bg-white/70 shadow-lg backdrop-blur-xl dark:border-slate-700/30 dark:bg-slate-800/70"
 								: "bg-transparent"
 						}`}
 					>

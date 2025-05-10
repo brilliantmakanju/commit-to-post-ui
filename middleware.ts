@@ -37,7 +37,7 @@ export default auth(async request => {
 
 	// Redirect logic for unauthenticated users trying to access protected routes
 	if (!isLoggedIn && isProtectedRoute) {
-		return Response.redirect(new URL("/auth", nextUrl));
+		return Response.redirect(new URL("/", nextUrl));
 		// return Response.redirect(new URL("/auth?view=login", nextUrl));
 	}
 

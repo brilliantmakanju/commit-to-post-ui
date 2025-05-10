@@ -1,10 +1,13 @@
 "use client";
 
+import { truncate } from "node:fs";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import {
 	Clock,
 	Edit,
+	Info,
 	Linkedin,
 	Loader2,
 	MoreHorizontal,
@@ -18,7 +21,6 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -40,6 +42,13 @@ import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { deletePost } from "@/server-actions/core/delete-post";
 import { updatePost } from "@/server-actions/core/edit-post";
 import { reschedulePost } from "@/server-actions/core/reschedule-post";
+
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "../ui/tooltip";
 
 interface Post {
 	id: string;
@@ -87,6 +96,7 @@ const PostCard: React.FC<PostCardProps> = ({
 				? parseISO(post.scheduled_publish_time)
 				: parseISO(post.created_at),
 	);
+
 	// Helper function to format the date.
 	const formatDate = (date: string) => {
 		const d = parseISO(date);
@@ -94,14 +104,6 @@ const PostCard: React.FC<PostCardProps> = ({
 			? format(d, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
 			: formatDistanceToNow(d, { addSuffix: true });
 	};
-
-	// Determine the badge variant based on post status.
-	const badgeVariant =
-		post.status === "published"
-			? "default"
-			: post.status === "scheduled"
-				? "secondary"
-				: "outline";
 
 	const handleDelete = async () => {
 		setIsLoading(true);
@@ -128,7 +130,6 @@ const PostCard: React.FC<PostCardProps> = ({
 			const isoDate = date.toISOString();
 			setIsLoading(true);
 			try {
-				// await onReschedule?.(post, isoDate);
 				const updatedSchedule = await reschedulePost(post.id, isoDate);
 				if (updatedSchedule.success) {
 					queryClient.fetchQuery({ queryKey: ["posts"] });
@@ -168,62 +169,113 @@ const PostCard: React.FC<PostCardProps> = ({
 		}
 	};
 
-	const buttonCase = editedPost.content.trim === post.content.trim;
+	// Status badge styling
+	const getBadgeStyles = () => {
+		switch (post.status) {
+			case "published": {
+				return "bg-zinc-900 text-zinc-100 border-zinc-700";
+			}
+			case "scheduled": {
+				return "bg-zinc-800 text-zinc-200 border-zinc-700";
+			}
+			case "drafted": {
+				return "bg-transparent text-zinc-400 border-zinc-700";
+			}
+			default: {
+				return "bg-transparent text-zinc-400 border-zinc-700";
+			}
+		}
+	};
 
 	return (
 		<>
 			<div
 				key={post.id}
-				className="single-post flex flex-col gap-2 rounded-lg bg-zinc-700/30 p-4"
+				className="flex flex-col gap-3 rounded-lg border border-zinc-800 bg-zinc-950 p-5 transition-all hover:border-zinc-700"
 			>
 				<div className="flex w-full items-center justify-between">
 					<div className="flex items-center justify-start gap-4">
-						<Badge
-							variant="outline"
-							className={` ${post.status === "published" ? "bg-green-900/30 text-green-400" : ""} ${post.status === "scheduled" ? "bg-blue-900/30 text-blue-400" : ""} ${post.status === "drafted" ? "bg-zinc-700 text-zinc-300" : ""} `}
-						>
+						<Badge variant="outline" className={`${getBadgeStyles()}`}>
 							{post.status}
 						</Badge>
-						<div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+						<div className="flex items-center justify-between text-xs text-zinc-500">
 							<div className="flex items-center">
-								<Linkedin className="mr-1 h-4 w-4 text-blue-600" />
+								{post.platform === "linkedin" ? (
+									<Linkedin className="mr-1 h-4 w-4 text-zinc-400" />
+								) : (
+									<Twitter className="mr-1 h-4 w-4 text-zinc-400" />
+								)}
 							</div>
 						</div>
 					</div>
 
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
+							<Button
+								variant="ghost"
+								className="h-8 w-8 p-0 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+							>
 								<MoreHorizontal className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+						<DropdownMenuContent
+							align="end"
+							className="border border-zinc-800 bg-zinc-950 text-zinc-300"
+						>
+							<DropdownMenuItem
+								onClick={() => setIsEditDialogOpen(true)}
+								className="focus:bg-zinc-900 focus:text-zinc-100"
+							>
 								<Edit className="mr-2 h-4 w-4" />
 								<span>Edit</span>
 							</DropdownMenuItem>
 							{hasAccess ? (
 								<DropdownMenuItem
 									disabled={!hasAccess}
-									onClick={() => setIsRescheduleDialogOpen(true)}
+									onClick={() => {
+										hasAccess && setIsRescheduleDialogOpen(true);
+									}}
+									className="focus:bg-zinc-900 focus:text-zinc-100"
 								>
 									<Clock className="mr-2 h-4 w-4" />
 									<span>Reschedule</span>
 								</DropdownMenuItem>
 							) : (
-								<></>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<DropdownMenuItem
+												// disabled={true}
+												onClick={() => {}}
+												className="focus:bg-zinc-900 focus:text-zinc-100"
+											>
+												<Clock className="mr-2 h-4 w-4" />
+												<span>Reschedule</span>
+											</DropdownMenuItem>
+										</TooltipTrigger>
+										<TooltipContent className="border border-zinc-700 bg-zinc-800 text-white">
+											<p>
+												Feature not available for free plan , upgrade to use
+												feature
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
 							)}
-							<DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
+							<DropdownMenuItem
+								onClick={() => setIsDeleteDialogOpen(true)}
+								className="focus:bg-zinc-900 focus:text-zinc-100"
+							>
 								<Trash2 className="mr-2 h-4 w-4" />
 								<span>Delete</span>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
-				<p className="mb-2 line-clamp-3 text-sm text-zinc-400">
+				<p className="mb-2 line-clamp-3 text-sm text-zinc-300">
 					{post.content}
 				</p>
-				<div className="flex flex-wrap items-center justify-between gap-2">
+				<div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/50 pt-2">
 					<span className="text-xs text-zinc-500">
 						Created {formatDate(post.created_at)}
 					</span>
@@ -237,10 +289,10 @@ const PostCard: React.FC<PostCardProps> = ({
 
 			{/* Delete Confirmation Dialog */}
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<DialogContent>
+				<DialogContent className="border border-zinc-800 bg-zinc-950 text-zinc-300">
 					<DialogHeader>
 						<DialogTitle>Delete Post</DialogTitle>
-						<DialogDescription>
+						<DialogDescription className="text-zinc-400">
 							Are you sure you want to delete this post? This action cannot be
 							undone.
 						</DialogDescription>
@@ -249,6 +301,7 @@ const PostCard: React.FC<PostCardProps> = ({
 						<Button
 							variant="outline"
 							onClick={() => setIsDeleteDialogOpen(false)}
+							className="border-zinc-800 text-zinc-900 hover:bg-zinc-900 hover:text-zinc-100"
 						>
 							Cancel
 						</Button>
@@ -256,6 +309,7 @@ const PostCard: React.FC<PostCardProps> = ({
 							variant="destructive"
 							onClick={handleDelete}
 							disabled={isLoading}
+							className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
 						>
 							{isLoading ? (
 								<>
@@ -275,22 +329,22 @@ const PostCard: React.FC<PostCardProps> = ({
 				open={isRescheduleDialogOpen && hasAccess}
 				onOpenChange={setIsRescheduleDialogOpen}
 			>
-				<DialogContent className="w-auto">
+				<DialogContent className="w-auto border border-zinc-800 bg-zinc-950 text-zinc-300">
 					<DialogHeader>
 						<DialogTitle>Reschedule Post</DialogTitle>
-						<DialogDescription>
+						<DialogDescription className="text-zinc-400">
 							Choose a new date and time for your post.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="flex h-auto flex-col items-start justify-start gap-4">
-							<Label htmlFor="date" className="text-right">
+							<Label htmlFor="date" className="text-zinc-300">
 								Date
 							</Label>
 							<Calendar
 								initialFocus
 								mode="single"
-								className="w-full"
+								className="w-full rounded-md border border-zinc-800 bg-zinc-950 text-zinc-300"
 								selected={rescheduleDate}
 								onSelect={setRescheduleDate}
 								disabled={date =>
@@ -300,7 +354,7 @@ const PostCard: React.FC<PostCardProps> = ({
 							/>
 						</div>
 						<div className="flex flex-col items-start justify-start gap-4">
-							<Label htmlFor="time" className="text-right">
+							<Label htmlFor="time" className="text-zinc-300">
 								Time
 							</Label>
 							<Input
@@ -316,7 +370,7 @@ const PostCard: React.FC<PostCardProps> = ({
 									);
 									setRescheduleDate(newDate);
 								}}
-								className="col-span-3"
+								className="col-span-3 border-zinc-800 bg-zinc-950 text-zinc-300"
 							/>
 						</div>
 					</div>
@@ -324,10 +378,15 @@ const PostCard: React.FC<PostCardProps> = ({
 						<Button
 							variant="outline"
 							onClick={() => setIsRescheduleDialogOpen(false)}
+							className="border-zinc-800 text-zinc-900 hover:bg-zinc-900 hover:text-zinc-100"
 						>
 							Cancel
 						</Button>
-						<Button onClick={handleReschedule} disabled={isLoading}>
+						<Button
+							onClick={handleReschedule}
+							disabled={isLoading}
+							className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+						>
 							{isLoading ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -343,16 +402,16 @@ const PostCard: React.FC<PostCardProps> = ({
 
 			{/* Edit Dialog */}
 			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-				<DialogContent className="w-full">
+				<DialogContent className="w-full border border-zinc-800 bg-zinc-950 text-zinc-300">
 					<DialogHeader>
 						<DialogTitle>Edit Post</DialogTitle>
-						<DialogDescription>
+						<DialogDescription className="text-zinc-400">
 							Make changes to your post here. Click save when you&apos;re done.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="flex flex-col items-start justify-center gap-4">
-							<Label htmlFor="content" className="text-right">
+							<Label htmlFor="content" className="text-zinc-300">
 								Content
 							</Label>
 							<Textarea
@@ -362,7 +421,7 @@ const PostCard: React.FC<PostCardProps> = ({
 									setEditedPost({ ...editedPost, content: event.target.value })
 								}
 								rows={12}
-								className="col-span-3"
+								className="col-span-3 border-zinc-800 bg-zinc-950 text-zinc-300"
 							/>
 						</div>
 					</div>
@@ -370,10 +429,15 @@ const PostCard: React.FC<PostCardProps> = ({
 						<Button
 							variant="outline"
 							onClick={() => setIsEditDialogOpen(false)}
+							className="border-zinc-800 text-zinc-900 hover:bg-zinc-900 hover:text-zinc-100"
 						>
 							Cancel
 						</Button>
-						<Button onClick={handleEdit} disabled={isLoading}>
+						<Button
+							onClick={handleEdit}
+							disabled={isLoading}
+							className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+						>
 							{isLoading ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />

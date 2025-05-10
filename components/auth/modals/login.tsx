@@ -13,7 +13,7 @@ export default function LoginForm({ setView }: LoginFormProps) {
 	const [isMagicLink, setIsMagicLink] = useState(true);
 
 	return (
-		<div className="grid gap-6">
+		<div className="grid w-[402px] gap-6">
 			<div className="flex flex-col space-y-2 text-center">
 				<h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
 				<p className="text-sm text-muted-foreground">
@@ -44,6 +44,12 @@ export default function LoginForm({ setView }: LoginFormProps) {
 			>
 				Sign up
 			</button> */}
+			<button
+				onClick={() => setView("signup")}
+				className="text-sm text-primary underline-offset-4 hover:underline"
+			>
+				Sign up
+			</button>
 		</div>
 	);
 }

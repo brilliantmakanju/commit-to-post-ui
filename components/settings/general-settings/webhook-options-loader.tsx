@@ -1,8 +1,6 @@
-/* eslint-disable import/no-unresolved */
 "use client";
 
 import { ChevronsUpDown, Loader2 } from "lucide-react";
-import type React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,30 +15,30 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const AISettingsLoader = () => (
-	<Card className="w-full">
-		<CardHeader className="space-y-1 border-b border-gray-200">
-			<CardTitle className="text-2xl font-bold text-gray-900">
+	<Card className="mt-6 w-full border border-zinc-800 bg-zinc-900">
+		<CardHeader className="space-y-1 border-b border-zinc-800">
+			<CardTitle className="text-xl font-bold text-white">
 				AI Settings
 			</CardTitle>
-			<CardDescription className="text-gray-600">
+			<CardDescription className="text-zinc-400">
 				Loading settings...
 			</CardDescription>
 		</CardHeader>
 		<CardContent className="space-y-6 pt-6">
 			<div className="space-y-4">
 				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-					<h3 className="mb-2 text-lg font-medium text-gray-900 sm:mb-0">
+					<h3 className="mb-2 text-lg font-medium text-white sm:mb-0">
 						Branch Name
 					</h3>
 					<div className="flex h-10 items-center space-x-2">
 						<div className="flex w-full sm:w-auto">
 							<Input
 								value=""
-								className="flex-grow rounded-r-none border-gray-300 bg-gray-50 text-gray-900"
+								className="flex-grow rounded-r-none border-zinc-800 bg-zinc-900 text-zinc-500"
 								disabled
 							/>
 							<Button
-								className="rounded-l-none bg-gray-900 text-gray-50 hover:bg-gray-800"
+								className="rounded-l-none border-zinc-700 bg-zinc-800 text-white"
 								disabled
 							>
 								<Loader2 className="h-4 w-4 animate-spin" />
@@ -51,12 +49,12 @@ const AISettingsLoader = () => (
 			</div>
 
 			<div className="space-y-4">
-				<h3 className="text-lg font-medium text-gray-900">AI Tone</h3>
+				<h3 className="text-lg font-medium text-white">AI Tone</h3>
 				<div className="grid grid-cols-1 space-y-2 sm:space-x-4 md:grid-cols-3">
 					<div className="flex-grow">
 						<Button
 							variant="outline"
-							className="w-full justify-between border-gray-300 bg-gray-50 text-gray-900"
+							className="w-full justify-between border-zinc-700 bg-zinc-800 text-zinc-500"
 							disabled
 						>
 							<span className="flex items-center">
@@ -70,9 +68,9 @@ const AISettingsLoader = () => (
 						<Switch
 							id="hashtags"
 							disabled
-							className="data-[state=checked]:bg-gray-900"
+							className="data-[state=checked]:bg-zinc-700"
 						/>
-						<Label htmlFor="hashtags" className="text-gray-900 opacity-50">
+						<Label htmlFor="hashtags" className="text-zinc-500">
 							Use Hashtags
 						</Label>
 					</div>
@@ -80,9 +78,9 @@ const AISettingsLoader = () => (
 						<Switch
 							id="shuffle"
 							disabled
-							className="data-[state=checked]:bg-gray-900"
+							className="data-[state=checked]:bg-zinc-700"
 						/>
-						<Label htmlFor="shuffle" className="text-gray-900 opacity-50">
+						<Label htmlFor="shuffle" className="text-zinc-500">
 							Shuffle All Tones
 						</Label>
 					</div>
@@ -90,10 +88,10 @@ const AISettingsLoader = () => (
 			</div>
 
 			<div>
-				<h3 className="mb-2 text-lg font-medium text-gray-900">
+				<h3 className="mb-2 text-lg font-medium text-white">
 					Current Settings
 				</h3>
-				<pre className="overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 text-sm text-gray-900 opacity-50">
+				<pre className="overflow-x-auto rounded border border-zinc-800 bg-zinc-950 p-2 text-sm text-zinc-500">
 					Loading settings...
 				</pre>
 			</div>

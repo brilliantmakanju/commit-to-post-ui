@@ -44,7 +44,7 @@ const ResetPasswordForm = ({ uid, token }: { uid: string; token: string }) => {
 					"Your password has been successfully reset. You can now log in with your new password.",
 				);
 				setTimeout(() => {
-					router.push("/auth");
+					router.push("/");
 					// router.push("/auth?view=login");
 				}, 5000);
 			} else {

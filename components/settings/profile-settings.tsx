@@ -1,15 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { KeyRound, Loader2, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import type * as z from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -139,7 +140,7 @@ export default function ProfileSettings() {
 				// Sign out from NextAuth
 				await signOut();
 				logoutStore.setLogout(false);
-				router.push("/auth");
+				router.push("/");
 			} else {
 				toast.error("Something went wrong. Please try again.");
 			}
@@ -149,74 +150,127 @@ export default function ProfileSettings() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="mb-6 flex w-full items-center justify-end">
-				{authenticationType === "email_password" && (
-					<Button
-						variant="secondary"
-						onClick={() => setIsPasswordModalOpen(true)}
-					>
-						Change Password
-					</Button>
-				)}
+		<div className="space-y-6 py-6">
+			<div className="mb-4 flex items-center gap-2">
+				<User className="h-5 w-5 text-[#4F46E5]" />
+				<h2 className="text-xl font-semibold text-white">
+					Profile Information
+				</h2>
 			</div>
 
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-					<FormField
-						control={form.control}
-						name="firstName"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-gray-300">First Name</FormLabel>
-								<FormControl>
-									<Input
-										{...field}
-										disabled={form.formState.isSubmitting}
-										className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+			<Card className="border-[#232323] bg-[#121212]">
+				<CardHeader>
+					<CardTitle className="text-lg font-medium text-white">
+						Personal Details
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="firstName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="font-medium text-zinc-300">
+												First Name
+											</FormLabel>
+											<FormControl>
+												<Input
+													{...field}
+													disabled={form.formState.isSubmitting}
+													className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+													placeholder="Your first name"
+												/>
+											</FormControl>
+											<FormMessage className="text-red-400" />
+										</FormItem>
+									)}
+								/>
 
-					<FormField
-						control={form.control}
-						name="lastName"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-gray-300">Last Name</FormLabel>
-								<FormControl>
-									<Input
-										{...field}
-										disabled={form.formState.isSubmitting}
-										className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+								<FormField
+									control={form.control}
+									name="lastName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="font-medium text-zinc-300">
+												Last Name
+											</FormLabel>
+											<FormControl>
+												<Input
+													{...field}
+													disabled={form.formState.isSubmitting}
+													className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+													placeholder="Your last name"
+												/>
+											</FormControl>
+											<FormMessage className="text-red-400" />
+										</FormItem>
+									)}
+								/>
+							</div>
 
-					<Button
-						type="submit"
-						variant={"outline"}
-						disabled={form.formState.isSubmitting || !isDirty()}
-						className="text-black disabled:opacity-80"
-					>
-						{form.formState.isSubmitting && (
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-						)}
-						{form.formState.isSubmitting ? "Saving..." : "Save Changes"}
-					</Button>
-				</form>
-			</Form>
+							<div className="flex justify-end pt-4">
+								<Button
+									type="submit"
+									variant="default"
+									disabled={form.formState.isSubmitting || !isDirty()}
+									className="bg-[#4F46E5] text-white hover:bg-[#4338CA] disabled:bg-[#232323] disabled:text-zinc-500"
+								>
+									{form.formState.isSubmitting ? (
+										<div className="flex items-center">
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											<span>Saving...</span>
+										</div>
+									) : (
+										<div className="flex items-center">
+											<Save className="mr-2 h-4 w-4" />
+											<span>Save Changes</span>
+										</div>
+									)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</CardContent>
+			</Card>
+
+			{authenticationType === "email_password" && (
+				<Card className="border-[#232323] bg-[#121212]">
+					<CardHeader>
+						<CardTitle className="text-lg font-medium text-white">
+							Security
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="flex items-center justify-between">
+							<div>
+								<h3 className="text-sm font-medium text-zinc-300">Password</h3>
+								<p className="mt-1 text-xs text-zinc-500">
+									Update your password to keep your account secure
+								</p>
+							</div>
+							<Button
+								variant="outline"
+								onClick={() => setIsPasswordModalOpen(true)}
+								className="border-[#232323] bg-[#1A1A1A] text-white hover:bg-[#232323]"
+							>
+								<KeyRound className="mr-2 h-4 w-4" />
+								Change Password
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+			)}
 
 			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-				<DialogContent className="border border-gray-700 bg-[#1A1C20] text-gray-200">
+				<DialogContent className="border border-[#232323] bg-[#121212] text-white">
 					<DialogHeader>
-						<DialogTitle className="text-gray-300">Change Password</DialogTitle>
+						<DialogTitle className="flex items-center">
+							<KeyRound className="mr-2 h-5 w-5 text-[#4F46E5]" />
+							Change Password
+						</DialogTitle>
 					</DialogHeader>
 					<Form {...passwordForm}>
 						<form
@@ -228,7 +282,7 @@ export default function ProfileSettings() {
 								name="oldPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-gray-300">
+										<FormLabel className="font-medium text-zinc-300">
 											Current Password
 										</FormLabel>
 										<FormControl>
@@ -236,10 +290,10 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
 											/>
 										</FormControl>
-										<FormMessage />
+										<FormMessage className="text-red-400" />
 									</FormItem>
 								)}
 							/>
@@ -249,7 +303,7 @@ export default function ProfileSettings() {
 								name="newPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-gray-300">
+										<FormLabel className="font-medium text-zinc-300">
 											New Password
 										</FormLabel>
 										<FormControl>
@@ -257,10 +311,10 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
 											/>
 										</FormControl>
-										<FormMessage />
+										<FormMessage className="text-red-400" />
 									</FormItem>
 								)}
 							/>
@@ -270,7 +324,7 @@ export default function ProfileSettings() {
 								name="confirmPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-gray-300">
+										<FormLabel className="font-medium text-zinc-300">
 											Confirm New Password
 										</FormLabel>
 										<FormControl>
@@ -278,24 +332,34 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-gray-200 focus:border-gray-500 focus:ring-gray-500"
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
 											/>
 										</FormControl>
-										<FormMessage />
+										<FormMessage className="text-red-400" />
 									</FormItem>
 								)}
 							/>
 
-							<Button
-								type="submit"
-								variant={"outline"}
-								disabled={passwordForm.formState.isSubmitting}
-								className="text-black disabled:opacity-80"
-							>
-								{passwordForm.formState.isSubmitting
-									? "Changing Password..."
-									: "Change Password"}
-							</Button>
+							<div className="flex justify-end pt-4">
+								<Button
+									type="submit"
+									variant="default"
+									disabled={passwordForm.formState.isSubmitting}
+									className="bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+								>
+									{passwordForm.formState.isSubmitting ? (
+										<div className="flex items-center">
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											<span>Changing Password...</span>
+										</div>
+									) : (
+										<div className="flex items-center">
+											<KeyRound className="mr-2 h-4 w-4" />
+											<span>Change Password</span>
+										</div>
+									)}
+								</Button>
+							</div>
 						</form>
 					</Form>
 				</DialogContent>

@@ -1,13 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import type React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
-import SubPlanCheckout from "@/components/auth/subscription/sub-plan-checkout";
 import TopNavigation from "@/components/dashboard/nav-top";
 import { RequestInterceptor } from "@/components/interceptor";
 import {
@@ -15,7 +14,6 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
@@ -23,21 +21,29 @@ import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
 import { signOut } from "@/server-actions/auth/signout";
 
-export function AuthenticatedLayout({
-	children,
-}: {
+// Dynamically import non-critical components
+const SubPlanCheckout = dynamic(
+	() => import("@/components/auth/subscription/sub-plan-checkout"),
+	{ ssr: false },
+);
+const Toaster = dynamic(
+	() => import("@/components/ui/sonner").then(module_ => module_.Toaster),
+	{ ssr: false },
+);
+
+interface AuthenticatedLayoutProps {
 	children: React.ReactNode;
-}) {
+}
+
+export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const router = useRouter();
 	const { status } = useSession();
-	const userStore = useUserStore();
+
 	const logoutStore = useLogoutStore();
-	const [isClient, setIsClient] = useState(false);
+	const userStore = useUserStore();
 	const organizationStore = useOrganizationStore();
 
-	useEffect(() => {
-		if (!isClient) setIsClient(true);
-	}, [isClient]);
+	const isClient = typeof globalThis !== "undefined";
 
 	useEffect(() => {
 		let mounted = true;
@@ -54,46 +60,50 @@ export function AuthenticatedLayout({
 					userStore.clearUser();
 					await clearCookies();
 					await signOut();
-					router.push("/auth");
+					router.push("/");
 				}
 			} catch {
-				return;
+				// Optionally log or handle cookie error
 			}
 		};
 
-		if (typeof globalThis !== "undefined") {
-			validateCookie();
-		}
+		if (isClient) {
+			const timeout = setTimeout(() => {
+				void validateCookie();
+			}, 100);
 
-		return () => {
-			mounted = false;
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [logoutStore, router, organizationStore, userStore]);
+			return () => {
+				mounted = false;
+				clearTimeout(timeout);
+			};
+		}
+	}, [isClient, logoutStore, organizationStore, router, userStore]);
+
+	const showLoadingModal = !isClient || status === "loading";
+	const showMainContent =
+		status !== "loading" && isClient && !logoutStore.logout;
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
-			<LogoutModal />
-
-			{(!isClient || status === "loading") && (
-				<LogoutModal showByDefault={!isClient || status === "loading"} />
-			)}
+			<LogoutModal showByDefault={showLoadingModal} />
 
 			<div className="flex h-screen w-full">
 				<AppSidebar />
 
-				<SidebarInset className="relative flex-1 overflow-hidden bg-[#1A1C20] md:rounded-[20px]">
+				<SidebarInset className="relative flex-1 overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
 					<main
-						className={`relative mb-2 h-full w-full py-3 md:mb-0 ${
-							status === "loading" || !isClient || logoutStore.logout
-								? "flex items-center justify-center"
-								: "overflow-y-auto text-[#EAF6FF]"
+						className={`relative mb-2 h-full w-full md:mb-0 ${
+							showMainContent
+								? "overflow-y-auto text-[#EAF6FF]"
+								: "flex items-center justify-center"
 						}`}
 					>
-						<TopNavigation>
-							<SidebarTrigger />
-						</TopNavigation>
+						{/* <TopNavigation>
+						</TopNavigation> */}
+
+						<SidebarTrigger className="absolute left-0 top-0" />
 						{children}
+
 						<SubPlanCheckout />
 						<RequestInterceptor />
 						<Toaster />

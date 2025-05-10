@@ -25,7 +25,7 @@ export default function Pagination({
 			key={page}
 			className={cn(
 				"rounded-md px-3 py-1.5 font-medium",
-				isCurrent ? "bg-gray-800 text-white" : "text-gray-500",
+				isCurrent ? "bg-zinc-900 text-white" : "text-zinc-400",
 			)}
 		>
 			{page}
@@ -33,15 +33,15 @@ export default function Pagination({
 	);
 
 	return (
-		<div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+		<div className="mt-8 flex flex-wrap items-center justify-center gap-4">
 			<Button
 				variant="outline"
 				size="sm"
 				onClick={() => onPageChange(currentPage - 1)}
 				disabled={currentPage === 1 || disabled}
 				className={cn(
-					"border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-700",
-					"disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400",
+					"border-zinc-800 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-zinc-100",
+					"disabled:border-zinc-800 disabled:bg-transparent disabled:text-zinc-700",
 				)}
 			>
 				<ChevronLeft className="mr-2 h-4 w-4" />
@@ -50,14 +50,15 @@ export default function Pagination({
 
 			<div className="flex items-center gap-2 text-sm">
 				{renderPageNumber(1, currentPage === 1)}
-				{currentPage > 2 && <span className="text-gray-500">...</span>}
+				{currentPage > 2 && <span className="text-zinc-500">...</span>}
 				{currentPage !== 1 &&
 					currentPage !== totalPages &&
 					renderPageNumber(currentPage, true)}
 				{currentPage < totalPages - 1 && (
-					<span className="text-gray-500">...</span>
+					<span className="text-zinc-500">...</span>
 				)}
-				{renderPageNumber(totalPages, currentPage === totalPages)}
+				{totalPages > 1 &&
+					renderPageNumber(totalPages, currentPage === totalPages)}
 			</div>
 
 			<Button
@@ -66,8 +67,8 @@ export default function Pagination({
 				onClick={() => onPageChange(currentPage + 1)}
 				disabled={currentPage === totalPages || disabled}
 				className={cn(
-					"border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-700",
-					"disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400",
+					"border-zinc-800 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-zinc-100",
+					"disabled:border-zinc-800 disabled:bg-transparent disabled:text-zinc-700",
 				)}
 			>
 				Next
