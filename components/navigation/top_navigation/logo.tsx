@@ -5,8 +5,16 @@ import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 
 const Logo = () => {
 	return (
-		<Link href="/" className="text-xl font-bold text-gray-800">
-			<AnimatedAIIcon color={"#111827"} size={54} />
+		<Link
+			href="/"
+			className="flex items-center space-x-2 transition-opacity duration-200 hover:opacity-80"
+		>
+			<AnimatedAIIcon color={"currentColor"} size={36} />
+			<span className="flex gap-1 font-mono text-lg font-bold tracking-tight">
+				<span className="text-black dark:text-white">Push</span>
+				<span className="text-gray-500 dark:text-gray-400">to</span>
+				<span className="text-black dark:text-white">Post</span>
+			</span>
 		</Link>
 	);
 };

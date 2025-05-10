@@ -1,47 +1,69 @@
 "use client";
 import Link from "next/link";
-import React, { useState } from "react";
 
 import { links } from "./data";
 
-const NavLinks = () => {
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	// const [darkMode, setDarkMode] = useState(false);
-
-	// useEffect(() => {
-	// 	const root = globalThis.window.document.documentElement;
-	// 	root.classList.toggle("dark", darkMode);
-	// }, [darkMode]);
-
+const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => {
 	return (
-		<nav className={`${isMenuOpen ? "block" : "hidden"} md:block`}>
-			{/*<Button*/}
-			{/*	variant="ghost"*/}
-			{/*	size="icon"*/}
-			{/*	onClick={() => setDarkMode(!darkMode)}*/}
-			{/*	className="rounded-full"*/}
-			{/*>*/}
-			{/*	{darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}*/}
-			{/*</Button>*/}
-			<ul className="flex flex-col space-y-4 text-sm font-medium text-slate-700 dark:text-slate-200 md:flex-row md:space-x-8 md:space-y-0">
+		<nav className="hidden md:flex">
+			<ul
+				className={`flex ${isMobile ? "flex-col space-y-4" : "flex-row space-x-8"} font-mono text-sm font-medium`}
+			>
 				{links.map((link, index) => (
-					<li key={index}>
+					<li key={index} className={isMobile ? "w-full" : ""}>
 						{link.href.startsWith("mailto:") ? (
 							<Link
 								href={link.href}
-								className="group relative hover:text-emerald-500"
+								className="group relative inline-block py-2 text-gray-800 transition-colors duration-200 hover:text-black dark:text-gray-300 dark:hover:text-white"
 							>
-								{link.name}
-								<span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-emerald-500 transition-all group-hover:w-full"></span>
+								<span className="relative flex items-center">
+									{/* Left curly bracket */}
+									<span className="mr-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+										{"{"}
+									</span>
+
+									{/* Link text */}
+									<span className="relative">
+										{link.name}
+										{/* Underline that animates from right to left */}
+										<span
+											className="absolute -bottom-0.5 right-0 h-[1px] w-0 bg-black transition-all duration-300 group-hover:w-full dark:bg-white"
+											style={{ transformOrigin: "right" }}
+										></span>
+									</span>
+
+									{/* Right curly bracket */}
+									<span className="ml-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+										{"}"}
+									</span>
+								</span>
 							</Link>
 						) : (
 							<Link
 								href={link.href}
-								// onClick={event_ => handleScroll(event_, link.href)}
-								className="group relative cursor-pointer hover:text-emerald-500"
+								className="group relative inline-block py-2 text-gray-800 transition-colors duration-200 hover:text-black dark:text-gray-300 dark:hover:text-white"
 							>
-								{link.name}
-								<span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-emerald-500 transition-all group-hover:w-full"></span>
+								<span className="relative flex items-center">
+									{/* Left curly bracket */}
+									<span className="mr-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+										{"{"}
+									</span>
+
+									{/* Link text */}
+									<span className="relative">
+										{link.name}
+										{/* Underline that animates from right to left */}
+										<span
+											className="absolute -bottom-0.5 right-0 h-[1px] w-0 bg-black transition-all duration-300 group-hover:w-full dark:bg-white"
+											style={{ transformOrigin: "right" }}
+										></span>
+									</span>
+
+									{/* Right curly bracket */}
+									<span className="ml-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+										{"}"}
+									</span>
+								</span>
 							</Link>
 						)}
 					</li>

@@ -53,3 +53,10 @@ export interface Notification {
 	is_read: boolean;
 	created_at: string;
 }
+
+export type AuthView =
+	| "login"
+	| "signup"
+	| "check-email"
+	| "verifying"
+	| undefined;

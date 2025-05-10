@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type AuthView = "login" | "signup" | "check-email" | "verifying" | undefined;
+import { AuthView } from "@/types";
 
 interface AuthModalState {
 	isOpen: boolean;
