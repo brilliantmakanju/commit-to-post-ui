@@ -277,9 +277,6 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
-      testing-library:
-        specifier: ^0.0.2
-        version: 0.0.2(@angular/common@6.1.10(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29))(rxjs@7.8.1))(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29))
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
@@ -296,18 +293,6 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
-
-  '@angular/common@6.1.10':
-    resolution: {integrity: sha512-73xxTSYJNKfiJ7C1Ajg+sz5l8y+blb/vNgHYg7O3yem5zLBnfPpidJ1UGg4W4d2Y+jwUVJbZKh8SKJarqAJVUQ==}
-    peerDependencies:
-      '@angular/core': '>=10.2.5'
-      rxjs: ^6.0.0
-
-  '@angular/core@6.1.10':
-    resolution: {integrity: sha512-61l3rIQTVdT45eOf6/fBJIeVmV10mcrxqS4N/1OWkuDT29YSJTZSxGcv8QjAyyutuhcqWWpO6gVRkN07rWmkPg==}
-    peerDependencies:
-      rxjs: ^6.0.0
-      zone.js: ~0.8.26
 
   '@auth/core@0.37.2':
     resolution: {integrity: sha512-kUvzyvkcd6h1vpeMAojK2y7+PAV5H+0Cc9+ZlKYDFhDY31AlvsB+GW5vNO4qE3Y07KeQgvNO9U0QUx/fN62kBw==}
@@ -4274,12 +4259,6 @@ packages:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
 
-  testing-library@0.0.2:
-    resolution: {integrity: sha512-KCbqCCllbgiCXOgmh9MdsgdJ05pmimXGuggtC78pzpxpq/40A3bS+NJoqwCIqZbNnMr6KIZ2mlMZoZCkWVnaWw==}
-    peerDependencies:
-      '@angular/common': ^6.0.0-rc.0 || ^6.0.0
-      '@angular/core': '>=10.2.5'
-
   text-extensions@2.4.0:
     resolution: {integrity: sha512-te/NtwBwfiNRLf9Ijqx3T0nlqZiQ2XrrtBvu+cLL8ZRrGkO0NHTug8MYFKyoSrv/sHTaSKfilUkizV6XhxMJ3g==}
     engines: {node: '>=8'}
@@ -4345,9 +4324,6 @@ packages:
 
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
-
-  tslib@1.14.1:
-    resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -4612,9 +4588,6 @@ packages:
   zod@3.24.2:
     resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
-  zone.js@0.8.29:
-    resolution: {integrity: sha512-mla2acNCMkWXBD+c+yeUrBUrzOxYMNFdQ6FGfigGGtEVBPJx07BQeJekjt9DmH1FtZek4E9rE1eRR9qQpxACOQ==}
-
   zustand@5.0.3:
     resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
     engines: {node: '>=12.20.0'}
@@ -4641,18 +4614,6 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
-
-  '@angular/common@6.1.10(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29))(rxjs@7.8.1)':
-    dependencies:
-      '@angular/core': 6.1.10(rxjs@7.8.1)(zone.js@0.8.29)
-      rxjs: 7.8.1
-      tslib: 1.14.1
-
-  '@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29)':
-    dependencies:
-      rxjs: 7.8.1
-      tslib: 1.14.1
-      zone.js: 0.8.29
 
   '@auth/core@0.37.2':
     dependencies:
@@ -8740,12 +8701,6 @@ snapshots:
 
   tapable@2.2.1: {}
 
-  testing-library@0.0.2(@angular/common@6.1.10(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29))(rxjs@7.8.1))(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29)):
-    dependencies:
-      '@angular/common': 6.1.10(@angular/core@6.1.10(rxjs@7.8.1)(zone.js@0.8.29))(rxjs@7.8.1)
-      '@angular/core': 6.1.10(rxjs@7.8.1)(zone.js@0.8.29)
-      tslib: 1.14.1
-
   text-extensions@2.4.0: {}
 
   text-table@0.2.0: {}
@@ -8802,8 +8757,6 @@ snapshots:
       json5: 1.0.2
       minimist: 1.2.8
       strip-bom: 3.0.0
-
-  tslib@1.14.1: {}
 
   tslib@2.8.1: {}
 
@@ -9081,8 +9034,6 @@ snapshots:
   yocto-queue@1.1.1: {}
 
   zod@3.24.2: {}
-
-  zone.js@0.8.29: {}
 
   zustand@5.0.3(@types/react@18.3.18)(react@19.0.0-rc-66855b96-20241106):
     optionalDependencies:
