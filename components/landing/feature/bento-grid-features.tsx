@@ -116,7 +116,10 @@ const features = [
 
 const BentoGridFeature = () => {
 	return (
-		<section className="con ainer mx-auto flex w-full flex-col gap-8">
+		<section
+			id="why-choose-us"
+			className="con ainer mx-auto flex w-full flex-col gap-8"
+		>
 			<div className="flex w-full flex-col items-center justify-center gap-2 text-center">
 				<Paragraph
 					className={
@@ -130,10 +133,7 @@ const BentoGridFeature = () => {
 				</Heading>
 			</div>
 
-			<div
-				id="features"
-				className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-[16px] py-12 font-sans md:px-2 md:py-12 lg:px-12 lg:py-20"
-			>
+			<div className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-[16px] py-12 font-sans md:px-2 md:py-12 lg:px-12 lg:py-20">
 				<BentoGrid>
 					{features.map((feature, index) => (
 						<BentoCard key={index} {...feature} />

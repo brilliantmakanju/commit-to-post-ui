@@ -1,6 +1,9 @@
 export default function FAQs() {
 	return (
-		<section className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-1 py-0 pt-12 font-sans md:px-0 md:py-0 md:pt-12 lg:py-20 lg:pl-12">
+		<section
+			id="faq"
+			className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-1 py-0 pt-12 font-mono md:px-0 md:py-0 md:pt-12 lg:py-20 lg:pl-12"
+		>
 			<div className="mx-auto max-w-6xl px-6">
 				<div className="grid gap-y-12 px-2 lg:[grid-template-columns:1fr_auto]">
 					<div className="text-center lg:text-left">
