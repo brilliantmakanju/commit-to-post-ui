@@ -23,7 +23,7 @@ export const footerData: FooterData = {
 		{
 			title: "Product",
 			links: [
-				{ label: "Features", href: "#features" },
+				{ label: "Why Choose us", href: "/#why-choose-us" },
 				{ label: "Pricing", href: "/pricing" },
 				{
 					label: "Integrations",
