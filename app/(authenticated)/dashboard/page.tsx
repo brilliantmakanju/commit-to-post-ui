@@ -34,7 +34,7 @@ const Page = () => {
 	const router = useRouter();
 	const userStore = useUserStore();
 	const hasAccess = useCheckAccess();
-	const { data: userDetails } = useSession();
+	const { status, data: userDetails } = useSession();
 	const userHasLifetimeAccess = useLifetimeAccess();
 	const [postFilter, setPostFilter] = useState("all");
 	const [isLoading, setIsLoading] = React.useState(true);
