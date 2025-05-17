@@ -40,8 +40,8 @@ export default function PricingSection() {
 	// Sort plans to ensure popular plan is in the middle
 	const sortedPlans = [...pricingData.plans].sort((a, b) => {
 		if (a.popular) return 1;
-		if (b.popular) return 0;
-		return -1;
+		if (b.popular) return -1;
+		return 0;
 	});
 
 	useEffect(() => {
