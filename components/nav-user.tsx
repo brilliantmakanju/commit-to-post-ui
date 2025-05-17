@@ -4,7 +4,7 @@ import { ChevronsUpDown, LogOut, User2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -39,12 +39,13 @@ export function NavUser({
 	const logoutStore = useLogoutStore();
 	const { data, status } = useSession();
 	const organizationStore = useOrganizationStore();
+	const [localStatus, setLocalStatus] = useState("loading");
 
-	useEffect(() => {
-		if (status === "unauthenticated") {
-			globalThis.window.location.reload();
-		}
-	}, [status]);
+	// useEffect(() => {
+	// 	if (status === "unauthenticated") {
+	// 		globalThis.window.location.reload();
+	// 	}
+	// }, [status]);
 
 	const [firstNameFromFull, lastNameFromFull] = userStore.full_name
 		? userStore.full_name.split(" ")
@@ -75,21 +76,40 @@ export function NavUser({
 					};
 
 	const logoutClient = async () => {
-		// Call the API to invalidate the user's session (blacklist token)
-		// @ts-ignore
-		const { success } = await logout();
-		if (success) {
+		try {
+			// Set logout state to true immediately to prevent UI flickering
 			logoutStore.setLogout(true);
-			userStore.clearUser(); // Clear user information from Zustand store
+
+			// Call the API to invalidate the user's session (blacklist token)
+			const { success } = await logout();
+
+			// Clear all client-side data regardless of server response
+			userStore.clearUser();
 			organizationStore.clearOrganization();
-			await clearCookies(); // Clear all cookies
-			// Sign out from NextAuth
-			await signOut();
+
+			// Clear cookies
+			await clearCookies();
+
+			// Sign out from NextAuth with no redirect
+			await signOut({ redirect: false });
+
+			// Navigate to home page
 			router.push("/");
-			// logoutStore.clearLogout();
-		} else {
-			// Handle error (if any)
-			toast.error("Logout failed, please try again later");
+
+			// Display success/error message
+			if (!success) {
+				toast.warning(
+					"Server logout had issues, but you've been logged out locally",
+				);
+			}
+		} catch {
+			// Even if there's an error, ensure user is logged out locally
+			toast.error(
+				"Logout encountered an error, but you've been logged out locally",
+			);
+
+			// Force a router refresh to update UI state
+			router.refresh();
 		}
 	};
 

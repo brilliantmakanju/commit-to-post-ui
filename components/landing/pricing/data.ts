@@ -10,6 +10,10 @@ export interface PlanPrice {
 		monthly?: number;
 		annual?: number;
 	};
+	productIds: {
+		monthly: string;
+		annual: string;
+	};
 }
 
 export interface LifetimeDeal {
@@ -17,6 +21,7 @@ export interface LifetimeDeal {
 	previousPrice?: number;
 	spotsLeft?: number;
 	endsIn: number; // hours
+	productId: string;
 }
 
 export interface Plan {
@@ -44,11 +49,14 @@ export const pricingData: PricingData = {
 			price: {
 				monthly: 0,
 				annual: 0,
+				productIds: {
+					monthly: "free_plan",
+					annual: "free_plan",
+				},
 			},
 			features: [
 				{ name: "Generate up to 5 posts/month", available: true },
 				{ name: "Connect GitHub and LinkedIn", available: true },
-				// { name: "Single project integration", available: true },
 				{ name: "Default post generation tone", available: true },
 				{ name: "Post rescheduling", available: false },
 				{ name: "Priority support", available: false },
@@ -66,10 +74,13 @@ export const pricingData: PricingData = {
 					monthly: 12,
 					annual: 120,
 				},
+				productIds: {
+					monthly: "pri_01jv2x7pk6c6qvnwghcdd9b65z",
+					annual: "pri_01jvd4rxjryqv6ey0hxhksgba3",
+				},
 			},
 			features: [
 				{ name: "Unlimited post generation", available: true },
-				// { name: "Multi-project integration", available: true },
 				{ name: "Post rescheduling", available: true },
 				{ name: "Priority customer support", available: true },
 				{ name: "Multiple tones & shuffle tone", available: true },
@@ -85,12 +96,17 @@ export const pricingData: PricingData = {
 			price: {
 				monthly: 0,
 				annual: 0,
+				productIds: {
+					monthly: "",
+					annual: "",
+				},
 			},
 			lifetime: {
 				price: 79,
 				previousPrice: 199,
-				spotsLeft: 200, // Increased to 200 users
+				spotsLeft: 200,
 				endsIn: 79, // 72-hour countdown
+				productId: "pri_01jvd4vds54dbq8dvkp21hvc2p",
 			},
 			features: [
 				{ name: "Everything in Pro", available: true },
