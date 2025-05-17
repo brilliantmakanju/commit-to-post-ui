@@ -165,7 +165,6 @@
 // 				// Invalid URL in referer, ignore
 // 			}
 // 		}
-
 // 		// If currentHostname is not localhost or commit.jolexhive.com, it might be a tenant domain
 // 		if (
 // 			currentHostname &&
