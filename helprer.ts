@@ -208,3 +208,128 @@
 // 		return process.env.BASE_URL_API_CALL || "http://localhost:8000";
 // 	}
 // }
+
+// if (isFetching) {
+// 	return (
+// 		<Sidebar variant="inset" {...props}>
+// 			<SidebarHeader>
+// 				<TeamSwitcher teams={[]} isLoading={isFetching} />
+// 			</SidebarHeader>
+// 			<SidebarContent>
+// 				<NavMain items={[]} isLoading={isFetching} />
+// 			</SidebarContent>
+// 		</Sidebar>
+// 	);
+// }
+
+// const domain = await getDecryptedCookie("organization");
+// // If there's no stored organization, set the first available one
+// if (domain?.domain === undefined) {
+// 	useorganizationStore.setOrganization(result.organizations[0]);
+
+// 	// Store the organization in cookies
+// 	await createEncryptedCookie("organization", {
+// 		domain: result.organizations[0].domains[0],
+// 	});
+// 	// Fetch and Invalidate Core Data
+// 	queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
+// 	queryClient.invalidateQueries({
+// 		queryKey: ["organization-ownership"],
+// 	});
+
+// 	queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
+// 	queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
+
+// 	queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
+// 	queryClient.invalidateQueries({
+// 		queryKey: ["retrieving_social_status"],
+// 	});
+
+// 	// Fetch and Invalidate Metrics
+// 	queryClient.fetchQuery({ queryKey: ["dashboard_metrics"] });
+// 	queryClient.invalidateQueries({ queryKey: ["dashboard_metrics"] });
+
+// 	queryClient.fetchQuery({ queryKey: ["upcoming_posts_metrics"] });
+// 	queryClient.invalidateQueries({
+// 		queryKey: ["upcoming_posts_metrics"],
+// 	});
+
+// 	// Fetch and Invalidate Posts
+// 	queryClient.fetchQuery({ queryKey: ["posts"] });
+// 	queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+// 	// Fetch and Invalidate Notifications
+// 	queryClient.fetchQuery({ queryKey: ["notifications"] });
+// 	queryClient.invalidateQueries({ queryKey: ["notifications"] });
+
+// 	queryClient.fetchQuery({ queryKey: ["recent_notifications"] });
+// 	queryClient.invalidateQueries({ queryKey: ["recent_notifications"] });
+
+// 	return result.organizations;
+// } else {
+// 	return result.organizations;
+// }
+
+// const data = {
+// 	navMain: [
+// 		{
+// 			title: "Dashboard",
+// 			url: "/dashboard",
+// 			icon: SquareTerminal,
+// 			isActive: true,
+// 			items: [],
+// 		},
+// 		{
+// 			title: "Post",
+// 			url: "/posts",
+// 			icon: Bot,
+// 			items: [],
+// 		},
+// 		{
+// 			title: "Notifications",
+// 			url: "/notifications",
+// 			icon: BellDotIcon,
+// 			items: [],
+// 		},
+// 		// {
+// 		// 	title: "Billing",
+// 		// 	url: "#",
+// 		// 	icon: WalletMinimal,
+// 		// 	items: [],
+// 		// },
+// 		// {
+// 		// 	title: "Resources",
+// 		// 	url: "#",
+// 		// 	icon: BookOpen,
+// 		// 	items: [
+// 		// 		{
+// 		// 			title: "FAQs",
+// 		// 			url: "#",
+// 		// 		},
+// 		// 		{
+// 		// 			title: "How-To Guides",
+// 		// 			url: "#",
+// 		// 		},
+// 		// 	],
+// 		// },
+// 		{
+// 			title: "Settings",
+// 			url: "/settings",
+// 			icon: Settings2,
+// 			items: [
+// 				// {
+// 				// 	title: "General",
+// 				// 	url: "settings?tab=general",
+// 				// },
+// 				// {
+// 				// 	title: "Billing",
+// 				// 	url: "settings?tab=billing",
+// 				// },
+// 				// {
+// 				// 	title: "Profile",
+// 				// 	url: "settings?tab=profile",
+// 				// },
+// 			],
+// 		},
+// 	],
+// };
