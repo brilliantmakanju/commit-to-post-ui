@@ -2,20 +2,44 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
-import { Heading, Span } from "@/components/general/micro/typography";
+import { Heading } from "@/components/general/micro/typography";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { TextAnimate } from "@/components/magicui/text-animate";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useLogoutStore from "@/lib/zustand/logout-store";
+import useUserStore from "@/lib/zustand/useuser-store";
 
 import Flow from "./flow";
 
 const HeroSection = () => {
+	const userStore = useUserStore();
+	const logoutStore = useLogoutStore();
+	const { data, status } = useSession();
+	const [localStatus, setLocalStatus] = useState("loading");
+
 	const openModal = useAuthModalStore(state => state.openModal);
-	const { status } = useSession();
+
+	// Sync the status with both next-auth and our zustand store
+	useEffect(() => {
+		if (logoutStore.logout) {
+			// If user has logged out through our custom process
+			setLocalStatus("unauthenticated");
+		} else if (status === "authenticated" && data && userStore.email) {
+			// If next-auth says we're authenticated
+			setLocalStatus("authenticated");
+		} else if (status === "unauthenticated") {
+			// If next-auth says we're not authenticated
+			setLocalStatus("unauthenticated");
+		} else if (status === "loading") {
+			// Still loading
+			setLocalStatus("loading");
+		}
+	}, [status, data, logoutStore, userStore]);
+
 	return (
 		<section
 			id="home"
@@ -77,7 +101,7 @@ const HeroSection = () => {
 							<div className="flex w-full flex-col space-y-6">
 								<div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6 lg:justify-start">
 									<div className="flex flex-col items-center text-center">
-										{status === "loading" ? (
+										{localStatus === "loading" ? (
 											<>
 												<RainbowButton
 													onClick={() => openModal("signup")}
@@ -91,7 +115,7 @@ const HeroSection = () => {
 													30 seconds or less
 												</span>
 											</>
-										) : status === "authenticated" ? (
+										) : localStatus === "authenticated" ? (
 											<Link href="/dashboard">
 												<RainbowButton className="text-md w-full rounded-full px-7 py-8 text-white hover:bg-gray-800 sm:w-auto">
 													<TextAnimate animation="scaleUp" by="word" once>

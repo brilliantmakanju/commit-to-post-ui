@@ -4,19 +4,42 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useLogoutStore from "@/lib/zustand/logout-store";
+import useUserStore from "@/lib/zustand/useuser-store";
 
 import { Heading } from "./general/micro/typography";
 import { AnimatedGridPattern } from "./magicui/animated-grid-pattern";
 import { RainbowButton } from "./magicui/rainbow-button";
 import { TextAnimate } from "./magicui/text-animate";
-import { Button } from "./ui/button";
 
 export default function CtaSection() {
+	const userStore = useUserStore();
+	const logoutStore = useLogoutStore();
+	const { data, status } = useSession();
+	const [localStatus, setLocalStatus] = useState("loading");
+
 	const openModal = useAuthModalStore(state => state.openModal);
-	const { status } = useSession();
+
+	// Sync the status with both next-auth and our zustand store
+	useEffect(() => {
+		if (logoutStore.logout) {
+			// If user has logged out through our custom process
+			setLocalStatus("unauthenticated");
+		} else if (status === "authenticated" && data && userStore.email) {
+			// If next-auth says we're authenticated
+			setLocalStatus("authenticated");
+		} else if (status === "unauthenticated") {
+			// If next-auth says we're not authenticated
+			setLocalStatus("unauthenticated");
+		} else if (status === "loading") {
+			// Still loading
+			setLocalStatus("loading");
+		}
+	}, [status, data, logoutStore, userStore]);
 
 	return (
 		<section className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-2 py-12 font-sans md:px-2 md:py-12 lg:px-12 lg:py-20">
@@ -48,7 +71,7 @@ export default function CtaSection() {
 				<div className="mb-9 mt-8 flex flex-row items-center justify-center">
 					<div className="flex flex-col justify-center gap-4 sm:flex-row sm:gap-6 lg:justify-start">
 						<div className="flex flex-col items-center">
-							{status === "loading" ? (
+							{localStatus === "loading" ? (
 								<>
 									<RainbowButton
 										onClick={() => openModal("signup")}
@@ -62,7 +85,7 @@ export default function CtaSection() {
 										30 seconds or less
 									</span>
 								</>
-							) : status === "authenticated" ? (
+							) : localStatus === "authenticated" ? (
 								<Link href="/dashboard">
 									<RainbowButton className="text-md w-full rounded-full px-7 py-8 text-white hover:bg-gray-800 sm:w-auto">
 										<TextAnimate animation="scaleUp" by="word" once>
