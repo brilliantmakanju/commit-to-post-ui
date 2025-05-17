@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 
 import PricingSection from "@/components/landing/pricing/v3/payment-section";
-import { PaymentSteps } from "@/components/landing/pricing/v3/payment-steps";
 
 export const metadata: Metadata = {
 	title: "Pricing - Push to Post",
