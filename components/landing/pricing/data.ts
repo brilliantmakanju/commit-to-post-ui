@@ -65,6 +65,31 @@ export const pricingData: PricingData = {
 			buttonVariant: "outline",
 		},
 		{
+			name: "Lifetime Deal",
+			badge: "Limited Offer",
+			price: {
+				monthly: 0,
+				annual: 0,
+				productIds: {
+					monthly: "",
+					annual: "",
+				},
+			},
+			lifetime: {
+				price: 79,
+				previousPrice: 199,
+				spotsLeft: 200,
+				endsIn: 79, // 72-hour countdown
+				productId: "pri_01jvd4vds54dbq8dvkp21hvc2p",
+			},
+			features: [
+				{ name: "Everything in Pro", available: true },
+				{ name: "Future feature upgrades", available: true },
+			],
+			buttonText: "Claim Lifetime Access",
+			buttonVariant: "default",
+		},
+		{
 			name: "Pro",
 			badge: "Premium",
 			price: {
@@ -89,31 +114,6 @@ export const pricingData: PricingData = {
 			buttonText: "Go Pro",
 			buttonVariant: "success",
 			popular: true,
-		},
-		{
-			name: "Lifetime Deal",
-			badge: "Limited Offer",
-			price: {
-				monthly: 0,
-				annual: 0,
-				productIds: {
-					monthly: "",
-					annual: "",
-				},
-			},
-			lifetime: {
-				price: 79,
-				previousPrice: 199,
-				spotsLeft: 200,
-				endsIn: 79, // 72-hour countdown
-				productId: "pri_01jvd4vds54dbq8dvkp21hvc2p",
-			},
-			features: [
-				{ name: "Everything in Pro", available: true },
-				{ name: "Future feature upgrades", available: true },
-			],
-			buttonText: "Claim Lifetime Access",
-			buttonVariant: "default",
 		},
 	],
 };
