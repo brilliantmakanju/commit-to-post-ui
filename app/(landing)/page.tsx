@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import SubAuthPage from "@/components/auth/sub-modal";
 import CtaSection from "@/components/call-to-action";

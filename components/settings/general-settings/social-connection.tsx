@@ -80,10 +80,74 @@ export function SocialConnectionSettings() {
 							Connect your social accounts to automatically share your GitHub
 							commits as engaging posts.
 						</p>
-						<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-3">
-							<p className="text-xs text-zinc-400">
-								Loading connection instructions...
-							</p>
+						<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-4">
+							<ol className="space-y-3 text-left text-sm text-zinc-400">
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										1
+									</span>
+									<span>Click &#34;Connect LinkedIn&#34;</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										2
+									</span>
+									<span>
+										Once connected, you&#39;ll be redirected back to the app
+									</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										3
+									</span>
+									<span>Click &#34;Generate Webhook&#34;</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										4
+									</span>
+									<span>You&#39;ll see your Webhook URL and Secret Key</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										5
+									</span>
+									<span>
+										Copy the Webhook URL → head to your GitHub repo → Settings →
+										Webhooks
+									</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										6
+									</span>
+									<span>Click &#34;Add Webhook&#34;</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										7
+									</span>
+									<span>
+										Paste the URL, then copy the Secret Key from the app
+									</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										8
+									</span>
+									<span>
+										Paste it into GitHub&#39;s &#34;Secret&#34; field and save
+									</span>
+								</li>
+								<li className="flex items-start">
+									<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+										9
+									</span>
+									<span>
+										Back in the app, choose the branch you want to track
+									</span>
+								</li>
+							</ol>
 						</div>
 					</Card>
 				</div>
@@ -165,7 +229,6 @@ export function SocialConnectionSettings() {
 						</Button>
 					</Card> */}
 				</div>
-
 				<Card className="border-[#232323] bg-[#121212] p-4">
 					<h3 className="mb-2 text-sm font-medium text-zinc-300">
 						How to connect your accounts
@@ -174,30 +237,74 @@ export function SocialConnectionSettings() {
 						Connect your social accounts to automatically share your GitHub
 						commits as engaging posts.
 					</p>
-					<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-3">
-						<p className="mb-2 text-xs text-zinc-400">
-							<span className="text-[#4F46E5]">1.</span> Click the
-							&ldquo;Connect&#34; button for the platform you want to use
-						</p>
-						<p className="mb-2 text-xs text-zinc-400">
-							<span className="text-[#4F46E5]">2.</span> Authorize Push to Post
-							to access your account
-						</p>
-						<p className="text-xs text-zinc-400">
-							<span className="text-[#4F46E5]">3.</span> Your commits will
-							automatically be formatted for that platform
-						</p>
-						<div className="mt-3 border-t border-[#232323] pt-3">
-							<a
-								href="https://youtu.be/sKM3s-ZLXfo?si=haMyzRqDVMgeYWCr"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center text-xs text-[#4F46E5] hover:text-[#4338CA]"
-							>
-								<ExternalLink className="mr-1 h-3 w-3" />
-								Watch our tutorial video
-							</a>
-						</div>
+					<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-4">
+						<ol className="space-y-3 text-left text-sm text-zinc-400">
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									1
+								</span>
+								<span>Click &#34;Connect LinkedIn&#34;</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									2
+								</span>
+								<span>
+									Once connected, you&#39;ll be redirected back to the app
+								</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									3
+								</span>
+								<span>Click &#34;Generate Webhook&#34;</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									4
+								</span>
+								<span>You&#39;ll see your Webhook URL and Secret Key</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									5
+								</span>
+								<span>
+									Copy the Webhook URL → head to your GitHub repo → Settings →
+									Webhooks
+								</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									6
+								</span>
+								<span>Click &#34;Add Webhook&#34;</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									7
+								</span>
+								<span>
+									Paste the URL, then copy the Secret Key from the app
+								</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									8
+								</span>
+								<span>
+									Paste it into GitHub&#39;s &#34;Secret&#34; field and save
+								</span>
+							</li>
+							<li className="flex items-start">
+								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
+									9
+								</span>
+								<span>
+									Back in the app, choose the branch you want to track
+								</span>
+							</li>
+						</ol>
 					</div>
 				</Card>
 			</div>

@@ -1,8 +1,9 @@
 "use client";
 import { ArrowUpRight, Calendar, Crown, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -27,73 +28,88 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
-import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useUserStore from "@/lib/zustand/useuser-store";
-import { authSubscribe } from "@/server-actions/auth/subscribe";
 
 const Page = () => {
+	const router = useRouter();
+	const userStore = useUserStore();
 	const hasAccess = useCheckAccess();
+	const { data: userDetails } = useSession();
 	const userHasLifetimeAccess = useLifetimeAccess();
+	const [postFilter, setPostFilter] = useState("all");
+	const [isLoading, setIsLoading] = React.useState(true);
 	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
 		useRetrieveMetrics();
-	const [isLoading, setIsLoading] = React.useState(false);
-	const { data: userDetails } = useSession();
-	const userStore = useUserStore();
-	const [postFilter, setPostFilter] = useState("all");
+	const [firstNameFromFull, lastNameFromFull] = userStore.full_name
+		? userStore.full_name.split(" ")
+		: ["", ""];
+	useEffect(() => {
+		// Check if document is fully loaded
+		if (document.readyState === "complete") {
+			setIsLoading(false);
+		} else {
+			// Add event listener for when everything is loaded
+			const handleLoad = () => {
+				setIsLoading(false);
+			};
 
+			window.addEventListener("load", handleLoad);
+
+			// Alternative approach: Use a timeout to ensure minimum loading time
+			// This helps prevent flickering if the page loads very quickly
+			const timer = setTimeout(() => {
+				setIsLoading(false);
+			}, 500);
+
+			// Cleanup
+			return () => {
+				window.removeEventListener("load", handleLoad);
+				clearTimeout(timer);
+			};
+		}
+	}, []);
 	// Get first name only for welcome message
 	const firstName =
 		userDetails?.user?.first_name || userStore.full_name?.split(" ")[0] || "";
 
 	async function subscribePlan() {
-		try {
-			const planData = await getDecryptedCookie("subscribing");
-
-			if (hasAccess) {
-				toast.info("You already have an active subscription.");
-				return;
-			}
-
-			setIsLoading(true);
-			const toastId = toast.loading("Preparing your checkout...");
-
-			if (planData?.plan === "Pro") {
-				const response = await authSubscribe({
-					plans: "Pro",
-					billingCycle: planData.type as unknown as "monthly" | "annual",
-				});
-
-				if (response?.success && response?.data?.checkout_url) {
-					toast.dismiss(toastId);
-					toast.success("Redirecting to checkout...");
-					window.open(response.data.checkout_url, "_blank");
-				} else {
-					toast.error("Something went wrong. Please try again.");
-				}
-			} else if (planData?.plan === "Lifetime Deal") {
-				const response = await authSubscribe({ plans: "Lifetime Deal" });
-
-				if (response?.success && response?.data?.checkout_url) {
-					toast.dismiss(toastId);
-					toast.success("Redirecting to checkout...");
-					window.open(response.data.checkout_url, "_blank");
-				} else {
-					toast.error("Something went wrong. Please try again.");
-				}
-			}
-		} catch {
-			toast.error("An error occurred. Please try again.");
-		} finally {
-			setIsLoading(false);
+		if (hasAccess) {
+			toast.info("You already have an active subscription.");
+			return;
 		}
+		router.push("/pricing");
 	}
+
+	const userData = userStore.justUpdated
+		? {
+				firstName: firstNameFromFull || userDetails?.user?.first_name || "",
+				lastName: lastNameFromFull || userDetails?.user?.last_name || "",
+				email: userStore.email || userDetails?.user?.email || "",
+			}
+		: status === "loading"
+			? {
+					firstName: firstNameFromFull || "",
+					lastName: lastNameFromFull || "",
+					email: userStore.email || "",
+				}
+			: userDetails?.user?.type === "magic" && status === "authenticated"
+				? {
+						firstName: userDetails?.user?.first_name || firstNameFromFull || "",
+						lastName: userDetails?.user?.last_name || lastNameFromFull || "",
+						email: userDetails?.user?.email || userStore.email || "",
+					}
+				: {
+						firstName: firstNameFromFull || userDetails?.user?.first_name || "",
+						lastName: lastNameFromFull || userDetails?.user?.last_name || "",
+						email: userStore.email || userDetails?.user?.email || "",
+					};
 
 	return (
 		<section className="flex h-full w-full flex-col space-y-8 bg-[#0A0A0A] p-6">
 			{/* Header - Simplified welcome message */}
 			<div className="flex flex-col space-y-1">
 				<h1 className="text-2xl font-medium text-white">
-					{firstName ? `Welcome, ${firstName}` : "Dashboard"}
+					{firstName ? `Welcome, ${userData.firstName}` : "Dashboard"}
 				</h1>
 				<p className="text-zinc-400">
 					Your content overview and recent activity
@@ -176,33 +192,25 @@ const Page = () => {
 								Lifetime Access
 							</Button>
 						) : hasAccess ? (
-							<Link href="/pricing" className="w-full">
-								<Button
-									size="sm"
-									disabled
-									variant="outline"
-									className="w-full border-[#232323] bg-[#1A1A1A] text-zinc-500"
-								>
-									Active Pro Plan
-								</Button>
-							</Link>
+							// <Link href="/pricing" className="w-full">
+							<Button
+								size="sm"
+								disabled
+								variant="outline"
+								className="w-full border-[#232323] bg-[#1A1A1A] text-zinc-500"
+							>
+								Active Pro Plan
+							</Button>
 						) : (
-							<Link href="/pricing" className="w-full">
-								<Button
-									size="sm"
-									disabled={isLoading}
-									className="w-full bg-[#4F46E5] text-white hover:bg-[#4338CA]"
-								>
-									{isLoading ? (
-										<div className="flex items-center">
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											<span>Processing...</span>
-										</div>
-									) : (
-										<span>Upgrade to Pro</span>
-									)}
-								</Button>
-							</Link>
+							<Button
+								onClick={() => subscribePlan()}
+								size="sm"
+								disabled={isMetricsLoading || isLoading}
+								variant={"secondary"}
+								className="w-full"
+							>
+								<span>Upgrade to Pro</span>
+							</Button>
 						)}
 					</CardFooter>
 				</Card>
