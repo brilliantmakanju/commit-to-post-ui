@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellDot, Bot, Settings2, SquareTerminal } from "lucide-react";
+import {
+	BellDot,
+	Bot,
+	Settings2,
+	SquareTerminal,
+	WalletCardsIcon,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -30,6 +36,11 @@ const navigationItems = [
 		title: "Post",
 		url: "/posts",
 		icon: Bot,
+	},
+	{
+		title: "Billing",
+		url: "/billing",
+		icon: WalletCardsIcon,
 	},
 	{
 		title: "Notifications",

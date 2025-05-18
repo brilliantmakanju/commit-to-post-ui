@@ -80,7 +80,7 @@ export const pricingData: PricingData = {
 				previousPrice: 199,
 				spotsLeft: 200,
 				endsIn: 79, // 72-hour countdown
-				productId: "pri_01jvd4vds54dbq8dvkp21hvc2p",
+				productId: "pri_01jvjv1c6y0zme3awz0zrndprk",
 			},
 			features: [
 				{ name: "Everything in Pro", available: true },
@@ -100,8 +100,8 @@ export const pricingData: PricingData = {
 					annual: 120,
 				},
 				productIds: {
-					monthly: "pri_01jv2x7pk6c6qvnwghcdd9b65z",
-					annual: "pri_01jvd4rxjryqv6ey0hxhksgba3",
+					monthly: "pri_01jvjty2hpznp9yag1reeax2my",
+					annual: "pri_01jvjtzj91vpyndb4qc6xwk5mm",
 				},
 			},
 			features: [

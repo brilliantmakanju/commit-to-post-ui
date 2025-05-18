@@ -53,7 +53,7 @@ export default function PaddleCheckout({
 	useEffect(() => {
 		initializePaddle({
 			environment: environment,
-			token: process.env.NEXT_PUBLIC_PADDLE_API_KEY || "",
+			token: process.env.NEXT_PUBLIC_PADDLE_TOKEN || "",
 		})
 			.then(setPaddle)
 			.catch(onError);
