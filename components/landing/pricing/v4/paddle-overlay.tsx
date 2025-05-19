@@ -32,10 +32,8 @@ interface PaddleCheckoutProps {
 
 export default function PaddleCheckout({
 	theme,
-	onClose,
 	onError,
 	children,
-	onSuccess,
 	productId,
 	environment,
 	displayMode,
