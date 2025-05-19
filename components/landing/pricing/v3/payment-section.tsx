@@ -35,9 +35,9 @@ export default function PricingSection() {
 
 	// Sort plans to ensure popular plan is in the middle
 	const sortedPlans = [...pricingData.plans].sort((a, b) => {
-		if (a.popular) return 1;
+		if (a.popular) return 0;
 		if (b.popular) return -1;
-		return 0;
+		return -1;
 	});
 
 	useEffect(() => {
@@ -276,11 +276,13 @@ export default function PricingSection() {
 											locale="en"
 											theme="light"
 											displayMode="overlay"
-											environment="sandbox"
+											environment={
+												process.env
+													.NEXT_PUBLIC_PADDLE_ENVIRONMENT as unknown as
+													| "sandbox"
+													| "production"
+											}
 											productId={productId}
-											onClose={() => console.log("Checkout closed")}
-											onError={error => console.error("Error:", error)}
-											onSuccess={() => console.log("Subscription successful!")}
 										>
 											<Button
 												className={cn(

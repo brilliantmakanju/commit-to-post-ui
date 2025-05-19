@@ -21,24 +21,20 @@ interface PaddleCheckoutProps {
 	locale: string;
 	productId: string;
 	successUrl?: string;
-	onClose: () => void;
-	onSuccess: () => void;
 	theme: "dark" | "light";
 	children: React.ReactNode;
-	onError: (error: any) => void;
 	displayMode: "overlay" | "inline";
 	environment: "sandbox" | "production";
 }
 
 export default function PaddleCheckout({
 	theme,
-	onError,
 	children,
 	productId,
 	environment,
 	displayMode,
 	locale = "en",
-	successUrl = "http://localhost:3000/success",
+	successUrl = process.env.NEXT_PUBLIC_PADDLE_SUCCESS,
 }: PaddleCheckoutProps) {
 	const hasAccess = useCheckAccess();
 
@@ -52,10 +48,8 @@ export default function PaddleCheckout({
 		initializePaddle({
 			environment: environment,
 			token: process.env.NEXT_PUBLIC_PADDLE_TOKEN || "",
-		})
-			.then(setPaddle)
-			.catch(onError);
-	}, [environment, onError]);
+		}).then(setPaddle);
+	}, [environment]);
 
 	const handleCheckout = async () => {
 		if (paddle) {
@@ -101,8 +95,7 @@ export default function PaddleCheckout({
 							// 	successUrl: successUrl,
 							// },
 						});
-					} catch (error) {
-						onError?.(error);
+					} catch {
 					} finally {
 						setLoading(false);
 					}
