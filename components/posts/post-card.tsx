@@ -347,10 +347,18 @@ const PostCard: React.FC<PostCardProps> = ({
 								className="w-full rounded-md border border-zinc-800 bg-zinc-950 text-zinc-300"
 								selected={rescheduleDate}
 								onSelect={setRescheduleDate}
-								disabled={date =>
-									date < new Date() ||
-									date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-								}
+								disabled={date => {
+									// Get today's date and set time to midnight for proper comparison
+									const today = new Date();
+									today.setHours(0, 0, 0, 0);
+
+									// Calculate date 2 weeks from today
+									const twoWeeksFromNow = new Date(today);
+									twoWeeksFromNow.setDate(today.getDate() + 14);
+
+									// Disable dates before today or after 2 weeks from today
+									return date < today || date > twoWeeksFromNow;
+								}}
 							/>
 						</div>
 						<div className="flex flex-col items-start justify-start gap-4">
