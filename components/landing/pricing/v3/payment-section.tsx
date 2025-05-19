@@ -1,9 +1,6 @@
-/* eslint-disable import/no-unresolved */
 "use client";
 
 import { AlertCircle, Check, Clock, Users, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { type Key, useEffect, useState } from "react";
 
 import SubAuthModal from "@/components/auth/sub-modal";
@@ -35,13 +32,12 @@ export default function PricingSection() {
 		"monthly",
 	);
 	const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
-	const router = useRouter();
 
 	// Sort plans to ensure popular plan is in the middle
 	const sortedPlans = [...pricingData.plans].sort((a, b) => {
 		if (a.popular) return 1;
-		if (b.popular) return 0;
-		return -1;
+		if (b.popular) return -1;
+		return 0;
 	});
 
 	useEffect(() => {

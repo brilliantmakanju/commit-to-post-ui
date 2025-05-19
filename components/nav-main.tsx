@@ -27,8 +27,6 @@ import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
 import useLogoutStore from "@/lib/zustand/logout-store";
 
-import { Skeleton } from "./ui/skeleton";
-
 interface NavItem {
 	title: string;
 	url: string;
@@ -50,10 +48,10 @@ export function NavMain({
 	isLoading: parentLoading = false,
 }: NavMainProps) {
 	const { status } = useSession();
-	const { data: billingUrl } = useBillingPortal();
+	const hasAccess = useCheckAccess();
 	const logoutStore = useLogoutStore();
 	const sessionLoading = status === "loading";
-	const hasAccess = useCheckAccess();
+	const { data: billingUrl } = useBillingPortal();
 	const { has_unread } = useRetrieveUnreadCount();
 	const userHasLifetimeAccess = useLifetimeAccess();
 	// Combined loading state from both session and parent
