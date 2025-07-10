@@ -68,6 +68,7 @@ export default function Layout({
 				}
 			>
 				<Suspense>
+					<MaintenanceBanner />
 					<TopNavigation />
 					<main
 						role="main"
@@ -90,7 +91,6 @@ export default function Layout({
 					</main>
 					<Toaster />
 					<Footer />
-					<MaintenanceBanner />
 					<MaintenanceModal />
 					<MaintenanceCornerBanner />
 					<Analytics />
