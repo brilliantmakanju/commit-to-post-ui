@@ -2,11 +2,11 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-	BellDot,
-	Bot,
-	Settings2,
-	SquareTerminal,
-	WalletCardsIcon,
+	Bell,
+	CreditCard,
+	FolderGit2,
+	LayoutDashboard,
+	Settings,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -29,28 +29,27 @@ const navigationItems = [
 	{
 		title: "Dashboard",
 		url: "/dashboard",
-		icon: SquareTerminal,
-		isActive: true,
+		icon: LayoutDashboard,
 	},
 	{
-		title: "Post",
-		url: "/posts",
-		icon: Bot,
+		title: "Repositories",
+		url: "/repositories",
+		icon: FolderGit2,
 	},
 	{
 		title: "Billing",
 		url: "/billing",
-		icon: WalletCardsIcon,
+		icon: CreditCard,
 	},
 	{
 		title: "Notifications",
 		url: "/notifications",
-		icon: BellDot,
+		icon: Bell,
 	},
 	{
 		title: "Settings",
 		url: "/settings",
-		icon: Settings2,
+		icon: Settings,
 		items: [],
 	},
 ];

@@ -109,13 +109,12 @@ export function TeamSwitcher({
 		? useOrganizationStore.getState().organization
 		: undefined;
 
-		const isDropdownDisabled =
+	const isDropdownDisabled =
 		!mounted ||
 		(teams.length === 0 && !storedOrg) ||
 		logoutStore.logout ||
 		(isLoading && (!storedOrg || storedOrg.name === "")) ||
 		(!isLoading && teams.length === 0 && !organization);
-
 
 	if (!mounted || (teams.length === 0 && !storedOrg) || logoutStore.logout) {
 		return (
@@ -252,17 +251,16 @@ export function TeamSwitcher({
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								className="flex items-center justify-center gap-2 p-2"
-								// onClick={() => setOpen(true)}
+								className="flex w-full items-center justify-center gap-2 p-2"
+								onClick={() => setOpen(true)}
 							>
-								{/* <div className="flex size-6 items-center justify-center rounded-md border bg-background"> */}
-								{/* <Plus className="size-4" /> */}
-								{/* </div> */}
+								<div className="flex size-6 items-center justify-center rounded-md border bg-background">
+									<Plus className="size-4" />
+								</div>
 								<div className="text-center font-medium text-muted-foreground">
-									{/* {hasAccess
+									{hasAccess
 										? "Create Organization"
-										: "Upgrade to Create Organization"} */}
-									Feature coming soon
+										: "Upgrade to Create Organization"}
 								</div>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -308,7 +306,7 @@ export function TeamSwitcher({
 					)}
 				</DropdownMenu>
 			</SidebarMenuItem>
-			{/* <CreateOrganizationModal open={open} onOpenChange={setOpen} /> */}
+			<CreateOrganizationModal open={open} onOpenChange={setOpen} />
 		</SidebarMenu>
 	);
 }

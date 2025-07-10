@@ -2,6 +2,7 @@
 "use client";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -12,6 +13,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useUserStore from "@/lib/zustand/useuser-store";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 
 import { VerificationAnimation } from "./verification-sub-modal";
@@ -21,6 +23,8 @@ export default function MagicVerifyModal() {
 	const [verificationState, setVerificationState] = useState<
 		"verifying" | "success" | "error"
 	>("verifying");
+	const { data } = useSession();
+	const userStore = useUserStore();
 	const [errorMessage, setErrorMessage] = useState<string>(
 		"The magic link is invalid or has expired",
 	);
@@ -49,6 +53,9 @@ export default function MagicVerifyModal() {
 					setVerificationState("error");
 				} else {
 					setVerificationState("success");
+					if (data) {
+						userStore.setUser({ github_connected: data.user.github_connected });
+					}
 					setTimeout(() => {
 						globalThis.window.location.replace("/dashboard");
 					}, 2000);
@@ -65,7 +72,7 @@ export default function MagicVerifyModal() {
 			verifyToken(getToken);
 			// closeModal();
 		}
-	}, [searchParams, closeModal]);
+	}, [searchParams, closeModal, data, userStore]);
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center p-4">

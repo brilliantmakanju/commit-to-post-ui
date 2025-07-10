@@ -2,72 +2,64 @@
 
 import { z } from "zod";
 
-import { apiClient } from "../../lib/utils/api-client";
+import { apiClient } from "@/lib/utils/api-client";
 
-// Define a schema for the update post parameters
+// Schema with repo_id added
 const updatePostSchema = z.object({
-	id: z.string().uuid({
-		message: "Invalid post ID. Must be a valid UUID.",
-	}),
+	id: z.string().uuid({ message: "Invalid post ID." }),
+	repo_id: z.string().uuid({ message: "Invalid repo ID." }),
 	content: z
 		.string()
-		.min(1, {
-			message: "Content must not be empty.",
-		})
-		.max(1500, {
-			message: "Content must not exceed 1500 characters.",
-		}),
+		.min(1, { message: "Post content cannot be empty." })
+		.max(1500, { message: "Post content must not exceed 1500 characters." }),
 });
 
 export const updatePost = async (
+	repo_id: string,
 	postId: string,
 	content: string,
 ): Promise<{
 	success: boolean;
-	data: any;
+	message?: string;
+	data?: any;
 }> => {
+	// Validate input
+	const validation = updatePostSchema.safeParse({
+		id: postId,
+		repo_id,
+		content,
+	});
+
+	if (!validation.success) {
+		return {
+			success: false,
+			message: validation.error.errors[0]?.message ?? "Invalid input.",
+		};
+	}
+
 	try {
-		// Validate the incoming data against the schema
-		const validatedData = updatePostSchema.parse({
-			id: postId,
+		const url = `/api/v1/posts/?id=${postId}&repo_id=${repo_id}`;
+
+		const response = await apiClient.put(url, {
 			content: content,
 		});
 
-		// Build the URL with the post ID as a query parameter
-		const url = `/api/v1/posts/?id=${validatedData.id}`;
-
-		// Make the PUT request
-		const response = await apiClient.put(url, {
-			content: validatedData.content,
-		});
-
-		// Check for a successful status code
 		if (response.status !== 200) {
-			throw new Error(
-				`Failed to update post. Server responded with status ${response.status}`,
-			);
+			return {
+				success: false,
+				message: `Failed to update post. Server responded with ${response.status}`,
+			};
 		}
 
-		// Return the updated post data
 		return {
 			success: true,
 			data: response.data,
+			message: "Post updated successfully.",
 		};
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			const errorMessages = error.errors.map(error_ => ({
-				field: error_.path.join("."),
-				message: error_.message,
-			}));
-			throw new Error(`Validation failed: ${JSON.stringify(errorMessages)}`);
-		}
-
-		if (error instanceof Error) {
-			throw new TypeError(`Failed to update post: ${error.message}`);
-		}
-
-		throw new Error(
-			"An unexpected error occurred while updating the post. Please try again later.",
-		);
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error?.message ?? "Unexpected error while updating post.",
+		};
 	}
 };

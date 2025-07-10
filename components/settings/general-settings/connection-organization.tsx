@@ -3,8 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, Loader2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useRef, useState } from "react";
 import type { z } from "zod";
 
 import {
@@ -14,92 +13,137 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import useUserStore from "@/lib/zustand/useuser-store";
 import type { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
+import { connectGithub } from "@/server-actions/user-actions/connect-github";
 
-interface connectionStatus {
-	connecting: boolean;
+interface ConnectionStatus {
 	code: string;
+	connecting: boolean;
 	closeModal: (value: boolean) => void;
+	type: "github" | "linkedin" | "twitter" | "slack" | "discord";
 }
 
-const onConnectAccount = async (
-	values: z.infer<typeof connectAccountSchema>,
+// ----- Shared connection logic -----
+const connectSocialAccount = async (
+	type: "github" | "linkedin" | "twitter" | "slack" | "discord",
+	code: string,
+	setMessage: (message: string) => void,
+	setStatus: (status: "success" | "error") => void,
+	closeModal: (value: boolean) => void,
+	queryClient: ReturnType<typeof useQueryClient>,
+	pathname: string,
+	searchParams: URLSearchParams,
+	router: ReturnType<typeof useRouter>,
 ) => {
 	try {
-		const response = await postLinkedInConnection(values);
+		const values = { code };
+		const response =
+			type === "github"
+				? await connectGithub(values as z.infer<typeof connectAccountSchema>)
+				: await postLinkedInConnection(values);
 
-		if (response.success) {
-			toast.success("Your LinkedIn account has been connected successfully.");
-			return response;
+		if (response?.success) {
+			// Create a copy of current search params
+			const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+			// Always remove `code`
+			nextSearchParams.delete("code");
+
+			// Remove `github` only if it exists
+			if (nextSearchParams.has("github")) {
+				nextSearchParams.delete("github");
+			}
+
+			// Replace current URL with cleaned-up one
+			router.replace(`${pathname}?${nextSearchParams.toString()}`);
+
+			// Set connection status
+			setStatus("success");
+
+			setMessage(
+				type === "github"
+					? "Your Github account connected successfully!"
+					: "Your LinkedIn account has been connected successfully!",
+			);
+
+			// Invalidate relevant queries
+			if (type === "linkedin") {
+				await queryClient.invalidateQueries({
+					queryKey: ["retrieving_webhooks"],
+				});
+				await queryClient.invalidateQueries({
+					queryKey: ["organization-ownership"],
+				});
+				await queryClient.invalidateQueries({
+					queryKey: ["retrieving_social_status"],
+				});
+			}
+
+			closeModal(false);
 		} else {
-			toast.error(response.message);
-			return {
-				success: false,
-			};
+			setStatus("error");
+			setMessage(response?.message || "Connection failed");
+			setTimeout(() => closeModal(false), 3000);
 		}
 	} catch {
-		toast.error("LinkedIn connection failed.");
-		return {
-			success: false,
-		};
+		setStatus("error");
+		setMessage("Connection failed. Please try again.");
+		setTimeout(() => closeModal(false), 3000);
 	}
 };
 
+// ----- Main component -----
 const SocialConnectCallback = ({
-	connecting,
 	code,
+	type,
+	connecting,
 	closeModal,
-}: connectionStatus) => {
+}: ConnectionStatus) => {
 	const router = useRouter();
 	const pathname = usePathname();
-	const queryClient = useQueryClient();
 	const searchParams = useSearchParams();
+	const queryClient = useQueryClient();
+	const userStore = useUserStore();
 
 	const [status, setStatus] = useState<"connecting" | "success" | "error">(
 		"connecting",
 	);
-	const [message, setMessage] = useState<string>("");
+	const [message, setMessage] = useState("");
+
+	// Prevent double-execution in development
+	const hasRunRef = useRef(false);
 
 	useEffect(() => {
-		const handleConnection = async () => {
-			try {
-				const connectionRequest = await onConnectAccount({ code });
+		if (hasRunRef.current) return;
+		hasRunRef.current = true;
 
-				if (connectionRequest?.success) {
-					const nextSearchParams = new URLSearchParams(searchParams.toString());
-					nextSearchParams.delete("code");
+		if (code && type) {
+			connectSocialAccount(
+				type,
+				code,
+				setMessage,
+				setStatus,
+				closeModal,
+				queryClient,
+				pathname,
+				searchParams,
+				router,
+			);
+		}
+	}, [
+		code,
+		type,
+		closeModal,
+		queryClient,
+		userStore,
+		pathname,
+		searchParams,
+		router,
+	]);
 
-					router.replace(`${pathname}?${nextSearchParams}`);
-					setStatus("success");
-					setMessage("Your account has been successfully connected!");
-					closeModal(false);
-
-					// Refresh queries
-					queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
-					queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
-					queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
-					queryClient.invalidateQueries({
-						queryKey: ["organization-ownership"],
-					});
-					queryClient.invalidateQueries({
-						queryKey: ["retrieving_social_status"],
-					});
-				} else {
-					setStatus("error");
-					setMessage("Connection failed. Please try again.");
-				}
-			} catch {
-				setStatus("error");
-				setMessage("Connection failed. Please try again.");
-				setTimeout(() => closeModal(false), 3000);
-			}
-		};
-
-		handleConnection();
-	}, [searchParams, code, router, pathname, closeModal, queryClient]);
-
+	// Prevent background scroll when modal is open
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
 		return () => {

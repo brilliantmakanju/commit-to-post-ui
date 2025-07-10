@@ -1,11 +1,14 @@
 "use client";
 
+import { UUID } from "node:crypto";
+
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { useState } from "react";
 
 import { fetchPosts } from "@/server-actions/core/get-posts";
 
+import { AddRepositoryModal } from "../repositories/add-repo";
 import Pagination from "./pagination";
 import PostFilters from "./post-filter";
 import PostList from "./post-list";
@@ -110,6 +113,7 @@ export default function Posts() {
 		queryKey: ["posts", currentPage],
 		queryFn: async () => {
 			const result = await fetchPosts({
+				repo_id: "kds" as UUID,
 				page_size: currentPage,
 			});
 			if (!result.success) {
@@ -206,6 +210,14 @@ export default function Posts() {
 				currentPage={currentPage}
 				totalPages={totalPages}
 				onPageChange={setCurrentPage}
+			/>
+
+			<AddRepositoryModal
+				open={true}
+				onOpenChange={() => {}}
+				onSuccess={() => {
+					// Refresh repositories list
+				}}
 			/>
 		</div>
 	);

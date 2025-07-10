@@ -1,29 +1,63 @@
 "use client";
 
-import { ExternalLink, Github, Linkedin, Loader2, Twitter } from "lucide-react";
+import {
+	ExternalLink,
+	Github,
+	GithubIcon,
+	Linkedin,
+	Loader2,
+	Twitter,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useGithubConnectedStatus } from "@/hooks/settings/use-github-connected";
 import { useSocialStatus } from "@/hooks/settings/use-social-status";
+import useUserStore from "@/lib/zustand/useuser-store";
 import { getLinkedInConnection } from "@/server-actions/organizations/get-linkedin-connection";
+import { disconnectGithub } from "@/server-actions/user-actions/disconnect-github";
+
+const openConnectAccountDialog = async () => {
+	try {
+		const response = await getLinkedInConnection();
+
+		if (response.success) {
+			window.open(response.url);
+		} else {
+			toast.error(response.message);
+		}
+	} catch {
+		toast.error("Failed to connect LinkedIn account, try again later");
+	}
+};
 
 export function SocialConnectionSettings() {
+	const router = useRouter();
+	const userStore = useUserStore();
+	const githubConnected = useGithubConnectedStatus();
 	const { data: socialStatus, isFetching } = useSocialStatus();
 
-	// eslint-disable-next-line unicorn/consistent-function-scoping
-	const openConnectAccountDialog = async () => {
+	const disConnectGitHub = async () => {
 		try {
-			const response = await getLinkedInConnection();
+			const response = await disconnectGithub();
 
 			if (response.success) {
-				window.open(response.url);
+				userStore.setUser({ github_connected: false });
+				toast.success(response.message);
 			} else {
 				toast.error(response.message);
 			}
 		} catch {
-			toast.error("Failed to connect LinkedIn account, try again later");
+			toast.error("Failed to disconnect github account, try again later");
 		}
+	};
+
+	const authenticateWithGithub = async () => {
+		router.push(
+			`https://github.com/login/oauth/authorize?client_id=Ov23lif58r09RSWY316x&redirect_uri=${process.env.NEXT_PUBLIC_SITE_URL}/&scope=repo:read,read:user,admin:repo_hook`,
+		);
 	};
 
 	if (isFetching) {
@@ -70,9 +104,29 @@ export function SocialConnectionSettings() {
 								Loading...
 							</Button>
 						</Card>
+
+						<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+							<div className="flex items-center">
+								<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+									<Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+								</div>
+								<div>
+									<h3 className="text-sm font-medium text-zinc-300">
+										Loading...
+									</h3>
+									<p className="text-xs text-zinc-500">
+										Checking connection status
+									</p>
+								</div>
+							</div>
+							<Button disabled className="bg-[#232323] text-zinc-400">
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Loading...
+							</Button>
+						</Card>
 					</div>
 
-					<Card className="border-[#232323] bg-[#121212] p-4">
+					{/* <Card className="border-[#232323] bg-[#121212] p-4">
 						<h3 className="mb-2 text-sm font-medium text-zinc-300">
 							How to connect your accounts
 						</h3>
@@ -149,7 +203,7 @@ export function SocialConnectionSettings() {
 								</li>
 							</ol>
 						</div>
-					</Card>
+					</Card> */}
 				</div>
 			</div>
 		);
@@ -209,7 +263,7 @@ export function SocialConnectionSettings() {
 						</Button>
 					</Card>
 
-					{/* <Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+					<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
 						<div className="flex items-center">
 							<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
 								<Github className="h-5 w-5 text-white" />
@@ -221,92 +275,30 @@ export function SocialConnectionSettings() {
 								</p>
 							</div>
 						</div>
-						<Button className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
-							<span className="flex items-center">
-								<ExternalLink className="mr-2 h-4 w-4" />
-								Connected
-							</span>
+						<Button
+							onClick={() => {
+								githubConnected ? disConnectGitHub() : authenticateWithGithub();
+							}}
+							className={
+								githubConnected
+									? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+									: "bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+							}
+						>
+							{githubConnected ? (
+								<span className="flex items-center">
+									<ExternalLink className="mr-2 h-4 w-4" />
+									Disconnect
+								</span>
+							) : (
+								<span className="flex items-center">
+									<GithubIcon className="mr-2 h-4 w-4" />
+									Connect
+								</span>
+							)}
 						</Button>
-					</Card> */}
+					</Card>
 				</div>
-				<Card className="border-[#232323] bg-[#121212] p-4">
-					<h3 className="mb-2 text-sm font-medium text-zinc-300">
-						How to connect your accounts
-					</h3>
-					<p className="mb-3 text-sm text-zinc-500">
-						Connect your social accounts to automatically share your GitHub
-						commits as engaging posts.
-					</p>
-					<div className="rounded-md border border-[#232323] bg-[#1A1A1A] p-4">
-						<ol className="space-y-3 text-left text-sm text-zinc-400">
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									1
-								</span>
-								<span>Click &#34;Connect LinkedIn&#34;</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									2
-								</span>
-								<span>
-									Once connected, you&#39;ll be redirected back to the app
-								</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									3
-								</span>
-								<span>Click &#34;Generate Webhook&#34;</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									4
-								</span>
-								<span>You&#39;ll see your Webhook URL and Secret Key</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									5
-								</span>
-								<span>
-									Copy the Webhook URL → head to your GitHub repo → Settings →
-									Webhooks
-								</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									6
-								</span>
-								<span>Click &#34;Add Webhook&#34;</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									7
-								</span>
-								<span>
-									Paste the URL, then copy the Secret Key from the app
-								</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									8
-								</span>
-								<span>
-									Paste it into GitHub&#39;s &#34;Secret&#34; field and save
-								</span>
-							</li>
-							<li className="flex items-start">
-								<span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-white">
-									9
-								</span>
-								<span>
-									Back in the app, choose the branch you want to track
-								</span>
-							</li>
-						</ol>
-					</div>
-				</Card>
 			</div>
 		</div>
 	);

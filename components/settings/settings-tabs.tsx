@@ -34,6 +34,9 @@ export function SettingsTabs() {
 
 	const [mounted, setMounted] = useState(false);
 	const [socialCode, setSocialCode] = useState("");
+	const [socialType, setSocialType] = useState<
+		"github" | "linkedin" | "twitter" | "slack" | "discord"
+	>("linkedin");
 	const [activeTab, setActiveTab] = useState("general");
 	const [codeConnecting, setCodeConnecting] = useState(false);
 
@@ -41,12 +44,26 @@ export function SettingsTabs() {
 	const isOwner = ownershipData?.isOwner;
 
 	useEffect(() => {
-		const tab = searchParams.get("tab");
-		const code = searchParams.get("code");
+		const rawParams = globalThis.location.search;
+
+		// Fix the malformed query string
+		const fixedSearch = rawParams.replace("/&", "&"); // turns ?github=true/&code=... into ?github=true&code=...
+		const fixedParams = new URLSearchParams(fixedSearch);
+
+		const code = fixedParams.get("code");
+		const github = fixedParams.get("github") === "true";
+		const tab = fixedParams.get("tab");
 
 		if (code) {
-			setSocialCode(code);
-			setCodeConnecting(true);
+			if (github) {
+				setSocialCode(code);
+				setSocialType("github");
+				setCodeConnecting(true);
+			} else {
+				setSocialCode(code);
+				setCodeConnecting(true);
+				setSocialType("linkedin");
+			}
 		}
 
 		if (isOwner) {
@@ -56,8 +73,7 @@ export function SettingsTabs() {
 		}
 
 		setMounted(true);
-	}, [searchParams, isOwner]);
-
+	}, [isOwner]);
 	const handleTabChange = (value: string) => {
 		setActiveTab(value);
 		router.push(`/settings?tab=${value}`, { scroll: false });
@@ -111,6 +127,7 @@ export function SettingsTabs() {
 
 			{codeConnecting && (
 				<SocialConnectCallback
+					type={socialType}
 					closeModal={setCodeConnecting}
 					code={socialCode}
 					connecting={codeConnecting}

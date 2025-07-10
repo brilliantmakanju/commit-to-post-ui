@@ -19,7 +19,7 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/lib/zustand/logout-store";
 import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import useUserStore from "@/lib/zustand/useuser-store";
-import { signOut } from "@/server-actions/auth/signout";
+import { logout, signOut } from "@/server-actions/auth/signout";
 
 // Dynamically import non-critical components
 const SubPlanCheckout = dynamic(
@@ -37,13 +37,19 @@ interface AuthenticatedLayoutProps {
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const router = useRouter();
-	const { status } = useSession();
+	const { data: session, status } = useSession();
 
-	const logoutStore = useLogoutStore();
 	const userStore = useUserStore();
+	const logoutStore = useLogoutStore();
 	const organizationStore = useOrganizationStore();
 
 	const isClient = typeof globalThis !== "undefined";
+
+	useEffect(() => {
+		if (session?.user && !userStore.hasHydratedUser) {
+			userStore.setUser(session.user);
+		}
+	}, [session, userStore]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -56,11 +62,14 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 				if (!token) {
 					logoutStore.setLogout(true);
-					organizationStore.clearOrganization();
 					userStore.clearUser();
-					await clearCookies();
-					await signOut();
-					router.push("/");
+
+					organizationStore.clearOrganization();
+					clearCookies();
+
+					logout();
+					signOut({ redirect: false });
+					globalThis.location.href = "/";
 				}
 			} catch {
 				// Optionally log or handle cookie error

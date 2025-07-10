@@ -46,7 +46,9 @@ export default function PostList({ posts, showFullDate }: PostListProps) {
 					);
 				}
 				return (
-					<PostCard key={post.id} post={post} showFullDate={showFullDate} />
+					<>
+						{/* <PostCard key={post.id} post={post} showFullDate={showFullDate} /> */}
+					</>
 				);
 			})}
 		</div>

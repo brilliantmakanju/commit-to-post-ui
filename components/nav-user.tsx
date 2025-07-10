@@ -76,41 +76,15 @@ export function NavUser({
 					};
 
 	const logoutClient = async () => {
-		try {
-			// Set logout state to true immediately to prevent UI flickering
-			logoutStore.setLogout(true);
+		logoutStore.setLogout(true);
+		userStore.clearUser();
 
-			// Call the API to invalidate the user's session (blacklist token)
-			const { success } = await logout();
+		organizationStore.clearOrganization();
+		clearCookies();
 
-			// Clear all client-side data regardless of server response
-			userStore.clearUser();
-			organizationStore.clearOrganization();
-
-			// Clear cookies
-			await clearCookies();
-
-			// Sign out from NextAuth with no redirect
-			await signOut({ redirect: false });
-
-			// Navigate to home page
-			router.push("/");
-
-			// Display success/error message
-			if (!success) {
-				toast.warning(
-					"Server logout had issues, but you've been logged out locally",
-				);
-			}
-		} catch {
-			// Even if there's an error, ensure user is logged out locally
-			toast.error(
-				"Logout encountered an error, but you've been logged out locally",
-			);
-
-			// Force a router refresh to update UI state
-			router.refresh();
-		}
+		logout();
+		signOut({ redirect: false });
+		globalThis.location.href = "/";
 	};
 
 	if (status === "loading" || isLoadingAttachment) {

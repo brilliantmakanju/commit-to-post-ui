@@ -1,5 +1,7 @@
 "use client";
 
+import { UUID } from "node:crypto";
+
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { ChevronDown, Linkedin, Loader2, Twitter } from "lucide-react";
 import { useState } from "react";
@@ -83,7 +85,9 @@ export default function GroupedPostCard({
 		setIsLoading(true);
 		try {
 			// Delete all posts in the group
-			await Promise.all(group.posts.map(post => deletePost(post.id)));
+			await Promise.all(
+				group.posts.map(post => deletePost("" as UUID, post.id)),
+			);
 			setIsDeleteDialogOpen(false);
 			toast.success("Post group deleted successfully");
 		} catch {
@@ -221,9 +225,9 @@ export default function GroupedPostCard({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
-						{group.posts.map(post => (
+						{/* {group.posts.map(post => (
 							<PostCard key={post.id} post={post} showFullDate={showFullDate} />
-						))}
+						))} */}
 					</div>
 				</DialogContent>
 			</Dialog>

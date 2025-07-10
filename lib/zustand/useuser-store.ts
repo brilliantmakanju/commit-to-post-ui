@@ -7,25 +7,26 @@ interface UserPreferences {
 }
 
 interface UserState {
-	bio: string;
 	plan: string;
-	email: string;
 	last_name: string;
 	full_name: string;
 	first_name: string;
 	justUpdated: boolean;
+	hasHydratedUser: boolean;
 	github_connected: boolean;
 	google_connected: boolean;
 	subscription_status: string;
 	preferences: UserPreferences;
 	stripe_subscription_id: string;
+	bio: string | null | undefined;
+	email: string | null | undefined;
 	subscription_end_date: Date | undefined;
 }
 
 interface UserActions {
-	setUser: (user: Partial<UserState>) => void;
 	clearUser: () => void;
 	setJustUpdated: (value: boolean) => void;
+	setUser: (user: Partial<UserState>) => void;
 }
 
 const useUserStore = create<UserState & UserActions>()(
@@ -39,13 +40,14 @@ const useUserStore = create<UserState & UserActions>()(
 			first_name: "",
 			preferences: {},
 			justUpdated: false,
+			hasHydratedUser: false,
 			github_connected: false,
 			google_connected: false,
 			subscription_status: "",
 			stripe_subscription_id: "",
 			subscription_end_date: undefined,
 			setUser: user => {
-				set(state => ({ ...state, ...user }));
+				set(state => ({ ...state, ...user, hasHydratedUser: true }));
 			},
 			setJustUpdated: value => {
 				set({ justUpdated: value });
