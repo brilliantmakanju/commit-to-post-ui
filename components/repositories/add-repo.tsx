@@ -175,7 +175,7 @@ export function AddRepositoryModal({
 	const handleConnectGitHub = () => {
 		setIsLoading(true);
 		router.push(
-			`https://github.com/login/oauth/authorize?client_id=Ov23lif58r09RSWY316x&redirect_uri=${process.env.NEXT_PUBLIC_SITE_URL}/&scope=repo:read,read:user,admin:repo_hook`,
+			`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GIT_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_SITE_URL}/&scope=repo:read,read:user,admin:repo_hook`,
 		);
 	};
 
