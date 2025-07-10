@@ -106,8 +106,10 @@ const TopNavigation = () => {
 					exit={{ y: -100, opacity: 0 }}
 					transition={{ duration: 0.3 }}
 					className={`${
-						isScrolled ? "fixed left-0 right-0 top-4 z-20" : "relative lg:py-3"
-					} mx-auto w-[100%] max-w-7xl py-[5.6px] lg:px-10`}
+						isScrolled
+							? "fixed left-0 right-0 top-4 z-20"
+							: "relative lg:py-[20px]"
+					} mx-auto w-[100%] max-w-7xl py-[12.6px] lg:px-10`}
 				>
 					<div
 						className={`mx-auto rounded-xl ${
