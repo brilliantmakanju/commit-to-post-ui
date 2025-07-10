@@ -72,10 +72,9 @@ export function RepoHeader({ repo_id, onTogglePause }: RepoHeaderProps) {
 		return (
 			<div className="flex flex-col items-center justify-center gap-3 py-10 text-center text-red-400">
 				<AlertTriangle className="h-6 w-6" />
-				<h2 className="text-base font-semibold">Failed to load repository</h2>
-				<p className="text-sm text-zinc-500">
-					{error instanceof Error ? error.message : "Unknown error"}
-				</p>
+				<h2 className="text-base font-semibold">
+					Repo does not exists Failed to load repository
+				</h2>
 			</div>
 		);
 	}
