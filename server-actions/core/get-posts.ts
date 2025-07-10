@@ -41,7 +41,6 @@ export const fetchPosts = async ({
 		}
 
 		// Return the retrieved post data.
-		console.log(response, "Response");
 		return response;
 	} catch (error) {
 		if (error instanceof z.ZodError) {

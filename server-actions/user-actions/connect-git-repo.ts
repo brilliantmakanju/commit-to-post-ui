@@ -23,7 +23,6 @@ export const connectGithubRepoBatch = async (
 }> => {
 	try {
 		const parsed = githubRepoConnectBatchSchema.parse(payload);
-		console.log(parsed, "Parsed");
 
 		const response = await apiClient.post(
 			"/api/v1/managements/github/repo/connect/",

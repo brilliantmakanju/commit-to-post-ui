@@ -27,7 +27,7 @@ export const logout = async () => {
 		return response;
 	} catch (error: any) {
 		// Log the error on server side for debugging
-		console.error("Server logout error:", error);
+		// console.error("Server logout error:", error);
 
 		// Return error info to client
 		return {
@@ -44,7 +44,7 @@ export async function signOut(options = { redirect: false }) {
 		await naSignOut(options);
 		return { success: true };
 	} catch (error) {
-		console.error("NextAuth signOut error:", error);
+		// console.error("NextAuth signOut error:", error);
 		return { success: false, error };
 	}
 }
