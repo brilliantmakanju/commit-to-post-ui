@@ -11,6 +11,7 @@ import {
 	Pause,
 	PauseCircleIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,6 +40,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useGithubConnectedStatus } from "@/hooks/settings/use-github-connected";
 import { cn } from "@/lib/utils";
 import useUserStore from "@/lib/zustand/useuser-store";
 import { connectGithubRepoBatch } from "@/server-actions/user-actions/connect-git-repo";
@@ -95,18 +97,14 @@ export function AddRepositoryModal({
 	onSuccess,
 	onOpenChange,
 }: AddRepositoryModalProps) {
-	const userStore = useUserStore();
+	const router = useRouter();
 	const queryClient = useQueryClient();
-	const [currentStep, setCurrentStep] = useState(
-		userStore.github_connected ? 2 : 1,
-	);
 	const [isLoading, setIsLoading] = useState(false);
-	const [isGitHubConnected, setIsGitHubConnected] = useState(
-		userStore.github_connected,
-	);
-	const [selectedRepo, setSelectedRepo] = useState<string[]>([]);
+	const githubConnected = useGithubConnectedStatus();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [repoFilter, setRepoFilter] = useState("all");
+	const [selectedRepo, setSelectedRepo] = useState<string[]>([]);
+	const [currentStep, setCurrentStep] = useState(githubConnected ? 2 : 1);
 
 	const [repoSettings, setRepoSettings] = useState<Record<string, RepoSetting>>(
 		{},
@@ -128,7 +126,7 @@ export function AddRepositoryModal({
 			}
 			return result.data as GitHubReposResponse;
 		},
-		enabled: isGitHubConnected || userStore.github_connected,
+		enabled: githubConnected,
 	});
 
 	const repositories = gitHubData?.repos || [];
@@ -176,15 +174,9 @@ export function AddRepositoryModal({
 
 	const handleConnectGitHub = () => {
 		setIsLoading(true);
-		// Simulate OAuth flow
-		setTimeout(() => {
-			setIsLoading(false);
-			setIsGitHubConnected(true);
-			setCurrentStep(2);
-			toast.success("GitHub connected", {
-				description: "Successfully connected to your GitHub account.",
-			});
-		}, 2000);
+		router.push(
+			`https://github.com/login/oauth/authorize?client_id=Ov23lif58r09RSWY316x&redirect_uri=${process.env.NEXT_PUBLIC_SITE_URL}/&scope=repo:read,read:user,admin:repo_hook`,
+		);
 	};
 
 	const handleRepoSelection = (repoId: string) => {
@@ -232,7 +224,6 @@ export function AddRepositoryModal({
 		}
 
 		setCurrentStep(currentStep + 1);
-		console.log(selectedRepo.length);
 	};
 
 	const handleWebhookSetup = async () => {
@@ -344,7 +335,7 @@ export function AddRepositoryModal({
 						<div className="space-y-3">
 							<Button
 								onClick={handleConnectGitHub}
-								disabled={isLoading || userStore.github_connected}
+								disabled={isLoading || githubConnected}
 								className="w-full"
 								size="lg"
 							>
@@ -353,7 +344,7 @@ export function AddRepositoryModal({
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 										Connecting...
 									</>
-								) : userStore.github_connected ? (
+								) : githubConnected ? (
 									<>
 										<Check className="mr-2 h-4 w-4" />
 										Connected to GitHub
@@ -920,9 +911,7 @@ export function AddRepositoryModal({
 							isLoading ||
 							webhookStatus === "setting-up" ||
 							webhookStatus === "success" ||
-							(currentStep === 1 &&
-								!isGitHubConnected &&
-								!userStore.github_connected) ||
+							(currentStep === 1 && !githubConnected) ||
 							(currentStep === 2 && selectedRepo.length === 0)
 						}
 					>
