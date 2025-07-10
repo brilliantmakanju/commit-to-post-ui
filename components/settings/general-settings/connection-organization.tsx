@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import useUserStore from "@/lib/zustand/useuser-store";
 import type { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
-import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
+// import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
 import { connectGithub } from "@/server-actions/user-actions/connect-github";
 
 interface ConnectionStatus {
@@ -39,10 +39,12 @@ const connectSocialAccount = async (
 ) => {
 	try {
 		const values = { code };
-		const response =
-			type === "github"
-				? await connectGithub(values as z.infer<typeof connectAccountSchema>)
-				: await postLinkedInConnection(values);
+		const response = await connectGithub(
+			values as z.infer<typeof connectAccountSchema>,
+		);
+		// type === "github"
+		// 	?
+		// : await postLinkedInConnection(values);
 
 		if (response?.success) {
 			// Create a copy of current search params
@@ -52,9 +54,9 @@ const connectSocialAccount = async (
 			nextSearchParams.delete("code");
 
 			// Remove `github` only if it exists
-			if (nextSearchParams.has("github")) {
-				nextSearchParams.delete("github");
-			}
+			// if (nextSearchParams.has("github")) {
+			// 	nextSearchParams.delete("github");
+			// }
 
 			// Replace current URL with cleaned-up one
 			router.replace(`${pathname}?${nextSearchParams.toString()}`);
@@ -62,24 +64,23 @@ const connectSocialAccount = async (
 			// Set connection status
 			setStatus("success");
 
-			setMessage(
-				type === "github"
-					? "Your Github account connected successfully!"
-					: "Your LinkedIn account has been connected successfully!",
-			);
+			setMessage("Your Github account connected successfully!");
+			// type === "github"
+			// ?
+			// : "Your LinkedIn account has been connected successfully!",
 
 			// Invalidate relevant queries
-			if (type === "linkedin") {
-				await queryClient.invalidateQueries({
-					queryKey: ["retrieving_webhooks"],
-				});
-				await queryClient.invalidateQueries({
-					queryKey: ["organization-ownership"],
-				});
-				await queryClient.invalidateQueries({
-					queryKey: ["retrieving_social_status"],
-				});
-			}
+			// if (type === "linkedin") {
+			// 	await queryClient.invalidateQueries({
+			// 		queryKey: ["retrieving_webhooks"],
+			// 	});
+			// 	await queryClient.invalidateQueries({
+			// 		queryKey: ["organization-ownership"],
+			// 	});
+			// 	await queryClient.invalidateQueries({
+			// 		queryKey: ["retrieving_social_status"],
+			// 	});
+			// }
 
 			closeModal(false);
 		} else {

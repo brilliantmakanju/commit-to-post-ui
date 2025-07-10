@@ -36,8 +36,8 @@ const openConnectAccountDialog = async () => {
 export function SocialConnectionSettings() {
 	const router = useRouter();
 	const userStore = useUserStore();
+	const { isFetching } = useSocialStatus();
 	const githubConnected = useGithubConnectedStatus();
-	const { data: socialStatus, isFetching } = useSocialStatus();
 
 	const disConnectGitHub = async () => {
 		try {

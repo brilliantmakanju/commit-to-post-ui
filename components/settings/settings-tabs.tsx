@@ -30,7 +30,6 @@ const tabTitles = {
 
 export function SettingsTabs() {
 	const router = useRouter();
-	const searchParams = useSearchParams();
 
 	const [mounted, setMounted] = useState(false);
 	const [socialCode, setSocialCode] = useState("");
@@ -51,19 +50,12 @@ export function SettingsTabs() {
 		const fixedParams = new URLSearchParams(fixedSearch);
 
 		const code = fixedParams.get("code");
-		const github = fixedParams.get("github") === "true";
 		const tab = fixedParams.get("tab");
 
 		if (code) {
-			if (github) {
-				setSocialCode(code);
-				setSocialType("github");
-				setCodeConnecting(true);
-			} else {
-				setSocialCode(code);
-				setCodeConnecting(true);
-				setSocialType("linkedin");
-			}
+			setSocialCode(code);
+			setSocialType("github");
+			setCodeConnecting(true);
 		}
 
 		if (isOwner) {
