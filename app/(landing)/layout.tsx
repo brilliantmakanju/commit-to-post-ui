@@ -7,6 +7,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 
+import { MaintenanceBanner } from "@/components/general/micro/maintenance/maintenance-banner";
+import { MaintenanceCornerBanner } from "@/components/general/micro/maintenance/maintenance-corner-banner";
+import { MaintenanceModal } from "@/components/general/micro/maintenance/maintenance-modal";
 import Footer from "@/components/navigation/footer/footer";
 import TopNavigation from "@/components/navigation/top_navigation/top-navigation";
 
@@ -87,6 +90,9 @@ export default function Layout({
 					</main>
 					<Toaster />
 					<Footer />
+					<MaintenanceBanner />
+					<MaintenanceModal />
+					<MaintenanceCornerBanner />
 					<Analytics />
 				</Suspense>
 			</body>

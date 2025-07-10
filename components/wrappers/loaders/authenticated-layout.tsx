@@ -7,7 +7,7 @@ import React, { useEffect } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
-import TopNavigation from "@/components/dashboard/nav-top";
+import { MaintenanceCornerBanner } from "@/components/general/micro/maintenance/maintenance-corner-banner";
 import { RequestInterceptor } from "@/components/interceptor";
 import {
 	SidebarInset,
@@ -118,6 +118,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 						<Toaster />
 					</main>
 				</SidebarInset>
+				<MaintenanceCornerBanner />
 			</div>
 		</SidebarProvider>
 	);
