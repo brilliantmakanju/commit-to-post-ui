@@ -3,11 +3,12 @@ import { UUID } from "node:crypto";
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 // eslint-disable-next-line import/no-unresolved
 import { RepoHeader } from "@/components/repositories/header/repo-header";
 import { RepoTabs } from "@/components/repositories/repo-tabs";
+import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
 import { fetchPosts } from "@/server-actions/core/get-posts";
 
 interface WebhookLog {
@@ -60,7 +61,7 @@ const PAGE_SIZE = 50;
 
 const ViewRepo = () => {
 	const params = useParams();
-	const repoId = params?.id as UUID;
+	const repoId = useMemo(() => params?.id as UUID, [params?.id]);
 
 	// Pagination state
 	const [postsCurrentPage, setPostsCurrentPage] = useState<number>(1);
@@ -80,6 +81,8 @@ const ViewRepo = () => {
 		retry: 1,
 		enabled: !!repoId,
 	});
+
+	const { repoDetails } = useRepoSuperDetails(repoId);
 
 	const handlePostsPageChange = (page: number) => {
 		setPostsCurrentPage(page);

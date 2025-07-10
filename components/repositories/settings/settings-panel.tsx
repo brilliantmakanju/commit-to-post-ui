@@ -1,12 +1,28 @@
 "use client";
-
 import { UUID } from "node:crypto";
 
-import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import isEqual from "fast-deep-equal";
+import {
+	AlertCircle,
+	CheckCircle,
+	CheckCircle2,
+	RotateCcw,
+	XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { FaDiscord, FaLinkedinIn, FaSlack, FaTwitter } from "react-icons/fa";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip"; // Assuming you’re using shadcn or similar
 // eslint-disable-next-line import/no-unresolved
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
+import { updateRepoSettings } from "@/server-actions/user-actions/repo/edit-repo";
 
 import { RepoAISettingsCard } from "./ai-settings";
 import { RepoChannelSettingsCard } from "./channel-settings";
@@ -78,33 +94,57 @@ const getWebhookStatusIcon = (status: string) => {
 	}
 };
 
-const formatLastSync = (timestamp: string) => {
-	const date = new Date(timestamp);
-	const now = new Date();
-	const diffInHours = Math.floor(
-		(now.getTime() - date.getTime()) / (1000 * 60 * 60),
-	);
-
-	if (diffInHours < 1) return "Just now";
-	if (diffInHours < 24) return `${diffInHours}h ago`;
-	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays === 1) return "Yesterday";
-	return `${diffInDays}d ago`;
-};
-
-const handleSettingChange = (key: string, value: any) => {
-	// const newSettings = { ...localSettings, [key]: value };
-	// setLocalSettings(newSettings);
-};
-
 export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 	const {
 		repoDetails: repository,
 		isLoadingRepoDetails,
 		isError,
 	} = useRepoSuperDetails(repo_id);
+	const [localSettings, setLocalSettings] = useState<any | undefined>();
+	const [originalSettings, setOriginalSettings] = useState<any | undefined>();
 
-	if (isLoadingRepoDetails) {
+	// Set initial settings once data is loaded
+	useEffect(() => {
+		if (repository?.settings && !localSettings && !originalSettings) {
+			setLocalSettings(repository.settings);
+			setOriginalSettings(repository.settings);
+		}
+	}, [repository, localSettings, originalSettings]);
+
+	const isDirty =
+		localSettings &&
+		originalSettings &&
+		!isEqual(localSettings, originalSettings);
+
+	const mutation = useMutation({
+		mutationFn: (newSettings: any) => updateRepoSettings(repo_id, newSettings),
+		onSuccess: result => {
+			if (result?.success) {
+				toast.success("Settings saved!");
+				setOriginalSettings(localSettings);
+			} else {
+				toast.error("Save failed: " + result?.error);
+			}
+		},
+		onError: () => {
+			toast.error("Error saving settings");
+		},
+	});
+
+	const handleSaveSettings = () => {
+		mutation.mutate(localSettings);
+	};
+
+	const handleRevertSettings = () => {
+		setLocalSettings(originalSettings);
+	};
+
+	if (
+		isLoadingRepoDetails ||
+		!repository ||
+		!localSettings ||
+		!originalSettings
+	) {
 		return (
 			<div className="space-y-6">
 				<RepoGeneralSettingsCard loading />
@@ -168,45 +208,110 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 		);
 	}
 
+	const handleSettingChange = (key: string, value: any) => {
+		const newSettings = { ...localSettings, [key]: value };
+		setLocalSettings(newSettings);
+	};
+
 	return (
 		<div className="space-y-6">
+			<div className="flex justify-end gap-2 pt-6">
+				{/* Revert Button */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							disabled={!isDirty || mutation.isPending}
+							onClick={handleRevertSettings}
+							className="hover:bg-muted"
+						>
+							<RotateCcw className="h-5 w-5" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent side="top" className="text-xs">
+						Revert
+					</TooltipContent>
+				</Tooltip>
+
+				{/* Save Button */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="default"
+							size="icon"
+							disabled={!isDirty || mutation.isPending}
+							onClick={handleSaveSettings}
+							className="hover:bg-primary/90"
+						>
+							{mutation.isPending ? (
+								<svg
+									className="h-5 w-5 animate-spin"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									></circle>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+									></path>
+								</svg>
+							) : (
+								<CheckCircle className="h-5 w-5" />
+							)}
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent side="top" className="text-xs">
+						{mutation.isPending ? "Saving..." : "Save Settings"}
+					</TooltipContent>
+				</Tooltip>
+			</div>
+
 			{/* General Settings */}
 			<RepoGeneralSettingsCard
 				name={repository.name}
 				status={repository.status}
 				loading={isLoadingRepoDetails}
+				description={repository.description}
 				connected_by={repository.connected_by}
-				description={repository.description || ""}
 			/>
 
 			{/* AI Settings */}
 			<RepoAISettingsCard
-				settings={repository.settings}
+				settings={localSettings}
 				onChange={handleSettingChange}
 				loading={isLoadingRepoDetails}
 			/>
 
 			{/* Commit Filters */}
 			<RepoCommitFiltersCard
+				settings={localSettings}
 				loading={isLoadingRepoDetails}
-				settings={repository.settings}
 				onChange={handleSettingChange}
 			/>
 
 			{/* Posting Settings */}
 			<RepoPostingSettingsCard
+				settings={localSettings}
 				loading={isLoadingRepoDetails}
-				settings={repository.settings}
 				onChange={handleSettingChange}
 			/>
 
 			{/* Channel Settings */}
 			<RepoChannelSettingsCard
 				getSocialIcon={getSocialIcon}
+				localSettings={localSettings}
 				loading={isLoadingRepoDetails}
 				onChange={handleSettingChange}
 				getSocialLabel={getSocialLabel}
-				localSettings={repository.settings}
 				socialConnections={repository.social_connections}
 			/>
 

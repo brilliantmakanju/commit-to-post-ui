@@ -2,6 +2,7 @@
 
 /* eslint-disable import/no-unresolved */
 import { Send } from "lucide-react";
+import { useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { TimePicker } from "@/components/ui/time-picker";
 
 interface PostingSettings {
 	posting_strategy: string;
@@ -32,11 +34,32 @@ interface RepoPostingSettingsCardProps {
 	) => void;
 }
 
+function handlePostingStrategyChange(
+	value: string | undefined,
+	settings: PostingSettings,
+	onChange: <K extends keyof PostingSettings>(
+		key: K,
+		value: PostingSettings[K],
+	) => void,
+) {
+	if (!value) return;
+
+	onChange("posting_strategy", value);
+}
+
 export const RepoPostingSettingsCard = ({
 	settings,
-	loading = true,
 	onChange,
+	loading = true,
 }: RepoPostingSettingsCardProps) => {
+	useEffect(() => {
+		if (
+			settings.posting_strategy === "manual" &&
+			settings.manual_approval === false
+		) {
+			onChange("manual_approval", true);
+		}
+	}, [settings.posting_strategy, settings.manual_approval, onChange]);
 	if (loading) {
 		return (
 			<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
@@ -71,56 +94,61 @@ export const RepoPostingSettingsCard = ({
 					</Label>
 					<Select
 						value={settings.posting_strategy}
-						onValueChange={value => onChange("posting_strategy", value)}
+						onValueChange={value =>
+							handlePostingStrategyChange(value, settings, onChange)
+						}
 					>
 						<SelectTrigger className="border-zinc-700 bg-zinc-800 text-zinc-100">
 							<SelectValue placeholder="Select strategy" />
 						</SelectTrigger>
 						<SelectContent className="border-zinc-700 bg-zinc-900 text-zinc-100">
-							<SelectItem value="immediate">Immediate</SelectItem>
 							<SelectItem value="eod">End of Day</SelectItem>
-							<SelectItem value="manual">Manual Approval</SelectItem>
+							<SelectItem value="immediate">Immediate</SelectItem>
 							<SelectItem value="scheduled">Scheduled</SelectItem>
+							<SelectItem value="manual">Manual Approval</SelectItem>
 						</SelectContent>
 					</Select>
+
 					<p className="text-xs text-zinc-400">
 						When to publish generated posts
 					</p>
 				</div>
 
 				{/* Preferred Time */}
-				<div className="space-y-2">
-					<Label className="text-sm font-medium text-zinc-100">
-						Preferred Post Time
-					</Label>
-					<Input
-						type="time"
-						value={settings.preferred_post_time}
-						onChange={event_ =>
-							onChange("preferred_post_time", event_.target.value)
-						}
-						className="border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-500"
-					/>
-					<p className="text-xs text-zinc-400">
-						Default time for scheduled posts
-					</p>
-				</div>
-
-				{/* Manual Approval */}
-				<div className="flex items-center justify-between">
-					<div>
+				{settings.posting_strategy === "scheduled" && (
+					<div className="space-y-2">
 						<Label className="text-sm font-medium text-zinc-100">
-							Manual Approval
+							Preferred Post Time
 						</Label>
-						<p className="mt-1 text-xs text-zinc-400">
-							Require manual approval before publishing posts
+						<TimePicker
+							placeholder="Select preferred time"
+							value={settings.preferred_post_time || "01:30"}
+							className="border-gray-300 focus:border-gray-400"
+							onChange={value => onChange("preferred_post_time", value)}
+						/>
+						<p className="text-xs text-zinc-400">
+							Default time for scheduled posts
 						</p>
 					</div>
-					<Switch
-						checked={settings.manual_approval}
-						onCheckedChange={checked => onChange("manual_approval", checked)}
-					/>
-				</div>
+				)}
+
+				{/* Manual Approval */}
+				{settings.posting_strategy === "manual" && (
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm font-medium text-zinc-100">
+								Manual Approval
+							</Label>
+							<p className="mt-1 text-xs text-zinc-400">
+								Require manual approval before publishing posts
+							</p>
+						</div>
+						<Switch
+							checked={settings.manual_approval}
+							onCheckedChange={checked => onChange("manual_approval", checked)}
+						/>
+					</div>
+				)}
 
 				{/* Future Feature (optional) */}
 				{/* 

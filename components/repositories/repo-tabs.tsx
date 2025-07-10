@@ -286,6 +286,7 @@ export function RepoTabs({
 									{/* All */}
 									<TabsTrigger
 										value="all"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<FileText className="h-4 w-4" />
@@ -305,6 +306,7 @@ export function RepoTabs({
 									{/* Published */}
 									<TabsTrigger
 										value="published"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<div className="h-2 w-2 rounded-full bg-zinc-500 group-data-[state=active]:bg-zinc-700"></div>
@@ -324,6 +326,7 @@ export function RepoTabs({
 									{/* Draft */}
 									<TabsTrigger
 										value="drafted"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<div className="h-2 w-2 rounded-full bg-zinc-500 group-data-[state=active]:bg-zinc-700"></div>
@@ -340,6 +343,7 @@ export function RepoTabs({
 									{/* Scheduled */}
 									<TabsTrigger
 										value="scheduled"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<div className="h-2 w-2 rounded-full bg-zinc-500 group-data-[state=active]:bg-zinc-700"></div>
@@ -359,6 +363,7 @@ export function RepoTabs({
 									{/* Webhooks */}
 									<TabsTrigger
 										value="webhooks"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<Webhook className="h-4 w-4" />
@@ -378,6 +383,7 @@ export function RepoTabs({
 									{/* Settings */}
 									<TabsTrigger
 										value="settings"
+										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
 									>
 										<Webhook className="h-4 w-4" />
@@ -400,8 +406,9 @@ export function RepoTabs({
 									<div className="relative flex items-center">
 										<Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition-colors duration-200 group-hover:text-zinc-400" />
 										<Input
-											placeholder="Search your posts..."
 											value={searchQuery}
+											disabled={isLoadingPosts}
+											placeholder="Search your posts..."
 											onChange={event_ => setSearchQuery(event_.target.value)}
 											className="h-12 w-full rounded-xl border border-zinc-800/50 bg-zinc-900/50 pl-12 pr-4 font-medium text-white backdrop-blur-sm transition-all duration-200 placeholder:text-zinc-500 hover:border-zinc-700/50 focus:border-blue-500/50 focus:bg-zinc-900/70"
 										/>
@@ -416,7 +423,10 @@ export function RepoTabs({
 								</span>
 								<div className="w-40">
 									<Select value={sortBy} onValueChange={setSortBy}>
-										<SelectTrigger className="h-12 rounded-xl border border-zinc-800/50 bg-zinc-900/50 text-white backdrop-blur-sm transition-all duration-200 hover:border-zinc-700/50 focus:border-blue-500/50">
+										<SelectTrigger
+											disabled={isLoadingPosts}
+											className="h-12 rounded-xl border border-zinc-800/50 bg-zinc-900/50 text-white backdrop-blur-sm transition-all duration-200 hover:border-zinc-700/50 focus:border-blue-500/50"
+										>
 											<div className="flex items-center gap-2">
 												<SelectValue placeholder="Choose order" />
 											</div>

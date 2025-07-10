@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-// eslint-disable-next-line import/no-unresolved
 import { fetchRepoSuperDetails } from "@/server-actions/core/repo/get-repo";
 
 const useRepoSuperDetails = (repoId: string) => {
