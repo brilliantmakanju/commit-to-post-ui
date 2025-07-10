@@ -65,7 +65,7 @@ export function SocialConnectionSettings() {
 			<div className="flex w-full flex-col text-white">
 				<div className="w-full space-y-4">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+						{/* <Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
 							<div className="flex items-center">
 								<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
 									<Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
@@ -103,7 +103,7 @@ export function SocialConnectionSettings() {
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								Loading...
 							</Button>
-						</Card>
+						</Card> */}
 
 						<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
 							<div className="flex items-center">
@@ -213,7 +213,7 @@ export function SocialConnectionSettings() {
 		<div className="flex w-full flex-col text-white">
 			<div className="w-full space-y-4">
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-					<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
+					{/* <Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
 						<div className="flex items-center">
 							<div className="mr-3 flex h-10 w-10 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
 								<Linkedin className="h-5 w-5 text-[#0A66C2]" />
@@ -261,7 +261,7 @@ export function SocialConnectionSettings() {
 						<Button disabled className="bg-[#232323] text-zinc-400">
 							Coming Soon
 						</Button>
-					</Card>
+					</Card> */}
 
 					<Card className="flex items-center justify-between border-[#232323] bg-[#121212] p-4">
 						<div className="flex items-center">
