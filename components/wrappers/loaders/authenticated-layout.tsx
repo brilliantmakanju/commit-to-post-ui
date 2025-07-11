@@ -65,10 +65,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					userStore.clearUser();
 
 					organizationStore.clearOrganization();
-					clearCookies();
+					await clearCookies();
 
-					logout();
-					signOut({ redirect: false });
+					await logout();
+					await signOut({ redirect: false });
 					globalThis.location.href = "/";
 				}
 			} catch {
