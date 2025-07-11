@@ -36,6 +36,7 @@ const connectSocialAccount = async (
 	pathname: string,
 	searchParams: URLSearchParams,
 	router: ReturnType<typeof useRouter>,
+	userStore: any,
 ) => {
 	try {
 		const values = { code };
@@ -60,6 +61,10 @@ const connectSocialAccount = async (
 
 			// Replace current URL with cleaned-up one
 			router.replace(`${pathname}?${nextSearchParams.toString()}`);
+			userStore.setUser({
+				hasHydratedUser: true,
+				github_connected: true,
+			});
 
 			// Set connection status
 			setStatus("success");
@@ -131,6 +136,7 @@ const SocialConnectCallback = ({
 				pathname,
 				searchParams,
 				router,
+				userStore,
 			);
 		}
 	}, [
