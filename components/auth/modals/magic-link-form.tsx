@@ -47,7 +47,7 @@ export function MagicLinkForm({ onToggleForm }: MagicLinkFormProps) {
 		deleteCookie("firstLogin");
 		logoutStore.clearLogout();
 		userStore.clearUser();
-		signOut();
+		await signOut();
 
 		try {
 			const apiRequest = await requestMagicLink(values);

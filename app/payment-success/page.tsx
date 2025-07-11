@@ -57,7 +57,7 @@ export default function PaymentSuccessPage() {
 
 				await clearCookies();
 				await signOut();
-				logoutStore.setLogout(false);
+				logoutStore.setLogout(true);
 
 				// Start countdown after logout is successful
 				setPaymentStatus({
@@ -75,7 +75,7 @@ export default function PaymentSuccessPage() {
 
 				await clearCookies();
 				await signOut();
-				logoutStore.setLogout(false);
+				logoutStore.setLogout(true);
 				setPaymentStatus({
 					status: "error",
 					message:

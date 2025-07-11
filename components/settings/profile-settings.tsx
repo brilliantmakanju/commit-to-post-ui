@@ -139,7 +139,7 @@ export default function ProfileSettings() {
 				await clearCookies(); // Clear all cookies
 				// Sign out from NextAuth
 				await signOut();
-				logoutStore.setLogout(false);
+				logoutStore.setLogout(true);
 				router.push("/");
 			} else {
 				toast.error("Something went wrong. Please try again.");
