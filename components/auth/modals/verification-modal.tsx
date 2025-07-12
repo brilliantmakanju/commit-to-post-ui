@@ -53,9 +53,6 @@ export default function MagicVerifyModal() {
 					setVerificationState("error");
 				} else {
 					setVerificationState("success");
-					if (data) {
-						userStore.setUser({ github_connected: data.user.github_connected });
-					}
 					setTimeout(() => {
 						globalThis.window.location.replace("/dashboard");
 					}, 2000);

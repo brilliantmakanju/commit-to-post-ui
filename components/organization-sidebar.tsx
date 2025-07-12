@@ -1,9 +1,7 @@
-/* eslint-disable prettier/prettier */
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown, Plus } from "lucide-react";
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { CreateOrganizationModal } from "@/components/organization/create-organization";
 import {
@@ -30,94 +28,60 @@ import {
 import useLogoutStore from "@/zustand/logout-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
 
-export function TeamSwitcher({
-	teams,
-	isLoading,
-}: {
-	teams: {
-		id: string;
-		name: string;
-		domains: string;
-		is_owner?: boolean;
-		description?: string;
-	}[];
-	isLoading: boolean;
-}) {
-	const hasAccess = useCheckAccess();
+export function TeamSwitcher({ isLoading }: { isLoading: boolean }) {
 	const { isMobile } = useSidebar();
+	const hasAccess = useCheckAccess();
 	const logoutStore = useLogoutStore();
-	const queryClient = useQueryClient();
-	const [open, setOpen] = React.useState(false);
-	const organizationStore = useOrganizationStore();
-	const [mounted, setMounted] = React.useState(false);
-	const { organization, setOrganization } = useOrganizationStore();
+	const [open, setOpen] = useState(false);
+	const [mounted, setMounted] = useState(false);
+	const { organization, organizations, setOrganization } =
+		useOrganizationStore();
 
-	React.useEffect(() => {
+	useEffect(() => {
 		setMounted(true);
 	}, []);
 
 	const activeTeam =
 		mounted && !isLoading && organization && organization.name !== ""
 			? organization
-			: teams.length > 0
-				? teams[0]
+			: organizations.length > 0
+				? organizations[0]
 				: undefined;
 
 	// Filter out the active team from the dropdown list if we have more than one team
 	const inactiveTeams =
-		teams.length > 1
-			? teams.filter(team => team.name !== activeTeam?.name)
+		organizations.length > 1
+			? organizations.filter(team => team.name !== activeTeam?.name)
 			: [];
 
-	const handleTeamChange = async (team: (typeof teams)[0]) => {
-		organizationStore.clearOrganization();
-		setOrganization(team);
+	const handleTeamChange = async (team: (typeof organizations)[0]) => {
 		await deleteCookie("organization");
 		await createEncryptedCookie("organization", {
+			id: team.id,
+			name: team.name,
 			domain: team.domains[0],
+			is_owner: team.is_owner,
+			description: team.description,
 		});
-		// Fetch and Invalidate Core Data
-		queryClient.fetchQuery({ queryKey: ["organization-ownership"] });
-		queryClient.invalidateQueries({ queryKey: ["organization-ownership"] });
-
-		queryClient.fetchQuery({ queryKey: ["retrieving_webhooks"] });
-		queryClient.invalidateQueries({ queryKey: ["retrieving_webhooks"] });
-
-		queryClient.fetchQuery({ queryKey: ["retrieving_social_status"] });
-		queryClient.invalidateQueries({ queryKey: ["retrieving_social_status"] });
-
-		// Fetch and Invalidate Metrics
-		queryClient.fetchQuery({ queryKey: ["dashboard_metrics"] });
-		queryClient.invalidateQueries({ queryKey: ["dashboard_metrics"] });
-
-		queryClient.fetchQuery({ queryKey: ["upcoming_posts_metrics"] });
-		queryClient.invalidateQueries({ queryKey: ["upcoming_posts_metrics"] });
-
-		// Fetch and Invalidate Posts
-		queryClient.fetchQuery({ queryKey: ["posts"] });
-		queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-		// Fetch and Invalidate Notifications
-		queryClient.fetchQuery({ queryKey: ["notifications"] });
-		queryClient.invalidateQueries({ queryKey: ["notifications"] });
-
-		queryClient.fetchQuery({ queryKey: ["recent_notifications"] });
-		queryClient.invalidateQueries({ queryKey: ["recent_notifications"] });
+		setOrganization(team);
+		globalThis.window.location.reload();
 	};
 
 	// Only access store after mounting
-	const storedOrg = mounted
-		? useOrganizationStore.getState().organization
-		: undefined;
+	const storedOrg = mounted ? organization : undefined;
 
 	const isDropdownDisabled =
 		!mounted ||
-		(teams.length === 0 && !storedOrg) ||
+		(organizations.length === 0 && !storedOrg) ||
 		logoutStore.logout ||
 		(isLoading && (!storedOrg || storedOrg.name === "")) ||
-		(!isLoading && teams.length === 0 && !organization);
+		(!isLoading && organizations.length === 0 && !organization);
 
-	if (!mounted || (teams.length === 0 && !storedOrg) || logoutStore.logout) {
+	if (
+		!mounted ||
+		(organizations.length === 0 && !storedOrg) ||
+		logoutStore.logout
+	) {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
@@ -195,7 +159,7 @@ export function TeamSwitcher({
 		);
 
 	// If no teams and no organization after loading, show error state
-	if (!isLoading && teams.length === 0 && !organization) {
+	if (!isLoading && organizations.length === 0 && !organization) {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
@@ -222,27 +186,29 @@ export function TeamSwitcher({
 									{activeTeam?.name}
 								</span>
 								<span className="truncate text-xs">
-									{teams.length === 1 ? "Only Organization" : "Active"}
+									{organizations.length === 1 ? "Only Organization" : "Active"}
 								</span>
 							</div>
-							{teams.length > 1 && <ChevronsUpDown className="ml-auto" />}
+							{organizations.length > 1 && (
+								<ChevronsUpDown className="ml-auto" />
+							)}
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 
-					{teams.length === 1 && (
+					{organizations.length === 1 && (
 						<DropdownMenuContent
-							className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 							align="start"
-							side={isMobile ? "bottom" : "right"}
 							sideOffset={4}
+							side={isMobile ? "bottom" : "right"}
+							className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 						>
 							<DropdownMenuLabel className="text-xs text-muted-foreground">
 								Organization
 							</DropdownMenuLabel>
 							<DropdownMenuItem
+								className="gap-2 p-2"
 								key={activeTeam?.name}
 								onClick={() => handleTeamChange(activeTeam as any)}
-								className="gap-2 p-2"
 							>
 								<div className="flex size-6 items-center justify-center rounded-sm border">
 									{activeTeam?.name[0].toUpperCase()}
@@ -252,8 +218,8 @@ export function TeamSwitcher({
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								className="flex w-full items-center justify-center gap-2 p-2"
 								onClick={() => setOpen(true)}
+								className="flex w-full items-center justify-center gap-2 p-2"
 							>
 								<div className="flex size-6 items-center justify-center rounded-md border bg-background">
 									<Plus className="size-4" />
@@ -266,12 +232,12 @@ export function TeamSwitcher({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					)}
-					{teams.length > 1 && (
+					{organizations.length > 1 && (
 						<DropdownMenuContent
-							className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 							align="start"
-							side={isMobile ? "bottom" : "right"}
 							sideOffset={4}
+							side={isMobile ? "bottom" : "right"}
+							className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 						>
 							<DropdownMenuLabel className="text-xs text-muted-foreground">
 								Organizations

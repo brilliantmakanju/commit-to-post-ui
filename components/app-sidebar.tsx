@@ -53,7 +53,6 @@ const navigationItems = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [mounted, setMounted] = useState(false);
-	const { organizations } = useOrganizationStore();
 
 	useEffect(() => {
 		setMounted(true);
@@ -64,7 +63,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			{mounted ? (
 				<>
 					<SidebarHeader>
-						<TeamSwitcher teams={organizations || []} isLoading={false} />
+						<TeamSwitcher isLoading={false} />
 					</SidebarHeader>
 					<SidebarContent>
 						<NavMain items={navigationItems} isLoading={false} />
@@ -76,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			) : (
 				<>
 					<SidebarHeader>
-						<TeamSwitcher teams={[]} isLoading={mounted} />
+						<TeamSwitcher isLoading={mounted} />
 					</SidebarHeader>
 					<SidebarContent>
 						<NavMain items={navigationItems} isLoading={mounted} />

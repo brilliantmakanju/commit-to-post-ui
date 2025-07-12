@@ -8,7 +8,7 @@ export const useGithubConnectedStatus = () => {
 	const { data: session } = useSession();
 	const { github_connected, hasHydratedUser } = useUserStore();
 
-	if (!hasHydratedUser && session?.user) {
+	if (hasHydratedUser === false && session?.user) {
 		return session.user.github_connected;
 	}
 

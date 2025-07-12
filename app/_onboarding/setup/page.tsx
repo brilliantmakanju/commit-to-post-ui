@@ -46,6 +46,7 @@ const SetupPage = () => {
 					stripe_subscription_id: apiRequest.data.user.stripe_subscription_id,
 					github_connected: apiRequest.data.user.github_connected,
 					google_connected: apiRequest.data.user.google_connected,
+					hasHydratedUser: true,
 				});
 
 				toast.success("Profile updated successfully!");

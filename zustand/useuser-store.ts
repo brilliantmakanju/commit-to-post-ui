@@ -40,14 +40,14 @@ const useUserStore = create<UserState & UserActions>()(
 			first_name: "",
 			preferences: {},
 			justUpdated: false,
-			hasHydratedUser: false,
 			github_connected: false,
 			google_connected: false,
 			subscription_status: "",
 			stripe_subscription_id: "",
 			subscription_end_date: undefined,
+			hasHydratedUser: false,
 			setUser: user => {
-				set(state => ({ ...state, ...user, hasHydratedUser: true }));
+				set(state => ({ ...state, ...user }));
 			},
 			setJustUpdated: value => {
 				set({ justUpdated: value });
@@ -67,6 +67,7 @@ const useUserStore = create<UserState & UserActions>()(
 					subscription_status: "",
 					stripe_subscription_id: "",
 					subscription_end_date: undefined,
+					hasHydratedUser: false,
 				}),
 		}),
 		{

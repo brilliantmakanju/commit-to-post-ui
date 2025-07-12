@@ -45,10 +45,17 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const isClient = typeof globalThis !== "undefined";
 
 	useEffect(() => {
-		if (session?.user && !userStore.hasHydratedUser) {
-			userStore.setUser(session.user);
+		if (
+			status === "authenticated" &&
+			session?.user &&
+			userStore.hasHydratedUser === false
+		) {
+			userStore.setUser({
+				github_connected: session.user.github_connected,
+				hasHydratedUser: true,
+			});
 		}
-	}, [session, userStore]);
+	}, [session, status, userStore]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -61,12 +68,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 				if (!token) {
 					logoutStore.setLogout(true);
-					userStore.clearUser();
-
 					organizationStore.clearOrganization();
-					await clearCookies();
 
-					await logout();
+					logout();
+					await clearCookies();
 					await signOut({ redirect: false });
 					globalThis.location.href = "/";
 				}

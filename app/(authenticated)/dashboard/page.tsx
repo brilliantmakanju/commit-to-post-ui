@@ -1,23 +1,23 @@
 "use client";
-import { Crown, Sparkles } from "lucide-react";
+// import { Crown, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import {
-	NotificationsList,
-	NotificationsSkeleton,
-} from "@/components/dashboard/notification-card";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import useRetrieveMetrics from "@/hooks/core/metric";
+// import {
+// 	NotificationsList,
+// 	NotificationsSkeleton,
+// } from "@/components/dashboard/notification-card";
+// import { Button } from "@/components/ui/button";
+// import {
+// 	Card,
+// 	CardContent,
+// 	CardFooter,
+// 	CardHeader,
+// 	CardTitle,
+// } from "@/components/ui/card";
+// import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import useUserStore from "@/zustand/useuser-store";
@@ -27,50 +27,50 @@ const Page = () => {
 	const userStore = useUserStore();
 	const hasAccess = useCheckAccess();
 	const { status, data: userDetails } = useSession();
-	const userHasLifetimeAccess = useLifetimeAccess();
-	const [postFilter, setPostFilter] = useState("all");
-	const [isLoading, setIsLoading] = React.useState(true);
-	const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
-		useRetrieveMetrics();
+	// const userHasLifetimeAccess = useLifetimeAccess();
+	// const [postFilter, setPostFilter] = useState("all");
+	// const [isLoading, setIsLoading] = React.useState(true);
+	// const { scheduledPostsCount, generatedPostsCount, isMetricsLoading } =
+	// 	useRetrieveMetrics();
 	const [firstNameFromFull, lastNameFromFull] = userStore.full_name
 		? userStore.full_name.split(" ")
 		: ["", ""];
-	useEffect(() => {
-		// Check if document is fully loaded
-		if (document.readyState === "complete") {
-			setIsLoading(false);
-		} else {
-			// Add event listener for when everything is loaded
-			const handleLoad = () => {
-				setIsLoading(false);
-			};
+	// useEffect(() => {
+	// 	// Check if document is fully loaded
+	// 	if (document.readyState === "complete") {
+	// 		setIsLoading(false);
+	// 	} else {
+	// 		// Add event listener for when everything is loaded
+	// 		const handleLoad = () => {
+	// 			setIsLoading(false);
+	// 		};
 
-			window.addEventListener("load", handleLoad);
+	// 		window.addEventListener("load", handleLoad);
 
-			// Alternative approach: Use a timeout to ensure minimum loading time
-			// This helps prevent flickering if the page loads very quickly
-			const timer = setTimeout(() => {
-				setIsLoading(false);
-			}, 500);
+	// 		// Alternative approach: Use a timeout to ensure minimum loading time
+	// 		// This helps prevent flickering if the page loads very quickly
+	// 		const timer = setTimeout(() => {
+	// 			setIsLoading(false);
+	// 		}, 500);
 
-			// Cleanup
-			return () => {
-				window.removeEventListener("load", handleLoad);
-				clearTimeout(timer);
-			};
-		}
-	}, []);
+	// 		// Cleanup
+	// 		return () => {
+	// 			window.removeEventListener("load", handleLoad);
+	// 			clearTimeout(timer);
+	// 		};
+	// 	}
+	// }, []);
 	// Get first name only for welcome message
 	const firstName =
 		userDetails?.user?.first_name || userStore.full_name?.split(" ")[0] || "";
 
-	async function subscribePlan() {
-		if (hasAccess) {
-			toast.info("You already have an active subscription.");
-			return;
-		}
-		router.push("/pricing");
-	}
+	// async function subscribePlan() {
+	// 	if (hasAccess) {
+	// 		toast.info("You already have an active subscription.");
+	// 		return;
+	// 	}
+	// 	router.push("/pricing");
+	// }
 
 	const userData = userStore.justUpdated
 		? {
@@ -136,7 +136,7 @@ const Page = () => {
 					)}
 				</Suspense> */}
 
-				<Card className="overflow-hidden border border-[#232323] bg-[#121212] transition-all hover:border-[#2A2A2A] hover:shadow-md">
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212] transition-all hover:border-[#2A2A2A] hover:shadow-md">
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-sm font-medium text-zinc-300">
 							{userHasLifetimeAccess
@@ -205,7 +205,7 @@ const Page = () => {
 							</Button>
 						)}
 					</CardFooter>
-				</Card>
+				</Card> */}
 			</div>
 
 			{/* Functional Filter Tabs */}
@@ -275,7 +275,7 @@ const Page = () => {
 					</CardContent>
 				</Card> */}
 
-				<Card className="overflow-hidden border border-[#232323] bg-[#121212]">
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212]">
 					<CardHeader className="flex flex-row items-center justify-between">
 						<CardTitle className="text-white">Recent Notifications</CardTitle>
 					</CardHeader>
@@ -284,7 +284,7 @@ const Page = () => {
 							<NotificationsList isPaid={hasAccess} />
 						</Suspense>
 					</CardContent>
-				</Card>
+				</Card> */}
 			</div>
 		</section>
 	);

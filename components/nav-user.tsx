@@ -32,13 +32,11 @@ export function NavUser({
 }: {
 	isLoadingAttachment?: boolean;
 }) {
-	const router = useRouter();
 	const userStore = useUserStore();
 	const { isMobile } = useSidebar();
 	const logoutStore = useLogoutStore();
 	const { data, status } = useSession();
 	const organizationStore = useOrganizationStore();
-	const [localStatus, setLocalStatus] = useState("loading");
 
 	// useEffect(() => {
 	// 	if (status === "unauthenticated") {
@@ -75,13 +73,12 @@ export function NavUser({
 					};
 
 	const logoutClient = async () => {
+		organizationStore.clearOrganization();
 		logoutStore.setLogout(true);
 		userStore.clearUser();
 
-		organizationStore.clearOrganization();
+		logout();
 		await clearCookies();
-
-		await logout();
 		await signOut({ redirect: false });
 		globalThis.location.href = "/";
 	};

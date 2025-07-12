@@ -67,9 +67,8 @@ const connectSocialAccount = async (
 			});
 
 			// Set connection status
-			setStatus("success");
-
 			setMessage("Your Github account connected successfully!");
+			setStatus("success");
 			// type === "github"
 			// ?
 			// : "Your LinkedIn account has been connected successfully!",

@@ -35,7 +35,7 @@ export function SocialConnectionSettings() {
 			const response = await disconnectGithub();
 
 			if (response.success) {
-				userStore.setUser({ github_connected: false });
+				userStore.setUser({ github_connected: false, hasHydratedUser: true });
 				toast.success(response.message);
 			} else {
 				toast.error(response.message);

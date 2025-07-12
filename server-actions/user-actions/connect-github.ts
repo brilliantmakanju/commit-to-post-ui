@@ -27,6 +27,7 @@ export const connectGithub = async ({
 				code: parsedData.code,
 			},
 			{},
+			10000,
 		);
 		// Check if the request was successful
 		if (response.error) {

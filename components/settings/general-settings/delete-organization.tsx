@@ -40,10 +40,10 @@ import { deleteOrganization } from "@/server-actions/organizations/delete-organi
 import useOrganizationStore from "@/zustand/useorganization-store";
 
 export function DeleteOrganization() {
-	const [open, setOpen] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
-	const { organization } = useOrganizationStore();
 	const queryClient = useQueryClient();
+	const [open, setOpen] = useState(false);
+	const { organization } = useOrganizationStore();
+	const [isDeleting, setIsDeleting] = useState(false);
 	const { organizations, setOrganization } = useOrganizationStore();
 	const isOnlyOrganization = organizations.length === 1 ? true : false;
 

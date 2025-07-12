@@ -27,6 +27,8 @@ export const connectGithubRepoBatch = async (
 		const response = await apiClient.post(
 			"/api/v1/managements/github/repo/connect/",
 			parsed,
+			{},
+			10000,
 		);
 
 		if (response.error) {

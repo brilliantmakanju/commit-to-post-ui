@@ -105,6 +105,7 @@ export default function ProfileSettings() {
 					stripe_subscription_id: apiRequest.data.user.stripe_subscription_id,
 					github_connected: apiRequest.data.user.github_connected,
 					google_connected: apiRequest.data.user.google_connected,
+					hasHydratedUser: true,
 				});
 				userStore.setJustUpdated(true);
 				// Reset form with new values
