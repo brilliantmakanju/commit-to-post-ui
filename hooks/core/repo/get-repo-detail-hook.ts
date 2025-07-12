@@ -8,6 +8,8 @@ const useRepoDetails = (repoId: string) => {
 		queryKey: ["repo_details", repoId],
 		queryFn: () => fetchRepoDetails({ repoId }),
 		enabled: !!repoId,
+		refetchOnMount: true,
+		refetchOnWindowFocus: false,
 	});
 
 	return {

@@ -1,15 +1,17 @@
 "use client";
 import { UUID } from "node:crypto";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import React, { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 // eslint-disable-next-line import/no-unresolved
 import { RepoHeader } from "@/components/repositories/header/repo-header";
 import { RepoTabs } from "@/components/repositories/repo-tabs";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
 import { fetchPosts } from "@/server-actions/core/get-posts";
+import { updateRepoStatus } from "@/server-actions/core/repo/repo-status";
 
 interface WebhookLog {
 	id: string;
@@ -88,9 +90,34 @@ const ViewRepo = () => {
 		setPostsCurrentPage(page);
 	};
 
+	const queryClient = useQueryClient();
+	const onTogglePause = async () => {
+		if (!repoDetails) return;
+
+		const nextStatus =
+			repoDetails.status === "connected" ? "paused" : "connected";
+
+		const result = await updateRepoStatus({
+			repoId: repoId,
+			status: nextStatus,
+		});
+
+		if (result.success) {
+			queryClient.invalidateQueries({
+				queryKey: ["repo_details", repoId],
+			});
+			toast.success(result.message);
+			queryClient.invalidateQueries({
+				queryKey: ["repo_super_details", repoId],
+			});
+		} else {
+			toast.error(result.message);
+		}
+	};
+
 	return (
 		<section className="flex h-full w-full flex-col gap-4 bg-[#0A0A0A] px-6 py-8">
-			<RepoHeader repo_id={params.id as UUID} onTogglePause={() => {}} />
+			<RepoHeader repo_id={repoId} onTogglePause={onTogglePause} />
 			<RepoTabs
 				repo_id={repoId}
 				isLoadingPosts={isLoading}

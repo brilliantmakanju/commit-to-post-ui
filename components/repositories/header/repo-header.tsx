@@ -61,7 +61,6 @@ export function RepoHeader({ repo_id, onTogglePause }: RepoHeaderProps) {
 		repoDetails: repository,
 		isLoadingRepoDetails,
 		isError,
-		error,
 	} = useRepoDetails(repo_id);
 
 	if (isLoadingRepoDetails) {
