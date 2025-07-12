@@ -14,7 +14,6 @@ export const updateRepoSettings = async (
 	repo_id: string,
 	settings: Record<string, any>,
 ) => {
-	console.log(settings);
 	try {
 		const validated = updateRepoSettingsSchema.parse({ repo_id, settings });
 

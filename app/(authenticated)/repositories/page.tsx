@@ -25,7 +25,7 @@ interface Repository {
 
 function RepositoryCardSkeleton({ isGrid }: { isGrid: boolean }) {
 	return (
-		<div className="h-64 animate-pulse rounded-lg border border-gray-200 bg-white p-4 dark:bg-gray-900" />
+		<div className="h-64 animate-pulse rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4" />
 	);
 }
 
@@ -81,29 +81,32 @@ export default function RepositoriesPage() {
 	}, [repositories, searchQuery, sortBy]);
 
 	useEffect(() => {
-		handleFilteredRepositories;
+		setFilteredRepositories(handleFilteredRepositories);
 	}, [handleFilteredRepositories]);
+
 	const renderRepositories = () => {
 		if (isLoadingRepos) {
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{Array.from({ length: 6 }).map((_, index) => (
-					<RepositoryCardSkeleton key={index} isGrid />
-				))}
-			</div>;
+			return (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{Array.from({ length: 6 }).map((_, index) => (
+						<RepositoryCardSkeleton key={index} isGrid />
+					))}
+				</div>
+			);
 		}
 
-		if (handleFilteredRepositories.length === 0) {
+		if (filteredRepositories.length === 0) {
 			return (
-				<div className="mt-8 flex h-[400px] items-center justify-center rounded-lg border border-dashed border-gray-300">
+				<div className="mt-8 flex h-[400px] items-center justify-center rounded-lg border border-dashed border-zinc-800/50">
 					<div className="space-y-6 text-center">
-						<Github className="mx-auto h-16 w-16 text-gray-400" />
+						<Github className="mx-auto h-16 w-16 text-zinc-600" />
 						<div className="space-y-3">
-							<h3 className="text-xl font-medium text-gray-900">
+							<h3 className="text-xl font-medium text-zinc-100">
 								{searchQuery
 									? "No repositories found"
 									: "No repositories connected"}
 							</h3>
-							<p className="mx-auto max-w-sm text-gray-600">
+							<p className="mx-auto max-w-sm text-zinc-400">
 								{searchQuery
 									? "Try adjusting your search terms"
 									: "Connect your first Git repository to start generating posts from commits."}
@@ -112,7 +115,7 @@ export default function RepositoriesPage() {
 						{!searchQuery && (
 							<Button
 								onClick={() => setIsAddModalOpen(true)}
-								className="bg-black text-white hover:bg-gray-800"
+								className="bg-white text-black transition-colors hover:bg-zinc-200"
 							>
 								<Plus className="mr-2 h-4 w-4" />
 								Add Your First Repository
@@ -124,8 +127,8 @@ export default function RepositoriesPage() {
 		}
 
 		return (
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{handleFilteredRepositories.map((repo: Repository) => (
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+				{filteredRepositories.map((repo: Repository) => (
 					<RepositoryCard key={repo.id} repository={repo} />
 				))}
 			</div>
@@ -133,7 +136,7 @@ export default function RepositoriesPage() {
 	};
 
 	return (
-		<section className="flex h-full w-full flex-col gap-4 bg-[#0A0A0A] px-6 py-8">
+		<section className="flex h-full w-full flex-col gap-6 bg-black px-6 py-8">
 			{isAddModalOpen && (
 				<AddRepositoryModal
 					open={isAddModalOpen}
@@ -144,13 +147,14 @@ export default function RepositoriesPage() {
 					onOpenChange={setIsAddModalOpen}
 				/>
 			)}
+
 			<Header
 				heading="Repositories"
 				text="Manage your connected Git repositories"
 			>
 				<Button
 					onClick={() => setIsAddModalOpen(true)}
-					className="bg-black text-white hover:bg-gray-800"
+					className="bg-white text-black transition-colors hover:bg-zinc-200"
 				>
 					<Plus className="mr-2 h-4 w-4" />
 					Add Repository
@@ -166,8 +170,8 @@ export default function RepositoriesPage() {
 				onSearchChange={setSearchQuery}
 			/>
 
-			<div className="relative w-full flex-1 overflow-hidden rounded-lg">
-				<div className="absolute inset-0 overflow-y-auto px-[20px] py-6">
+			<div className="relative w-full flex-1 overflow-hidden rounded-lg border border-zinc-800/30 bg-zinc-900/20">
+				<div className="absolute inset-0 overflow-y-auto p-6">
 					{renderRepositories()}
 				</div>
 			</div>

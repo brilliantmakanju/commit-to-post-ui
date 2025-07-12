@@ -96,9 +96,9 @@ const getWebhookStatusIcon = (status: string) => {
 
 export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 	const {
-		repoDetails: repository,
-		isLoadingRepoDetails,
 		isError,
+		isLoadingRepoDetails,
+		repoDetails: repository,
 	} = useRepoSuperDetails(repo_id);
 	const [localSettings, setLocalSettings] = useState<any | undefined>();
 	const [originalSettings, setOriginalSettings] = useState<any | undefined>();
@@ -180,6 +180,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 
 				<RepoChannelSettingsCard
 					loading
+					repo_id={repo_id}
 					socialConnections={{}}
 					localSettings={{
 						default_hashtags: "",
@@ -307,6 +308,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 
 			{/* Channel Settings */}
 			<RepoChannelSettingsCard
+				repo_id={repo_id}
 				getSocialIcon={getSocialIcon}
 				localSettings={localSettings}
 				loading={isLoadingRepoDetails}

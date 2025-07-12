@@ -4,14 +4,20 @@ import { Settings, Wrench } from "lucide-react";
 import { useState } from "react";
 
 export function MaintenanceCornerBanner() {
-	const [isExpanded, setIsExpanded] = useState(true);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [hasInteracted, setHasInteracted] = useState(false);
+
+	const handleClick = () => {
+		setIsExpanded(previous => !previous);
+		setHasInteracted(true);
+	};
 
 	return (
 		<div
-			className={`fixed bottom-4 right-4 z-50 cursor-pointer rounded-lg border border-white/10 bg-black/80 backdrop-blur-sm transition-all duration-200 ${
+			className={`fixed bottom-[80px] right-4 z-50 cursor-pointer rounded-lg border border-white/10 bg-black/80 backdrop-blur-sm transition-all duration-200 ${
 				isExpanded ? "max-w-xs px-4 py-3" : "p-2"
-			}`}
-			onClick={() => setIsExpanded(!isExpanded)}
+			} ${hasInteracted ? "" : "animate-slow-pulse"}`}
+			onClick={handleClick}
 		>
 			{isExpanded ? (
 				<div className="flex items-start space-x-3">

@@ -38,12 +38,10 @@ interface AuthenticatedLayoutProps {
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const router = useRouter();
-	const { data: session, status } = useSession();
-
 	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
+	const { data: session, status } = useSession();
 	const organizationStore = useOrganizationStore();
-
 	const isClient = typeof globalThis !== "undefined";
 
 	useEffect(() => {

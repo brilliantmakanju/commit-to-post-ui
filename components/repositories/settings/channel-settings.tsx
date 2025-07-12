@@ -1,6 +1,8 @@
 "use client";
 
 /* eslint-disable import/no-unresolved */
+import { UUID } from "node:crypto";
+
 import { Users } from "lucide-react";
 import { useState } from "react";
 
@@ -16,8 +18,18 @@ import { WebhookModal } from "./webhook-modal";
 // Types
 type Platform = "twitter" | "linkedin" | "slack" | "discord" | string;
 
+interface SocialConnection {
+	connected: boolean;
+	connected_by: string | null;
+	connected_at: string | null;
+	details: {
+		webhook_url?: string;
+	} | null;
+}
+
 interface RepoChannelSettingsCardProps {
-	socialConnections: Record<Platform, boolean>;
+	repo_id: UUID;
+	socialConnections: Record<Platform, SocialConnection>;
 	localSettings: {
 		hashtag_automation: boolean;
 		default_hashtags: string;
@@ -33,6 +45,7 @@ export const RepoChannelSettingsCard = ({
 	localSettings,
 	loading = true,
 	onChange,
+	repo_id,
 	getSocialIcon,
 	getSocialLabel,
 }: RepoChannelSettingsCardProps) => {
@@ -73,9 +86,11 @@ export const RepoChannelSettingsCard = ({
 		<>
 			{platformModal && (
 				<WebhookModal
+					repo_id={repo_id}
 					isOpen={!!platformModal}
 					onClose={() => setPlatformModal(undefined)}
 					platform={platformModal as "slack" | "discord"}
+					existingConnection={socialConnections[platformModal]}
 				/>
 			)}
 
@@ -94,8 +109,8 @@ export const RepoChannelSettingsCard = ({
 							Connected Channels
 						</Label>
 
-						{Object.entries(socialConnections).map(([platform, connected]) => {
-							const isConnected = Boolean(connected);
+						{Object.entries(socialConnections).map(([platform, connection]) => {
+							const isConnected = connection?.connected || false;
 
 							return (
 								<div
@@ -110,7 +125,7 @@ export const RepoChannelSettingsCard = ({
 											</span>
 											<p className="text-xs text-zinc-400">
 												{isConnected
-													? "Connected and ready to post"
+													? `Connected by ${connection.connected_by || "Unknown"}`
 													: "Not connected"}
 											</p>
 										</div>

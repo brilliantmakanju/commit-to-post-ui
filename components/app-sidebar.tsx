@@ -54,7 +54,6 @@ const navigationItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [mounted, setMounted] = useState(false);
 	const { organizations } = useOrganizationStore();
-	console.log(organizations, "Org");
 
 	useEffect(() => {
 		setMounted(true);
