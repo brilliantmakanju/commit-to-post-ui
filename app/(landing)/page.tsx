@@ -31,7 +31,7 @@ export default function Home() {
 	useEffect(() => {
 		const getCookies = async () => {
 			try {
-				logoutStore.setLogout(true);
+				logoutStore.setLogout(false);
 				const paid = await getDecryptedCookie("payment_success");
 				if (paid?.paid) {
 					await clearCookies();

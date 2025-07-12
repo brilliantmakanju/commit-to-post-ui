@@ -118,7 +118,7 @@ const Page = () => {
 
 			{/* Stats Cards */}
 			<div className="grid gap-6 sm:grid-cols-3">
-				<Suspense fallback={<StatsCardSkeleton />}>
+				{/* <Suspense fallback={<StatsCardSkeleton />}>
 					{isMetricsLoading ? (
 						<StatsCardSkeleton />
 					) : (
@@ -142,7 +142,7 @@ const Page = () => {
 							description="Created in the last 7 days"
 						/>
 					)}
-				</Suspense>
+				</Suspense> */}
 
 				<Card className="overflow-hidden border border-[#232323] bg-[#121212] transition-all hover:border-[#2A2A2A] hover:shadow-md">
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -217,7 +217,7 @@ const Page = () => {
 			</div>
 
 			{/* Functional Filter Tabs */}
-			<div className="flex flex-wrap items-center justify-between gap-4">
+			{/* <div className="flex flex-wrap items-center justify-between gap-4">
 				<Tabs
 					value={postFilter}
 					onValueChange={setPostFilter}
@@ -250,7 +250,7 @@ const Page = () => {
 						</TabsTrigger>
 					</TabsList>
 				</Tabs>
-			</div>
+			</div> */}
 
 			{/* Main Content */}
 			<div className="grid h-full flex-1 gap-6 pb-[22px] lg:h-[500px] lg:grid-cols-2">

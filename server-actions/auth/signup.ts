@@ -24,6 +24,8 @@ export const registerUser = async (
 		const response = await apiClient.post(
 			"/api/v1/managements/magic-link/send/",
 			parsedData,
+			{},
+			10000,
 		);
 		// Check if the registration was successful (status 200 or 201)
 		if (response.error) {
