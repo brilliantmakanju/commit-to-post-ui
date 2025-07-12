@@ -310,7 +310,7 @@ export function WebhookModal({
 									)}
 								</div>
 								<div className="space-y-3">
-									<div className="flex items-center justify-between">
+									{/* <div className="flex items-center justify-between">
 										<span className="text-sm text-zinc-400">Webhook URL</span>
 										<button
 											onClick={() => setShowUrl(!showUrl)}
@@ -323,19 +323,19 @@ export function WebhookModal({
 											)}
 											{showUrl ? "Hide" : "Show"}
 										</button>
-									</div>
+									</div> */}
 									<div className="flex items-center gap-3">
 										<code className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-xs text-zinc-300">
 											{showUrl
 												? currentWebhook
 												: maskUrl(currentWebhook as string)}
 										</code>
-										<button
+										{/* <button
 											onClick={copyWebhook}
 											className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
 										>
 											<Copy className="h-4 w-4" />
-										</button>
+										</button> */}
 									</div>
 								</div>
 							</div>
