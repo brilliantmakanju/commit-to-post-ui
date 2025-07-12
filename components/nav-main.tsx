@@ -25,7 +25,7 @@ import useRetrieveUnreadCount from "@/hooks/notifications/unread-counts";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
 import { useBillingPortal } from "@/hooks/settings/use-billing";
-import useLogoutStore from "@/lib/zustand/logout-store";
+import useLogoutStore from "@/zustand/logout-store";
 
 interface NavItem {
 	title: string;

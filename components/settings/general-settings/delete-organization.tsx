@@ -26,21 +26,26 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { deleteCookie } from "@/lib/cookies/create-cookies";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import {
 	type DeleteOrganizationFormValues,
 	deleteOrganizationSchema,
 } from "@/resolvers/organizations/organization-settings-schema";
 import { deleteOrganization } from "@/server-actions/organizations/delete-organization";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 export function DeleteOrganization() {
 	const [open, setOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const { organization } = useOrganizationStore();
 	const queryClient = useQueryClient();
-	const organizationStore = useOrganizationStore();
-	const [isOnlyOrganization, setIsOnlyOrganization] = useState(false);
+	const { organizations, setOrganization } = useOrganizationStore();
+	const isOnlyOrganization = organizations.length === 1 ? true : false;
 
 	const form = useForm<DeleteOrganizationFormValues>({
 		resolver: zodResolver(deleteOrganizationSchema),
@@ -48,20 +53,6 @@ export function DeleteOrganization() {
 			organizationName: "",
 		},
 	});
-
-	const checkOrganizationCount = async () => {
-		const organizations = await queryClient.fetchQuery<
-			{
-				id: string;
-				name: string;
-				description: string;
-				domains: string[];
-			}[]
-		>({
-			queryKey: ["organizations"],
-		});
-		setIsOnlyOrganization(organizations.length === 1);
-	};
 
 	const onSubmit = async (data: DeleteOrganizationFormValues) => {
 		if (data.organizationName !== organization?.name) {
@@ -89,7 +80,7 @@ export function DeleteOrganization() {
 				});
 
 				if (updatedOrganizations && updatedOrganizations.length > 0) {
-					organizationStore.setOrganization({
+					setOrganization({
 						...updatedOrganizations[0],
 						domains: updatedOrganizations[0].domains[0],
 					});
@@ -126,21 +117,40 @@ export function DeleteOrganization() {
 					<Dialog
 						open={open}
 						onOpenChange={newOpen => {
-							if (newOpen) {
-								checkOrganizationCount();
-							}
 							setOpen(newOpen);
 						}}
 					>
-						<DialogTrigger asChild>
-							<Button
-								variant="destructive"
-								className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900"
-							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								Delete Organization
-							</Button>
-						</DialogTrigger>
+						{isOnlyOrganization ? (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<div>
+										<Button
+											variant="destructive"
+											disabled
+											className="cursor-not-allowed border border-red-900/30 bg-red-900/20 text-white opacity-60"
+										>
+											<Trash2 className="mr-2 h-4 w-4" />
+											Delete Organization
+										</Button>
+									</div>
+								</TooltipTrigger>
+								<TooltipContent side="top" className="max-w-xs text-xs">
+									You cannot delete your only organization. Please create
+									another first.
+								</TooltipContent>
+							</Tooltip>
+						) : (
+							<DialogTrigger asChild>
+								<Button
+									variant="destructive"
+									className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900"
+								>
+									<Trash2 className="mr-2 h-4 w-4" />
+									Delete Organization
+								</Button>
+							</DialogTrigger>
+						)}
+
 						<DialogContent className="border border-[#232323] bg-[#121212] text-white">
 							<DialogHeader>
 								<DialogTitle className="flex items-center">

@@ -27,8 +27,8 @@ import {
 	createEncryptedCookie,
 	deleteCookie,
 } from "@/lib/cookies/create-cookies";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 export function TeamSwitcher({
 	teams,
@@ -38,7 +38,8 @@ export function TeamSwitcher({
 		id: string;
 		name: string;
 		domains: string;
-		description: string;
+		is_owner?: boolean;
+		description?: string;
 	}[];
 	isLoading: boolean;
 }) {

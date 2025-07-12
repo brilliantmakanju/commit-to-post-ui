@@ -13,10 +13,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import useUserStore from "@/lib/zustand/useuser-store";
 import type { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 // import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
 import { connectGithub } from "@/server-actions/user-actions/connect-github";
+import useUserStore from "@/zustand/useuser-store";
 
 interface ConnectionStatus {
 	code: string;

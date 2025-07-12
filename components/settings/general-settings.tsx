@@ -3,7 +3,6 @@
 import { AlertTriangle, Building2, Link } from "lucide-react";
 
 import { DeleteOrganization } from "@/components/settings/general-settings/delete-organization";
-import { WebHookSettings } from "@/components/settings/general-settings/web-hooks";
 import { Separator } from "@/components/ui/separator";
 
 import { GeneralSettingsForm } from "./general-settings/general-settings-form";
@@ -31,17 +30,17 @@ export default function GeneralSettings() {
 			</div>
 			<SocialConnectionSettings />
 
+			{/* <Separator className="bg-[#232323]" /> */}
+
+			{/* <WebHookSettings /> */}
+
 			<Separator className="bg-[#232323]" />
-
-			<WebHookSettings />
-
-			{/* <Separator className="bg-[#232323]" />
 
 			<div className="mb-2 flex items-center gap-2">
 				<AlertTriangle className="h-5 w-5 text-amber-500" />
 				<h2 className="text-xl font-semibold text-white">Danger Zone</h2>
 			</div>
-			<DeleteOrganization /> */}
+			<DeleteOrganization />
 		</div>
 	);
 }

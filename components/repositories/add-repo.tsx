@@ -42,9 +42,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useGithubConnectedStatus } from "@/hooks/settings/use-github-connected";
 import { cn } from "@/lib/utils";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { connectGithubRepoBatch } from "@/server-actions/user-actions/connect-git-repo";
 import { getGitHubRepos } from "@/server-actions/user-actions/get-repos";
+import useUserStore from "@/zustand/useuser-store";
 
 interface AddRepositoryModalProps {
 	open: boolean;

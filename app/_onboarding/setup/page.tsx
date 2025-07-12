@@ -15,9 +15,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { setupFormSchema, SetupFormValues } from "@/resolvers/auth-resolvers";
 import { updateProfileSetup } from "@/server-actions/onboarding/update-profile";
+import useUserStore from "@/zustand/useuser-store";
 
 const SetupPage = () => {
 	const router = useRouter();

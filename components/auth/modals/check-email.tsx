@@ -10,7 +10,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 export default function CheckEmailModal() {
 	const { openModal } = useAuthModalStore();

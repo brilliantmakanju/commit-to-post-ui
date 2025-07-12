@@ -17,13 +17,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { deleteCookie } from "@/lib/cookies/create-cookies";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { magicLinkSchema } from "@/resolvers/auth-resolvers";
 import { requestMagicLink } from "@/server-actions/auth/magic-link";
 import { signOut } from "@/server-actions/auth/signout";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+import useUserStore from "@/zustand/useuser-store";
 
 interface MagicLinkFormProps {
 	onToggleForm: () => void;

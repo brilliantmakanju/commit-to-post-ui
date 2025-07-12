@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { cn } from "@/lib/utils";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import useUserStore from "@/zustand/useuser-store";
 
 interface PaddleCheckoutProps {
 	locale: string;

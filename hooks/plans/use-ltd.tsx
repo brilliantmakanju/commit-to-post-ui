@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { hasLifetimeAccess } from "@/lib/utils/check-plan";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export function useLifetimeAccess() {
 	const [lifetimeAccess, setLifetimeAccess] = useState(false);

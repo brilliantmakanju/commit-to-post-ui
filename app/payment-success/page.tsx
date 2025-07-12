@@ -21,10 +21,10 @@ import {
 	clearCookies,
 	createEncryptedCookie,
 } from "@/lib/cookies/create-cookies";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { logout, signOut } from "@/server-actions/auth/signout";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+import useUserStore from "@/zustand/useuser-store";
 
 interface PaymentStatus {
 	status: "loading" | "success" | "error";

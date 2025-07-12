@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useLogoutStore from "@/zustand/logout-store";
+import useUserStore from "@/zustand/useuser-store";
 
 import AuthButtons from "./auth-buttons";
 import Logo from "./logo";

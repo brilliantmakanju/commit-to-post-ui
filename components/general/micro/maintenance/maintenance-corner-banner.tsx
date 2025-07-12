@@ -8,22 +8,21 @@ export function MaintenanceCornerBanner() {
 
 	return (
 		<div
-			className={`fixed bottom-[100px] left-4 z-40 cursor-pointer rounded-lg border border-white/10 bg-black/80 text-white backdrop-blur-sm transition-all duration-200 ${
-				isExpanded ? "max-w-sm px-4 py-3" : "p-3"
+			className={`fixed bottom-4 right-4 z-50 cursor-pointer rounded-lg border border-white/10 bg-black/80 backdrop-blur-sm transition-all duration-200 ${
+				isExpanded ? "max-w-xs px-4 py-3" : "p-2"
 			}`}
 			onClick={() => setIsExpanded(!isExpanded)}
 		>
 			{isExpanded ? (
-				<div className="flex items-center gap-3">
-					<Wrench className="h-4 w-4 flex-shrink-0" />
-					<span className="text-sm leading-tight">
-						App under maintenance — things might break.
-					</span>
+				<div className="flex items-start space-x-3">
+					<Wrench className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-400" />
+					<div className="text-white">
+						<p className="text-sm font-medium">App under maintenance</p>
+						<p className="mt-1 text-xs text-gray-300">Things might break.</p>
+					</div>
 				</div>
 			) : (
-				<div className="flex items-center justify-center">
-					<Settings className="h-4 w-4" />
-				</div>
+				<Settings className="h-5 w-5 text-orange-400" />
 			)}
 		</div>
 	);

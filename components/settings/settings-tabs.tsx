@@ -2,13 +2,11 @@
 
 import { GitBranch, SettingsIcon, User } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useOrganizationOwnership from "@/hooks/settings/use-ownership";
-
-import { LogoutModal } from "../auth/modals/logout-modal";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 const GeneralSettings = dynamic(
 	() => import("@/components/settings/general-settings"),
@@ -31,16 +29,15 @@ const tabTitles = {
 export function SettingsTabs() {
 	const router = useRouter();
 
-	const [mounted, setMounted] = useState(false);
+	const { organization } = useOrganizationStore();
+	const isOwner = organization.is_owner;
+
 	const [socialCode, setSocialCode] = useState("");
+	const [activeTab, setActiveTab] = useState("general");
+	const [codeConnecting, setCodeConnecting] = useState(false);
 	const [socialType, setSocialType] = useState<
 		"github" | "linkedin" | "twitter" | "slack" | "discord"
 	>("linkedin");
-	const [activeTab, setActiveTab] = useState("general");
-	const [codeConnecting, setCodeConnecting] = useState(false);
-
-	const { data: ownershipData, isLoading } = useOrganizationOwnership();
-	const isOwner = ownershipData?.isOwner;
 
 	useEffect(() => {
 		const rawParams = globalThis.location.search;
@@ -63,15 +60,11 @@ export function SettingsTabs() {
 		} else {
 			setActiveTab("profile");
 		}
-
-		setMounted(true);
 	}, [isOwner]);
 	const handleTabChange = (value: string) => {
 		setActiveTab(value);
 		router.push(`/settings?tab=${value}`, { scroll: false });
 	};
-
-	if (!mounted || isLoading) return <LogoutModal showByDefault />;
 
 	return (
 		<div className="w-full rounded-lg bg-[#0A0A0A] p-4 text-white sm:p-6">

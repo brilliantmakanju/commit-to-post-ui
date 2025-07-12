@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 
 import LoginForm from "@/components/auth/modals/login";
 import SignupForm from "@/components/auth/modals/signup";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 import CheckEmailModal from "./modals/check-email";
 import MagicVerifyModal from "./modals/verification-modal";

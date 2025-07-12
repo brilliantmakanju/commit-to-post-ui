@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import hasAccess from "@/lib/utils/check-plan";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export function useCheckAccess() {
 	const [billingPlan, setBillingPlan] = useState(false);

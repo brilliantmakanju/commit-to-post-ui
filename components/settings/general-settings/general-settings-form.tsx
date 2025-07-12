@@ -19,12 +19,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateCookie } from "@/lib/cookies/create-cookies";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import {
 	type OrganizationSettingsFormValues,
 	organizationSettingsSchema,
 } from "@/resolvers/organizations/organization-settings-schema";
 import { updateOrganization } from "@/server-actions/organizations/update-organization";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 	const { organization, setOrganization } = useOrganizationStore();

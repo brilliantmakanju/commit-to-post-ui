@@ -1,7 +1,7 @@
 "use client";
 
 import LoadingScreen from "@/components/wrappers/loaders/logo-loading";
-import useLogoutStore from "@/lib/zustand/logout-store";
+import useLogoutStore from "@/zustand/logout-store";
 
 interface LogoutModalProps {
 	showByDefault?: boolean; // Optional prop to control showing the modal by default

@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 
 // eslint-disable-next-line import/no-unresolved
-import useUserStore from "@/lib/zustand/useuser-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export const useGithubConnectedStatus = () => {
 	const { data: session } = useSession();

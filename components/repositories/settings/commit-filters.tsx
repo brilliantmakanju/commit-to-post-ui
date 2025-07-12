@@ -9,13 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CommitFilterSettings {
-	ignored_keywords: string;
 	prefix_filter: string;
+	ignored_keywords: string;
 }
 
 interface RepoCommitFiltersCardProps {
-	settings: CommitFilterSettings;
 	loading?: boolean;
+	settings: CommitFilterSettings;
 	onChange: <K extends keyof CommitFilterSettings>(
 		key: K,
 		value: CommitFilterSettings[K],

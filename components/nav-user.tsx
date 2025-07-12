@@ -4,8 +4,7 @@ import { ChevronsUpDown, LogOut, User2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -23,10 +22,10 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { clearCookies } from "@/lib/cookies/create-cookies";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { logout, signOut } from "@/server-actions/auth/signout";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export function NavUser({
 	isLoadingAttachment = false,

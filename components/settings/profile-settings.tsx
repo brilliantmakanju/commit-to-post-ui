@@ -27,15 +27,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { clearCookies } from "@/lib/cookies/create-cookies";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import {
 	passwordFormSchema,
 	profileFormSchema,
 } from "@/resolvers/auth-resolvers";
 import { updateProfileSetup } from "@/server-actions/onboarding/update-profile";
 import { changePassword } from "@/server-actions/profile/updated-password";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export default function ProfileSettings() {
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);

@@ -12,9 +12,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import useUserStore from "@/zustand/useuser-store";
 
 import { VerificationAnimation } from "./verification-sub-modal";
 

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 import { pricingData } from "../data";
 import PaddleCheckout from "../v4/paddle-overlay";

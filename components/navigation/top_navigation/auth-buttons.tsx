@@ -4,7 +4,7 @@
 
 // import AuthModal from "@/components/auth/modal";
 import { Button } from "@/components/ui/button";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 const AuthButtons = () => {
 	const openModal = useAuthModalStore(state => state.openModal);

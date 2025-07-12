@@ -1,6 +1,5 @@
 "use client";
-import { ArrowUpRight, Calendar, Crown, Loader2, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Crown, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { Suspense, useEffect, useState } from "react";
@@ -10,12 +9,6 @@ import {
 	NotificationsList,
 	NotificationsSkeleton,
 } from "@/components/dashboard/notification-card";
-import StatsCard from "@/components/dashboard/stats-card";
-import StatsCardSkeleton from "@/components/dashboard/stats-card-loader";
-import {
-	UpcomingPosts,
-	UpcomingPostsSkeleton,
-} from "@/components/dashboard/upcoming-post";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -24,11 +17,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useRetrieveMetrics from "@/hooks/core/metric";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { useLifetimeAccess } from "@/hooks/plans/use-ltd";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useUserStore from "@/zustand/useuser-store";
 
 const Page = () => {
 	const router = useRouter();
@@ -254,7 +246,7 @@ const Page = () => {
 
 			{/* Main Content */}
 			<div className="grid h-full flex-1 gap-6 pb-[22px] lg:h-[500px] lg:grid-cols-2">
-				<Card className="overflow-hidden border border-[#232323] bg-[#121212]">
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212]">
 					<CardHeader className="flex flex-row items-center justify-between">
 						<CardTitle className="text-white">
 							{postFilter === "all"
@@ -281,7 +273,7 @@ const Page = () => {
 							<UpcomingPosts filter={postFilter} />
 						</Suspense>
 					</CardContent>
-				</Card>
+				</Card> */}
 
 				<Card className="overflow-hidden border border-[#232323] bg-[#121212]">
 					<CardHeader className="flex flex-row items-center justify-between">

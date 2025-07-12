@@ -1,15 +1,20 @@
 "use client";
 
+import { UUID } from "node:crypto";
+
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Check } from "lucide-react";
+import { useState } from "react";
 
 import type { Notification } from "@/types";
 
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 interface NotificationItemProps {
 	notification: Notification;
-	onClick: () => void;
+	onDelete?: (id: UUID) => void;
+	onMarkAsRead?: (id: UUID) => void;
 }
 
 const formatDate = (date: string) => {
@@ -18,44 +23,89 @@ const formatDate = (date: string) => {
 };
 
 export default function NotificationItem({
+	onDelete,
 	notification,
-	onClick,
+	onMarkAsRead,
 }: NotificationItemProps) {
+	const [expanded, setExpanded] = useState(false);
+
+	const toggleExpanded = () => setExpanded(previous => !previous);
+
 	return (
-		<div
-			onClick={onClick}
+		<Card
 			key={notification.id}
-			className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-all hover:border-zinc-700 ${
+			className={`group relative border transition-all duration-200 ${
 				notification.is_read
-					? "border-zinc-800/50 bg-zinc-900/20"
-					: "border-zinc-700/50 bg-zinc-800/20"
+					? "border-zinc-800/50 bg-zinc-900/30 hover:bg-zinc-900/50"
+					: "border-zinc-700/50 bg-zinc-900/60 hover:bg-zinc-900/80"
 			}`}
 		>
-			<Avatar className="h-8 w-8 border border-zinc-800">
-				<AvatarImage src={"/System_icon.jpg"} />
-				<AvatarFallback className="bg-zinc-900 text-zinc-300">
-					PP
-				</AvatarFallback>
-			</Avatar>
-			<div className="flex-1 space-y-1">
-				<h4
-					className={`text-sm font-medium ${notification.is_read ? "text-zinc-300" : "text-white"}`}
-				>
-					{notification.title}
-				</h4>
-				<p className="text-sm text-zinc-400">{notification.message}</p>
-				<div className="flex flex-wrap items-center gap-3 pt-1">
-					<p className="text-xs text-zinc-500">
-						{formatDate(notification.created_at)}
-					</p>
-					<p className="text-xs text-zinc-500">By System</p>
-					{notification.is_read && (
-						<span className="flex items-center text-xs text-zinc-500">
-							<Check className="mr-1 h-3 w-3" /> Read
-						</span>
-					)}
+			<CardHeader className="pb-3">
+				<div className="flex items-start justify-between gap-4">
+					<div className="flex flex-1 items-start gap-3">
+						{!notification.is_read && (
+							<div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-white"></div>
+						)}
+
+						<div className="min-w-0 flex-1">
+							<CardTitle className="text-base font-medium text-white">
+								{notification.title}
+							</CardTitle>
+
+							<CardDescription
+								className={`mt-1 whitespace-pre-wrap break-words text-sm text-zinc-400 ${
+									expanded ? "" : "line-clamp-2"
+								}`}
+								style={{
+									overflowWrap: "anywhere", // <-- critical for URLs/long tokens
+									wordBreak: "break-word", // extra safety
+									maxWidth: "100%", // makes sure it wraps in flex containers
+								}}
+							>
+								{notification.message}
+							</CardDescription>
+
+							{/* Toggle button */}
+							{notification.message.length > 100 && (
+								<button
+									onClick={toggleExpanded}
+									className="mt-1 text-xs font-medium text-blue-400 hover:underline"
+								>
+									{expanded ? "Show less" : "Show more"}
+								</button>
+							)}
+
+							<span className="mt-2 block text-xs text-zinc-500">
+								{formatDate(notification.created_at)}
+							</span>
+						</div>
+					</div>
+
+					{/* Action buttons */}
+					<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+						{!notification.is_read && onMarkAsRead && (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => onMarkAsRead(notification.id)}
+								className="h-7 w-7 p-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+							>
+								<Check className="h-3 w-3" />
+							</Button>
+						)}
+						{/* {onDelete && (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => onDelete(notification.id)}
+								className="h-7 w-7 p-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+							>
+								<X className="h-3 w-3" />
+							</Button>
+						)} */}
+					</div>
 				</div>
-			</div>
-		</div>
+			</CardHeader>
+		</Card>
 	);
 }

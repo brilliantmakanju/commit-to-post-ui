@@ -14,12 +14,13 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
-import useUserStore from "@/lib/zustand/useuser-store";
 import { logout, signOut } from "@/server-actions/auth/signout";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+import useUserStore from "@/zustand/useuser-store";
 
 // Dynamically import non-critical components
 const SubPlanCheckout = dynamic(
@@ -87,10 +88,11 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			};
 		}
 	}, [isClient, logoutStore, organizationStore, router, userStore]);
+	const { isLoading } = useFetchOrganizations();
 
-	const showLoadingModal = !isClient || status === "loading";
+	const showLoadingModal = !isClient || status === "loading" || isLoading;
 	const showMainContent =
-		status !== "loading" && isClient && !logoutStore.logout;
+		status !== "loading" && isClient && !logoutStore.logout && !isLoading;
 
 	return (
 		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">

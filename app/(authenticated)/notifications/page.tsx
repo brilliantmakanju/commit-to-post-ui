@@ -1,30 +1,90 @@
 "use client";
 
-import { BellIcon } from "lucide-react";
-import { useState } from "react";
+import { UUID } from "node:crypto";
 
-import { EmptyState } from "@/components/notifcations/empty-state";
+import { useQueryClient } from "@tanstack/react-query";
+import { Bell, Check } from "lucide-react";
+import { useEffect } from "react";
+
 import NotificationItem from "@/components/notifcations/notification-items";
-import NotificationModal from "@/components/notifcations/notification-modal";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import useRetrieveNotifications from "@/hooks/notifications/notifications";
-import type { Notification } from "@/types";
+import {
+	readAllNotifications,
+	readNotifications,
+} from "@/server-actions/notifications/read-notification";
+import useNotificationStore from "@/zustand/notification/use-notification-store";
 
+// Mock functions - replace with your actual API calls
+const handleDelete = (id: string) => {
+	// console.log("Delete notification:", id);
+	// Your API call here
+};
+
+// const handleClearAll = () => {
+// 	console.log("Clear all notifications");
+// 	// Your API call here
+// };
 export default function NotificationsPage() {
+	const queryClient = useQueryClient();
+	const {
+		clearAll,
+		markAsRead,
+		setNotifications,
+		removeNotification,
+		notifications: localNotifications,
+	} = useNotificationStore();
+
 	const {
 		total_count,
 		unread_count,
-		notifications: Notifications,
 		isNotificationLoading,
+		isNotificationFetching,
+		notifications: serverNotifications,
 	} = useRetrieveNotifications();
-	const [selectedNotification, setSelectedNotification] =
-		useState<Notification | null>();
 
-	if (isNotificationLoading) {
+	// Hydrate Zustand only once when serverNotifications arrive
+	useEffect(() => {
+		if (
+			!isNotificationFetching ||
+			(!isNotificationLoading && serverNotifications.length > 0)
+		) {
+			setNotifications(serverNotifications);
+		}
+	}, [
+		serverNotifications,
+		setNotifications,
+		isNotificationFetching,
+		isNotificationLoading,
+	]);
+
+	const handleMarkAsRead = async (id: UUID) => {
+		// Optimistic update
+		markAsRead(id);
+
+		const response = await readNotifications({ id });
+		if (!response.success) {
+			// You could rollback state here if needed
+			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+		}
+	};
+
+	const handleMarkAllAsRead = async () => {
+		localNotifications.forEach(n => markAsRead(n.id));
+
+		const response = await readAllNotifications();
+		if (!response.success) {
+			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+		}
+	};
+
+	if (isNotificationLoading && localNotifications.length === 0) {
 		return (
 			<div className="flex h-full flex-col bg-black">
-				<div className="border-b border-zinc-800/30 p-4 sm:p-6">
+				<div className="border-b border-zinc-800/30 p-6">
 					<div className="mb-4 flex items-center justify-between">
 						<div className="flex items-center gap-2">
 							<Skeleton className="h-5 w-5 rounded-full bg-zinc-800" />
@@ -34,7 +94,7 @@ export default function NotificationsPage() {
 					</div>
 					<Skeleton className="h-5 w-48 bg-zinc-800" />
 				</div>
-				<div className="flex-1 p-4 sm:p-6">
+				<div className="flex-1 p-6">
 					<div className="space-y-3">
 						{[1, 2, 3].map(index => (
 							<div key={index} className="flex items-start gap-3">
@@ -53,46 +113,84 @@ export default function NotificationsPage() {
 	}
 
 	return (
-		<div className="flex h-full flex-col bg-black text-white">
-			<div className="border-b border-zinc-800/30 p-4 sm:p-6">
-				<div className="mb-4 flex items-center justify-between">
-					<h1 className="flex items-center gap-2 text-lg font-medium text-white">
-						<BellIcon className="h-5 w-5" />
-						Notifications
-					</h1>
-					{unread_count && unread_count > 0 && (
-						<span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-white">
-							{unread_count} unread
-						</span>
-					)}
-				</div>
-				<p className="text-sm text-zinc-400">
-					You have {total_count} notification{total_count === 1 ? "" : "s"}
-				</p>
-			</div>
-
-			<ScrollArea className="flex-1 p-2 sm:p-4 lg:p-6">
-				{Notifications && Notifications.length > 0 ? (
-					<div className="space-y-2">
-						{Notifications.map(notification => (
-							<NotificationItem
-								key={notification.id}
-								notification={notification}
-								onClick={() => setSelectedNotification(notification)}
-							/>
-						))}
+		<div className="min-h-screen bg-black">
+			<div className="container mx-auto w-full px-4 py-8">
+				{/* Header */}
+				<div className="mb-8 flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-bold text-white">Notifications</h1>
+						<p className="mt-2 text-zinc-400">
+							Stay updated with your latest activity
+						</p>
 					</div>
-				) : (
-					<EmptyState />
-				)}
-			</ScrollArea>
+					<div className="flex items-center gap-3">
+						<Badge
+							variant="secondary"
+							className="border-zinc-700 bg-zinc-800 text-zinc-200"
+						>
+							{unread_count} unread
+						</Badge>
+					</div>
+				</div>
 
-			{selectedNotification && (
-				<NotificationModal
-					notification={selectedNotification}
-					onClose={() => setSelectedNotification(undefined)}
-				/>
-			)}
+				{/* Action Bar */}
+				<div className="mb-6 flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
+					<div className="flex items-center gap-2">
+						<span className="text-sm text-zinc-400">
+							{total_count} total, {unread_count} unread
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={handleMarkAllAsRead}
+							disabled={unread_count === 0}
+							className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
+						>
+							<Check className="mr-2 h-4 w-4" />
+							Mark all read
+						</Button>
+						{/* <Button
+								variant="ghost"
+								size="sm"
+								onClick={handleClearAll}
+								className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Clear all
+							</Button> */}
+					</div>
+				</div>
+
+				{/* Notifications List */}
+				<div className="space-y-3">
+					{localNotifications.map(notification => (
+						<NotificationItem
+							key={notification.id}
+							onDelete={handleDelete}
+							notification={notification}
+							onMarkAsRead={handleMarkAsRead}
+						/>
+					))}
+				</div>
+
+				{/* Empty State */}
+				{localNotifications.length === 0 && (
+					<Card className="border-zinc-800/50 bg-zinc-900/30 py-16 text-center">
+						<CardContent>
+							<Bell className="mx-auto mb-4 h-12 w-12 text-zinc-600" />
+							<h3 className="mb-2 text-lg font-medium text-white">
+								No notifications yet
+							</h3>
+							<p className="text-zinc-400">
+								We&apos;ll notify you when there&apos;s something important to
+								share.
+							</p>
+						</CardContent>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 }

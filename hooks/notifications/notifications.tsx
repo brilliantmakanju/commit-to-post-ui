@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getNotifications } from "@/server-actions/notifications/get-notifications";
 
 const useRetrieveNotifications = () => {
-	const { data, isLoading, refetch } = useQuery({
+	const { data, isLoading, refetch, isFetching } = useQuery({
 		queryKey: ["notifications"],
 		queryFn: async () => {
 			const hooks = await getNotifications();
@@ -23,14 +23,17 @@ const useRetrieveNotifications = () => {
 			};
 		},
 		enabled: true,
+		refetchOnMount: true,
+		refetchOnWindowFocus: true,
 	});
 
 	return {
-		total_count: data?.total_count,
-		unread_count: data?.unread_count,
-		notifications: data?.notifications,
-		isNotificationLoading: isLoading,
 		refetchNotifications: refetch,
+		isNotificationLoading: isLoading,
+		isNotificationFetching: isFetching,
+		total_count: data?.total_count || 0,
+		unread_count: data?.unread_count || 0,
+		notifications: data?.notifications || [],
 	};
 };
 

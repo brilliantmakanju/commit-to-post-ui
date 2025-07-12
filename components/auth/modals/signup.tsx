@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GithubIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -16,9 +16,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
 import { signupSchema } from "@/resolvers/auth-resolvers";
 import { registerUser } from "@/server-actions/auth/signup";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 interface SignupFormProps {
 	setView: (view: "login" | "signup" | "forgot") => void;

@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSocialStatus } from "@/hooks/settings/use-social-status";
 import useRetrieveWebhook from "@/hooks/settings/use-webhook";
-import useOrganizationStore from "@/lib/zustand/useorganization-store";
 import { regenerateWebhookSchema } from "@/resolvers/organizations/organization-schema";
 import { createRegenerateWebhook } from "@/server-actions/organizations/create-web-hook";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 import WebHookOptions from "./webhook-options";
 import AISettingsLoader from "./webhook-options-loader";

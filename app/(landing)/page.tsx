@@ -10,9 +10,9 @@ import HeroSection from "@/components/landing/micro/hero-section";
 import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
-import useLogoutStore from "@/lib/zustand/logout-store";
 import { signOut } from "@/server-actions/auth/signout";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import useLogoutStore from "@/zustand/logout-store";
 
 export default function Home() {
 	const router = useRouter();

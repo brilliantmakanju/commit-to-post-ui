@@ -9,9 +9,9 @@ import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern"
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { TextAnimate } from "@/components/magicui/text-animate";
 import { cn } from "@/lib/utils";
-import useAuthModalStore from "@/lib/zustand/auth/use-auth-modal";
-import useLogoutStore from "@/lib/zustand/logout-store";
-import useUserStore from "@/lib/zustand/useuser-store";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import useLogoutStore from "@/zustand/logout-store";
+import useUserStore from "@/zustand/useuser-store";
 
 import Flow from "./flow";
 
