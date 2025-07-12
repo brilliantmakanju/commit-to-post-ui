@@ -61,7 +61,7 @@ export const RepoAISettingsCard = ({
 			</CardHeader>
 			<CardContent className="space-y-8">
 				{/* AI Toggle */}
-				<div className="flex items-start justify-between gap-4">
+				{/* <div className="flex items-start justify-between gap-4">
 					<div className="space-y-1">
 						<Label className="text-sm font-medium text-zinc-100">
 							Enable AI Rewrite
@@ -74,7 +74,7 @@ export const RepoAISettingsCard = ({
 						checked={settings.ai_enabled}
 						onCheckedChange={checked => onChange("ai_enabled", checked)}
 					/>
-				</div>
+				</div> */}
 
 				{/* AI Tone Preset */}
 				{settings.ai_enabled && (

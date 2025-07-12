@@ -1,6 +1,12 @@
-import { Eye, Github, Linkedin, Settings, Twitter } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 import Link from "next/link";
-import { FaDiscord, FaSlack } from "react-icons/fa";
+import {
+	FaDiscord,
+	FaGithub,
+	FaLinkedin,
+	FaSlack,
+	FaTwitter,
+} from "react-icons/fa";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -73,8 +79,8 @@ export function RepositoryCard({ repository: repo }: RepositoryCardProps) {
 			return <span className="text-xs text-zinc-500">None</span>;
 
 		const iconMap: Record<string, JSX.Element> = {
-			linkedin: <Linkedin className="h-4 w-4 text-zinc-400" />,
-			twitter: <Twitter className="h-4 w-4 text-zinc-400" />,
+			linkedin: <FaLinkedin className="h-4 w-4 text-zinc-400" />,
+			twitter: <FaTwitter className="h-4 w-4 text-zinc-400" />,
 			slack: <FaSlack className="h-4 w-4 text-zinc-400" />,
 			discord: <FaDiscord className="h-4 w-4 text-zinc-400" />,
 		};
@@ -94,13 +100,13 @@ export function RepositoryCard({ repository: repo }: RepositoryCardProps) {
 	};
 
 	return (
-		<Link href={`/repositories/${repo.id}`} className="block">
-			<Card className="group relative flex flex-col justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm transition-all hover:border-zinc-700/50 hover:bg-zinc-900/50">
+		<Card className="group relative flex flex-col justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm transition-all hover:border-zinc-700/50 hover:bg-zinc-900/50">
+			<Link href={`/repositories/${repo.id}`} className="block">
 				<CardHeader className="border-b border-zinc-800/50 px-5 py-4">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
 							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-800/50">
-								<Github className="h-5 w-5 text-zinc-400" />
+								<FaGithub className="h-5 w-5 text-zinc-400" />
 							</div>
 							<div>
 								<p className="text-sm font-semibold text-zinc-100">
@@ -116,12 +122,6 @@ export function RepositoryCard({ repository: repo }: RepositoryCardProps) {
 				<CardContent className="flex flex-col justify-between gap-4 px-5 py-4">
 					<div className="space-y-3 text-sm">
 						<div className="flex items-center justify-between">
-							<span className="text-zinc-500">AI Enabled</span>
-							<span className="font-medium text-zinc-300">
-								{repo.ai_enabled ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex items-center justify-between">
 							<span className="text-zinc-500">Platforms</span>
 							{getChannelIcons(repo.channels_to_post)}
 						</div>
@@ -133,35 +133,24 @@ export function RepositoryCard({ repository: repo }: RepositoryCardProps) {
 						</div>
 					</div>
 				</CardContent>
+			</Link>
 
-				<div
-					className="flex items-center justify-end gap-2 border-t border-zinc-800/50 px-5 py-3"
-					onClick={event_ => event_.stopPropagation()}
-				>
-					<Link href={`/repositories/${repo.id}?page=posts`}>
-						<Button
-							size="sm"
-							variant="ghost"
-							className="text-sm text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
-							onClick={event_ => event_.stopPropagation()}
-						>
-							<Eye className="mr-2 h-4 w-4" />
-							View Posts
-						</Button>
-					</Link>
-					<Link href={`/repositories/${repo.id}?page=settings`}>
-						<Button
-							size="sm"
-							variant="ghost"
-							className="text-sm text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
-							onClick={event_ => event_.stopPropagation()}
-						>
-							<Settings className="mr-2 h-4 w-4" />
-							Settings
-						</Button>
-					</Link>
-				</div>
-			</Card>
-		</Link>
+			<div
+				className="flex items-center justify-end gap-2 border-t border-zinc-800/50 px-5 py-3"
+				onClick={event_ => event_.stopPropagation()}
+			>
+				<Link href={`/repositories/${repo.id}?page=posts`}>
+					<Button
+						size="sm"
+						variant="ghost"
+						className="text-sm text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+						onClick={event_ => event_.stopPropagation()}
+					>
+						<Eye className="mr-2 h-4 w-4" />
+						View Posts
+					</Button>
+				</Link>
+			</div>
+		</Card>
 	);
 }

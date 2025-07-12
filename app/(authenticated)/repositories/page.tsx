@@ -33,15 +33,12 @@ export default function RepositoriesPage() {
 	const { repositories, totalRepositories, isLoadingRepos } =
 		useRetrieveConnectedRepos();
 
-	const [filteredRepositories, setFilteredRepositories] = useState<
-		Repository[]
-	>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [viewMode, setViewMode] = useState<"grid" | "stacked">("grid");
-	const [sortBy, setSortBy] = useState<"name" | "latest" | "oldest">("name");
+	const [sortBy, setSortBy] = useState<"name" | "latest" | "oldest">("latest");
 
-	const handleFilteredRepositories = useMemo(() => {
+	const filteredRepositories = useMemo(() => {
 		if (!repositories) return [];
 
 		const q = searchQuery.trim().toLowerCase();
@@ -61,14 +58,12 @@ export default function RepositoriesPage() {
 				}
 				case "latest": {
 					return (
-						new Date(b.created_at ?? 0).getTime() -
-						new Date(a.created_at ?? 0).getTime()
+						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 					);
 				}
 				case "oldest": {
 					return (
-						new Date(a.created_at ?? 0).getTime() -
-						new Date(b.created_at ?? 0).getTime()
+						new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 					);
 				}
 				default: {
@@ -79,10 +74,6 @@ export default function RepositoriesPage() {
 
 		return filtered;
 	}, [repositories, searchQuery, sortBy]);
-
-	useEffect(() => {
-		setFilteredRepositories(handleFilteredRepositories);
-	}, [handleFilteredRepositories]);
 
 	const renderRepositories = () => {
 		if (isLoadingRepos) {
@@ -165,9 +156,11 @@ export default function RepositoriesPage() {
 				sortBy={sortBy}
 				viewMode={viewMode}
 				searchQuery={searchQuery}
+				isLoading={isLoadingRepos}
 				onViewModeChange={setViewMode}
 				onSortChange={setSortBy as any}
 				onSearchChange={setSearchQuery}
+				resultCount={filteredRepositories.length || 0}
 			/>
 
 			<div className="relative w-full flex-1 overflow-hidden rounded-lg border border-zinc-800/30 bg-zinc-900/20">
