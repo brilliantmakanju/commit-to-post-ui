@@ -36,15 +36,15 @@ export default function PostList({ posts, showFullDate }: PostListProps) {
 	return (
 		<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 			{posts.map(post => {
-				if ("group_id" in post) {
-					return (
-						<GroupedPostCard
-							group={post}
-							key={post.group_id}
-							showFullDate={showFullDate}
-						/>
-					);
-				}
+				// if ("group_id" in post) {
+				// 	return (
+				// 		<GroupedPostCard
+				// 			group={post}
+				// 			key={post.group_id}
+				// 			showFullDate={showFullDate}
+				// 		/>
+				// 	);
+				// }
 				return (
 					<>
 						{/* <PostCard key={post.id} post={post} showFullDate={showFullDate} /> */}
