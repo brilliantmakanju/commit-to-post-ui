@@ -294,18 +294,20 @@ export default function Component() {
 	// Show error if missing required params
 	if (!code || !state) {
 		return (
-			<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
-				<div className="text-center">
-					<AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-400" />
-					<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
-						Invalid OAuth Request
-					</h1>
-					<p className="text-gray-600 dark:text-gray-400">
-						Missing required authentication parameters. Please try the OAuth
-						flow again.
-					</p>
-				</div>
-			</section>
+			<Suspense>
+				<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+					<div className="text-center">
+						<AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-400" />
+						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
+							Invalid OAuth Request
+						</h1>
+						<p className="text-gray-600 dark:text-gray-400">
+							Missing required authentication parameters. Please try the OAuth
+							flow again.
+						</p>
+					</div>
+				</section>
+			</Suspense>
 		);
 	}
 
