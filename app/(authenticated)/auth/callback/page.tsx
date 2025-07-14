@@ -3,7 +3,7 @@
 import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 // eslint-disable-next-line import/no-unresolved
@@ -310,85 +310,87 @@ export default function Component() {
 	}
 
 	return (
-		<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
-			<ProviderBackground provider={provider} />
+		<Suspense>
+			<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+				<ProviderBackground provider={provider} />
 
-			<div className="relative z-10 mx-auto w-full max-w-6xl">
-				{/* Header */}
-				<div className="mb-8 text-center">
-					<div className="mb-4 flex items-center justify-center gap-3">
-						<AnimatedAIIcon color={"#1f2937"} size={36} />
-						<h1 className="font-mono text-3xl font-bold text-gray-900 dark:text-gray-100">
-							Push to Post
-						</h1>
-						<Badge
-							variant="outline"
-							className={`${config.terminalTheme.primary} border-current bg-transparent`}
-						>
-							<span className="mr-2">{config.icon}</span>
-							{config.name}
-						</Badge>
-					</div>
-					<div className="mb-3 flex items-center justify-center gap-2">
-						{statusIcon}
-						<p className="font-mono text-sm text-gray-600 dark:text-gray-400">
-							{statusText}
+				<div className="relative z-10 mx-auto w-full max-w-6xl">
+					{/* Header */}
+					<div className="mb-8 text-center">
+						<div className="mb-4 flex items-center justify-center gap-3">
+							<AnimatedAIIcon color={"#1f2937"} size={36} />
+							<h1 className="font-mono text-3xl font-bold text-gray-900 dark:text-gray-100">
+								Push to Post
+							</h1>
+							<Badge
+								variant="outline"
+								className={`${config.terminalTheme.primary} border-current bg-transparent`}
+							>
+								<span className="mr-2">{config.icon}</span>
+								{config.name}
+							</Badge>
+						</div>
+						<div className="mb-3 flex items-center justify-center gap-2">
+							{statusIcon}
+							<p className="font-mono text-sm text-gray-600 dark:text-gray-400">
+								{statusText}
+							</p>
+						</div>
+						<p className="mx-auto max-w-2xl text-sm leading-relaxed text-gray-500 dark:text-gray-500">
+							{descriptionText}
 						</p>
 					</div>
-					<p className="mx-auto max-w-2xl text-sm leading-relaxed text-gray-500 dark:text-gray-500">
-						{descriptionText}
-					</p>
-				</div>
 
-				<div className="flex w-full items-start justify-center">
-					{/* Terminal Window */}
-					<div className="lg:col-span-2">
-						<Card
-							className={`${config.terminalTheme.background} border-gray-700 shadow-2xl dark:border-gray-800`}
-						>
-							<TerminalHeader
-								provider={provider}
-								connectionState={connectionState}
-								waitingForBackend={waitingForBackend}
-							/>
-							<TerminalContent
-								provider={provider}
-								isTyping={isTyping}
-								showCursor={showCursor}
-								currentLine={currentLine}
-								providerIcon={config.icon}
-								terminalLines={terminalLines}
-								connectionState={connectionState}
-								terminalTheme={config.terminalTheme}
-							/>
-						</Card>
+					<div className="flex w-full items-start justify-center">
+						{/* Terminal Window */}
+						<div className="lg:col-span-2">
+							<Card
+								className={`${config.terminalTheme.background} border-gray-700 shadow-2xl dark:border-gray-800`}
+							>
+								<TerminalHeader
+									provider={provider}
+									connectionState={connectionState}
+									waitingForBackend={waitingForBackend}
+								/>
+								<TerminalContent
+									provider={provider}
+									isTyping={isTyping}
+									showCursor={showCursor}
+									currentLine={currentLine}
+									providerIcon={config.icon}
+									terminalLines={terminalLines}
+									connectionState={connectionState}
+									terminalTheme={config.terminalTheme}
+								/>
+							</Card>
+						</div>
+					</div>
+
+					{/* Action Buttons */}
+					<div className="mt-8 flex justify-center gap-4">
+						{(connectionState === "error" || connectionState === "timeout") && (
+							<Button
+								onClick={handleRetry}
+								variant="outline"
+								className="border-gray-300 bg-transparent font-mono hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+							>
+								<RefreshCw className="mr-2 h-4 w-4" />
+								Retry Integration
+							</Button>
+						)}
+					</div>
+
+					{/* Footer */}
+					<div className="mt-12 text-center">
+						<p className="font-mono text-xs text-gray-400">
+							OAuth secured • Automated posting enabled • Made for developers
+						</p>
+						<p className="mt-1 font-mono text-xs text-gray-500">
+							Code. Commit. Share. Automatically.
+						</p>
 					</div>
 				</div>
-
-				{/* Action Buttons */}
-				<div className="mt-8 flex justify-center gap-4">
-					{(connectionState === "error" || connectionState === "timeout") && (
-						<Button
-							onClick={handleRetry}
-							variant="outline"
-							className="border-gray-300 bg-transparent font-mono hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-						>
-							<RefreshCw className="mr-2 h-4 w-4" />
-							Retry Integration
-						</Button>
-					)}
-				</div>
-
-				{/* Footer */}
-				<div className="mt-12 text-center">
-					<p className="font-mono text-xs text-gray-400">
-						OAuth secured • Automated posting enabled • Made for developers
-					</p>
-					<p className="mt-1 font-mono text-xs text-gray-500">
-						Code. Commit. Share. Automatically.
-					</p>
-				</div>
-			</div>
-		</section>
+			</section>
+		</Suspense>
 	);
 }
