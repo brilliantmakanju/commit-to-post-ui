@@ -312,11 +312,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/>
 
 			{/* Posting Settings */}
-			{/* <RepoPostingSettingsCard
+			<RepoPostingSettingsCard
 				settings={localSettings}
 				loading={isLoadingRepoDetails}
 				onChange={handleSettingChange}
-			/> */}
+			/>
 
 			{/* Channel Settings */}
 			<RepoChannelSettingsCard

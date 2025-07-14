@@ -10,54 +10,9 @@ import { toast } from "sonner";
 import { RepoHeader } from "@/components/repositories/header/repo-header";
 import { RepoTabs } from "@/components/repositories/repo-tabs";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
+import useRepoWebhookPing from "@/hooks/core/repo/get-repo-webhook-pings";
 import { fetchPosts } from "@/server-actions/core/get-posts";
 import { updateRepoStatus } from "@/server-actions/core/repo/repo-status";
-
-interface WebhookLog {
-	id: string;
-	timestamp: string;
-	event_type: string;
-	status: "success" | "failed";
-	error_message: string | undefined;
-}
-
-const mockWebhookLogs: WebhookLog[] = [
-	{
-		id: "1",
-		event_type: "push",
-		status: "success",
-		error_message: undefined,
-		timestamp: "2025-07-06T16:42:00Z",
-	},
-	{
-		id: "2",
-		event_type: "pull_request",
-		status: "failed",
-		error_message: "401 Unauthorized - Invalid webhook signature",
-		timestamp: "2025-07-06T16:36:00Z",
-	},
-	{
-		id: "3",
-		event_type: "push",
-		status: "success",
-		error_message: undefined,
-		timestamp: "2025-07-06T16:30:00Z",
-	},
-	{
-		id: "4",
-		event_type: "release",
-		status: "failed",
-		error_message: "Timeout - Webhook endpoint did not respond within 30s",
-		timestamp: "2025-07-06T15:45:00Z",
-	},
-	{
-		id: "5",
-		event_type: "push",
-		status: "success",
-		error_message: undefined,
-		timestamp: "2025-07-06T15:20:00Z",
-	},
-];
 
 const PAGE_SIZE = 50;
 
@@ -115,16 +70,18 @@ const ViewRepo = () => {
 		}
 	};
 
+	const { webhookLogs, isLoading: isGettingLogs } = useRepoWebhookPing(repoId);
+
 	return (
 		<section className="flex h-full w-full flex-col gap-4 bg-[#0A0A0A] px-6 py-8">
 			<RepoHeader repo_id={repoId} onTogglePause={onTogglePause} />
 			<RepoTabs
 				repo_id={repoId}
-				isLoadingPosts={isLoading}
 				posts={data?.results ?? []}
-				webhookLogs={mockWebhookLogs}
+				webhookLogs={webhookLogs ?? []}
 				postsCurrentPage={postsCurrentPage}
 				onPostsPageChange={handlePostsPageChange}
+				isLoadingPosts={isLoading || isGettingLogs}
 				postsTotalPages={Math.ceil((data?.count ?? 1) / PAGE_SIZE)}
 			/>
 		</section>

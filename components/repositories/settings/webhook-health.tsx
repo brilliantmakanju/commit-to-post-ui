@@ -1,5 +1,4 @@
 "use client";
-
 /* eslint-disable import/no-unresolved */
 import { Webhook } from "lucide-react";
 
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type WebhookStatus = "success" | "error" | "inactive";
+type WebhookStatus = "success" | "failed" | "inactive";
 
 interface RepoWebhookHealthCardProps {
 	webhookStatus: WebhookStatus;
@@ -24,30 +23,33 @@ const webhookStatusMap: Record<
 	success: {
 		title: "Healthy",
 		description: "Webhook is receiving events successfully.",
-		badgeColor: "border-green-600 bg-green-100/10 text-green-400",
+		badgeColor:
+			"border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20",
 	},
-	error: {
-		title: "Issues Detected",
-		description: "There are issues with webhook delivery.",
-		badgeColor: "border-red-600 bg-red-100/10 text-red-400",
+	failed: {
+		title: "Failed",
+		description: "There are critical issues with webhook delivery.",
+		badgeColor:
+			"border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20",
 	},
 	inactive: {
 		title: "Inactive",
 		description: "Webhook is not currently active or installed.",
-		badgeColor: "border-yellow-600 bg-yellow-100/10 text-yellow-400",
+		badgeColor:
+			"border-yellow-500/50 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20",
 	},
 };
 
 export const RepoWebhookHealthCard = ({
 	webhookStatus,
-	loading = true,
+	loading = false,
 	getWebhookStatusIcon,
 }: RepoWebhookHealthCardProps) => {
 	const { title, description, badgeColor } = webhookStatusMap[webhookStatus];
 
 	if (loading) {
 		return (
-			<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
+			<Card className="border-zinc-800/50 bg-zinc-900/50 text-zinc-100 backdrop-blur-sm">
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2 text-lg">
 						<Webhook className="h-5 w-5 text-zinc-400" />
@@ -64,17 +66,16 @@ export const RepoWebhookHealthCard = ({
 	}
 
 	return (
-		<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
+		<Card className="border-zinc-800/50 bg-zinc-900/50 text-zinc-100 backdrop-blur-sm transition-all duration-200 hover:border-zinc-700/50">
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg font-semibold text-zinc-100">
 					<Webhook className="h-5 w-5 text-blue-400" />
 					Webhook Health
 				</CardTitle>
 			</CardHeader>
-
 			<CardContent className="space-y-4">
 				{/* Webhook Status Block */}
-				<div className="flex items-center justify-between">
+				<div className="flex items-center justify-between rounded-lg border border-zinc-800/30 bg-zinc-800/20 p-4 transition-all duration-200 hover:bg-zinc-800/30">
 					<div className="flex items-center space-x-3">
 						{getWebhookStatusIcon(webhookStatus)}
 						<div>
@@ -84,13 +85,15 @@ export const RepoWebhookHealthCard = ({
 							<p className="mt-1 text-xs text-zinc-400">{description}</p>
 						</div>
 					</div>
-
-					<Badge variant="outline" className={badgeColor}>
+					<Badge
+						variant="outline"
+						className={`${badgeColor} transition-all duration-200`}
+					>
 						{title}
 					</Badge>
 				</div>
 
-				<Separator className="bg-zinc-800" />
+				<Separator className="bg-zinc-800/50" />
 
 				{/* Future Features Block */}
 				<div className="space-y-3">
@@ -98,15 +101,21 @@ export const RepoWebhookHealthCard = ({
 						Coming Soon
 					</Label>
 					<div className="space-y-2 text-sm text-zinc-400">
-						<div className="flex items-center justify-between">
+						<div className="flex items-center justify-between rounded-md border border-zinc-800/30 bg-zinc-800/10 p-3 transition-all duration-200 hover:bg-zinc-800/20">
 							<span>Reinstall Webhook</span>
-							<Badge variant="secondary" className="text-xs">
+							<Badge
+								variant="secondary"
+								className="border-zinc-700 bg-zinc-800/50 text-xs text-zinc-400"
+							>
 								Coming Soon
 							</Badge>
 						</div>
-						<div className="flex items-center justify-between">
+						<div className="flex items-center justify-between rounded-md border border-zinc-800/30 bg-zinc-800/10 p-3 transition-all duration-200 hover:bg-zinc-800/20">
 							<span>Enable / Disable Webhook</span>
-							<Badge variant="secondary" className="text-xs">
+							<Badge
+								variant="secondary"
+								className="border-zinc-700 bg-zinc-800/50 text-xs text-zinc-400"
+							>
 								Coming Soon
 							</Badge>
 						</div>

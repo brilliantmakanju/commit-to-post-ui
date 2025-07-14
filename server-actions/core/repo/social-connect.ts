@@ -212,9 +212,9 @@ export const socialConnectLinkedinOauth = async (
 	state: string,
 ): Promise<LinkedInOauthResponse> => {
 	// Validate inputs
-	console.log(code, "Code", state, "State");
+	// console.log(code, "Code", state, "State");
 	const parsed = socialConnectLinkedinOauthSchema.safeParse({ code, state });
-	console.log(parsed, "Parsed");
+	// console.log(parsed, "Parsed");
 
 	if (!parsed.success) {
 		return {
@@ -229,7 +229,7 @@ export const socialConnectLinkedinOauth = async (
 		const url = `/api/v1/repositories/integrations/linkedin/connect/?code=${validatedCode}&state=${validatedState}`;
 
 		const response = await apiClient.post(url, {}, {}, 10000);
-		console.log(response, "Response");
+		// console.log(response, "Response");
 
 		if (response.status !== 200 || !response.data?.repo_id) {
 			return {

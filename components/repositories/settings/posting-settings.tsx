@@ -88,7 +88,7 @@ export const RepoPostingSettingsCard = ({
 			</CardHeader>
 			<CardContent className="space-y-6">
 				{/* Posting Strategy */}
-				<div className="space-y-2">
+				{/* <div className="space-y-2">
 					<Label className="text-sm font-medium text-zinc-100">
 						Posting Strategy
 					</Label>
@@ -112,10 +112,10 @@ export const RepoPostingSettingsCard = ({
 					<p className="text-xs text-zinc-400">
 						When to publish generated posts
 					</p>
-				</div>
+				</div> */}
 
 				{/* Preferred Time */}
-				{settings.posting_strategy === "scheduled" && (
+				{/* {settings.posting_strategy === "scheduled" && (
 					<div className="space-y-2">
 						<Label className="text-sm font-medium text-zinc-100">
 							Preferred Post Time
@@ -130,25 +130,25 @@ export const RepoPostingSettingsCard = ({
 							Default time for scheduled posts
 						</p>
 					</div>
-				)}
+				)} */}
 
 				{/* Manual Approval */}
-				{settings.posting_strategy === "manual" && (
-					<div className="flex items-center justify-between">
-						<div>
-							<Label className="text-sm font-medium text-zinc-100">
-								Manual Approval
-							</Label>
-							<p className="mt-1 text-xs text-zinc-400">
-								Require manual approval before publishing posts
-							</p>
-						</div>
-						<Switch
-							checked={settings.manual_approval}
-							onCheckedChange={checked => onChange("manual_approval", checked)}
-						/>
+				{/* {settings.posting_strategy === "manual" && ( */}
+				<div className="flex items-center justify-between">
+					<div>
+						<Label className="text-sm font-medium text-zinc-100">
+							Manual Approval
+						</Label>
+						<p className="mt-1 text-xs text-zinc-400">
+							Require manual approval before publishing posts
+						</p>
 					</div>
-				)}
+					<Switch
+						checked={settings.manual_approval}
+						onCheckedChange={checked => onChange("manual_approval", checked)}
+					/>
+				</div>
+				{/* )} */}
 
 				{/* Future Feature (optional) */}
 				{/* 

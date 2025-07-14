@@ -177,9 +177,9 @@ export function useOAuthFlow({
 		backendCallMadeRef.current = true;
 
 		try {
-			console.log(
-				`Calling ${provider} OAuth with code: ${code}, state: ${state}`,
-			);
+			// console.log(
+			// 	`Calling ${provider} OAuth with code: ${code}, state: ${state}`,
+			// );
 
 			let result: OAuthResponse;
 
@@ -187,19 +187,19 @@ export function useOAuthFlow({
 				case "linkedin": {
 					// This is the actual LinkedIn OAuth call
 					result = await socialConnectLinkedinOauth(code, state);
-					console.log("LinkedIn OAuth result:", result);
+					// console.log("LinkedIn OAuth result:", result);
 					break;
 				}
 				case "github": {
 					// Replace with actual GitHub OAuth function when available
 					result = await mockGitHubOAuth(code, state);
-					console.log("GitHub OAuth result:", result);
+					// console.log("GitHub OAuth result:", result);
 					break;
 				}
 				case "twitter": {
 					// Replace with actual Twitter OAuth function when available
 					result = await mockTwitterOAuth(code, state);
-					console.log("Twitter OAuth result:", result);
+					// console.log("Twitter OAuth result:", result);
 					break;
 				}
 				default: {
@@ -209,7 +209,7 @@ export function useOAuthFlow({
 
 			return result;
 		} catch (error) {
-			console.error(`OAuth error for ${provider}:`, error);
+			// console.error(`OAuth error for ${provider}:`, error);
 			throw error;
 		}
 	}, [provider, code, state]);
@@ -293,7 +293,7 @@ export function useOAuthFlow({
 		hasStartedRef.current = true;
 
 		try {
-			console.log(`Starting OAuth flow for ${provider}`);
+			// console.log(`Starting OAuth flow for ${provider}`);
 
 			// Start backend call immediately but don't await yet
 			const backendPromise = callServerAction();
@@ -355,7 +355,7 @@ export function useOAuthFlow({
 
 				if (isUnmountedRef.current) return;
 
-				console.log("OAuth flow result:", result);
+				// console.log("OAuth flow result:", result);
 
 				if (result.success && result.data?.repo_id) {
 					await handleSuccess(result.data.repo_id);
@@ -365,7 +365,7 @@ export function useOAuthFlow({
 			} catch (error) {
 				if (isUnmountedRef.current) return;
 
-				console.error("OAuth flow error:", error);
+				// console.error("OAuth flow error:", error);
 
 				if (error instanceof Error && error.message === "Backend timeout") {
 					await showWaitingState();
@@ -373,14 +373,13 @@ export function useOAuthFlow({
 					handleError("Connection failed. Please try again.");
 				}
 			}
-		} catch (error) {
-			console.error("OAuth flow error:", error);
+		} catch {
+			// console.error("OAuth flow error:", error);
 			if (!isUnmountedRef.current) {
 				handleError("An unexpected error occurred. Please try again.");
 			}
 		}
 	}, [
-		provider,
 		handleError,
 		typeMessage,
 		handleSuccess,
@@ -392,16 +391,16 @@ export function useOAuthFlow({
 	// Start the OAuth flow
 	useEffect(() => {
 		if (code && state && !hasStartedRef.current) {
-			console.log(
-				`OAuth flow triggered for ${provider} with code: ${code}, state: ${state}`,
-			);
+			// console.log(
+			// 	`OAuth flow triggered for ${provider} with code: ${code}, state: ${state}`,
+			// );
 			runOAuthFlow();
 		}
 	}, [code, state, provider, runOAuthFlow]);
 
 	// Retry function
 	const handleRetry = useCallback(() => {
-		console.log(`Retrying OAuth flow for ${provider}`);
+		// console.log(`Retrying OAuth flow for ${provider}`);
 
 		// Reset all state
 		setConnectionState("initializing");
@@ -426,7 +425,7 @@ export function useOAuthFlow({
 
 		// Restart the flow
 		runOAuthFlow();
-	}, [provider, runOAuthFlow]);
+	}, [runOAuthFlow]);
 
 	return {
 		connectionState,

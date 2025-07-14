@@ -21,7 +21,6 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
-	// eslint-disable-next-line import/no-unresolved
 } from "@/components/ui/pagination";
 import {
 	Select,
@@ -32,49 +31,97 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import GroupedPostCard from "../posts/grouped-posts";
 import PostCard from "../posts/post-card";
 import SkeletonPostCard from "../posts/post-skeleton";
 import { SettingsPanel } from "./settings/settings-panel";
-import { WebhookTable } from "./webhook/webhook-table";
+import WebhookTable from "./webhook/webhook-table";
 
-interface Post {
+interface PostItem {
 	id: string;
 	content: string;
 	created_at: string;
 	updated_at: string;
 	is_deleted: boolean;
 	image_urls: string[];
+	video_url: string | null;
 	organization: string;
 	is_inactive: boolean;
 	posted_channels: string[];
 	planned_channels: string[];
-	actual_publish_time: string | null | undefined;
-	scheduled_publish_time: string | null | undefined;
+	actual_publish_time: string | null;
+	scheduled_publish_time: string | null;
 	status: "published" | "scheduled" | "drafted";
-	// video_url: string | null;
-	// post_group: string | null;
-	// original_status: string | null;
-	// platform: "twitter" | "linkedin";
+	post_group: string | null;
+	original_status: string | null;
 }
 
-interface WebhookLog {
+interface PostGroup {
+	group_id: UUID;
+	latest_created_at: string;
+	posts: PostItem[];
+}
+
+interface WebhookPingLog {
 	id: string;
-	timestamp: string;
-	event_type: string;
-	status: "success" | "failed";
-	error_message: string | undefined;
+	client_ip: string;
+	received_at: string;
+	github_event: string;
+	request_size: number;
+	http_status: number | null;
+	completed_at: string | null;
+	response_body: string | null;
+	processing_time_ms: number | null;
+	status: "processing" | "success" | "failed";
 }
 
 interface RepoTabsProps {
-	posts: Post[];
 	repo_id: UUID;
+	posts: PostGroup[];
 	postsTotalPages: number;
 	isLoadingPosts?: boolean;
 	postsCurrentPage: number;
-	webhookLogs: WebhookLog[];
+	webhookLogs: WebhookPingLog[];
 	onPostsPageChange: (page: number) => void;
 }
 
+// Helper function to get the primary status of a post group
+const getGroupStatus = (
+	group: PostGroup,
+): "published" | "scheduled" | "drafted" => {
+	// If all posts have the same status, return that status
+	const statuses = group.posts.map(post => post.status);
+	const uniqueStatuses = [...new Set(statuses)];
+
+	if (uniqueStatuses.length === 1) {
+		return uniqueStatuses[0];
+	}
+
+	// If mixed statuses, prioritize in order: published > scheduled > drafted
+	if (statuses.includes("published")) return "published";
+	if (statuses.includes("scheduled")) return "scheduled";
+	return "drafted";
+};
+
+const getRelevantDate = (group: PostGroup, activeTab: any) => {
+	const groupStatus = getGroupStatus(group);
+
+	// Find the most relevant post in the group for sorting
+	const relevantPost =
+		group.posts.find(post => post.status === groupStatus) || group.posts[0];
+
+	switch (activeTab) {
+		case "scheduled": {
+			return relevantPost.scheduled_publish_time || relevantPost.created_at;
+		}
+		case "published": {
+			return relevantPost.actual_publish_time || relevantPost.created_at;
+		}
+		default: {
+			return group.latest_created_at;
+		}
+	}
+};
 export function RepoTabs({
 	posts,
 	repo_id,
@@ -92,9 +139,12 @@ export function RepoTabs({
 	const tabCounts = useMemo(() => {
 		return {
 			all: posts.length,
-			drafted: posts.filter(p => p.status === "drafted").length,
-			published: posts.filter(p => p.status === "published").length,
-			scheduled: posts.filter(p => p.status === "scheduled").length,
+			drafted: posts.filter(group => getGroupStatus(group) === "drafted")
+				.length,
+			published: posts.filter(group => getGroupStatus(group) === "published")
+				.length,
+			scheduled: posts.filter(group => getGroupStatus(group) === "scheduled")
+				.length,
 		};
 	}, [posts]);
 
@@ -108,35 +158,22 @@ export function RepoTabs({
 			activeTab !== "settings" &&
 			activeTab !== "webhooks"
 		) {
-			filtered = filtered.filter(post => post.status === activeTab);
+			filtered = filtered.filter(group => getGroupStatus(group) === activeTab);
 		}
 
 		// Filter by search query
 		if (searchQuery) {
-			filtered = filtered.filter(post =>
-				post.content.toLowerCase().includes(searchQuery.toLowerCase()),
+			filtered = filtered.filter(group =>
+				group.posts.some(post =>
+					post.content.toLowerCase().includes(searchQuery.toLowerCase()),
+				),
 			);
 		}
 
 		// Sort posts
 		filtered.sort((a, b) => {
-			// eslint-disable-next-line unicorn/consistent-function-scoping
-			const getRelevantDate = (post: Post) => {
-				switch (activeTab) {
-					case "scheduled": {
-						return post.scheduled_publish_time || post.created_at;
-					}
-					case "published": {
-						return post.actual_publish_time || post.created_at;
-					}
-					default: {
-						return post.created_at;
-					}
-				}
-			};
-
-			const dateA = new Date(getRelevantDate(a)).getTime();
-			const dateB = new Date(getRelevantDate(b)).getTime();
+			const dateA = new Date(getRelevantDate(a, activeTab)).getTime();
+			const dateB = new Date(getRelevantDate(b, activeTab)).getTime();
 
 			return sortBy === "latest" ? dateB - dateA : dateA - dateB;
 		});
@@ -144,7 +181,8 @@ export function RepoTabs({
 		return filtered;
 	}, [posts, activeTab, searchQuery, sortBy]);
 
-	const PostsGrid = ({ posts }: { posts: Post[] }) => {
+	// console.log(posts, "Posts");
+	const PostsGrid = ({ posts }: { posts: PostGroup[] }) => {
 		if (isLoadingPosts) {
 			return (
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -176,8 +214,11 @@ export function RepoTabs({
 		return (
 			<>
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-					{posts.map((post: Post) => (
-						<PostCard key={post.id} post={post} />
+					{posts.map((postGroup: PostGroup, index) => (
+						<GroupedPostCard
+							key={`${postGroup.group_id}_${index}`}
+							group={postGroup}
+						/>
 					))}
 				</div>
 
@@ -270,7 +311,11 @@ export function RepoTabs({
 	).length;
 
 	return (
-		<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+		<Tabs
+			value={activeTab}
+			onValueChange={setActiveTab}
+			className="space-y-6 pb-5"
+		>
 			<div className="flex w-full flex-col gap-8 pt-3 text-white">
 				{/* Main Header Section */}
 				<div className="flex flex-col gap-6">

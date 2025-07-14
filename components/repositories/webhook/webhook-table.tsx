@@ -1,353 +1,270 @@
+/* eslint-disable unicorn/no-null */
 "use client";
-
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, Clock, Eye, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useState } from "react";
-
-// eslint-disable-next-line import/no-unresolved
-import { Badge } from "@/components/ui/badge";
-// eslint-disable-next-line import/no-unresolved
-import { Button } from "@/components/ui/button";
-// eslint-disable-next-line import/no-unresolved
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// eslint-disable-next-line import/no-unresolved
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-	// eslint-disable-next-line import/no-unresolved
-} from "@/components/ui/table";
-
-interface WebhookLog {
+interface WebhookPingLog {
 	id: string;
-	timestamp: string;
-	event_type: string;
-	status: "success" | "failed";
-	error_message: string | undefined;
-}
-interface WebhookTableProps {
-	logs: WebhookLog[];
-	isLoading?: boolean;
+	client_ip: string;
+	received_at: string;
+	github_event: string;
+	request_size: number;
+	http_status: number | null;
+	completed_at: string | null;
+	response_body: string | null;
+	processing_time_ms: number | null;
+	status: "processing" | "success" | "failed";
 }
 
-const getEventTypeLabel = (eventType: string) => {
-	switch (eventType) {
-		case "push": {
-			return "Push";
+interface WebhookTableProps {
+	isLoading?: boolean;
+	logs: WebhookPingLog[];
+}
+
+const getStatusIcon = (status: string, httpStatus?: number | null) => {
+	switch (status) {
+		case "success": {
+			return <CheckCircle2 className="h-3.5 w-3.5 text-zinc-400" />;
 		}
-		case "pull_request": {
-			return "Pull Request";
+		case "failed": {
+			return <AlertCircle className="h-3.5 w-3.5 text-red-400" />;
 		}
-		case "release": {
-			return "Release";
+		case "processing": {
+			return <Clock className="h-3.5 w-3.5 text-zinc-500" />;
 		}
 		default: {
-			return eventType.charAt(0).toUpperCase() + eventType.slice(1);
+			return <Clock className="h-3.5 w-3.5 text-zinc-600" />;
 		}
 	}
 };
 
-export function WebhookTable({ logs, isLoading = false }: WebhookTableProps) {
+const getStatusText = (status: string) => {
+	switch (status) {
+		case "success": {
+			return "Success";
+		}
+		case "failed": {
+			return "Failed";
+		}
+		case "processing": {
+			return "Processing";
+		}
+		default: {
+			return "Unknown";
+		}
+	}
+};
+
+const formatTime = (timestamp: string, format: "relative" | "absolute") => {
+	const date = new Date(timestamp);
+	if (format === "relative") {
+		return formatDistanceToNow(date, { addSuffix: true });
+	}
+	return date.toLocaleString();
+};
+
+const formatEventType = (eventType: string) => {
+	return eventType
+		.replaceAll("_", " ")
+		.replaceAll(/\b\w/g, l => l.toUpperCase());
+};
+
+export default function WebhookTable({
+	logs,
+	isLoading = false,
+}: WebhookTableProps) {
 	const [timeFormat, setTimeFormat] = useState<"relative" | "absolute">(
 		"relative",
 	);
-	const [filter, setFilter] = useState<"all" | "success" | "failed">("all");
+	const [filter, setFilter] = useState<
+		"all" | "success" | "failed" | "processing"
+	>("all");
 
-	const getStatusIcon = (status: string) => {
-		switch (status) {
-			case "success": {
-				return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-			}
-			case "failed": {
-				return <XCircle className="h-4 w-4 text-red-600" />;
-			}
-			default: {
-				return <Clock className="h-4 w-4 text-gray-500" />;
-			}
-		}
-	};
+	if (isLoading) {
+		return (
+			<div className="rounded-lg border border-zinc-800 bg-zinc-900">
+				<div className="border-b border-zinc-800 px-6 py-4">
+					<div className="flex items-center justify-between">
+						<div className="h-5 w-32 animate-pulse rounded bg-zinc-700"></div>
+						<div className="flex space-x-2">
+							<div className="h-8 w-16 animate-pulse rounded bg-zinc-700"></div>
+							<div className="h-8 w-20 animate-pulse rounded bg-zinc-700"></div>
+						</div>
+					</div>
+				</div>
+				<div className="space-y-4 p-6">
+					{Array.from({ length: 10 }).map((_, index) => (
+						<div key={index} className="flex items-center space-x-4">
+							<div className="h-3.5 w-3.5 animate-pulse rounded-full bg-zinc-700"></div>
+							<div className="h-4 w-24 animate-pulse rounded bg-zinc-700"></div>
+							<div className="h-4 w-32 animate-pulse rounded bg-zinc-700"></div>
+							<div className="h-4 w-16 animate-pulse rounded bg-zinc-700"></div>
+						</div>
+					))}
+				</div>
+			</div>
+		);
+	}
 
-	const getStatusBadge = (status: string) => {
-		switch (status) {
-			case "success": {
-				return (
-					<Badge
-						variant="outline"
-						className="border-green-200 bg-green-50 text-green-700"
-					>
-						Success
-					</Badge>
-				);
-			}
-			case "failed": {
-				return (
-					<Badge
-						variant="outline"
-						className="border-red-200 bg-red-50 text-red-700"
-					>
-						Failed
-					</Badge>
-				);
-			}
-			default: {
-				return (
-					<Badge
-						variant="outline"
-						className="border-gray-200 bg-gray-50 text-gray-700"
-					>
-						Unknown
-					</Badge>
-				);
-			}
-		}
-	};
-
-	const formatTime = (timestamp: string) => {
-		const date = new Date(timestamp);
-		if (timeFormat === "relative") {
-			return formatDistanceToNow(date, { addSuffix: true });
-		}
-		return date.toLocaleString();
-	};
-
-	const filteredLogs = logs.filter(log => {
+	const filteredLogs = logs.filter((log: any) => {
 		if (filter === "all") return true;
 		return log.status === filter;
 	});
 
-	const successCount = logs.filter(log => log.status === "success").length;
-	const failedCount = logs.filter(log => log.status === "failed").length;
-
-	if (isLoading) {
-		return (
-			<Card className="border-gray-200">
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<Skeleton className="h-6 w-32" />
-						<Skeleton className="h-8 w-24" />
-					</div>
-				</CardHeader>
-				<CardContent>
-					<div className="space-y-4">
-						{Array.from({ length: 5 }).map((_, index) => (
-							<div key={index} className="flex items-center space-x-4">
-								<Skeleton className="h-4 w-4" />
-								<Skeleton className="h-4 w-24" />
-								<Skeleton className="h-4 w-32" />
-								<Skeleton className="h-4 w-20" />
-								<Skeleton className="h-4 w-16" />
-							</div>
-						))}
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
+	const statusCounts = {
+		all: logs.length,
+		failed: logs.filter((log: any) => log.status === "failed").length,
+		success: logs.filter((log: any) => log.status === "success").length,
+		processing: logs.filter((log: any) => log.status === "processing").length,
+	};
 
 	return (
-		<Card className="h-[600px] border-gray-200">
-			<CardHeader>
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-					<CardTitle className="text-lg text-gray-900">Webhook Logs</CardTitle>
-					<div className="flex flex-col gap-2 sm:flex-row">
-						<div className="flex items-center space-x-2">
-							<Button
-								variant={filter === "all" ? "default" : "outline"}
-								size="sm"
-								onClick={() => setFilter("all")}
-								className={
-									filter === "all"
-										? "bg-black text-white"
-										: "border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50"
-								}
-							>
-								All ({logs.length})
-							</Button>
-							<Button
-								variant={filter === "success" ? "default" : "outline"}
-								size="sm"
-								onClick={() => setFilter("success")}
-								className={
-									filter === "success"
-										? "bg-black text-white"
-										: "border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50"
-								}
-							>
-								Success ({successCount})
-							</Button>
-							<Button
-								variant={filter === "failed" ? "default" : "outline"}
-								size="sm"
-								onClick={() => setFilter("failed")}
-								className={
-									filter === "failed"
-										? "bg-black text-white"
-										: "border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50"
-								}
-							>
-								Failed ({failedCount})
-							</Button>
+		<div className="rounded-lg border border-zinc-800 bg-zinc-900">
+			{/* Header */}
+			<div className="border-b border-zinc-800 px-6 py-4">
+				<div className="flex items-center justify-between">
+					<h2 className="text-lg font-medium text-white">Webhook Logs</h2>
+					<div className="flex items-center space-x-2">
+						{/* Filter buttons */}
+						<div className="flex items-center space-x-1">
+							{(["all", "success", "failed", "processing"] as const).map(
+								status => (
+									<button
+										key={status}
+										onClick={() => setFilter(status)}
+										className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+											filter === status
+												? "bg-white text-black"
+												: "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+										}`}
+									>
+										{status.charAt(0).toUpperCase() + status.slice(1)} (
+										{statusCounts[status]})
+									</button>
+								),
+							)}
 						</div>
-						<div className="flex items-center space-x-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									setTimeFormat(
-										timeFormat === "relative" ? "absolute" : "relative",
-									)
-								}
-								className="border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50"
-							>
-								<Clock className="mr-2 h-4 w-4" />
-								{timeFormat === "relative" ? "Relative" : "Absolute"}
-							</Button>
-						</div>
+
+						{/* Time format toggle */}
+						<button
+							onClick={() =>
+								setTimeFormat(
+									timeFormat === "relative" ? "absolute" : "relative",
+								)
+							}
+							className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+						>
+							<Clock className="mr-1 inline h-4 w-4" />
+							{timeFormat === "relative" ? "Relative" : "Absolute"}
+						</button>
 					</div>
 				</div>
-			</CardHeader>
-			<CardContent>
+			</div>
+
+			{/* Table */}
+			<div className="overflow-x-auto">
 				{filteredLogs.length === 0 ? (
-					<div className="py-8 text-center">
-						<div className="mb-4 text-gray-400">
-							<Eye className="mx-auto h-12 w-12" />
+					<div className="px-6 py-12 text-center">
+						<div className="mb-3 text-zinc-600">
+							<Clock className="mx-auto h-8 w-8" />
 						</div>
-						<h3 className="mb-2 text-lg font-medium text-gray-900">
+						<h3 className="mb-1 text-sm font-medium text-white">
 							No webhook logs
 						</h3>
-						<p className="text-gray-500">
+						<p className="text-sm text-zinc-400">
 							{filter === "all"
 								? "Webhook logs will appear here"
-								: `No ${filter} webhook events found`}
+								: `No ${filter} events found`}
 						</p>
 					</div>
 				) : (
-					<>
-						<div className="overflow-x-auto">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="w-16">Status</TableHead>
-										<TableHead>Event Type</TableHead>
-										<TableHead>Time</TableHead>
-										<TableHead>Error</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{filteredLogs.map(log => (
-										<TableRow key={log.id}>
-											<TableCell>
-												<div className="flex items-center space-x-2">
-													{getStatusIcon(log.status)}
-													{getStatusBadge(log.status)}
-												</div>
-											</TableCell>
-											<TableCell>
-												<span className="font-medium text-gray-900">
-													{getEventTypeLabel(log.event_type)}
-												</span>
-											</TableCell>
-											<TableCell>
-												<span className="text-sm text-gray-600">
-													{formatTime(log.timestamp)}
-												</span>
-											</TableCell>
-											<TableCell>
-												{log.error_message ? (
-													<span className="block max-w-xs truncate text-sm text-red-600">
-														{log.error_message}
-													</span>
-												) : (
-													<span className="text-sm text-gray-400">-</span>
-												)}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-
-						{/* {totalPages > 1 && (
-							<div className="mt-6">
-								<Pagination>
-									<PaginationContent>
-										<PaginationItem>
-											<PaginationPrevious
-												href="#"
-												onClick={event_ => {
-													event_.preventDefault();
-													if (currentPage > 1) onPageChange(currentPage - 1);
-												}}
-												className={
-													currentPage <= 1
-														? "pointer-events-none opacity-50"
-														: ""
-												}
-											/>
-										</PaginationItem>
-
-										{Array.from(
-											{ length: totalPages },
-											(_, index) => index + 1,
-										).map(page => {
-											if (
-												page === 1 ||
-												page === totalPages ||
-												(page >= currentPage - 1 && page <= currentPage + 1)
-											) {
-												return (
-													<PaginationItem key={page}>
-														<PaginationLink
-															href="#"
-															onClick={event_ => {
-																event_.preventDefault();
-																onPageChange(page);
-															}}
-															isActive={currentPage === page}
-														>
-															{page}
-														</PaginationLink>
-													</PaginationItem>
-												);
-											} else if (
-												page === currentPage - 2 ||
-												page === currentPage + 2
-											) {
-												return (
-													<PaginationItem key={page}>
-														<PaginationEllipsis />
-													</PaginationItem>
-												);
-											}
-											return;
-										})}
-
-										<PaginationItem>
-											<PaginationNext
-												href="#"
-												onClick={event_ => {
-													event_.preventDefault();
-													if (currentPage < totalPages)
-														onPageChange(currentPage + 1);
-												}}
-												className={
-													currentPage >= totalPages
-														? "pointer-events-none opacity-50"
-														: ""
-												}
-											/>
-										</PaginationItem>
-									</PaginationContent>
-								</Pagination>
-							</div>
-						)} */}
-					</>
+					<table className="min-w-full divide-y divide-zinc-800">
+						<thead className="bg-zinc-800/50">
+							<tr>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									Status
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									Event
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									Time
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									HTTP Status
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									Duration
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									Size
+								</th>
+								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
+									IP
+								</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-zinc-800 bg-zinc-900">
+							{filteredLogs.map((log: any) => (
+								<tr key={log.id} className="hover:bg-zinc-800/30">
+									<td className="whitespace-nowrap px-6 py-4">
+										<div className="flex items-center space-x-2">
+											{getStatusIcon(log.status, log.http_status)}
+											<span className="text-sm font-medium text-white">
+												{getStatusText(log.status)}
+											</span>
+										</div>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span className="text-sm text-zinc-200">
+											{formatEventType(log.github_event)}
+										</span>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span className="text-sm text-zinc-400">
+											{formatTime(log.received_at, timeFormat)}
+										</span>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span
+											className={`text-sm ${
+												log.http_status
+													? log.http_status >= 200 && log.http_status < 300
+														? "text-zinc-300"
+														: log.http_status >= 400
+															? "text-red-400"
+															: "text-zinc-400"
+													: "text-zinc-600"
+											}`}
+										>
+											{log.http_status || "—"}
+										</span>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span className="text-sm text-zinc-400">
+											{log.processing_time_ms
+												? `${log.processing_time_ms}ms`
+												: "—"}
+										</span>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span className="text-sm text-zinc-400">
+											{log.request_size
+												? `${(log.request_size / 1024).toFixed(1)}KB`
+												: "—"}
+										</span>
+									</td>
+									<td className="whitespace-nowrap px-6 py-4">
+										<span className="font-mono text-sm text-zinc-400">
+											{log.client_ip}
+										</span>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
