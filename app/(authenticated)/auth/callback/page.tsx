@@ -199,7 +199,6 @@ export default function Component() {
 
 	// Memoize config to prevent unnecessary re-renders
 	const config = useMemo(() => PROVIDER_CONFIGS[provider], [provider]);
-	console.log(config, "Config");
 
 	// OAuth flow hook
 	const {

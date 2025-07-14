@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
@@ -116,7 +116,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 						</TopNavigation> */}
 
 						<SidebarTrigger className="absolute left-0 top-0" />
-						{children}
+						<Suspense>{children}</Suspense>
 
 						<SubPlanCheckout />
 						<RequestInterceptor />
