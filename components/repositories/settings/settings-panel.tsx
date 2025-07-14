@@ -94,6 +94,18 @@ const getWebhookStatusIcon = (status: string) => {
 	}
 };
 
+type Platform = "linkedin" | "slack" | "discord" | "twitter";
+
+interface SocialConnection {
+	connected: boolean | false;
+	connected_by: string | null;
+	connected_at: string | null;
+	token_expiry?: string | null; // For LinkedIn OAuth expiry tracking
+	details: {
+		webhook_url?: string;
+	} | null;
+}
+
 export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 	const {
 		isError,
@@ -168,7 +180,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					onChange={() => {}}
 				/>
 
-				<RepoPostingSettingsCard
+				{/* <RepoPostingSettingsCard
 					loading
 					settings={{
 						posting_strategy: "",
@@ -176,12 +188,12 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 						preferred_post_time: "",
 					}}
 					onChange={() => {}}
-				/>
+				/> */}
 
 				<RepoChannelSettingsCard
 					loading
 					repo_id={repo_id}
-					socialConnections={{}}
+					socialConnections={{} as Record<Platform, SocialConnection>}
 					localSettings={{
 						default_hashtags: "",
 						hashtag_automation: false,
@@ -196,7 +208,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					webhookStatus="inactive"
 					getWebhookStatusIcon={() => ""}
 				/>
-				<RepoDangerZoneCard onDisconnect={() => {}} loading />
+				{/* <RepoDangerZoneCard onDisconnect={() => {}} loading /> */}
 			</div>
 		);
 	}
@@ -215,7 +227,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 pb-4">
 			<div className="flex justify-end gap-2 pt-6">
 				{/* Revert Button */}
 				<Tooltip>
@@ -300,11 +312,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/>
 
 			{/* Posting Settings */}
-			<RepoPostingSettingsCard
+			{/* <RepoPostingSettingsCard
 				settings={localSettings}
 				loading={isLoadingRepoDetails}
 				onChange={handleSettingChange}
-			/>
+			/> */}
 
 			{/* Channel Settings */}
 			<RepoChannelSettingsCard
@@ -325,11 +337,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/>
 
 			{/* Danger Zone */}
-			<RepoDangerZoneCard
+			{/* <RepoDangerZoneCard
 				onDisconnect={() => {}}
 				loading={isLoadingRepoDetails}
 				disabled={isLoadingRepoDetails}
-			/>
+			/> */}
 		</div>
 	);
 }

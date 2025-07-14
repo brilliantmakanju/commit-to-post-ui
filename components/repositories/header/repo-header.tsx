@@ -51,7 +51,7 @@ const statusMap = {
 
 const socialIcons = {
 	slack: FaSlack,
-	twitter: FaTwitter,
+	// twitter: FaTwitter,
 	discord: FaDiscord,
 	linkedin: FaLinkedin,
 };

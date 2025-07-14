@@ -1,4 +1,4 @@
-export const PUBLIC_ROUTES = ["/auth", "/inbox"];
+export const PUBLIC_ROUTES = ["/inbox"];
 
 export const PROTECTED_SUB_ROUTES = [
 	"/dashboard",
@@ -9,4 +9,5 @@ export const PROTECTED_SUB_ROUTES = [
 	"/payment-success",
 	"/payment",
 	"/success",
+	"/auth",
 ];

@@ -143,6 +143,9 @@ export function WebhookModal({
 			await queryClient.invalidateQueries({
 				queryKey: ["repo_super_details", repo_id],
 			});
+			await queryClient.invalidateQueries({
+				queryKey: ["repo_details", repo_id],
+			});
 		} catch {
 			showToast.error("Something went wrong while saving settings.");
 		} finally {
@@ -171,6 +174,9 @@ export function WebhookModal({
 			// Invalidate the repo details cache
 			await queryClient.invalidateQueries({
 				queryKey: ["repo_super_details", repo_id],
+			});
+			await queryClient.invalidateQueries({
+				queryKey: ["repo_details", repo_id],
 			});
 
 			showToast.success(response.message);
