@@ -49,8 +49,13 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 		}
 	}, [organization, form]);
 
+	// queryClient.invalidateQueries({ queryKey: ["organizations"] });
+	// await updateCookie("organization", {
+	// 	domain: response.data.organization.domain[0],
+	// });
 	const onSubmit = async (data: OrganizationSettingsFormValues) => {
 		setIsSubmitting(true);
+
 		try {
 			const changedFields: Partial<OrganizationSettingsFormValues> = {};
 			if (data.name !== organization.name) {
@@ -59,14 +64,17 @@ export function GeneralSettingsForm({ isFetching }: { isFetching: boolean }) {
 			if (data.description !== organization.description) {
 				changedFields.description = data.description;
 			}
+
 			if (Object.keys(changedFields).length > 0) {
 				const response = await updateOrganization(changedFields);
 				if (response.success) {
-					queryClient.invalidateQueries({ queryKey: ["organizations"] });
+					// Optimistically update state
 					setOrganization(response.data.organization);
-					await updateCookie("organization", {
-						domain: response.data.organization.domain,
-					});
+
+					queryClient.setQueryData(
+						["organization"],
+						response.data.organization,
+					);
 					toast.success("Organization updated successfully");
 				} else {
 					toast.error(

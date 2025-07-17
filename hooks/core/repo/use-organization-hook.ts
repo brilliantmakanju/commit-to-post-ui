@@ -12,11 +12,11 @@ export const useFetchOrganizations = () => {
 	const queryClient = useQueryClient();
 
 	const setCurrentOrganization =
-		useOrganizationStore.getState().setOrganization;
-	const currentOrganization = useOrganizationStore.getState().organization;
-	const organizationsInStore = useOrganizationStore.getState().organizations;
-	const setOrganizations = useOrganizationStore.getState().setOrganizations;
+		useOrganizationStore.getState().setCurrentOrganization;
 	const setOrganization = useOrganizationStore.getState().setOrganization;
+	const currentOrganization = useOrganizationStore.getState().organization;
+	const setOrganizations = useOrganizationStore.getState().setOrganizations;
+	const organizationsInStore = useOrganizationStore.getState().organizations;
 
 	const query = useQuery({
 		queryKey: ["organizations"],
@@ -35,7 +35,6 @@ export const useFetchOrganizations = () => {
 			if (!hasOrgFromCookie && !hasOrgFromZustand) {
 				const fallbackOrg = organizations[0];
 				if (fallbackOrg) {
-					await deleteCookie("organization");
 					setCurrentOrganization(fallbackOrg);
 					setOrganization(fallbackOrg);
 					await createEncryptedCookie("organization", {

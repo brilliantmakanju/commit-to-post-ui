@@ -43,6 +43,7 @@ export function DeleteOrganization() {
 	const queryClient = useQueryClient();
 	const [open, setOpen] = useState(false);
 	const { organization } = useOrganizationStore();
+	const organizationStore = useOrganizationStore();
 	const [isDeleting, setIsDeleting] = useState(false);
 	const { organizations, setOrganization } = useOrganizationStore();
 	const isOnlyOrganization = organizations.length === 1 ? true : false;
@@ -63,32 +64,32 @@ export function DeleteOrganization() {
 			setIsDeleting(true);
 			const response = await deleteOrganization();
 			if (response.success) {
-				toast.success(response.message || "Organization deleted successfully");
 				await deleteCookie("organization");
+				toast.success(response.message || "Organization deleted successfully");
+				organizationStore.clearOrganization();
+				globalThis.window.location.reload();
 
-				await queryClient.invalidateQueries({ queryKey: ["organizations"] });
+				// const updatedOrganizations = await queryClient.fetchQuery<
+				// 	{
+				// 		id: string;
+				// 		name: string;
+				// 		description: string;
+				// 		domains: string[];
+				// 	}[]
+				// >({
+				// 	queryKey: ["organizations"],
+				// });
 
-				const updatedOrganizations = await queryClient.fetchQuery<
-					{
-						id: string;
-						name: string;
-						description: string;
-						domains: string[];
-					}[]
-				>({
-					queryKey: ["organizations"],
-				});
+				// if (updatedOrganizations && updatedOrganizations.length > 0) {
+				// 	setOrganization({
+				// 		...updatedOrganizations[0],
+				// 		domains: updatedOrganizations[0].domains[0],
+				// 	});
+				// }
 
-				if (updatedOrganizations && updatedOrganizations.length > 0) {
-					setOrganization({
-						...updatedOrganizations[0],
-						domains: updatedOrganizations[0].domains[0],
-					});
-				}
-
-				form.reset({
-					organizationName: "",
-				});
+				// form.reset({
+				// 	organizationName: "",
+				// });
 			} else {
 				toast.error(response.message || "Failed to delete organization");
 			}
