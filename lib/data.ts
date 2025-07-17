@@ -1,3 +1,14 @@
+import {
+	addDays,
+	addHours,
+	addMinutes,
+	format,
+	getDay,
+	getISOWeek,
+	startOfWeek,
+	subDays,
+} from "date-fns";
+
 import type { ChartConfig } from "@/components/ui/chart";
 
 const generateHeatmapData = () => {
@@ -105,5 +116,55 @@ export const reminderScenarios = [
 		posts: "25",
 		webhookStatus: "active",
 		linkedInTokenExpiry: "3 days",
+	},
+];
+
+const now = new Date();
+
+export const upcomingPostsData: UpcomingPost[] = [
+	{
+		platform: ["LinkedIn"],
+		status: "Scheduled",
+		content: "Excited to launch our new multi-platform posting feature!",
+		repo: "ghost-devlog",
+		date: addHours(now, 4).toISOString(),
+	},
+	{
+		platform: ["Slack"],
+		status: "Draft",
+		content:
+			"Internal announcement: Q3 roadmap is now available in Confluence.",
+		repo: "internal-docs",
+		date: addDays(now, 2).toISOString(),
+	},
+	{
+		platform: ["Discord"],
+		status: "Scheduled",
+		content: "Community AMA with the dev team this Friday at 3 PM EST.",
+		repo: "community-hub",
+		date: addDays(now, 3).toISOString(),
+	},
+	{
+		platform: ["LinkedIn"],
+		status: "Draft",
+		content:
+			"The future of automated social media management is here. Find out how Push to Post is changing the game for developers.",
+		repo: "marketing-site",
+		date: addDays(now, 7).toISOString(),
+	},
+	{
+		platform: ["Slack"],
+		status: "Scheduled",
+		content: "Reminder: a new batch of user feedback is ready for review.",
+		repo: "customer-feedback",
+		date: addMinutes(now, 15).toISOString(),
+	},
+	{
+		platform: ["LinkedIn"],
+		status: "Scheduled",
+		content:
+			"A deep dive into our new architecture and what it means for performance.",
+		repo: "ghost-devlog",
+		date: subDays(now, 2).toISOString(),
 	},
 ];
