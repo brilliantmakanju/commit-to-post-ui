@@ -1,6 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import {
+	createEncryptedCookie,
+	deleteCookie,
+} from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { getOrganizations } from "@/server-actions/organizations/get-organizations";
 import useOrganizationStore from "@/zustand/useorganization-store";
@@ -13,6 +16,7 @@ export const useFetchOrganizations = () => {
 	const currentOrganization = useOrganizationStore.getState().organization;
 	const organizationsInStore = useOrganizationStore.getState().organizations;
 	const setOrganizations = useOrganizationStore.getState().setOrganizations;
+	const setOrganization = useOrganizationStore.getState().setOrganization;
 
 	const query = useQuery({
 		queryKey: ["organizations"],
@@ -31,7 +35,9 @@ export const useFetchOrganizations = () => {
 			if (!hasOrgFromCookie && !hasOrgFromZustand) {
 				const fallbackOrg = organizations[0];
 				if (fallbackOrg) {
+					await deleteCookie("organization");
 					setCurrentOrganization(fallbackOrg);
+					setOrganization(fallbackOrg);
 					await createEncryptedCookie("organization", {
 						id: fallbackOrg.id,
 						name: fallbackOrg.name,
@@ -49,7 +55,15 @@ export const useFetchOrganizations = () => {
 					is_owner: cookieOrg.is_owner as boolean,
 					description: cookieOrg.description as string,
 				});
+				setOrganization({
+					id: cookieOrg.id as string,
+					name: cookieOrg.name as string,
+					domains: cookieOrg.domain as string,
+					is_owner: cookieOrg.is_owner as boolean,
+					description: cookieOrg.description as string,
+				});
 			} else if (!hasOrgFromCookie && hasOrgFromZustand) {
+				await deleteCookie("organization");
 				await createEncryptedCookie("organization", {
 					id: currentOrganization.id,
 					name: currentOrganization.name,
@@ -62,6 +76,7 @@ export const useFetchOrganizations = () => {
 				hasOrgFromZustand &&
 				cookieOrg.domain !== currentOrganization.domains[0]
 			) {
+				await deleteCookie("organization");
 				await createEncryptedCookie("organization", {
 					id: currentOrganization.id,
 					name: currentOrganization.name,
