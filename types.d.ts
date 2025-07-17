@@ -60,3 +60,42 @@ export type AuthView =
 	| "check-email"
 	| "verifying"
 	| undefined;
+
+export type ActivityItem = {
+	time: string;
+	repo?: string;
+	details: string;
+	platform?: "LinkedIn" | "Slack" | "Discord";
+	status: "posted" | "scheduled" | "failed" | "drafted";
+	grouped?: {
+		status: "posted" | "scheduled" | "failed" | "drafted";
+		platform: "LinkedIn" | "Slack" | "Discord";
+	}[];
+};
+
+export type PostStatus = "published" | "scheduled" | "drafted";
+
+export interface PostItem {
+	id: string;
+	content: string;
+	created_at: string;
+	updated_at: string;
+	is_deleted: boolean;
+	image_urls: string[];
+	organization: string;
+	is_inactive: boolean;
+	video_url: string | null;
+	posted_channels: string[];
+	planned_channels: string[];
+	post_group: string | null;
+	original_status: string | null;
+	actual_publish_time: string | null;
+	scheduled_publish_time: string | null;
+	status: PostStatus;
+}
+
+export interface PostGroup {
+	group_id: string;
+	posts: PostItem[];
+	latest_created_at: string;
+}

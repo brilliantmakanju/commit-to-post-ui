@@ -15,7 +15,7 @@ import { apiClient } from "../../lib/utils/api-client";
  */
 export const fetchUpcomingPosts = async () => {
 	try {
-		const response = await apiClient.get("/api/v1/upcoming/");
+		const response = await apiClient.get("/api/v1/dashboard/upcoming/");
 		if (response.status !== 200) {
 			throw new Error(
 				"The request to retrieve upcoming posts was unsuccessful.",

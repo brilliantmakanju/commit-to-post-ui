@@ -1835,3 +1835,566 @@ CREATE SCHEMA public;
 // }
 
 // is it possible to let a model use this to do stuff like from the first category when we send like Hello or Hi we need it to greet us and stuff can we achieve it with this prompt -->
+
+
+
+
+
+
+
+
+"use client";
+// import { Crown, Sparkles } from "lucide-react";
+import { Info } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React from "react";
+
+import { ActivityHeatmap } from "@/components/dashboard/v2/activity-heatmap";
+import { DashboardHeader } from "@/components/dashboard/v2/header";
+import { ChannelDistribution } from "@/components/dashboard/v2/platform-chart";
+import { RepoCards } from "@/components/dashboard/v2/repo-cards";
+import { StatCards } from "@/components/dashboard/v2/stats-cards";
+import { UpcomingPosts } from "@/components/dashboard/v2/upcoming-posts";
+import { WebhookErrors } from "@/components/dashboard/v2/webhook-errors";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
+import useUserStore from "@/zustand/useuser-store";
+
+const Page = () => {
+	const router = useRouter();
+	const userStore = useUserStore();
+	const hasAccess = useCheckAccess();
+	const { status, data: userDetails } = useSession();
+	// const userHasLifetimeAccess = useLifetimeAccess();
+	// const [postFilter, setPostFilter] = useState("all");
+	// const [isLoading, setIsLoading] = React.useState(true);
+	// const [firstNameFromFull, lastNameFromFull] = userStore.full_name
+	// 	? userStore.full_name.split(" ")
+	// 	: ["", ""];
+	// useEffect(() => {
+	// 	// Check if document is fully loaded
+	// 	if (document.readyState === "complete") {
+	// 		setIsLoading(false);
+	// 	} else {
+	// 		// Add event listener for when everything is loaded
+	// 		const handleLoad = () => {
+	// 			setIsLoading(false);
+	// 		};
+
+	// 		window.addEventListener("load", handleLoad);
+
+	// 		// Alternative approach: Use a timeout to ensure minimum loading time
+	// 		// This helps prevent flickering if the page loads very quickly
+	// 		const timer = setTimeout(() => {
+	// 			setIsLoading(false);
+	// 		}, 500);
+
+	// 		// Cleanup
+	// 		return () => {
+	// 			window.removeEventListener("load", handleLoad);
+	// 			clearTimeout(timer);
+	// 		};
+	// 	}
+	// }, []);
+	// Get first name only for welcome message
+
+	// async function subscribePlan() {
+	// 	if (hasAccess) {
+	// 		toast.info("You already have an active subscription.");
+	// 		return;
+	// 	}
+	// 	router.push("/pricing");
+	// }
+
+	// const userData = userStore.justUpdated
+	// 	? {
+	// 			firstName: firstNameFromFull || userDetails?.user?.first_name || "",
+	// 			lastName: lastNameFromFull || userDetails?.user?.last_name || "",
+	// 			email: userStore.email || userDetails?.user?.email || "",
+	// 		}
+	// 	: status === "loading"
+	// 		? {
+	// 				firstName: firstNameFromFull || "",
+	// 				lastName: lastNameFromFull || "",
+	// 				email: userStore.email || "",
+	// 			}
+	// 		: userDetails?.user?.type === "magic" && status === "authenticated"
+	// 			? {
+	// 					firstName: userDetails?.user?.first_name || firstNameFromFull || "",
+	// 					lastName: userDetails?.user?.last_name || lastNameFromFull || "",
+	// 					email: userDetails?.user?.email || userStore.email || "",
+	// 				}
+	// 			: {
+	// 					firstName: firstNameFromFull || userDetails?.user?.first_name || "",
+	// 					lastName: lastNameFromFull || userDetails?.user?.last_name || "",
+	// 					email: userStore.email || userDetails?.user?.email || "",
+	// 				};
+
+	return (
+		<section className="flex h-full w-full flex-col space-y-8 bg-[#0A0A0A] p-6">
+			{/* Header - Simplified welcome message */}
+			<DashboardHeader />
+			<main className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+				{/* Main Content Column */}
+				<div className="flex flex-col gap-8 lg:col-span-2">
+					<StatCards />
+
+					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+						<CardHeader className="flex flex-row items-center justify-between">
+							<CardTitle>Upcoming Posts</CardTitle>
+							<Popover>
+								<PopoverTrigger asChild>
+									<Info className="h-4 w-4 cursor-help text-muted-foreground" />
+								</PopoverTrigger>
+								<PopoverContent side="top" className="w-auto p-2 text-sm">
+									<p>Scroll horizontally to see all columns</p>
+								</PopoverContent>
+							</Popover>
+						</CardHeader>
+						<CardContent>
+							<UpcomingPosts />
+						</CardContent>
+					</Card>
+					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+						<CardHeader>
+							<CardTitle>Top Repositories</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<RepoCards />
+						</CardContent>
+					</Card>
+				</div>
+
+				{/* Side Panel */}
+				<div className="flex flex-col gap-8 lg:col-span-1">
+					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+						<CardHeader>
+							<CardTitle>Activity</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<ActivityHeatmap />
+						</CardContent>
+					</Card>
+					<Card className="h-[272px] border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+						<CardHeader>
+							<CardTitle>Channel Distribution</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<ChannelDistribution />
+						</CardContent>
+					</Card>
+
+					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+						<CardHeader>
+							<CardTitle>Webhook Errors</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<WebhookErrors />
+						</CardContent>
+					</Card>
+				</div>
+			</main>
+
+			{/* <div className="grid w-full grid-cols-1 items-center justify-center gap-4 sm:grid-cols-1 lg:grid-cols-2">
+				<Card className="max-h-full min-h-[349px] w-full border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm">
+					<CardHeader className="border-b border-zinc-800/30 pb-4">
+						<CardTitle className="flex items-center justify-between font-medium text-zinc-100">
+							Repo Overview
+							<Button
+								asChild
+								className="bg-white text-black transition-colors hover:bg-zinc-200"
+							>
+								<Link href={"repositories"}>View All Repos</Link>
+							</Button>
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="pt-6">
+						<RepoTable />
+					</CardContent>
+				</Card>
+				<Card className="w-full border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm">
+					<CardHeader className="border-b border-zinc-800/30 pb-4">
+						<CardTitle className="font-medium text-zinc-100">
+							Posts per Day (Last 7 Days)
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="pt-5">
+						<PostsChart />
+					</CardContent>
+				</Card>
+			</div> */}
+			<div className="flex w-full items-start justify-start">
+				{/* <Card className="h-[470px] w-full border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm">
+					<CardHeader className="border-b border-zinc-800/30 pb-4">
+						<CardTitle className="font-medium text-zinc-100">
+							Recent Activity
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="flex-1">
+						<ActivityFeed />
+					</CardContent>
+				</Card> */}
+			</div>
+			{/* 
+			<div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-5">
+				<div className="flex flex-col gap-6 md:col-span-3">
+					<Card>
+						<CardHeader>
+							<CardTitle>Repo Overview</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<RepoTable />
+						</CardContent>
+					</Card>
+					<Card className="flex flex-1 flex-col">
+						<CardHeader>
+							<CardTitle>Recent Activity</CardTitle>
+						</CardHeader>
+						<CardContent className="flex-1">
+								<ActivityFeed />
+						</CardContent>
+					</Card>
+				</div>
+				<div className="flex flex-col gap-6 md:col-span-2">
+					<Card>
+						<CardHeader>
+							<CardTitle>Posts per Day (Last 7 Days)</CardTitle>
+						</CardHeader>
+						<CardContent>
+							{isLoading ? (
+								<PostsChartSkeleton />
+							) : (
+								<PostsChart isEmpty={isEmpty} />
+							)}
+						</CardContent>
+					</Card>
+					{isLoading ? (
+						<RemindersSidebarSkeleton />
+					) : (
+						<Suspense fallback={<RemindersSidebarSkeleton />}>
+							<RemindersSidebar isEmpty={isEmpty} />
+						</Suspense>
+					)}
+				</div>
+			</div> */}
+
+			{/* Stats Cards */}
+			<div className="grid gap-6 sm:grid-cols-3">
+				{/* <Suspense fallback={<StatsCardSkeleton />}>
+					{isMetricsLoading ? (
+						<StatsCardSkeleton />
+					) : (
+						<StatsCard
+							title="Scheduled Posts"
+							value={scheduledPostsCount}
+							icon={<Calendar className="h-4 w-4" />}
+							description="Posts scheduled for this week"
+						/>
+					)}
+				</Suspense>
+
+				<Suspense fallback={<StatsCardSkeleton />}>
+					{isMetricsLoading ? (
+						<StatsCardSkeleton />
+					) : (
+						<StatsCard
+							title="AI Generated Posts"
+							value={generatedPostsCount}
+							icon={<Loader2 className="h-4 w-4" />}
+							description="Created in the last 7 days"
+						/>
+					)}
+				</Suspense> */}
+
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212] transition-all hover:border-[#2A2A2A] hover:shadow-md">
+					<CardHeader className="flex flex-row items-center justify-between pb-2">
+						<CardTitle className="text-sm font-medium text-zinc-300">
+							{userHasLifetimeAccess
+								? "Lifetime Access"
+								: hasAccess
+									? "Pro Plan"
+									: "Free Plan"}
+						</CardTitle>
+						{userHasLifetimeAccess ? (
+							<div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A] text-amber-500">
+								<Sparkles className="h-4 w-4" />
+							</div>
+						) : (
+							<div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#232323] bg-[#1A1A1A]">
+								<Crown
+									className={`h-4 w-4 ${hasAccess ? "text-amber-500" : "text-zinc-500"}`}
+								/>
+							</div>
+						)}
+					</CardHeader>
+					<CardContent>
+						<div className="font-mono text-2xl font-bold text-white">
+							{userHasLifetimeAccess
+								? "Unlimited"
+								: hasAccess
+									? "Pro"
+									: "Limited"}
+						</div>
+						<p className="mt-2 text-xs text-zinc-500">
+							{userHasLifetimeAccess
+								? "Full lifetime access to all features"
+								: hasAccess
+									? "Full access to all premium features"
+									: "Upgrade for more features"}
+						</p>
+					</CardContent>
+					<CardFooter className="pt-0">
+						{userHasLifetimeAccess ? (
+							<Button
+								size="sm"
+								disabled
+								variant="outline"
+								className="w-full border-[#232323] bg-[#1A1A1A] text-zinc-500"
+							>
+								Lifetime Access
+							</Button>
+						) : hasAccess ? (
+							// <Link href="/pricing" className="w-full">
+							<Button
+								size="sm"
+								disabled
+								variant="outline"
+								className="w-full border-[#232323] bg-[#1A1A1A] text-zinc-500"
+							>
+								Active Pro Plan
+							</Button>
+						) : (
+							<Button
+								onClick={() => subscribePlan()}
+								size="sm"
+								disabled={isMetricsLoading || isLoading}
+								variant={"secondary"}
+								className="w-full"
+							>
+								<span>Upgrade to Pro</span>
+							</Button>
+						)}
+					</CardFooter>
+				</Card> */}
+			</div>
+
+			{/* Functional Filter Tabs */}
+			{/* <div className="flex flex-wrap items-center justify-between gap-4">
+				<Tabs
+					value={postFilter}
+					onValueChange={setPostFilter}
+					className="w-auto"
+				>
+					<TabsList className="border border-[#232323] bg-[#1A1A1A]">
+						<TabsTrigger
+							value="all"
+							className="text-zinc-400 data-[state=active]:bg-[#232323] data-[state=active]:text-white"
+						>
+							All Posts
+						</TabsTrigger>
+						<TabsTrigger
+							value="scheduled"
+							className="text-zinc-400 data-[state=active]:bg-[#232323] data-[state=active]:text-white"
+						>
+							Scheduled
+						</TabsTrigger>
+						<TabsTrigger
+							value="published"
+							className="text-zinc-400 data-[state=active]:bg-[#232323] data-[state=active]:text-white"
+						>
+							Published
+						</TabsTrigger>
+						<TabsTrigger
+							value="drafted"
+							className="text-zinc-400 data-[state=active]:bg-[#232323] data-[state=active]:text-white"
+						>
+							Drafts
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
+			</div> */}
+
+			{/* Main Content */}
+			<div className="grid h-full flex-1 gap-6 pb-[22px] lg:h-[500px] lg:grid-cols-2">
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212]">
+					<CardHeader className="flex flex-row items-center justify-between">
+						<CardTitle className="text-white">
+							{postFilter === "all"
+								? "Upcoming Posts"
+								: postFilter === "scheduled"
+									? "Scheduled Posts"
+									: postFilter === "published"
+										? "Published Posts"
+										: "Draft Posts"}
+						</CardTitle>
+
+						<Link href={"/posts"}>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="text-zinc-400 hover:bg-[#1A1A1A] hover:text-white"
+							>
+								View All <ArrowUpRight className="ml-1 h-3 w-3" />
+							</Button>
+						</Link>
+					</CardHeader>
+					<CardContent className="p-0">
+						<Suspense fallback={<UpcomingPostsSkeleton />}>
+							<UpcomingPosts filter={postFilter} />
+						</Suspense>
+					</CardContent>
+				</Card> */}
+
+				{/* <Card className="overflow-hidden border border-[#232323] bg-[#121212]">
+					<CardHeader className="flex flex-row items-center justify-between">
+						<CardTitle className="text-white">Recent Notifications</CardTitle>
+					</CardHeader>
+					<CardContent className="p-0">
+						<Suspense fallback={<NotificationsSkeleton />}>
+							<NotificationsList isPaid={hasAccess} />
+						</Suspense>
+					</CardContent>
+				</Card> */}
+			</div>
+		</section>
+	);
+};
+
+export default Page;
+
+
+
+		{authenticationType === "email_password" && (
+				<Card className="border-[#232323] bg-[#121212]">
+					<CardHeader>
+						<CardTitle className="text-lg font-medium text-white">
+							Security
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="flex items-center justify-between">
+							<div>
+								<h3 className="text-sm font-medium text-zinc-300">Password</h3>
+								<p className="mt-1 text-xs text-zinc-500">
+									Update your password to keep your account secure
+								</p>
+							</div>
+							<Button
+								variant="outline"
+								onClick={() => setIsPasswordModalOpen(true)}
+								className="border-[#232323] bg-[#1A1A1A] text-white hover:bg-[#232323]"
+							>
+								<KeyRound className="mr-2 h-4 w-4" />
+								Change Password
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
+			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
+				<DialogContent className="border border-[#232323] bg-[#121212] text-white">
+					<DialogHeader>
+						<DialogTitle className="flex items-center">
+							<KeyRound className="mr-2 h-5 w-5 text-[#4F46E5]" />
+							Change Password
+						</DialogTitle>
+					</DialogHeader>
+					<Form {...passwordForm}>
+						<form
+							onSubmit={passwordForm.handleSubmit(onPasswordChange)}
+							className="space-y-4"
+						>
+							<FormField
+								control={passwordForm.control}
+								name="oldPassword"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="font-medium text-zinc-300">
+											Current Password
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={passwordForm.control}
+								name="newPassword"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="font-medium text-zinc-300">
+											New Password
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={passwordForm.control}
+								name="confirmPassword"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="font-medium text-zinc-300">
+											Confirm New Password
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												{...field}
+												disabled={passwordForm.formState.isSubmitting}
+												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+
+							<div className="flex justify-end pt-4">
+								<Button
+									type="submit"
+									variant="default"
+									disabled={passwordForm.formState.isSubmitting}
+									className="bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+								>
+									{passwordForm.formState.isSubmitting ? (
+										<div className="flex items-center">
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											<span>Changing Password...</span>
+										</div>
+									) : (
+										<div className="flex items-center">
+											<KeyRound className="mr-2 h-4 w-4" />
+											<span>Change Password</span>
+										</div>
+									)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>

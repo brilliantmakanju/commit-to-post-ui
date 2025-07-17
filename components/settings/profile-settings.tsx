@@ -4,13 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound, Loader2, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type * as z from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -55,36 +54,45 @@ export default function ProfileSettings() {
 		? firstNameFromFull
 		: userStore.full_name
 			? firstNameFromFull
-			: data?.user?.first_name;
+			: data?.user?.first_name || "";
 	const lastName = userStore.justUpdated
 		? lastNameFromFull
 		: userStore.full_name
 			? lastNameFromFull
-			: data?.user?.last_name;
+			: data?.user?.last_name || "";
 	const authenticationType = data?.user?.type || "email_password";
 
 	const form = useForm<z.infer<typeof profileFormSchema>>({
 		resolver: zodResolver(profileFormSchema),
 		defaultValues: {
-			firstName,
-			lastName,
+			firstName: "",
+			lastName: "",
 		},
 	});
 
 	const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
 		resolver: zodResolver(passwordFormSchema),
+		defaultValues: {
+			oldPassword: "",
+			newPassword: "",
+			confirmPassword: "",
+		},
 	});
+
+	// Update form when data changes
+	useEffect(() => {
+		form.reset({
+			firstName: firstName || "",
+			lastName: lastName || "",
+		});
+	}, [firstName, lastName, form]);
 
 	// Check if form values are different from initial values
 	const isDirty = () => {
 		const formValues = form.getValues();
-		const currentFirstName = userStore.justUpdated
-			? firstNameFromFull
-			: firstName;
-		const currentLastName = userStore.justUpdated ? lastNameFromFull : lastName;
 		return (
-			formValues.firstName !== currentFirstName ||
-			formValues.lastName !== currentLastName
+			formValues.firstName !== (firstName || "") ||
+			formValues.lastName !== (lastName || "")
 		);
 	};
 
@@ -95,8 +103,8 @@ export default function ProfileSettings() {
 				fullName,
 			});
 
-			if (apiRequest.success == true) {
-				userStore.clearUser(); // Clear user information from Zustand store
+			if (apiRequest.success === true) {
+				userStore.clearUser();
 				userStore.setUser({
 					full_name: apiRequest.data.user.full_name,
 					bio: apiRequest.data.user.bio,
@@ -108,11 +116,13 @@ export default function ProfileSettings() {
 					hasHydratedUser: true,
 				});
 				userStore.setJustUpdated(true);
+
 				// Reset form with new values
 				form.reset({
 					firstName: values.firstName,
 					lastName: values.lastName,
 				});
+
 				toast.success("Profile updated successfully!");
 			} else {
 				toast.error("Something went wrong, please try again");
@@ -130,17 +140,13 @@ export default function ProfileSettings() {
 
 			if (response.success === true) {
 				setIsPasswordModalOpen(false);
-				passwordForm.resetField("confirmPassword");
-				passwordForm.resetField("newPassword");
-				passwordForm.resetField("oldPassword");
+				passwordForm.reset();
 				toast.success("Password changed successfully!");
 				logoutStore.setLogout(true);
 				organizationStore.clearOrganization();
-				userStore.clearUser(); // Clear user information from Zustand store
-				await clearCookies(); // Clear all cookies
-				// Sign out from NextAuth
+				userStore.clearUser();
+				await clearCookies();
 				await signOut();
-				logoutStore.setLogout(true);
 				router.push("/");
 			} else {
 				toast.error("Something went wrong. Please try again.");
@@ -151,38 +157,43 @@ export default function ProfileSettings() {
 	};
 
 	return (
-		<div className="space-y-6 py-6">
-			<div className="mb-4 flex items-center gap-2">
-				<User className="h-5 w-5 text-[#4F46E5]" />
-				<h2 className="text-xl font-semibold text-white">
-					Profile Information
-				</h2>
-			</div>
+		<div className="w-full space-y-8 p-6">
+			{/* Profile Information Card */}
+			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-			<Card className="border-[#232323] bg-[#121212]">
-				<CardHeader>
-					<CardTitle className="text-lg font-medium text-white">
-						Personal Details
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<div className="relative p-8">
+					<div className="mb-8 flex items-center gap-3">
+						<div className="rounded-full bg-zinc-700/50 p-2">
+							<User className="h-5 w-5 text-zinc-300" />
+						</div>
+						<div>
+							<h2 className="text-xl font-medium text-zinc-100">
+								Profile Information
+							</h2>
+							<p className="text-sm text-zinc-400">
+								Update your personal details
+							</p>
+						</div>
+					</div>
+
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+							<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 								<FormField
 									control={form.control}
 									name="firstName"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel className="font-medium text-zinc-300">
+											<FormLabel className="text-sm font-medium text-zinc-300">
 												First Name
 											</FormLabel>
 											<FormControl>
 												<Input
 													{...field}
 													disabled={form.formState.isSubmitting}
-													className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
-													placeholder="Your first name"
+													className="border-zinc-700/50 bg-zinc-900/50 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-zinc-900/70 focus:ring-1 focus:ring-zinc-500/20"
+													placeholder="Enter your first name"
 												/>
 											</FormControl>
 											<FormMessage className="text-red-400" />
@@ -195,15 +206,15 @@ export default function ProfileSettings() {
 									name="lastName"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel className="font-medium text-zinc-300">
+											<FormLabel className="text-sm font-medium text-zinc-300">
 												Last Name
 											</FormLabel>
 											<FormControl>
 												<Input
 													{...field}
 													disabled={form.formState.isSubmitting}
-													className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
-													placeholder="Your last name"
+													className="border-zinc-700/50 bg-zinc-900/50 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-zinc-900/70 focus:ring-1 focus:ring-zinc-500/20"
+													placeholder="Enter your last name"
 												/>
 											</FormControl>
 											<FormMessage className="text-red-400" />
@@ -215,18 +226,17 @@ export default function ProfileSettings() {
 							<div className="flex justify-end pt-4">
 								<Button
 									type="submit"
-									variant="default"
 									disabled={form.formState.isSubmitting || !isDirty()}
-									className="bg-[#4F46E5] text-white hover:bg-[#4338CA] disabled:bg-[#232323] disabled:text-zinc-500"
+									className="relative overflow-hidden bg-zinc-100 font-medium text-zinc-900 transition-all duration-200 hover:bg-zinc-200 disabled:bg-zinc-700 disabled:text-zinc-400"
 								>
 									{form.formState.isSubmitting ? (
-										<div className="flex items-center">
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<div className="flex items-center gap-2">
+											<Loader2 className="h-4 w-4 animate-spin" />
 											<span>Saving...</span>
 										</div>
 									) : (
-										<div className="flex items-center">
-											<Save className="mr-2 h-4 w-4" />
+										<div className="flex items-center gap-2">
+											<Save className="h-4 w-4" />
 											<span>Save Changes</span>
 										</div>
 									)}
@@ -234,45 +244,57 @@ export default function ProfileSettings() {
 							</div>
 						</form>
 					</Form>
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 
+			{/* Security Card */}
 			{authenticationType === "email_password" && (
-				<Card className="border-[#232323] bg-[#121212]">
-					<CardHeader>
-						<CardTitle className="text-lg font-medium text-white">
-							Security
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="flex items-center justify-between">
+				<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
+					<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+					<div className="relative p-8">
+						<div className="mb-6 flex items-center gap-3">
+							<div className="rounded-full bg-zinc-700/50 p-2">
+								<KeyRound className="h-5 w-5 text-zinc-300" />
+							</div>
 							<div>
-								<h3 className="text-sm font-medium text-zinc-300">Password</h3>
-								<p className="mt-1 text-xs text-zinc-500">
+								<h2 className="text-xl font-medium text-zinc-100">Security</h2>
+								<p className="text-sm text-zinc-400">
+									Manage your account security
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-center justify-between rounded-lg border border-zinc-700/50 bg-zinc-900/30 p-4">
+							<div>
+								<h3 className="font-medium text-zinc-200">Password</h3>
+								<p className="text-sm text-zinc-400">
 									Update your password to keep your account secure
 								</p>
 							</div>
 							<Button
 								variant="outline"
 								onClick={() => setIsPasswordModalOpen(true)}
-								className="border-[#232323] bg-[#1A1A1A] text-white hover:bg-[#232323]"
+								className="border-zinc-700/50 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-900/70 hover:text-zinc-100"
 							>
 								<KeyRound className="mr-2 h-4 w-4" />
 								Change Password
 							</Button>
 						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</div>
 			)}
 
+			{/* Password Change Modal */}
 			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-				<DialogContent className="border border-[#232323] bg-[#121212] text-white">
+				<DialogContent className="border border-zinc-800/50 bg-zinc-900/95 backdrop-blur-xl">
 					<DialogHeader>
-						<DialogTitle className="flex items-center">
-							<KeyRound className="mr-2 h-5 w-5 text-[#4F46E5]" />
+						<DialogTitle className="flex items-center gap-2 text-zinc-100">
+							<KeyRound className="h-5 w-5 text-zinc-400" />
 							Change Password
 						</DialogTitle>
 					</DialogHeader>
+
 					<Form {...passwordForm}>
 						<form
 							onSubmit={passwordForm.handleSubmit(onPasswordChange)}
@@ -283,7 +305,7 @@ export default function ProfileSettings() {
 								name="oldPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="font-medium text-zinc-300">
+										<FormLabel className="text-sm font-medium text-zinc-300">
 											Current Password
 										</FormLabel>
 										<FormControl>
@@ -291,7 +313,7 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -304,7 +326,7 @@ export default function ProfileSettings() {
 								name="newPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="font-medium text-zinc-300">
+										<FormLabel className="text-sm font-medium text-zinc-300">
 											New Password
 										</FormLabel>
 										<FormControl>
@@ -312,7 +334,7 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -325,7 +347,7 @@ export default function ProfileSettings() {
 								name="confirmPassword"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="font-medium text-zinc-300">
+										<FormLabel className="text-sm font-medium text-zinc-300">
 											Confirm New Password
 										</FormLabel>
 										<FormControl>
@@ -333,7 +355,7 @@ export default function ProfileSettings() {
 												type="password"
 												{...field}
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-[#232323] bg-[#121212] font-mono text-white focus:border-[#4F46E5] focus:ring-[#4F46E5]/20"
+												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -344,18 +366,17 @@ export default function ProfileSettings() {
 							<div className="flex justify-end pt-4">
 								<Button
 									type="submit"
-									variant="default"
 									disabled={passwordForm.formState.isSubmitting}
-									className="bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+									className="bg-zinc-100 font-medium text-zinc-900 hover:bg-zinc-200"
 								>
 									{passwordForm.formState.isSubmitting ? (
-										<div className="flex items-center">
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<div className="flex items-center gap-2">
+											<Loader2 className="h-4 w-4 animate-spin" />
 											<span>Changing Password...</span>
 										</div>
 									) : (
-										<div className="flex items-center">
-											<KeyRound className="mr-2 h-4 w-4" />
+										<div className="flex items-center gap-2">
+											<KeyRound className="h-4 w-4" />
 											<span>Change Password</span>
 										</div>
 									)}

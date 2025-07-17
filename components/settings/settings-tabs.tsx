@@ -67,35 +67,44 @@ export function SettingsTabs() {
 	};
 
 	return (
-		<div className="w-full rounded-lg bg-[#0A0A0A] p-4 text-white sm:p-6">
-			<div className="mb-2 flex items-center">
-				<SettingsIcon className="mr-2 h-5 w-5 text-[#4F46E5]" />
-				<h1 className="text-2xl font-semibold text-white">Settings</h1>
+		<div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 sm:p-6 lg:p-8">
+			{/* Header */}
+			<div className="mb-8">
+				<div className="mb-2 flex items-center gap-3">
+					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-sm">
+						<SettingsIcon className="h-5 w-5 text-zinc-300" />
+					</div>
+					<div>
+						<h1 className="text-2xl font-semibold text-zinc-100">Settings</h1>
+						<p className="text-sm text-zinc-400">
+							Manage your {isOwner ? "account and organization" : "account"}{" "}
+							settings
+						</p>
+					</div>
+				</div>
 			</div>
-			<p className="mb-6 text-sm text-zinc-400">
-				Manage your {isOwner ? "account and organization" : "account"} settings
-			</p>
 
+			{/* Tabs */}
 			<Tabs
 				value={activeTab}
 				className="w-full"
 				onValueChange={handleTabChange}
 			>
-				<TabsList className="mb-6 rounded-lg border border-[#232323] bg-[#121212] p-1">
+				<TabsList className="mb-8 grid w-full grid-cols-2 rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-1 backdrop-blur-xl">
 					{isOwner && (
 						<TabsTrigger
 							value="general"
-							className="flex items-center text-zinc-400 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white"
+							className="flex items-center gap-2 rounded-lg text-zinc-400 transition-all duration-200 data-[state=active]:bg-zinc-800/50 data-[state=active]:text-zinc-100 data-[state=active]:shadow-sm"
 						>
-							<GitBranch className="mr-2 h-4 w-4" />
+							<GitBranch className="h-4 w-4" />
 							Organization
 						</TabsTrigger>
 					)}
 					<TabsTrigger
 						value="profile"
-						className="flex items-center text-zinc-400 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white"
+						className="flex items-center gap-2 rounded-lg text-zinc-400 transition-all duration-200 data-[state=active]:bg-zinc-800/50 data-[state=active]:text-zinc-100 data-[state=active]:shadow-sm"
 					>
-						<User className="mr-2 h-4 w-4" />
+						<User className="h-4 w-4" />
 						Profile
 					</TabsTrigger>
 				</TabsList>
@@ -113,9 +122,9 @@ export function SettingsTabs() {
 			{codeConnecting && (
 				<SocialConnectCallback
 					type={socialType}
-					closeModal={setCodeConnecting}
 					code={socialCode}
 					connecting={codeConnecting}
+					closeModal={setCodeConnecting}
 				/>
 			)}
 		</div>

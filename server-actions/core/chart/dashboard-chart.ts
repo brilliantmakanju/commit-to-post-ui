@@ -2,21 +2,12 @@
 
 import { z } from "zod";
 
-import { apiClient } from "../../lib/utils/api-client";
+// eslint-disable-next-line import/no-unresolved
+import { apiClient } from "@/lib/utils/api-client";
 
-/**
- * Retrieves metrics from the dashboard endpoint.
- * Expected response format:
- * {
- *    "scheduled_posts_count": number,  // Number of scheduled posts
- *    "generated_posts_count": number,  // Number of generated posts
- * }
- */
-export const getMetrics = async () => {
+export const getHeatMapMetrics = async () => {
 	try {
-		const response = await apiClient.get(
-			"/api/v1/dashboard/organization-summary/",
-		);
+		const response = await apiClient.get("/api/v1/dashboard/posts-heatmap/");
 		if (response.status !== 200) {
 			throw new Error("The request to retrieve metrics was unsuccessful.");
 		}
@@ -39,9 +30,11 @@ export const getMetrics = async () => {
 	}
 };
 
-export const getTopRepoMetrics = async () => {
+export const getChannelMetrics = async () => {
 	try {
-		const response = await apiClient.get("/api/v1/dashboard/top-repositories/");
+		const response = await apiClient.get(
+			"/api/v1/dashboard/channel-distribution/",
+		);
 		if (response.status !== 200) {
 			throw new Error("The request to retrieve metrics was unsuccessful.");
 		}
