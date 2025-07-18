@@ -197,10 +197,7 @@ export default function WebhookTable({
 									Duration
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
-									Size
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
-									IP
+									Response body
 								</th>
 							</tr>
 						</thead>
@@ -249,14 +246,7 @@ export default function WebhookTable({
 									</td>
 									<td className="whitespace-nowrap px-6 py-4">
 										<span className="text-sm text-zinc-400">
-											{log.request_size
-												? `${(log.request_size / 1024).toFixed(1)}KB`
-												: "—"}
-										</span>
-									</td>
-									<td className="whitespace-nowrap px-6 py-4">
-										<span className="font-mono text-sm text-zinc-400">
-											{log.client_ip}
+											{log.response_body ? `${log.response_body}` : "—"}
 										</span>
 									</td>
 								</tr>
