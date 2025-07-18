@@ -349,7 +349,7 @@ export function RepoTabs({
 									</TabsTrigger>
 
 									{/* Published */}
-									<TabsTrigger
+									{/* <TabsTrigger
 										value="published"
 										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
@@ -366,10 +366,10 @@ export function RepoTabs({
 												</span>
 											</div>
 										)}
-									</TabsTrigger>
+									</TabsTrigger> */}
 
 									{/* Draft */}
-									<TabsTrigger
+									{/* <TabsTrigger
 										value="drafted"
 										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
@@ -383,10 +383,10 @@ export function RepoTabs({
 												</span>
 											</div>
 										)}
-									</TabsTrigger>
+									</TabsTrigger> */}
 
 									{/* Scheduled */}
-									<TabsTrigger
+									{/* <TabsTrigger
 										value="scheduled"
 										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
@@ -403,7 +403,7 @@ export function RepoTabs({
 												</span>
 											</div>
 										)}
-									</TabsTrigger>
+									</TabsTrigger> */}
 
 									{/* Webhooks */}
 									<TabsTrigger
