@@ -11,9 +11,9 @@ const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => {
 			>
 				{links.map((link, index) => (
 					<li key={index} className={isMobile ? "w-full" : ""}>
-						{link.href.startsWith("mailto:") ? (
+						{link.link.startsWith("mailto:") ? (
 							<Link
-								href={link.href}
+								href={link.link}
 								className="group relative inline-block py-2 text-gray-800 transition-colors duration-200 hover:text-black dark:text-gray-300 dark:hover:text-white"
 							>
 								<span className="relative flex items-center">
@@ -40,7 +40,7 @@ const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => {
 							</Link>
 						) : (
 							<Link
-								href={link.href}
+								href={link.link}
 								className="group relative inline-block py-2 text-gray-800 transition-colors duration-200 hover:text-black dark:text-gray-300 dark:hover:text-white"
 							>
 								<span className="relative flex items-center">
