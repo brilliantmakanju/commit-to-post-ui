@@ -7,7 +7,7 @@ const Logo = () => {
 	return (
 		<Link
 			href="/"
-			className="flex items-center space-x-2 transition-opacity duration-200 hover:opacity-80"
+			className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black transition-opacity duration-200 hover:opacity-80"
 		>
 			<AnimatedAIIcon color={"currentColor"} size={36} />
 			<span className="flex gap-1 font-mono text-lg font-bold tracking-tight">

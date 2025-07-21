@@ -5,11 +5,23 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+	MobileNav,
+	MobileNavHeader,
+	MobileNavMenu,
+	MobileNavToggle,
+	Navbar,
+	NavbarButton,
+	NavbarLogo,
+	NavBody,
+	NavItems,
+} from "@/components/ui/resizable-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import useLogoutStore from "@/zustand/logout-store";
 import useUserStore from "@/zustand/useuser-store";
 
 import AuthButtons from "./auth-buttons";
+import { links } from "./data";
 import Logo from "./logo";
 import NavLinks from "./nav-links";
 
@@ -23,6 +35,8 @@ const TopNavigation = () => {
 	const [localStatus, setLocalStatus] = useState("loading");
 	const [loadingTimeout, setLoadingTimeout] = useState(false);
 	const userEmail = userStore.email || data?.user?.email;
+
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	// Handle navbar visibility based on scroll
 	useEffect(() => {
@@ -84,9 +98,11 @@ const TopNavigation = () => {
 			(localStatus === "loading" && userEmail)
 		) {
 			return (
-				<Link href="/dashboard">
-					<Button variant="default">Dashboard</Button>
-				</Link>
+				<NavbarButton variant="secondary" className="w-full" href="/dashboard">
+					<Button variant="default" className="w-full">
+						Dashboard
+					</Button>
+				</NavbarButton>
 			);
 		} else {
 			return <AuthButtons />;
@@ -94,46 +110,87 @@ const TopNavigation = () => {
 	};
 
 	return (
-		<AnimatePresence>
-			{(isVisible || !isScrolled) && (
-				<motion.header
-					initial={{ y: 0, opacity: 1 }}
-					animate={{
-						y: 0,
-						opacity: 1,
-						position: isScrolled ? "fixed" : "relative",
-					}}
-					exit={{ y: -100, opacity: 0 }}
-					transition={{ duration: 0.3 }}
-					className={`${
-						isScrolled
-							? "fixed left-0 right-0 top-4 z-20"
-							: "relative lg:py-[20px]"
-					} mx-auto w-[100%] max-w-7xl py-[12.6px] lg:px-10`}
-				>
-					<div
-						className={`mx-auto rounded-xl ${
-							isScrolled
-								? "border border-[#969DAD] border-opacity-15 bg-white/70 shadow-lg backdrop-blur-xl dark:border-slate-700/30 dark:bg-slate-800/70"
-								: "bg-transparent"
-						}`}
+		<>
+			<Navbar>
+				{/* Desktop Navigation */}
+				<NavBody className="mt-[-30px]">
+					<NavbarLogo />
+					<NavItems items={links} />
+					<div className="flex items-center gap-4">{renderAuthContent()}</div>
+				</NavBody>
+
+				{/* Mobile Navigation */}
+				<MobileNav className="mt-[-60px]">
+					<MobileNavHeader>
+						<NavbarLogo />
+						<MobileNavToggle
+							isOpen={isMobileMenuOpen}
+							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+						/>
+					</MobileNavHeader>
+
+					<MobileNavMenu
+						isOpen={isMobileMenuOpen}
+						onClose={() => setIsMobileMenuOpen(false)}
 					>
-						<div className="mx-auto px-4 sm:px-6 lg:px-8">
-							<div className="flex items-center justify-between py-2">
-								{/* Left Section: Logo + Nav Links */}
-								<div className="flex items-center space-x-4">
-									<Logo />
-								</div>
-								<NavLinks />
-								{/* Right Section: Auth Buttons */}
-								<div className="flex items-center">{renderAuthContent()}</div>
-							</div>
+						{links.map((item, index) => (
+							<a
+								key={`mobile-link-${index}`}
+								href={item.link}
+								onClick={() => setIsMobileMenuOpen(false)}
+								className="relative text-neutral-600 dark:text-neutral-300"
+							>
+								<span className="block">{item.name}</span>
+							</a>
+						))}
+						<div className="flex w-full flex-col gap-4">
+							{renderAuthContent()}
 						</div>
-					</div>
-				</motion.header>
-			)}
-		</AnimatePresence>
+					</MobileNavMenu>
+				</MobileNav>
+			</Navbar>
+		</>
 	);
 };
 
 export default TopNavigation;
+
+// {/* <AnimatePresence>
+// 	{(isVisible || !isScrolled) && (
+// 		<motion.header
+// 			initial={{ y: 0, opacity: 1 }}
+// 			animate={{
+// 				y: 0,
+// 				opacity: 1,
+// 				position: isScrolled ? "fixed" : "relative",
+// 			}}
+// 			exit={{ y: -100, opacity: 0 }}
+// 			transition={{ duration: 0.3 }}
+// 			className={`${
+// 				isScrolled
+// 					? "fixed left-0 right-0 top-4 z-20"
+// 					: "relative lg:py-[20px]"
+// 			} mx-auto w-[100%] max-w-7xl py-[12.6px] lg:px-10`}
+// 		>
+// 			<div
+// 				className={`mx-auto rounded-xl ${
+// 					isScrolled
+// 						? "border border-[#969DAD] border-opacity-15 bg-white/70 shadow-lg backdrop-blur-xl dark:border-slate-700/30 dark:bg-slate-800/70"
+// 						: "bg-transparent"
+// 				}`}
+// 			>
+// 				<div className="mx-auto px-4 sm:px-6 lg:px-8">
+// 					<div className="flex items-center justify-between py-2">
+// 						{/* Left Section: Logo + Nav Links */}
+// 						<div className="flex items-center space-x-4">
+// 							<Logo />
+// 						</div>
+// 						<NavLinks />
+// 						{/* Right Section: Auth Buttons */}
+// 						<div className="flex items-center">{renderAuthContent()}</div>
+// 					</div>
+// 				</div>
+// 			</div>
+// 		</motion.header>
+// 	)}
+// </AnimatePresence> */}

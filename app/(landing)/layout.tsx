@@ -63,7 +63,7 @@ export default function Layout({
 		<html lang="en" suppressHydrationWarning>
 			<body
 				className={
-					"container mx-auto grid grid-cols-1 bg-[#f4f4f4] antialiased"
+					"container mx-auto grid grid-cols-1 gap-[34px] bg-[#f4f4f4] antialiased"
 				}
 			>
 				<Suspense>

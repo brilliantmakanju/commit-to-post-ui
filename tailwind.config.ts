@@ -11,6 +11,21 @@ export default {
 	theme: {
 		extend: {
 			colors: {
+				// Arch Linux color palette
+				"arch-black": "#0f0f0f",
+				"arch-dark": "#1a1a1a",
+				"arch-dark-light": "#2d2d2d",
+				"arch-blue": "#7daffa",
+				"arch-blue-dark": "#5294e2",
+				"arch-cyan": "#5ccfe6",
+				"arch-green": "#9ece58",
+				"arch-green-light": "#b5d68c",
+				"arch-yellow": "#faed7d",
+				"arch-yellow-light": "#fdf6a1",
+				"arch-red": "#f47067",
+				"arch-red-light": "#f69896",
+				"arch-gray": "#888888",
+				"arch-white": "#ffffff",
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",
 				card: {

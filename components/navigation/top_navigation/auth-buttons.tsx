@@ -4,17 +4,22 @@
 
 // import AuthModal from "@/components/auth/modal";
 import { Button } from "@/components/ui/button";
+import { NavbarButton } from "@/components/ui/resizable-navbar";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 const AuthButtons = () => {
 	const openModal = useAuthModalStore(state => state.openModal);
 	return (
-		<div className="flex space-x-4">
+		<div className="flex w-full space-x-4">
 			{/* Previous modal implementation */}
 			{/* <AuthModal /> */}
 
 			{/* <Link href="/auth"> */}
-			<Button onClick={() => openModal("login")}>Sign In</Button>
+			<NavbarButton className="w-full" variant="secondary">
+				<Button className="w-full" onClick={() => openModal("login")}>
+					Sign In
+				</Button>
+			</NavbarButton>
 			{/* </Link> */}
 		</div>
 	);
