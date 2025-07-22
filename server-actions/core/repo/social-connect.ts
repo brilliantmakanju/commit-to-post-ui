@@ -6,7 +6,7 @@ import { z } from "zod";
 import { apiClient } from "@/lib/utils/api-client";
 
 const socialIntegrationSchema = z.object({
-	repo_id: z.string().uuid({ message: "Invalid  repository ID." }),
+	repo_id: z.string().uuid({ message: "Invalid repository ID." }),
 	platform: z.enum(["slack", "discord"], {
 		errorMap: () => ({
 			message: "Platform must be either 'slack' or 'discord'.",
