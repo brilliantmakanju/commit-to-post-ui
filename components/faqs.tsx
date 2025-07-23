@@ -72,8 +72,9 @@ export default function FAQs() {
 								Which platforms are supported?
 							</h3>
 							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Right now, we support posting to LinkedIn. More platforms like X
-								(Twitter) and personal sites are planned in the future.
+								Right now, we support posting to LinkedIn, Slack and Discord.
+								More platforms like X (Twitter) and personal sites are planned
+								in the future.
 							</p>
 						</div>
 
