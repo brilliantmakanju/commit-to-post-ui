@@ -5,65 +5,80 @@ export interface RefundPolicySection {
 
 export const refundPolicyData = {
 	title: "Refund Policy",
-	lastUpdated: "March 4, 2025",
+	lastUpdated: "July 23, 2025",
 	introduction:
-		"At Push to Post, we strive to ensure our customers are satisfied with our services. If you are not entirely happy with your purchase, we are here to help.",
+		"At Push to Post, we aim to provide a reliable and valuable service. If things don't work out, this page explains how cancellations and refunds are handled for paid subscriptions.",
 	sections: [
 		{
-			title: "1. Subscription Plans",
+			title: "1. Available Plans",
 			content: [
-				"Push to Post offers a range of subscription plans, including a Pro Plan with both monthly and annual billing options, as well as a Lifetime Deal.",
-				"We aim to provide a clear and flexible refund policy for each of these plans.",
+				"Push to Post currently offers the following plans:",
+				"- Starter Plan: Free with limited features. No payment required.",
+				"- Pro Plan: A paid plan with access to more tools and flexibility.",
+				"- Studio Plan: A paid plan for teams that need advanced features and collaboration tools.",
+				"This refund policy only applies to paid plans (Pro and Studio).",
 			],
 		},
 		{
-			title: "2. Refund Policy for Monthly and Annual Plans",
+			title: "2. Monthly and Annual Subscriptions",
 			content: [
-				"Monthly Plans: Refunds are not provided for partial months of service. However, you can cancel your subscription at any time, and you will not be billed for the next cycle.",
-				"Annual Plans: We offer a 14-day money-back guarantee. If you are not satisfied with our service, please contact us within 14 days of purchase for a full refund.",
+				"Monthly plans can be canceled anytime. Once canceled, no further payments will be taken. We do not provide refunds for any unused time after a payment is made.",
+				"Annual plans include a 14-day refund window. If you cancel within 14 days of your first payment, you can request a full refund.",
+				"We do not offer refunds for renewals of annual plans.",
 			],
 		},
 		{
-			title: "3. Refund Policy for Lifetime Deal",
+			title: "3. Refund Eligibility",
 			content: [
-				"For the Lifetime Deal, we offer refunds within 14 days of purchase if the platform does not meet your expectations.",
-				"Please reach out to our support team with your purchase details to initiate the refund process.",
+				"Refunds are available under these conditions:",
+				"- You are a new customer on a paid annual plan.",
+				"- You contact us within 14 days of your first payment.",
+				"- Your account does not show unusual or abusive usage.",
+				"Refunds are not available for monthly plans, renewals, or accounts with significant usage after purchase.",
 			],
 		},
 		{
-			title: "4. Requesting a Refund",
+			title: "4. How to Request a Refund",
 			content: [
-				"To request a refund, please contact us at brilliant@jolexhive.com with your purchase details and the reason for your request.",
-				"Our support team will review your request and get back to you promptly.",
+				"To ask for a refund, contact brilliant@jolexhive.com.",
+				"Please include the following:",
+				"- The email address tied to your Push to Post account",
+				"- The date you made the purchase and your plan type",
+				"- A short explanation of why you're requesting the refund",
+				"We will review your request and respond within a few business days.",
 			],
 		},
 		{
 			title: "5. Refund Processing",
 			content: [
-				"Once your refund request is approved, the refund will be processed within 7-10 business days.",
-				"The refund will be issued to the original payment method used during the purchase.",
+				"If your request is approved:",
+				"- We will issue the refund to your original payment method.",
+				"- Refunds are usually processed within 7 to 10 business days, depending on your bank or payment provider.",
 			],
 		},
 		{
-			title: "6. Exceptions to Refund Policy",
+			title: "6. When Refunds Are Not Provided",
 			content: [
-				"Refunds will not be provided if there is evidence of violation of our Terms & Conditions or misuse of our platform.",
-				"We reserve the right to review and deny refund requests on a case-by-case basis.",
+				"Refunds will not be granted in the following situations:",
+				"- You are using the free Starter Plan",
+				"- Your annual plan renewal has already been charged",
+				"- There is evidence of policy violations or abuse of the refund process",
+				"- The refund request is based on preference changes after active use of the platform",
 			],
 		},
 		{
-			title: "7. Changes to This Refund Policy",
+			title: "7. Changes to This Policy",
 			content: [
-				"We may update our Refund Policy from time to time.",
-				"Changes will be communicated via updates to this page, and the 'Last Updated' date will be modified accordingly.",
-				"You are encouraged to review this policy periodically for any changes.",
+				"We may update this refund policy from time to time.",
+				"The latest version will always be available on our website, along with the date it was last updated.",
+				"We recommend reviewing it occasionally for any updates.",
 			],
 		},
 		{
-			title: "8. Contact Us",
+			title: "8. Contact",
 			content: [
-				"If you have any questions about this Refund Policy or need assistance with your purchase, please contact us at brilliant@jolexhive.com.",
-				"Our team is here to help and will respond as quickly as possible.",
+				"If you have any questions about this policy or need help with your subscription, please email brilliant@jolexhive.com.",
+				"We're here to help.",
 			],
 		},
 	],

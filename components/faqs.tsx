@@ -22,54 +22,69 @@ export default function FAQs() {
 								What is Push to Post?
 							</h3>
 							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Push to Post is an AI-powered tool that transforms your GitHub
-								commits into engaging social media posts, keeping your
-								professional presence active without extra effort.
+								Push to Post turns your GitHub activity into shareable social
+								media content. It helps you stay active online by automatically
+								generating posts from your commits, so you don’t have to write
+								updates manually.
 							</p>
 						</div>
 
 						{/* FAQ 2 */}
 						<div className="py-6">
 							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Is my data secure?
+								How does it connect to my GitHub?
 							</h3>
 							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Absolutely! We use enterprise-grade encryption to protect your
-								data. Your GitHub and LinkedIn credentials remain private and
-								secure.
+								Once you connect your GitHub account, we automatically set up a
+								webhook for your selected repositories. This lets us track
+								commit activity and generate content on your behalf. GitHub
+								currently requires broad permissions for this setup.
 							</p>
 						</div>
 
 						{/* FAQ 3 */}
 						<div className="py-6">
 							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Can I customize the posts?
+								Is my data secure?
 							</h3>
-							<p className="my-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Yes! You can choose from multiple tones, edit AI-generated
-								content, and even schedule posts for later.
+							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
+								Yes. We use strong encryption to keep your data private and
+								secure. Your GitHub and LinkedIn details are never shared or
+								exposed.
 							</p>
 						</div>
 
 						{/* FAQ 4 */}
 						<div className="py-6">
 							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								What platforms are supported?
+								Can I control how my posts look?
 							</h3>
 							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Currently, Push to Post integrates with LinkedIn, with future
-								support for Twitter, GitHub Pages, and more.
+								Yes. You can adjust the writing style, review the generated
+								content, and make changes before publishing. It’s flexible and
+								easy to use.
 							</p>
 						</div>
 
 						{/* FAQ 5 */}
 						<div className="py-6">
 							<h3 className="font-medium text-[#1F2937] dark:text-white">
+								Which platforms are supported?
+							</h3>
+							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
+								Right now, we support posting to LinkedIn. More platforms like X
+								(Twitter) and personal sites are planned in the future.
+							</p>
+						</div>
+
+						{/* FAQ 6 */}
+						<div className="py-6">
+							<h3 className="font-medium text-[#1F2937] dark:text-white">
 								Is there a free plan?
 							</h3>
 							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Yes! Our Free plan lets you generate up to 5 posts per month.
-								For unlimited posts and extra features, upgrade to Pro.
+								Yes. The Free plan includes up to 5 posts per month. Paid plans
+								offer higher limits and extra features.
 							</p>
 						</div>
 					</div>
