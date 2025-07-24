@@ -46,9 +46,9 @@ export const UpcomingPosts = () => {
 			<Table className="w-full">
 				<TableHeader>
 					<TableRow className="border-zinc-800 hover:bg-transparent">
-						<TableHead className="w-[100px] text-start font-medium text-zinc-300">
+						{/* <TableHead className="w-[100px] text-start font-medium text-zinc-300">
 							Channel
-						</TableHead>
+						</TableHead> */}
 						<TableHead className="min-w-[100px] max-w-[300px] text-start font-medium text-zinc-300">
 							Post
 						</TableHead>
@@ -66,11 +66,11 @@ export const UpcomingPosts = () => {
 							key={index}
 							className="group border-zinc-800/50 hover:bg-zinc-900/30"
 						>
-							<TableCell className="flex items-center gap-2 text-zinc-400">
+							{/* <TableCell className="flex items-center gap-2 text-zinc-400">
 								{post.platform.map((p: any, index_: number) => (
 									<span key={index_}>{platformIconMap[p]}</span>
 								))}
-							</TableCell>
+							</TableCell> */}
 							<TableCell>
 								<p className="max-w-sm truncate font-medium">{post.content}</p>
 								<p className="text-xs text-zinc-500">{post.repo}</p>

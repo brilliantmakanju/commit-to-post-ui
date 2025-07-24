@@ -31,7 +31,7 @@ const Page = () => {
 							<CardTitle>Upcoming Posts</CardTitle>
 							<Popover>
 								<PopoverTrigger asChild>
-									<Info className="h-4 w-4 cursor-help text-muted-foreground" />
+									<Info className="block h-4 w-4 cursor-help text-muted-foreground lg:hidden" />
 								</PopoverTrigger>
 								<PopoverContent side="top" className="w-auto p-2 text-sm">
 									<p>Scroll horizontally to see all columns</p>

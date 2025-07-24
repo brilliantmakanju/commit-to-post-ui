@@ -99,10 +99,10 @@ export function ChannelDistribution() {
 								<Cell key={entry.platform} fill={entry.fill} />
 							))}
 						</Pie>
-						<ChartLegend
+						{/* <ChartLegend
 							content={<ChartLegendContent nameKey="platform" />}
 							className="flex-wrap gap-2 *:basis-1/4 *:justify-center"
-						/>
+						/> */}
 					</PieChart>
 				</ChartContainer>
 			</div>
