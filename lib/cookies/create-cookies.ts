@@ -1,5 +1,5 @@
 "use server";
-import { EncryptJWT, SignJWT } from "jose";
+import { EncryptJWT } from "jose";
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 
@@ -79,7 +79,7 @@ export async function updateCookie(name: string, newValue: any) {
 export const clearCookies = async () => {
 	try {
 		const cookieStore = await cookies();
-		const allCookies = await cookieStore.getAll();
+		const allCookies = cookieStore.getAll();
 
 		for (const cookie of allCookies) {
 			await deleteCookie(cookie.name);

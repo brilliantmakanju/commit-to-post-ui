@@ -77,7 +77,7 @@ export function NavUser({
 		logoutStore.setLogout(true);
 		userStore.clearUser();
 
-		logout();
+		// logout();
 		await clearCookies();
 		await signOut({ redirect: false });
 		globalThis.location.href = "/";
