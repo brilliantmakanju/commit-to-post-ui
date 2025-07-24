@@ -1,11 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { CheckCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { FaPlay } from "react-icons/fa";
 
 import { Heading, Span } from "@/components/general/micro/typography";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
@@ -62,11 +61,14 @@ const HeroSection = () => {
 		"Cancel Anytime",
 	];
 
+	const targetAudience = [
+		"For solo devs & indie hackers building in public",
+		"Schedule, edit, rewrite and grow your personal brand",
+		"Zero-effort audience building from your GitHub activity",
+	];
+
 	return (
-		<section
-			id="home"
-			className="relative mx-auto mb-8 w-full max-w-6xl overflow-hidden bg-white px-6 py-16 lg:py-24"
-		>
+		<section className="relative w-full bg-white px-4 py-20 sm:px-6 lg:px-12">
 			{/* Subtle background pattern */}
 			<div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-30" />
 
@@ -95,17 +97,17 @@ const HeroSection = () => {
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: 0.1 }}
-						className="space-y-3 text-center lg:space-y-4 lg:text-left"
+						className="space-y-4 text-center lg:space-y-6 lg:text-left"
 					>
-						<Heading className="text-3xl font-bold leading-tight text-black sm:text-4xl lg:text-5xl xl:text-6xl">
+						<Heading className="text-5xl font-bold leading-[1] text-gray-900 lg:text-[48px]">
 							Push code.
 							<br />
 							Build audience.
 							<br />
-							<span className="text-black/70">No extra thinking.</span>
+							<span className="text-gray-500">No extra thinking.</span>
 						</Heading>
 
-						<Span className="mx-auto max-w-md text-sm text-black/60 sm:text-base lg:mx-0 lg:text-lg">
+						<Span className="max-w-lg text-[18px] leading-tight text-gray-600">
 							The first and fastest way to auto-post your Git commits. Ship
 							code, skip the writing.
 						</Span>
@@ -118,55 +120,13 @@ const HeroSection = () => {
 						transition={{ duration: 0.5, delay: 0.2 }}
 						className="w-full max-w-md lg:max-w-none"
 					>
-						<div className="space-y-2 lg:space-y-3">
-							<div className="flex items-start gap-2 text-center lg:text-left">
-								<svg
-									className="mt-0.5 h-3 w-3 flex-shrink-0 text-black sm:h-4 sm:w-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="3"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M20 6L9 17L4 12"></path>
-								</svg>
-								<span className="text-xs text-black/60 sm:text-sm">
-									For solo devs & indie hackers building in public
-								</span>
-							</div>
-							<div className="flex items-start gap-2 text-center lg:text-left">
-								<svg
-									className="mt-0.5 h-3 w-3 flex-shrink-0 text-black sm:h-4 sm:w-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="3"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M20 6L9 17L4 12"></path>
-								</svg>
-								<span className="text-xs text-black/60 sm:text-sm">
-									Schedule, edit, rewrite and grow your personal brand
-								</span>
-							</div>
-							<div className="flex items-start gap-2 text-center lg:text-left">
-								<svg
-									className="mt-0.5 h-3 w-3 flex-shrink-0 text-black sm:h-4 sm:w-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="3"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M20 6L9 17L4 12"></path>
-								</svg>
-								<span className="text-xs text-black/60 sm:text-sm">
-									Zero-effort audience building from your GitHub activity
-								</span>
-							</div>
+						<div className="space-y-3 text-[18px]">
+							{targetAudience.map((item, index) => (
+								<div key={index} className="flex items-start gap-3">
+									<CheckCircle className="mt-1 h-4 w-4 flex-shrink-0 text-green-500" />
+									<span className="text-gray-600">{item}</span>
+								</div>
+							))}
 						</div>
 					</motion.div>
 

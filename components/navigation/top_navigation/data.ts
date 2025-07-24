@@ -4,9 +4,9 @@ type Link = {
 };
 
 export const links: Link[] = [
-	{ name: "Home", link: "/" },
 	{ name: "FAQ", link: "/#faq" },
-	{ name: "Pricing", link: "/pricing" },
-	{ name: "Why Choose us", link: "/#why-choose-us" },
+	{ name: "Pricing", link: "/#pricing" },
+	{ name: "Features", link: "/#features" },
+	{ name: "Platforms", link: "/#platforms" },
 	{ name: "Contact", link: "mailto:brilliant@jolexhive.com" },
 ];

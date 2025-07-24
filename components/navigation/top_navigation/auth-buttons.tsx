@@ -15,7 +15,7 @@ const AuthButtons = () => {
 			{/* <AuthModal /> */}
 
 			{/* <Link href="/auth"> */}
-			<NavbarButton className="w-full" variant="secondary">
+			<NavbarButton className="w-full bg-transparent" variant="secondary">
 				<Button className="w-full" onClick={() => openModal("login")}>
 					Sign In
 				</Button>

@@ -1840,7 +1840,7 @@ CREATE SCHEMA public;
 
 
 
-
+<!-- 
 
 
 "use client";
@@ -2398,3 +2398,5919 @@ export default Page;
 					</Form>
 				</DialogContent>
 			</Dialog>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			from django_tenants.utils import tenant_context
+from django.utils import timezone
+
+from accounts.models import UserAccount
+from core.models import Post
+from accounts.social_service import post_tweet, post_linkedin_update
+from notifications.utlis import create_and_notify
+from organizations.models import Organization, UserOrganizationRole
+from datetime import timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from django.utils.timezone import now
+from core.utlis import select_post_to_publish, delete_other_posts, select_linkedin_post_to_publish
+
+def publish_pending_post():
+    """
+    This task checks for all posts that are in the 'draft' or 'scheduled' state,
+    are not deleted or inactive, and are scheduled for publishing.
+    It will publish the post if the scheduled time has passed.
+    This will run for all tenants without passing a tenant_id explicitly.
+    """
+    print("Started checking for posts to publish...")
+
+    try:
+        # Get all tenants (replace 'Organization' with your actual tenant model)
+        tenants = Organization.objects.all()
+
+        # Loop through each tenant and switch to their schema using tenant_context
+        for tenant in tenants:
+            print(f"Switching to tenant: {tenant.schema_name}")
+            try:
+                # Switch to the current tenant's schema
+                with tenant_context(tenant):
+                    print(f"Switched to tenant schema: {tenant.schema_name}")
+
+                    # Get organization owner
+                    owner_role = UserOrganizationRole.objects.filter(
+                        organization=tenant, role="owner"
+                    ).select_related("user").first()
+
+                    if not owner_role or not owner_role.user:
+                        print(f"No valid owner found for {tenant.schema_name}, skipping...")
+                        continue
+
+                    owner = owner_role.user
+
+                    # Check if the owner is on the basic plan
+                    if owner.plan == UserAccount.BASIC:
+                        # Count posts published by the owner in the current month
+                        start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                        monthly_post_count = Post.objects.filter(
+                            organization=tenant,
+                            created_at__gte=start_of_month
+                        ).count()
+
+                        if monthly_post_count >= 5:
+                            print(
+                                f"Owner {owner.email} has reached the 5-post limit for this month. Skipping publishing.")
+                            continue
+
+                    max_delay = timedelta(minutes=15)
+                    current_time = timezone.now()
+
+                    all_posts = Post.objects.filter(
+                        platform="linkedin",
+                        status__in=["drafted", "scheduled"],
+                        is_deleted=False,
+                        is_inactive=False,
+                        scheduled_publish_time__isnull=False
+                    )
+
+                    posts_to_publish = []
+
+                    # Iterate through filtered posts
+                    for post in all_posts:
+                        print(f"Checking post {post.id}:")
+                        print(f"Scheduled Publish Time: {post.scheduled_publish_time}")
+                        print(f"Current Time: {current_time}")
+
+                        time_difference = current_time - post.scheduled_publish_time
+
+                        # Publish if within the 5-minute window or exactly on time
+                        if timedelta(0) <= time_difference <= max_delay:
+                            print(f"Post is within the allowed delay window. Publishing now.")
+                            posts_to_publish.append(post)
+
+                        elif post.scheduled_publish_time > current_time:
+                            print(f"Post's scheduled publish time is in the future. Not publishing yet.")
+
+                        else:
+                            print(f"Post's scheduled publish time exceeded the maximum delay. Skipping.")
+
+                    print(f"Found {len(posts_to_publish)} posts to check for publishing on LinkedIn.")
+
+                    # Process each post and check if it is ready to be published
+                    for post in posts_to_publish:
+                        print(f"Checking if post {post.id} is ready to be published...")
+                        if post.is_ready_to_publish():
+                            print(f"Post {post.id} is ready to be published.")
+
+                            # Select the post for Twitter using the defined function
+                            # selected_post = select_post_to_publish(posts_to_publish)
+                            selected_linkedin_post = select_linkedin_post_to_publish(posts_to_publish)
+
+                            if selected_linkedin_post:
+                                # Mark the selected post as published
+                                post_linkedin_update(selected_linkedin_post.content, organization=tenant)
+                                selected_linkedin_post.publish()
+
+                                # Post the tweet
+                                print(f"Post {selected_linkedin_post.id} has been published.")
+
+                                # Step 4: Delete all other posts that are not the selected one
+                                delete_other_posts(selected_linkedin_post, platform="linkedin")
+
+                                # Send the notification email **after successful publishing**
+                                title = "Your Post Has Been Published on Social Media"
+                                message = f"Your post with ID {selected_linkedin_post.id} has been successfully published."
+
+                                create_and_notify(
+                                    organization=tenant,
+                                    title=title,
+                                    message=message,
+                                    triggered_by=None,
+                                    template_path='emails/notification_email_published.html'
+                                )
+
+                                # Exit the loop after publishing the selected post (no need to continue processing)
+                                break
+                        else:
+                            print(f"Post {post.id} is not ready for publishing.")
+
+
+
+            except Exception as e:
+                print(f"Error while processing tenant {tenant.schema_name}: {e}")
+        print("Finished checking for posts to publish.")
+    except Exception as e:
+        print(f"Error while accessing tenants or posts: {e}")
+
+
+
+def start_scheduler():
+    from django.core.management import call_command  # Import here to prevent premature Django access
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(publish_pending_post, 'interval', hours=21)
+    scheduler.start()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    "use client";
+
+import { Check, Play, Zap } from "lucide-react";
+import React from "react";
+
+import { GitFlowAnimation } from "./v2/gitflow-animation";
+
+const HeroSection = () => {
+	const features = [
+		"Free Plan Available",
+		"No Credit Card Required",
+		"Cancel Anytime",
+	];
+
+	const targetAudience = [
+		"For solo devs & indie hackers building in public",
+		"Schedule, edit, rewrite and grow your personal brand",
+		"Zero-effort audience building from your GitHub activity",
+	];
+
+	return (
+		<section className="relative w-full bg-white px-4 py-20 sm:px-6 lg:px-12">
+			<div className="grid items-center gap-16 lg:grid-cols-2">
+				{/* Left Column - Content */}
+				<div className="space-y-8">
+					{/* Badge */}
+					<div className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white">
+						<Zap className="h-4 w-4" />
+						First AI-powered Git-to-Social Tool
+					</div>
+
+					{/* Main Headline */}
+					<div className="space-y-6">
+						<h1 className="text-5xl font-bold leading-[1] text-gray-900 lg:text-[48px]">
+							Push code.
+							<br />
+							Build audience.
+							<br />
+							<span className="text-gray-500">No extra thinking.</span>
+						</h1>
+
+						<p className="max-w-lg text-[18px] leading-tight text-gray-600">
+							The first and fastest way to auto-post your Git commits. Ship
+							code, skip the writing.
+						</p>
+					</div>
+
+					{/* Target Audience */}
+					<div className="space-y-3 text-[18px]">
+						{targetAudience.map((item, index) => (
+							<div key={index} className="flex items-start gap-3">
+								<Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
+								<span className="text-gray-600">{item}</span>
+							</div>
+						))}
+					</div>
+
+					{/* CTA Buttons */}
+					<div className="flex flex-col gap-4 pt-4 sm:flex-row">
+						<button className="rounded-lg bg-gray-900 px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-gray-800">
+							Sign Up – It&rsquo;s Free
+						</button>
+
+						<button className="group flex items-center gap-2 px-4 py-4 font-medium text-gray-700 transition-colors hover:text-gray-900">
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-colors group-hover:bg-gray-200">
+								<Play className="ml-0.5 h-4 w-4" />
+							</div>
+							Watch Demo
+						</button>
+					</div>
+
+					{/* Features */}
+					<div className="flex flex-wrap gap-6 pt-2">
+						{features.map((feature, index) => (
+							<div key={index} className="flex items-center gap-2">
+								<Check className="h-4 w-4 text-green-500" />
+								<span className="text-sm text-gray-600">{feature}</span>
+							</div>
+						))}
+					</div>
+
+					<p className="text-sm text-gray-500">30 seconds or less</p>
+				</div>
+
+				{/* Right Column - Simplified Visual */}
+				<div className="relative hidden lg:block">
+					<GitFlowAnimation />
+				</div>
+			</div>
+		</section>
+	);
+};
+
+export default HeroSection;
+
+
+
+
+
+from notifications.models import Notification
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
+from organizations.models import UserOrganizationRole
+from django.contrib.contenttypes.models import ContentType
+
+def create_and_notify(organization, title, message, triggered_by=None, related_object=None, template_path=None):
+    """
+    Create a notification and send an email to organization admins and owner.
+
+    Args:
+        organization: The organization instance for which the notification is created.
+        title (str): Title of the notification.
+        message (str): Message body of the notification.
+        triggered_by: (Optional) User instance that triggered the notification.
+        related_object: (Optional) Object associated with the notification (e.g., a post, user action).
+
+    Returns:
+        Notification: The created notification instance.
+    """
+    # Create the notification
+    content_type = None
+    object_id = None
+
+    if related_object:
+        content_type = ContentType.objects.get_for_model(related_object)
+        object_id = related_object.id
+
+
+    notification = Notification.objects.create(
+        organization=organization,
+        title=title,
+        message=message,
+        triggered_by=triggered_by,
+        content_type=content_type,
+        object_id=object_id
+    )
+
+    # Send email to admins and owner
+    _send_notification_email(organization, notification, template_path=template_path)
+
+    return notification
+
+
+def _send_notification_email(organization, notification, template_path='emails/notification_email.html'):
+    """
+    Send an email to organization admins and owner about the notification.
+
+    Args:
+        organization: The organization instance for which the email is sent.
+        notification: The notification instance containing the title and message.
+
+    Returns:
+        None
+    """
+    # Fetch admins and owner
+    admin_roles = UserOrganizationRole.objects.filter(
+        organization=organization,
+        role__in=["admin", "owner"]
+    ).select_related('user')
+
+    if not admin_roles.exists():
+        return  # No valid recipients to send the email to
+
+    for role_entry in admin_roles:
+        user = role_entry.user
+        if not user.email:
+            continue  # Skip users without email addresses
+
+        # Render email HTML content with user role and notification details
+        subject = f"New Notification for {organization.name}: {notification.title}"
+        html_message = render_to_string(template_path, {
+            'organization': organization,
+            'notification': notification,
+            'user_role': role_entry.role.capitalize(),  # Admin or Owner
+            'message': notification.message,
+            'title': notification.title,
+            'triggered_by': notification.triggered_by.username if notification.triggered_by else 'System',
+        })
+
+
+        # Initialize and send the email
+        email = EmailMessage(
+            subject=subject,
+            body=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        email.content_subtype = "html"  # Specify HTML content type
+        email.send(fail_silently=False)
+
+
+
+
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+
+
+
+
+
+
+					<div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
+						{sortedPlans.map(plan => {
+							const isLifetimeDeal = plan.name === "Lifetime Deal";
+							const isPro = plan.popular;
+							const productId = getProductId(plan);
+
+							return (
+								<Card
+									key={plan.name}
+									className={cn(
+										"relative border-zinc-200 bg-white transition-all hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900",
+										isPro &&
+											"border-2 border-zinc-900 hover:shadow-md dark:border-zinc-100",
+									)}
+								>
+									{isPro && (
+										<div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+											<Badge className="border border-zinc-200 bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900">
+												POPULAR
+											</Badge>
+										</div>
+									)}
+
+									<CardHeader className="pb-0 pt-6">
+										<Badge
+											variant="outline"
+											className="mb-2 w-fit border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+										>
+											{plan.badge}
+										</Badge>
+										<CardTitle className="text-xl font-medium text-zinc-900 dark:text-zinc-100">
+											{plan.name}
+										</CardTitle>
+									</CardHeader>
+
+									<CardContent className="pt-6">
+										{isLifetimeDeal && plan.lifetime ? (
+											<div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
+												<div className="mb-2 flex items-center justify-between">
+													<div className="flex items-center gap-2">
+														<span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+															Lifetime Access
+														</span>
+													</div>
+													{plan.lifetime.spotsLeft && (
+														<Badge
+															variant="outline"
+															className="border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+														>
+															<Users className="mr-1 h-3 w-3" />
+															{plan.lifetime.spotsLeft} spots left
+														</Badge>
+													)}
+												</div>
+												<div className="flex items-baseline">
+													<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
+														$
+													</span>
+													<span className="text-4xl font-semibold text-zinc-900 dark:text-zinc-100">
+														{plan.lifetime.price}
+													</span>
+													{plan.lifetime.previousPrice && (
+														<>
+															<span className="ml-2 text-sm text-zinc-400 line-through">
+																${plan.lifetime.previousPrice}
+															</span>
+															<span className="ml-2 text-sm text-zinc-700 dark:text-zinc-300">
+																Save{" "}
+																{calculateDiscount(
+																	plan.lifetime.previousPrice,
+																	plan.lifetime.price,
+																)}
+																%
+															</span>
+														</>
+													)}
+												</div>
+												{/* Use the global countdown timer instead of the local one */}
+												<div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+													<GlobalCountdownTimer compact={true} />
+												</div>
+											</div>
+										) : (
+											<div className="flex items-baseline">
+												<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
+													$
+												</span>
+												<span className="text-5xl font-semibold text-zinc-900 dark:text-zinc-100">
+													{plan.name === "Free"
+														? "0"
+														: billingCycle === "monthly"
+															? plan.price.monthly
+															: plan.price.annual}
+												</span>
+												<span className="ml-1 text-sm text-zinc-500">
+													{plan.name === "Free"
+														? "forever"
+														: `/${billingCycle === "monthly" ? "mo" : "yr"}`}
+												</span>
+												{plan.price.previous &&
+													plan.price.previous[billingCycle] && (
+														<span className="ml-2 text-sm text-zinc-400 line-through">
+															${plan.price.previous[billingCycle]}
+														</span>
+													)}
+											</div>
+										)}
+
+										{plan.price.previous &&
+											plan.price.previous[billingCycle] && (
+												<span className="mt-1 block text-sm text-zinc-700 dark:text-zinc-300">
+													Save{" "}
+													{calculateDiscount(
+														plan.price.previous[billingCycle]!,
+														billingCycle === "monthly"
+															? plan.price.monthly
+															: plan.price.annual,
+													)}
+													%
+												</span>
+											)}
+
+										<PaddleCheckout
+											locale="en"
+											theme="light"
+											displayMode="overlay"
+											environment={
+												process.env
+													.NEXT_PUBLIC_PADDLE_ENVIRONMENT as unknown as
+													| "sandbox"
+													| "production"
+											}
+											productId={productId}
+										>
+											<Button
+												className={cn(
+													"mt-6 w-full",
+													isPro
+														? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+														: "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+												)}
+												variant={isPro ? "default" : "outline"}
+											>
+												{plan.buttonText}
+											</Button>
+										</PaddleCheckout>
+
+										<ul className="mt-6 space-y-3">
+											{plan.features.map(
+												(feature: any, index: Key | null | undefined) => {
+													const featureName =
+														typeof feature === "string"
+															? feature
+															: feature.name;
+													const isAvailable =
+														typeof feature === "string"
+															? true
+															: feature.available;
+
+													return (
+														<li key={index} className="flex items-start gap-3">
+															{isAvailable ? (
+																<Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+															) : (
+																<X className="h-5 w-5 text-zinc-400 dark:text-zinc-600" />
+															)}
+															<span
+																className={cn(
+																	"text-sm",
+																	isAvailable
+																		? "text-zinc-700 dark:text-zinc-300"
+																		: "text-zinc-400 dark:text-zinc-600",
+																)}
+															>
+																{featureName}
+															</span>
+														</li>
+													);
+												},
+											)}
+										</ul>
+									</CardContent>
+									<CardFooter />
+								</Card>
+							);
+						})}
+					</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					# twitter_integration.py
+"""
+Integrated Twitter Bot Helper that works with ConnectedIntegration model
+"""
+
+import logging
+from datetime import timedelta
+from typing import Dict, Any, Optional, Tuple
+from django.utils import timezone
+from .models import ConnectedIntegration
+from .twitter_bot import TwitterBotHelper, TwitterAuthenticationError, TwitterAPIError
+
+logger = logging.getLogger(__name__)
+
+class IntegratedTwitterBot:
+    """
+    Twitter Bot that integrates with ConnectedIntegration model for token management
+    """
+    
+    def __init__(self, integration: ConnectedIntegration):
+        """
+        Initialize with a ConnectedIntegration instance
+        
+        Args:
+            integration: ConnectedIntegration instance for Twitter platform
+        """
+        if integration.platform != ConnectedIntegration.Platform.TWITTER:
+            raise ValueError(f"Integration must be Twitter platform, got {integration.platform}")
+        
+        self.integration = integration
+        self.bot_helper = TwitterBotHelper(
+            user_id=f"repo_{integration.repository.id}_{integration.connected_by.id}",
+            use_cache=False  # We'll use the database instead
+        )
+        logger.info(f"IntegratedTwitterBot initialized for integration {integration.id}")
+    
+    def get_authorization_url(self, state: str = None) -> Tuple[str, str]:
+        """
+        Generate authorization URL for OAuth flow
+        
+        Args:
+            state: Optional state parameter for CSRF protection
+            
+        Returns:
+            Tuple of (authorization_url, state)
+        """
+        return self.bot_helper.get_authorization_url(state=state)
+    
+    def handle_callback_and_save(self, callback_url: str, expected_state: str = None) -> Dict[str, Any]:
+        """
+        Handle OAuth callback and save tokens to the integration model
+        
+        Args:
+            callback_url: Full callback URL with authorization code
+            expected_state: Expected state parameter for CSRF protection
+            
+        Returns:
+            Token dictionary
+        """
+        try:
+            # Get tokens from OAuth callback
+            tokens = self.bot_helper.handle_callback(callback_url, expected_state)
+            
+            # Save tokens to the integration model
+            self._save_tokens_to_model(tokens)
+            
+            logger.info(f"Twitter tokens saved to integration {self.integration.id}")
+            return tokens
+            
+        except Exception as e:
+            logger.error(f"Error handling Twitter callback: {e}")
+            self.integration.deactivate()
+            raise
+    
+    def _save_tokens_to_model(self, tokens: Dict[str, Any]):
+        """Save tokens to the ConnectedIntegration model"""
+        try:
+            # Save access token (will be encrypted by model)
+            self.integration.encrypted_access_token = tokens.get('access_token')
+            
+            # Save refresh token if available
+            if 'refresh_token' in tokens:
+                self.integration.encrypted_refresh_token = tokens.get('refresh_token')
+            
+            # Calculate expiration time (Twitter tokens expire in 2 hours)
+            expires_in = tokens.get('expires_in', 7200)  # Default 2 hours
+            self.integration.token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+            
+            # Activate the integration
+            self.integration.activate()
+            
+            logger.debug(f"Tokens saved to integration model {self.integration.id}")
+            
+        except Exception as e:
+            logger.error(f"Error saving tokens to model: {e}")
+            raise TwitterAPIError(f"Failed to save tokens: {e}")
+    
+    def _load_tokens_from_model(self) -> Optional[Dict[str, Any]]:
+        """Load tokens from the ConnectedIntegration model"""
+        try:
+            if not self.integration.is_active:
+                logger.warning(f"Integration {self.integration.id} is not active")
+                return None
+            
+            access_token = self.integration.get_access_token()
+            if not access_token:
+                logger.warning(f"No access token found for integration {self.integration.id}")
+                return None
+            
+            tokens = {
+                'access_token': access_token,
+                'created_at': self.integration.connected_at.isoformat(),
+                'user_id': self.bot_helper.user_id
+            }
+            
+            # Add refresh token if available
+            refresh_token = self.integration.get_refresh_token()
+            if refresh_token:
+                tokens['refresh_token'] = refresh_token
+            
+            # Add expiration info
+            if self.integration.token_expires_at:
+                tokens['expires_at'] = self.integration.token_expires_at.isoformat()
+            
+            return tokens
+            
+        except Exception as e:
+            logger.error(f"Error loading tokens from model: {e}")
+            return None
+    
+    def _refresh_tokens(self) -> Optional[Dict[str, Any]]:
+        """Refresh tokens using the integration model's refresh logic"""
+        try:
+            # Use the model's refresh method
+            new_access_token = self.integration.refresh_token_if_needed()
+            
+            if new_access_token:
+                # Return updated tokens
+                return self._load_tokens_from_model()
+            else:
+                logger.error(f"Failed to refresh tokens for integration {self.integration.id}")
+                self.integration.deactivate()
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error refreshing tokens: {e}")
+            self.integration.deactivate()
+            raise TwitterAuthenticationError(f"Failed to refresh tokens: {e}")
+    
+    def _get_valid_tokens(self) -> Dict[str, Any]:
+        """Get valid tokens, refreshing if necessary"""
+        # Check if tokens are expired
+        if self.integration.is_token_expired():
+            logger.info(f"Tokens expired for integration {self.integration.id}, refreshing...")
+            tokens = self._refresh_tokens()
+            if not tokens:
+                raise TwitterAuthenticationError("Failed to refresh expired tokens")
+        else:
+            tokens = self._load_tokens_from_model()
+        
+        if not tokens:
+            raise TwitterAuthenticationError("No valid tokens found - user needs to re-authenticate")
+        
+        return tokens
+    
+    def post_tweet(self, text: str, **kwargs) -> Dict[str, Any]:
+        """
+        Post a tweet using the integrated bot
+        
+        Args:
+            text: Tweet text (max 280 characters)
+            **kwargs: Additional tweet parameters
+            
+        Returns:
+            Tweet data from API response
+        """
+        try:
+            # Ensure we have valid tokens
+            tokens = self._get_valid_tokens()
+            
+            # Override the bot helper's token loading to use our model
+            original_load_method = self.bot_helper._load_tokens
+            self.bot_helper._load_tokens = lambda: tokens
+            
+            try:
+                # Post the tweet
+                result = self.bot_helper.post_tweet(text, **kwargs)
+                logger.info(f"Tweet posted successfully for integration {self.integration.id}")
+                return result
+            finally:
+                # Restore original method
+                self.bot_helper._load_tokens = original_load_method
+                
+        except Exception as e:
+            logger.error(f"Error posting tweet for integration {self.integration.id}: {e}")
+            if "authentication" in str(e).lower():
+                self.integration.deactivate()
+            raise
+    
+    def get_user_info(self) -> Dict[str, Any]:
+        """Get authenticated user information"""
+        try:
+            tokens = self._get_valid_tokens()
+            
+            # Override token loading temporarily
+            original_load_method = self.bot_helper._load_tokens
+            self.bot_helper._load_tokens = lambda: tokens
+            
+            try:
+                result = self.bot_helper.get_user_info()
+                
+                # Update external_id if not set
+                if not self.integration.external_id and 'data' in result:
+                    user_data = result['data']
+                    if 'id' in user_data:
+                        self.integration.external_id = user_data['id']
+                        self.integration.save()
+                
+                return result
+            finally:
+                self.bot_helper._load_tokens = original_load_method
+                
+        except Exception as e:
+            logger.error(f"Error getting user info for integration {self.integration.id}: {e}")
+            if "authentication" in str(e).lower():
+                self.integration.deactivate()
+            raise
+    
+    def is_authenticated(self) -> bool:
+        """Check if the integration has valid authentication"""
+        try:
+            if not self.integration.is_active:
+                return False
+            
+            # Try to get user info to verify tokens
+            self.get_user_info()
+            return True
+            
+        except Exception:
+            return False
+    
+    def disconnect(self):
+        """Disconnect the Twitter integration"""
+        try:
+            self.integration.delete_tokens()
+            logger.info(f"Twitter integration {self.integration.id} disconnected")
+        except Exception as e:
+            logger.error(f"Error disconnecting Twitter integration: {e}")
+            raise
+
+
+# Updated ConnectedIntegration model methods for Twitter
+class TwitterIntegrationMixin:
+    """
+    Mixin to add Twitter-specific methods to ConnectedIntegration model
+    """
+    
+    def _refresh_twitter_token(self):
+        """Updated Twitter token refresh method"""
+        refresh_token = self.get_refresh_token()
+        if not refresh_token:
+            raise Exception("Missing Twitter refresh token")
+        
+        try:
+            # Create a temporary bot helper for token refresh
+            bot_helper = TwitterBotHelper(
+                user_id=f"refresh_{self.id}",
+                use_cache=False
+            )
+            
+            # Use the bot helper's refresh method
+            new_tokens = bot_helper._refresh_tokens(refresh_token)
+            
+            if new_tokens:
+                # Update the model with new tokens
+                self.encrypted_access_token = new_tokens['access_token']
+                if 'refresh_token' in new_tokens:
+                    self.encrypted_refresh_token = new_tokens['refresh_token']
+                
+                # Update expiration
+                expires_in = new_tokens.get('expires_in', 7200)
+                self.token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+                self.save()
+                
+                return new_tokens['access_token']
+            else:
+                self.deactivate()
+                raise Exception("Failed to refresh Twitter token")
+                
+        except Exception as e:
+            logger.error(f"Error refreshing Twitter token for integration {self.id}: {e}")
+            self.deactivate()
+            raise
+    
+    def get_twitter_bot(self) -> IntegratedTwitterBot:
+        """Get an IntegratedTwitterBot instance for this integration"""
+        if self.platform != self.Platform.TWITTER:
+            raise ValueError("This method is only available for Twitter integrations")
+        
+        return IntegratedTwitterBot(self)
+
+
+# Usage example
+def example_usage():
+    """
+    Example of how to use the integrated Twitter bot
+    """
+    
+    # Get a Twitter integration from the database
+    integration = ConnectedIntegration.objects.get(
+        platform=ConnectedIntegration.Platform.TWITTER,
+        is_active=True,
+        repository__id=some_repo_id
+    )
+    
+    # Create the integrated bot
+    twitter_bot = IntegratedTwitterBot(integration)
+    
+    # Check if authenticated
+    if twitter_bot.is_authenticated():
+        # Post a tweet
+        tweet_result = twitter_bot.post_tweet("Hello from my Django app! 🚀")
+        print(f"Tweet posted: {tweet_result}")
+        
+        # Get user info
+        user_info = twitter_bot.get_user_info()
+        print(f"User: {user_info['data']['username']}")
+    else:
+        # Need to authenticate
+        auth_url, state = twitter_bot.get_authorization_url()
+        print(f"Please authenticate at: {auth_url}")
+        
+        # After callback:
+        # tokens = twitter_bot.handle_callback_and_save(callback_url, state)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# twitter_integration.py
+"""
+Integrated Twitter Bot Helper that works with ConnectedIntegration model
+"""
+
+import logging
+from datetime import timedelta
+from typing import Dict, Any, Optional, Tuple
+from django.utils import timezone
+from .models import ConnectedIntegration
+from .twitter_bot import TwitterBotHelper, TwitterAuthenticationError, TwitterAPIError
+
+logger = logging.getLogger(__name__)
+
+class IntegratedTwitterBot:
+    """
+    Twitter Bot that integrates with ConnectedIntegration model for token management
+    """
+    
+    def __init__(self, integration: ConnectedIntegration):
+        """
+        Initialize with a ConnectedIntegration instance
+        
+        Args:
+            integration: ConnectedIntegration instance for Twitter platform
+        """
+        if integration.platform != ConnectedIntegration.Platform.TWITTER:
+            raise ValueError(f"Integration must be Twitter platform, got {integration.platform}")
+        
+        self.integration = integration
+        self.bot_helper = TwitterBotHelper(
+            user_id=f"repo_{integration.repository.id}_{integration.connected_by.id}",
+            use_cache=False  # We'll use the database instead
+        )
+        logger.info(f"IntegratedTwitterBot initialized for integration {integration.id}")
+    
+    def get_authorization_url(self, state: str = None) -> Tuple[str, str]:
+        """
+        Generate authorization URL for OAuth flow
+        
+        Args:
+            state: Optional state parameter for CSRF protection
+            
+        Returns:
+            Tuple of (authorization_url, state)
+        """
+        return self.bot_helper.get_authorization_url(state=state)
+    
+    def handle_callback_and_save(self, callback_url: str, expected_state: str = None) -> Dict[str, Any]:
+        """
+        Handle OAuth callback and save tokens to the integration model
+        
+        Args:
+            callback_url: Full callback URL with authorization code
+            expected_state: Expected state parameter for CSRF protection
+            
+        Returns:
+            Token dictionary
+        """
+        try:
+            # Get tokens from OAuth callback
+            tokens = self.bot_helper.handle_callback(callback_url, expected_state)
+            
+            # Save tokens to the integration model
+            self._save_tokens_to_model(tokens)
+            
+            logger.info(f"Twitter tokens saved to integration {self.integration.id}")
+            return tokens
+            
+        except Exception as e:
+            logger.error(f"Error handling Twitter callback: {e}")
+            self.integration.deactivate()
+            raise
+    
+    def _save_tokens_to_model(self, tokens: Dict[str, Any]):
+        """Save tokens to the ConnectedIntegration model"""
+        try:
+            # Save access token (will be encrypted by model)
+            self.integration.encrypted_access_token = tokens.get('access_token')
+            
+            # Save refresh token if available
+            if 'refresh_token' in tokens:
+                self.integration.encrypted_refresh_token = tokens.get('refresh_token')
+            
+            # Calculate expiration time (Twitter tokens expire in 2 hours)
+            expires_in = tokens.get('expires_in', 7200)  # Default 2 hours
+            self.integration.token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+            
+            # Activate the integration
+            self.integration.activate()
+            
+            logger.debug(f"Tokens saved to integration model {self.integration.id}")
+            
+        except Exception as e:
+            logger.error(f"Error saving tokens to model: {e}")
+            raise TwitterAPIError(f"Failed to save tokens: {e}")
+    
+    def _load_tokens_from_model(self) -> Optional[Dict[str, Any]]:
+        """Load tokens from the ConnectedIntegration model"""
+        try:
+            if not self.integration.is_active:
+                logger.warning(f"Integration {self.integration.id} is not active")
+                return None
+            
+            access_token = self.integration.get_access_token()
+            if not access_token:
+                logger.warning(f"No access token found for integration {self.integration.id}")
+                return None
+            
+            tokens = {
+                'access_token': access_token,
+                'created_at': self.integration.connected_at.isoformat(),
+                'user_id': self.bot_helper.user_id
+            }
+            
+            # Add refresh token if available
+            refresh_token = self.integration.get_refresh_token()
+            if refresh_token:
+                tokens['refresh_token'] = refresh_token
+            
+            # Add expiration info
+            if self.integration.token_expires_at:
+                tokens['expires_at'] = self.integration.token_expires_at.isoformat()
+            
+            return tokens
+            
+        except Exception as e:
+            logger.error(f"Error loading tokens from model: {e}")
+            return None
+    
+    def _refresh_tokens(self) -> Optional[Dict[str, Any]]:
+        """Refresh tokens using the integration model's refresh logic"""
+        try:
+            # Use the model's refresh method
+            new_access_token = self.integration.refresh_token_if_needed()
+            
+            if new_access_token:
+                # Return updated tokens
+                return self._load_tokens_from_model()
+            else:
+                logger.error(f"Failed to refresh tokens for integration {self.integration.id}")
+                self.integration.deactivate()
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error refreshing tokens: {e}")
+            self.integration.deactivate()
+            raise TwitterAuthenticationError(f"Failed to refresh tokens: {e}")
+    
+    def _get_valid_tokens(self) -> Dict[str, Any]:
+        """Get valid tokens, refreshing if necessary"""
+        # Check if tokens are expired
+        if self.integration.is_token_expired():
+            logger.info(f"Tokens expired for integration {self.integration.id}, refreshing...")
+            tokens = self._refresh_tokens()
+            if not tokens:
+                raise TwitterAuthenticationError("Failed to refresh expired tokens")
+        else:
+            tokens = self._load_tokens_from_model()
+        
+        if not tokens:
+            raise TwitterAuthenticationError("No valid tokens found - user needs to re-authenticate")
+        
+        return tokens
+    
+    def post_tweet(self, text: str, **kwargs) -> Dict[str, Any]:
+        """
+        Post a tweet using the integrated bot
+        
+        Args:
+            text: Tweet text (max 280 characters)
+            **kwargs: Additional tweet parameters
+            
+        Returns:
+            Tweet data from API response
+        """
+        try:
+            # Ensure we have valid tokens
+            tokens = self._get_valid_tokens()
+            
+            # Override the bot helper's token loading to use our model
+            original_load_method = self.bot_helper._load_tokens
+            self.bot_helper._load_tokens = lambda: tokens
+            
+            try:
+                # Post the tweet
+                result = self.bot_helper.post_tweet(text, **kwargs)
+                logger.info(f"Tweet posted successfully for integration {self.integration.id}")
+                return result
+            finally:
+                # Restore original method
+                self.bot_helper._load_tokens = original_load_method
+                
+        except Exception as e:
+            logger.error(f"Error posting tweet for integration {self.integration.id}: {e}")
+            if "authentication" in str(e).lower():
+                self.integration.deactivate()
+            raise
+    
+    def get_user_info(self) -> Dict[str, Any]:
+        """Get authenticated user information"""
+        try:
+            tokens = self._get_valid_tokens()
+            
+            # Override token loading temporarily
+            original_load_method = self.bot_helper._load_tokens
+            self.bot_helper._load_tokens = lambda: tokens
+            
+            try:
+                result = self.bot_helper.get_user_info()
+                
+                # Update external_id if not set
+                if not self.integration.external_id and 'data' in result:
+                    user_data = result['data']
+                    if 'id' in user_data:
+                        self.integration.external_id = user_data['id']
+                        self.integration.save()
+                
+                return result
+            finally:
+                self.bot_helper._load_tokens = original_load_method
+                
+        except Exception as e:
+            logger.error(f"Error getting user info for integration {self.integration.id}: {e}")
+            if "authentication" in str(e).lower():
+                self.integration.deactivate()
+            raise
+    
+    def is_authenticated(self) -> bool:
+        """Check if the integration has valid authentication"""
+        try:
+            if not self.integration.is_active:
+                return False
+            
+            # Try to get user info to verify tokens
+            self.get_user_info()
+            return True
+            
+        except Exception:
+            return False
+    
+    def disconnect(self):
+        """Disconnect the Twitter integration"""
+        try:
+            self.integration.delete_tokens()
+            logger.info(f"Twitter integration {self.integration.id} disconnected")
+        except Exception as e:
+            logger.error(f"Error disconnecting Twitter integration: {e}")
+            raise
+
+
+# Add these methods to your existing ConnectedIntegration model
+def _refresh_twitter_token(self):
+    """Updated Twitter token refresh method that works with TwitterBotHelper"""
+    refresh_token = self.get_refresh_token()
+    if not refresh_token:
+        raise Exception("Missing Twitter refresh token")
+    
+    try:
+        from .twitter_bot import TwitterBotHelper
+        
+        # Create a temporary bot helper for token refresh
+        bot_helper = TwitterBotHelper(
+            user_id=f"refresh_{self.id}",
+            use_cache=False
+        )
+        
+        # Use the bot helper's refresh method
+        new_tokens = bot_helper._refresh_tokens(refresh_token)
+        
+        if new_tokens:
+            # Update the model with new tokens (they'll be auto-encrypted)
+            self.encrypted_access_token = new_tokens['access_token']
+            if 'refresh_token' in new_tokens:
+                self.encrypted_refresh_token = new_tokens['refresh_token']
+            
+            # Update expiration
+            expires_in = new_tokens.get('expires_in', 7200)
+            self.token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+            self.save()
+            
+            logger.info(f"Twitter token refreshed for integration {self.id}")
+            return new_tokens['access_token']
+        else:
+            self.deactivate()
+            raise Exception("Failed to refresh Twitter token")
+            
+    except Exception as e:
+        logger.error(f"Error refreshing Twitter token for integration {self.id}: {e}")
+        self.deactivate()
+        raise
+
+def get_twitter_bot(self):
+    """Get an IntegratedTwitterBot instance for this integration"""
+    if self.platform != self.Platform.TWITTER:
+        raise ValueError("This method is only available for Twitter integrations")
+    
+    return IntegratedTwitterBot(self)
+
+
+# Usage example
+def example_usage():
+    """
+    Example of how to use the integrated Twitter bot
+    """
+    
+    # Get a Twitter integration from the database
+    integration = ConnectedIntegration.objects.get(
+        platform=ConnectedIntegration.Platform.TWITTER,
+        is_active=True,
+        repository__id=some_repo_id
+    )
+    
+    # Create the integrated bot
+    twitter_bot = IntegratedTwitterBot(integration)
+    
+    # Check if authenticated
+    if twitter_bot.is_authenticated():
+        # Post a tweet
+        tweet_result = twitter_bot.post_tweet("Hello from my Django app! 🚀")
+        print(f"Tweet posted: {tweet_result}")
+        
+        # Get user info
+        user_info = twitter_bot.get_user_info()
+        print(f"User: {user_info['data']['username']}")
+    else:
+        # Need to authenticate
+        auth_url, state = twitter_bot.get_authorization_url()
+        print(f"Please authenticate at: {auth_url}")
+        
+        # After callback:
+        # tokens = twitter_bot.handle_callback_and_save(callback_url, state)
+
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+
+
+
+import logging
+from datetime import timedelta
+from django.utils import timezone
+from django.db import transaction
+from django_tenants.utils import tenant_context
+from accounts.models import decrypt, encrypt
+from organizations.models import Organization, UserOrganizationRole
+from .models import Post, ConnectedIntegration
+import requests
+import json
+
+logger = logging.getLogger(__name__)
+
+def publish_pending_posts():
+    """
+    Production-ready task to publish pending posts across all tenants.
+    Handles multi-platform posting with proper authentication and limits.
+    """
+    logger.info("Starting post publishing task...")
+    
+    try:
+        tenants = Organization.objects.all()
+        
+        for tenant in tenants:
+            try:
+                with tenant_context(tenant):
+                    _process_tenant_posts(tenant)
+            except Exception as e:
+                logger.error(f"Error processing tenant {tenant.schema_name}: {e}")
+                continue
+                
+    except Exception as e:
+        logger.error(f"Critical error in post publishing task: {e}")
+    
+    logger.info("Post publishing task completed.")
+
+def _process_tenant_posts(tenant):
+    """Process posts for a single tenant."""
+    logger.info(f"Processing tenant: {tenant.schema_name}")
+    
+    # Get organization owner
+    owner_role = UserOrganizationRole.objects.filter(
+        organization=tenant, 
+        role="owner"
+    ).select_related("user").first()
+    
+    if not owner_role or not owner_role.user:
+        logger.warning(f"No owner found for {tenant.schema_name}")
+        return
+    
+    owner = owner_role.user
+    
+    # Check post limits for free plan users
+    if not _check_post_limits(owner):
+        logger.info(f"Post limit reached for owner {owner.email}")
+        return
+    
+    # Get ready-to-publish posts
+    ready_posts = _get_ready_posts()
+    
+    if not ready_posts:
+        logger.info(f"No posts ready for publishing in {tenant.schema_name}")
+        return
+    
+    # Group posts by platform
+    platform_posts = {}
+    for post in ready_posts:
+        platform = post.platform
+        if platform not in platform_posts:
+            platform_posts[platform] = []
+        platform_posts[platform].append(post)
+    
+    # Process each platform
+    for platform, posts in platform_posts.items():
+        try:
+            selected_post = _select_post_to_publish(posts)
+            if selected_post:
+                _publish_post(selected_post, tenant)
+                _cleanup_other_posts(selected_post, posts)
+        except Exception as e:
+            logger.error(f"Error publishing {platform} posts: {e}")
+
+def _check_post_limits(owner):
+    """Check if user has reached post limits based on plan."""
+    from accounts.utils import has_pro_access
+    from django.conf import settings
+    
+    if has_pro_access(owner):
+        return True
+    
+    # Get all organizations where user is owner
+    user_org_ids = Organization.objects.filter(
+        owner=owner
+    ).values_list("id", flat=True)
+    
+    # Count published posts across all owned organizations
+    published_count = Post.objects.filter(
+        organization_id__in=user_org_ids,
+        status=Post.Status.PUBLISHED,
+        is_deleted=False,
+        is_inactive=False
+    ).count()
+    
+    max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+    
+    if published_count >= max_posts:
+        logger.warning(f"Post limit reached: {published_count}/{max_posts}")
+        return False
+    
+    return True
+
+def _get_ready_posts():
+    """Get posts that are ready to be published."""
+    max_delay = timedelta(minutes=15)
+    current_time = timezone.now()
+    
+    return Post.objects.filter(
+        is_deleted=False,
+        is_inactive=False,
+        status__in=[Post.Status.SCHEDULED],
+        scheduled_publish_time__lte=current_time + max_delay,
+        scheduled_publish_time__gte=current_time - max_delay
+    ).select_related('repository', 'organization')
+
+def _select_post_to_publish(posts):
+    """Select the best post to publish from a list."""
+    if not posts:
+        return None
+    
+    # Priority order: priority posts first, then by scheduled time
+    priority_posts = [p for p in posts if p.priority]
+    if priority_posts:
+        return min(priority_posts, key=lambda p: p.scheduled_publish_time)
+    
+    return min(posts, key=lambda p: p.scheduled_publish_time)
+
+def _publish_post(post, organization):
+    """Publish a post to the appropriate platform."""
+    platform = post.platform
+    
+    try:
+        # Get active integration for this repository and platform
+        integration = ConnectedIntegration.objects.filter(
+            repository=post.repository,
+            platform=platform,
+            is_active=True
+        ).first()
+        
+        if not integration:
+            logger.error(f"No active integration found for {platform}")
+            return False
+        
+        # Platform-specific publishing
+        success = False
+        if platform == Post.Platform.LINKEDIN:
+            success = _publish_to_linkedin(post, integration)
+        elif platform == Post.Platform.SLACK:
+            success = _publish_to_slack(post, integration)
+        elif platform == Post.Platform.DISCORD:
+            success = _publish_to_discord(post, integration)
+        # elif platform == Post.Platform.TWITTER:
+        #     success = _publish_to_twitter(post, integration)
+        
+        if success:
+            with transaction.atomic():
+                post.publish()
+                post.posted_channels.append(platform)
+                post.save()
+            
+            _send_success_notification(post, organization)
+            logger.info(f"Successfully published post {post.id} to {platform}")
+            return True
+        else:
+            logger.error(f"Failed to publish post {post.id} to {platform}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error publishing post {post.id} to {platform}: {e}")
+        return False
+
+def _publish_to_linkedin(post, integration):
+    """Publish post to LinkedIn."""
+    try:
+        # Get decrypted tokens
+        access_token = integration.get_access_token()
+        member_id = integration.get_external_id()
+        
+        if not access_token or not member_id:
+            logger.error("Missing LinkedIn credentials")
+            return False
+        
+        # Refresh token if needed
+        if integration.is_token_expired():
+            access_token = integration.refresh_token_if_needed()
+        
+        # Prepare LinkedIn post data
+        post_data = {
+            "author": f"urn:li:person:{member_id}",
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {
+                "com.linkedin.ugc.ShareContent": {
+                    "shareCommentary": {
+                        "text": post.content
+                    },
+                    "shareMediaCategory": "NONE"
+                }
+            },
+            "visibility": {
+                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+            }
+        }
+        
+        # Add media if present
+        if post.image_urls:
+            post_data["specificContent"]["com.linkedin.ugc.ShareContent"]["shareMediaCategory"] = "IMAGE"
+            # Add image handling logic here
+        
+        # Make API call
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+            'X-Restli-Protocol-Version': '2.0.0'
+        }
+        
+        response = requests.post(
+            'https://api.linkedin.com/v2/ugcPosts',
+            json=post_data,
+            headers=headers,
+            timeout=30
+        )
+        
+        return response.status_code == 201
+        
+    except Exception as e:
+        logger.error(f"LinkedIn publishing error: {e}")
+        return False
+
+def _publish_to_slack(post, integration):
+    """Publish post to Slack via webhook."""
+    try:
+        webhook_url = integration.get_webhook_url()
+        
+        if not webhook_url:
+            logger.error("Missing Slack webhook URL")
+            return False
+        
+        # Prepare Slack message
+        slack_data = {
+            "text": post.content,
+            "username": "Commit Companion",
+            "icon_emoji": ":robot_face:"
+        }
+        
+        # Add attachments for images/videos
+        if post.image_urls or post.video_url:
+            slack_data["attachments"] = []
+            if post.image_urls:
+                for img_url in post.image_urls:
+                    slack_data["attachments"].append({
+                        "image_url": img_url
+                    })
+            if post.video_url:
+                slack_data["attachments"].append({
+                    "video_url": post.video_url
+                })
+        
+        response = requests.post(
+            webhook_url,
+            json=slack_data,
+            timeout=30
+        )
+        
+        return response.status_code == 200
+        
+    except Exception as e:
+        logger.error(f"Slack publishing error: {e}")
+        return False
+
+def _publish_to_discord(post, integration):
+    """Publish post to Discord via webhook."""
+    try:
+        webhook_url = integration.get_webhook_url()
+        
+        if not webhook_url:
+            logger.error("Missing Discord webhook URL")
+            return False
+        
+        # Prepare Discord message
+        discord_data = {
+            "content": post.content,
+            "username": "Commit Companion",
+            "avatar_url": "https://your-app.com/static/logo.png"
+        }
+        
+        # Add embeds for rich content
+        if post.image_urls or post.video_url:
+            discord_data["embeds"] = []
+            if post.image_urls:
+                for img_url in post.image_urls:
+                    discord_data["embeds"].append({
+                        "image": {"url": img_url}
+                    })
+        
+        response = requests.post(
+            webhook_url,
+            json=discord_data,
+            timeout=30
+        )
+        
+        return response.status_code == 204
+        
+    except Exception as e:
+        logger.error(f"Discord publishing error: {e}")
+        return False
+
+def _publish_to_twitter(post, integration):
+    """Publish post to Twitter."""
+    try:
+        access_token = integration.get_access_token()
+        
+        if not access_token:
+            logger.error("Missing Twitter access token")
+            return False
+        
+        # Refresh token if needed
+        if integration.is_token_expired():
+            access_token = integration.refresh_token_if_needed()
+        
+        # Prepare Twitter post data
+        tweet_data = {
+            "text": post.content
+        }
+        
+        # Add media if present
+        if post.image_urls:
+            # Handle Twitter media upload (simplified)
+            tweet_data["media"] = {"media_ids": []}
+            # Add media upload logic here
+        
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(
+            'https://api.twitter.com/2/tweets',
+            json=tweet_data,
+            headers=headers,
+            timeout=30
+        )
+        
+        return response.status_code == 201
+        
+    except Exception as e:
+        logger.error(f"Twitter publishing error: {e}")
+        return False
+
+def _cleanup_other_posts(selected_post, all_posts):
+    """Mark other posts as inactive after successful publishing."""
+    try:
+        other_posts = [p for p in all_posts if p.id != selected_post.id]
+        
+        with transaction.atomic():
+            for post in other_posts:
+                post.deactivate()
+                
+        logger.info(f"Deactivated {len(other_posts)} other posts")
+        
+    except Exception as e:
+        logger.error(f"Error cleaning up other posts: {e}")
+
+def _send_success_notification(post, organization):
+    """Send notification after successful post publishing."""
+    try:
+        from notifications.utils import create_and_notify
+        
+        title = "Post Published Successfully"
+        message = f"Your post for {post.repository.name} has been published to {post.platform}."
+        
+        create_and_notify(
+            organization=organization,
+            title=title,
+            message=message,
+            triggered_by=None,
+            template_path='emails/notification_email_published.html'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error sending notification: {e}")
+
+# Helper function for manual testing
+def publish_post_by_id(post_id):
+    """Manually publish a specific post (for testing)."""
+    try:
+        post = Post.objects.get(id=post_id)
+        
+        with tenant_context(post.organization):
+            if _publish_post(post, post.organization):
+                logger.info(f"Manual publish successful for post {post_id}")
+                return True
+            else:
+                logger.error(f"Manual publish failed for post {post_id}")
+                return False
+                
+    except Post.DoesNotExist:
+        logger.error(f"Post {post_id} not found")
+        return False
+    except Exception as e:
+        logger.error(f"Error in manual publish: {e}")
+        return False -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class PostGroup(models.Model):
+#     """
+#     A group containing multiple posts generated from the same content for different platforms.
+#     """
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     name = models.CharField(max_length=255, blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)
+
+#     organization = models.ForeignKey(
+#         "organizations.Organization",
+#         on_delete=models.CASCADE,
+#         related_name="posts_group_organization"
+#     )
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     def __str__(self):
+#         return f"Post Group {self.id} ({self.name or 'No Name'})"
+
+# class Post(models.Model):
+#     class Status(models.TextChoices):
+#         DRAFTED = 'drafted', 'Drafted'
+#         PUBLISHED = 'published', 'Published'
+#         SCHEDULED = 'scheduled', 'Scheduled'
+#         DELETED = 'deleted', 'Deleted'
+#         INACTIVE = 'inactive', 'Inactive'
+
+#     # Platform choices
+#     class Platform(models.TextChoices):
+#         LINKEDIN = 'linkedin', 'LinkedIn'
+#         SLACK = 'slack', 'Slack'
+#         DISCORD = 'discord', 'Discord'
+#         TWITTER = 'twitter', 'Twitter'  # Keep this for backward compatibility
+
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     content = models.TextField()
+#     status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFTED)
+#     platform = models.CharField(max_length=20, choices=Platform.choices,
+#                                 default=Platform.LINKEDIN)  # Add this field
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     scheduled_publish_time = models.DateTimeField(null=True, blank=True)
+#     actual_publish_time = models.DateTimeField(null=True, blank=True)
+
+#     # Which repo it's tied to
+#     repository = models.ForeignKey(
+#         "core.Repository",
+#         on_delete=models.CASCADE,
+#         related_name="posts_repo",
+#     )
+
+#     # Org that owns the post
+#     organization = models.ForeignKey(
+#         "organizations.Organization",
+#         on_delete=models.CASCADE,
+#         related_name="posts"
+#     )
+
+#     # Group this post belongs to (if multi-platform)
+#     post_group = models.ForeignKey(
+#         PostGroup,
+#         on_delete=models.CASCADE,
+#         related_name="posts",
+#         null=True,
+#         blank=True
+#     )
+
+#     # Media
+#     image_urls = models.JSONField(default=list, blank=True)
+#     video_url = models.URLField(blank=True, null=True)
+
+#     # Actual success delivery channels (e.g., ["linkedin", "twitter"])
+#     posted_channels = models.JSONField(
+#         default=list,
+#         blank=True,
+#         help_text="Channels where this post was successfully published."
+#     )
+
+#     planned_channels = models.JSONField(
+#         default=list,
+#         blank=True,
+#         help_text="Channels this post is intended to be published to."
+#     )
+
+#     # Soft delete + inactivity
+#     is_deleted = models.BooleanField(default=False)
+#     is_inactive = models.BooleanField(default=False)
+
+#     # For restoring
+#     original_status = models.CharField(max_length=10, choices=Status.choices, null=True, blank=True)
+
+#     # UX metadata
+#     is_grouped = models.BooleanField(default=False)
+#     is_edited = models.BooleanField(default=False)
+#     priority = models.BooleanField(default=False)
+
+#     def __str__(self):
+#         return f"Post ({self.status}) - {self.repository.name} - {self.platform}"
+
+#     def clean(self):
+#         if self.image_urls and self.video_url:
+#             raise ValidationError("Cannot upload both image(s) and video for a single post.")
+
+#     def delete(self, *args, **kwargs):
+#         self.original_status = self.status
+#         self.status = self.Status.DELETED
+#         self.is_deleted = True
+#         self.is_inactive = False
+#         self.save()
+
+#     def deactivate(self):
+#         self.original_status = self.status
+#         self.status = self.Status.INACTIVE
+#         self.is_inactive = True
+#         self.is_deleted = False
+#         self.save()
+
+#     @classmethod
+#     def clear_trash(cls):
+#         cls.objects.filter(is_deleted=True).delete()
+#         cls.objects.filter(is_inactive=True).delete()
+
+#     @classmethod
+#     def restore(cls, post_id):
+#         post = cls.objects.get(id=post_id)
+#         post.status = post.original_status or cls.Status.DRAFTED
+#         post.is_deleted = False
+#         post.is_inactive = False
+#         post.save()
+
+#     def schedule_publish(self, delay_minutes=15):
+#         self.scheduled_publish_time = timezone.now() + timedelta(minutes=delay_minutes)
+#         self.save()
+
+#     def publish(self):
+#         self.status = self.Status.PUBLISHED
+#         self.actual_publish_time = timezone.now()
+#         self.save()
+
+#     def is_ready_to_publish(self):
+#         return (
+#             self.status in [self.Status.DRAFTED, self.Status.SCHEDULED]
+#             and not self.is_deleted
+#             and not self.is_inactive
+#             and (self.scheduled_publish_time is None or self.scheduled_publish_time <= timezone.now())
+#         )
+
+# # Helper function to generate and encrypt a secret
+# def generate_encrypted_secret():
+#     # Generate a new UUID secret
+#     secret = str(uuid.uuid4())
+
+#     # Encrypt using the FERNET_KEY
+#     fernet = Fernet(settings.FERNET_KEY.encode())  # Using the correct Fernet key
+#     encrypted_secret = fernet.encrypt(secret.encode()).decode()
+#     return encrypted_secret
+
+# class Repository(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+#     # Foreign keys
+#     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='repositories')
+#     connected_by_user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='connected_repositories')
+
+#     # GitHub metadata
+#     html_url = models.URLField()
+#     name = models.CharField(max_length=255)       # e.g., "commit-companion"
+#     full_name = models.CharField(max_length=255)  # e.g., "jolex/commit-companion"
+#     description = models.TextField(null=True, blank=True)
+#     github_repo_id = models.CharField(max_length=50, db_index=True)  # GitHub repo ID
+#     github_owner_id = models.CharField(max_length=50, db_index=True)
+
+#     is_private = models.BooleanField(default=False)
+#     default_branch = models.CharField(max_length=100, default="main")
+
+#     updated_at = models.DateTimeField(auto_now=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         unique_together = ('organization', 'github_repo_id')
+#         indexes = [
+#             models.Index(fields=['organization', 'github_repo_id']),
+#         ]
+
+#     def __str__(self):
+#         return self.full_name
+
+# class RepositoryConfig(models.Model):
+#     STATUS_CHOICES = (
+#         ("error", "Error"),
+#         ("paused", "Paused"),
+#         ("connected", "Connected"),
+#         ("disconnected", "Disconnected"),
+#     )
+
+#     POSTING_STRATEGY_CHOICES = (
+#         ("eod", "Post End of Day"),
+#         ("15min", "Post after 15 mins"),
+#         ("immediate", "Post Immediately"),
+#         ("scheduled", "Scheduled Posting"),
+#         ("manual", "Manual Review Before Posting"),
+#     )
+
+#     TONE_PRESETS = (
+#         ("sales", "Sales-Oriented"),
+#         ("casual", "Casual & Engaging"),
+#         ("humorous", "Humorous & Light"),
+#         ("technical", "Technical & Informative"),
+#         ("professional", "Professional & Formal"),
+#     )
+
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="connected")
+#     repository = models.OneToOneField(Repository, on_delete=models.CASCADE, related_name='config')
+#     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='repository_configs')
+
+#     # Commit & AI Settings
+#     ai_transformation_enabled = models.BooleanField(default=True)
+#     tracked_branch = models.CharField(max_length=100, default="main")
+#     default_tone = models.CharField(max_length=20, choices=TONE_PRESETS, default="professional")
+
+#     # Posting Strategy
+#     allow_manual_approval = models.BooleanField(default=False)
+#     post_frequency_limit = models.IntegerField(default=0, help_text="Maximum posts per day (0 = unlimited)")
+#     posting_strategy = models.CharField(max_length=20, choices=POSTING_STRATEGY_CHOICES, default="immediate")
+
+#     # Hashtags & Enhancers
+#     automate_hashtags = models.BooleanField(default=True)
+#     hashtags = models.CharField(max_length=255, null=True, blank=True)
+
+#     # Filters
+#     ignore_keywords = models.CharField(max_length=100, default="wip,temp", blank=True, null=True)         # e.g., ["WIP", "temp"]
+
+#     # Coming Soon
+#     include_branches = models.JSONField(default=list, blank=True, null=True)        # e.g., ["main", "release"]
+#     commit_prefix_filter = models.CharField(max_length=100, blank=True, null=True, default="feat,fix")  # e.g., "feat:,fix:"
+
+#     # Target Channels
+#     channels_to_post = models.JSONField(default=list, blank=True)        # e.g., ['linkedin', 'twitter', 'slack']
+
+#     # Schedule per repo (override org default if needed)
+#     preferred_post_time = models.TimeField(null=True, blank=True)  # E.g., 17:30 for end-of-day batching
+
+#     updated_at = models.DateTimeField(auto_now=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"Config for {self.repository.name}"
+
+# class Webhook(models.Model):
+#     enabled = models.BooleanField(default=True)
+#     webhook_url = models.URLField(max_length=500)
+#     github_webhook_id = models.CharField(max_length=100, unique=True)
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     tracked_repo = models.ForeignKey(Repository, on_delete=models.CASCADE, related_name="webhooks")
+#     public_secret = models.CharField(max_length=255, unique=True, default=generate_encrypted_secret)
+#     private_secret = models.CharField(max_length=255, unique=True, default=generate_encrypted_secret)
+
+#     updated_at = models.DateTimeField(auto_now=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+
+#     # Ensuring secret is generated and encrypted upon creation
+#     def save(self, *args, **kwargs):
+#         if not self.public_secret or not self.private_secret:
+#             self.public_secret = generate_encrypted_secret()  # Generate public secret on save
+#             self.private_secret = generate_encrypted_secret()  # Generate private secret on save
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"Webhook for {self.tracked_repo.name}"
+
+# # Enhanced WebhookPingLog model to support the new functionality
+# class WebhookPingLog(models.Model):
+#     STATUS_CHOICES = [
+#         ('processing', 'Processing'),
+#         ('success', 'Success'),
+#         ('failed', 'Failed'),
+#     ]
+
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     webhook = models.ForeignKey(Webhook, on_delete=models.CASCADE, related_name="ping_logs", null=True, blank=True)
+
+#     # Request data
+#     payload = models.JSONField()
+#     user_agent = models.TextField(blank=True)
+#     request_size = models.IntegerField(default=0)
+#     github_event = models.CharField(max_length=50, blank=True)
+#     client_ip = models.GenericIPAddressField(null=True, blank=True)
+
+#     # Response data
+#     http_status = models.IntegerField()
+#     response_body = models.TextField(null=True, blank=True)
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing')
+
+#     # Performance metrics
+#     processing_time_ms = models.IntegerField(null=True, blank=True)
+
+#     # Timestamps
+#     received_at = models.DateTimeField(auto_now_add=True)
+#     completed_at = models.DateTimeField(null=True, blank=True)
+
+#     class Meta:
+#         ordering = ['-received_at']
+#         indexes = [
+#             models.Index(fields=['status', 'received_at']),
+#             models.Index(fields=['webhook', 'received_at']),
+#             models.Index(fields=['github_event', 'received_at']),
+#         ]
+
+#     def save(self, *args, **kwargs):
+#         if self.status != 'processing' and not self.completed_at:
+#             self.completed_at = timezone.now()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"Webhook Log {self.id} - {self.status}"
+
+# def publish_pending_post():
+#     """
+#     This task checks for all posts that are in the 'draft' or 'scheduled' state,
+#     are not deleted or inactive, and are scheduled for publishing.
+#     It will publish the post if the scheduled time has passed.
+#     This will run for all tenants without passing a tenant_id explicitly.
+#     """
+#     print("Started checking for posts to publish...")
+
+#     try:
+#         # Get all tenants (replace 'Organization' with your actual tenant model)
+#         tenants = Organization.objects.all()
+
+#         # Loop through each tenant and switch to their schema using tenant_context
+#         for tenant in tenants:
+#             print(f"Switching to tenant: {tenant.schema_name}")
+#             try:
+#                 # Switch to the current tenant's schema
+#                 with tenant_context(tenant):
+#                     print(f"Switched to tenant schema: {tenant.schema_name}")
+
+#                     # Get organization owner
+#                     owner_role = UserOrganizationRole.objects.filter(
+#                         organization=tenant, role="owner"
+#                     ).select_related("user").first()
+
+#                     if not owner_role or not owner_role.user:
+#                         print(f"No valid owner found for {tenant.schema_name}, skipping...")
+#                         continue
+
+#                     owner = owner_role.user
+
+#                     # Check if the owner is on the basic plan
+#                     if owner.plan == UserAccount.BASIC:
+#                         # Count posts published by the owner in the current month
+#                         start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+#                         monthly_post_count = Post.objects.filter(
+#                             organization=tenant,
+#                             created_at__gte=start_of_month
+#                         ).count()
+
+#                         if monthly_post_count >= 5:
+#                             print(
+#                                 f"Owner {owner.email} has reached the 5-post limit for this month. Skipping publishing.")
+#                             continue
+
+#                     max_delay = timedelta(minutes=15)
+#                     current_time = timezone.now()
+
+#                     all_posts = Post.objects.filter(
+#                         platform="linkedin",
+#                         status__in=["drafted", "scheduled"],
+#                         is_deleted=False,
+#                         is_inactive=False,
+#                         scheduled_publish_time__isnull=False
+#                     )
+
+#                     posts_to_publish = []
+
+#                     # Iterate through filtered posts
+#                     for post in all_posts:
+#                         print(f"Checking post {post.id}:")
+#                         print(f"Scheduled Publish Time: {post.scheduled_publish_time}")
+#                         print(f"Current Time: {current_time}")
+
+#                         time_difference = current_time - post.scheduled_publish_time
+
+#                         # Publish if within the 5-minute window or exactly on time
+#                         if timedelta(0) <= time_difference <= max_delay:
+#                             print(f"Post is within the allowed delay window. Publishing now.")
+#                             posts_to_publish.append(post)
+
+#                         elif post.scheduled_publish_time > current_time:
+#                             print(f"Post's scheduled publish time is in the future. Not publishing yet.")
+
+#                         else:
+#                             print(f"Post's scheduled publish time exceeded the maximum delay. Skipping.")
+
+#                     print(f"Found {len(posts_to_publish)} posts to check for publishing on LinkedIn.")
+
+#                     # Process each post and check if it is ready to be published
+#                     for post in posts_to_publish:
+#                         print(f"Checking if post {post.id} is ready to be published...")
+#                         if post.is_ready_to_publish():
+#                             print(f"Post {post.id} is ready to be published.")
+
+#                             # Select the post for Twitter using the defined function
+#                             # selected_post = select_post_to_publish(posts_to_publish)
+#                             selected_linkedin_post = select_linkedin_post_to_publish(posts_to_publish)
+
+#                             if selected_linkedin_post:
+#                                 # Mark the selected post as published
+#                                 post_linkedin_update(selected_linkedin_post.content, organization=tenant)
+#                                 selected_linkedin_post.publish()
+
+#                                 # Post the tweet
+#                                 print(f"Post {selected_linkedin_post.id} has been published.")
+
+#                                 # Step 4: Delete all other posts that are not the selected one
+#                                 delete_other_posts(selected_linkedin_post, platform="linkedin")
+
+#                                 # Send the notification email **after successful publishing**
+#                                 title = "Your Post Has Been Published on Social Media"
+#                                 message = f"Your post with ID {selected_linkedin_post.id} has been successfully published."
+
+#                                 create_and_notify(
+#                                     organization=tenant,
+#                                     title=title,
+#                                     message=message,
+#                                     triggered_by=None,
+#                                     template_path='emails/notification_email_published.html'
+#                                 )
+
+#                                 # Exit the loop after publishing the selected post (no need to continue processing)
+#                                 break
+#                         else:
+#                             print(f"Post {post.id} is not ready for publishing.")
+
+
+
+#             except Exception as e:
+#                 print(f"Error while processing tenant {tenant.schema_name}: {e}")
+#         print("Finished checking for posts to publish.")
+#     except Exception as e:
+#         print(f"Error while accessing tenants or posts: {e}")
+
+
+
+#     def _check_post_limits(self, owner):
+#         """Check if user has reached post limits."""
+#         if has_pro_access(owner):
+#             return True
+
+#         # Get all orgs where this user is the owner
+#         user_org_ids = Organization.objects.filter(owner=owner).values_list("id", flat=True)
+
+#         # Count published posts across all orgs owned by this user
+#         published_posts_count = Post.objects.filter(
+#             organization_id__in=user_org_ids,
+#             status=Post.Status.PUBLISHED,
+#             is_deleted=False,
+#             is_inactive=False
+#         ).count()
+
+#         max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+
+#         if published_posts_count >= max_posts:
+#             logger.warning(f"🚫 Post limit reached: {published_posts_count}/{max_posts}")
+#             return False
+
+# class ConnectedIntegration(models.Model):
+#     class Platform(models.TextChoices):
+#         SLACK = "slack", "Slack"
+#         TWITTER = "twitter", "Twitter"
+#         DISCORD = "discord", "Discord"
+#         LINKEDIN = "linkedin", "LinkedIn"
+
+#     # Connected to a specific repository instead of the organization
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     repository = models.ForeignKey(Repository, on_delete=models.CASCADE, related_name='integrations')
+
+#     # Track the user who connected it
+#     connected_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+
+#     is_active = models.BooleanField(default=True)
+#     platform = models.CharField(max_length=50, choices=Platform.choices)
+
+#     # Encrypted fields
+#     encrypted_webhook_url = models.TextField(null=True, blank=True)         # Slack/Discord
+#     encrypted_access_token = models.TextField(null=True, blank=True)        # OAuth2 tokens
+#     encrypted_token_secret = models.TextField(null=True, blank=True)        # OAuth1 (e.g., Twitter secret)
+#     encrypted_refresh_token = models.TextField(null=True, blank=True)       # OAuth2
+
+#     token_expires_at = models.DateTimeField(null=True, blank=True)
+#     external_id = models.CharField(max_length=255, null=True, blank=True)   # e.g., LinkedIn member ID
+
+#     connected_at = models.DateTimeField(auto_now_add=True)
+#     disconnected_at = models.DateTimeField(null=True, blank=True)
+
+#     class Meta:
+#         unique_together = ['repository', 'platform', 'connected_by']  # Unique per repo, platform, and user
+
+#     def __str__(self):
+#         repo_name = self.repository.name if self.repository else "Unknown Repo"
+#         return f"{repo_name} - {self.platform} - Connected by {self.connected_by}"
+
+#     def save(self, *args, **kwargs):
+#         fields_to_encrypt = [
+#             'external_id',
+#             'encrypted_webhook_url',
+#             'encrypted_access_token',
+#             'encrypted_token_secret',
+#             'encrypted_refresh_token'
+#         ]
+#         for field in fields_to_encrypt:
+#             val = getattr(self, field)
+#             if val and not val.startswith("enc::"):
+#                 setattr(self, field, encrypt(val))
+#         super().save(*args, **kwargs)
+
+#     # ------------------- Decryption Utilities -------------------
+#     def get_access_token(self):
+#         return decrypt(self.encrypted_access_token) if self.encrypted_access_token else None
+
+#     def get_refresh_token(self):
+#         return decrypt(self.encrypted_refresh_token) if self.encrypted_refresh_token else None
+
+#     def get_token_secret(self):
+#         return decrypt(self.encrypted_token_secret) if self.encrypted_token_secret else None
+
+#     def get_webhook_url(self):
+#         return decrypt(self.encrypted_webhook_url) if self.encrypted_webhook_url else None
+
+#     def get_external_id(self):
+#         return decrypt(self.external_id) if self.external_id else None
+
+#     # ------------------- Lifecycle Actions -------------------
+#     def deactivate(self):
+#         self.disconnected_at = timezone.now()
+#         self.is_active = False
+#         self.save()
+
+#     def activate(self):
+#         self.disconnected_at = None
+#         self.is_active = True
+#         self.save()
+
+#     def delete_tokens(self):
+#         """Hard disconnect: wipe all secrets and mark inactive."""
+#         self.disconnected_at = timezone.now()
+#         self.encrypted_refresh_token = None
+#         self.encrypted_access_token = None
+#         self.encrypted_token_secret = None
+#         self.encrypted_webhook_url = None
+#         self.token_expires_at = None
+#         self.external_id = None
+#         self.is_active = False
+#         self.save()
+
+#     # ------------------- Refresh Logic -------------------
+
+#     def is_token_expired(self):
+#         """Check if token is expired based on platform rules."""
+#         return self.token_expires_at and timezone.now() >= self.token_expires_at
+
+#     def refresh_token_if_needed(self):
+#         """Public method to refresh token if expired (for LinkedIn or Twitter OAuth2)."""
+#         if not self.is_token_expired():
+#             return self.get_access_token()
+
+#         if self.platform == self.Platform.LINKEDIN:
+#             return self._refresh_linkedin_token()
+#         elif self.platform == self.Platform.TWITTER:
+#             return self._refresh_twitter_token()
+
+#         # For Slack/Discord: No refresh needed
+#         return self.get_access_token()
+
+#     def _refresh_linkedin_token(self):
+#         refresh_token = self.get_refresh_token()
+#         if not refresh_token:
+#             raise Exception("Missing LinkedIn refresh token")
+
+#         # 👇 Replace with actual LinkedIn API call
+#         response = 's'
+#         self.is_active = False
+
+#         # self.encrypted_access_token = encrypt(response['access_token'])
+#         # self.token_expires_at = timezone.now() + timedelta(seconds=response.get('expires_in', 3600))
+#         self.save()
+#         # return response['access_token']
+
+#     def _refresh_twitter_token(self):
+#         refresh_token = self.get_refresh_token()
+#         if not refresh_token:
+#             raise Exception("Missing Twitter refresh token")
+
+#         # 👇 Replace with actual Twitter refresh flow
+#         response = ""
+
+#         self.encrypted_access_token = encrypt(response['access_token'])
+#         self.token_expires_at = timezone.now() + timedelta(seconds=response.get('expires_in', 3600))
+#         self.save()
+#         return response['access_token']
+
+# def post_linkedin_update(post_content, organization):
+#     """
+#     Posts an update on LinkedIn using the stored access tokens.
+#     """
+#     print(f"Attempting to post on LinkedIn for organization: {organization}")
+
+#     # Retrieve the associated LinkedIn account for the organization
+#     linkedin_oauth = None
+#     #  SocialMediaAccount.objects.filter(organization=organization).first()
+
+#     if not linkedin_oauth:
+#         print(f"No LinkedIn account connected for organization: {organization}")
+#         return JsonResponse({"error": "LinkedIn account not connected."}, status=400)
+
+#     print(f"Found LinkedIn account for organization: {organization}")
+#     print(f"Access token: {linkedin_oauth.access_token}")
+
+#     # Use stored member ID or fetch it again if missing
+#     member_id = linkedin_oauth.access_id_secret
+
+#     # Create the post data
+#     post_data = {
+#         "author": f"urn:li:person:{member_id}",
+#         "lifecycleState": "PUBLISHED",
+#         "specificContent": {
+#             "com.linkedin.ugc.ShareContent": {
+#                 "shareCommentary": {"text": post_content},
+#                 "shareMediaCategory": "NONE"
+#             }
+#         },
+#         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+#     }
+
+#     # Post the content to LinkedIn
+#     post_url = "https://api.linkedin.com/v2/ugcPosts"
+#     headers = {
+#         "Authorization": f"Bearer {linkedin_oauth.access_token}",
+#         "X-Restli-Protocol-Version": "2.0.0"
+#     }
+#     print(f"Posting content to LinkedIn: {post_content}")
+
+#     try:
+#         response = requests.post(post_url, json=post_data, headers=headers)
+#         if response.status_code == 201:
+#             print(f"LinkedIn post created successfully: {response.json()}")
+#             return JsonResponse({"message": "Post created successfully on LinkedIn!"})
+#         else:
+#             print(f"Error posting on LinkedIn. Status code: {response.status_code}, Response: {response.text}")
+#             return JsonResponse(
+#                 {"error": response.json(), "status_code": response.status_code}, status=response.status_code
+#             )
+#     except Exception as e:
+#         return JsonResponse({"error": "Error posting on LinkedIn"}, status=500)
+
+# def create_and_notify(organization, title, message, triggered_by=None, related_object=None, template_path=None):
+#     """
+#     Create a notification and send an email to organization admins and owner.
+
+#     Args:
+#         organization: The organization instance for which the notification is created.
+#         title (str): Title of the notification.
+#         message (str): Message body of the notification.
+#         triggered_by: (Optional) User instance that triggered the notification.
+#         related_object: (Optional) Object associated with the notification (e.g., a post, user action).
+
+#     Returns:
+#         Notification: The created notification instance.
+#     """
+#     # Create the notification
+#     content_type = None
+#     object_id = None
+
+#     if related_object:
+#         content_type = ContentType.objects.get_for_model(related_object)
+#         object_id = related_object.id
+
+
+#     notification = Notification.objects.create(
+#         organization=organization,
+#         title=title,
+#         message=message,
+#         triggered_by=triggered_by,
+#         content_type=content_type,
+#         object_id=object_id
+#     )
+
+#     # Send email to admins and owner
+#     _send_notification_email(organization, notification, template_path=template_path)
+
+#     return notification
+
+
+
+# def select_linkedin_post_to_publish(posts_to_publish):
+#     # Step 1: Filter posts for LinkedIn
+#     linkedIn_posts = [post for post in posts_to_publish if post.platform == 'linkedin']
+
+#     if not linkedIn_posts:
+#         print("No posts available for LinkedIn.")
+#         return None
+
+#     # Step 2: Separate priority and non-priority posts
+#     priority_posts = [post for post in linkedIn_posts if post.priority]
+#     non_priority_posts = [post for post in linkedIn_posts if not post.priority]
+
+#     # Step 3: Select the appropriate post
+#     if priority_posts:
+#         selected_post = priority_posts[0]  # Always pick the first priority post
+#     else:
+#         selected_post = random.choice(non_priority_posts)  # Pick randomly from non-priority
+
+#     print(f"Selected post: {selected_post.id}")
+
+#     # Step 4: Delete all other LinkedIn posts except the selected one
+#     for post in linkedIn_posts:
+#         if post != selected_post:
+#             print(f"Deleting post: {post.id}")
+#             post.delete()
+
+#     return selected_post
+
+
+
+# from accounts.models import decrypt, encrypt
+
+
+# we need to
+# 1. check if the owner of the organization is in free plan if yes they can only post 5 across all their orgnazation together so we need to check all the organization thee user is the owner right and check the post i have a similar code for that so check that 
+# 2. we need to post on linkedin cases of access toktn is encrpyted so we need to decrpty it also the member_id stuff is external_id which is also encrpyted use this to decrypt it 
+# 3. in case where the platofmr is slack or discord we need to get the webhook which is also encrypted we need to decrpyt it ( for slack and webhook we use webhook from them so no authentication but we need to be able to post this to stuff to the webhook and do other stuff )
+# 4. we need to clean it up , optimize it and also take cases we have missed , or dont know about into account 
+# 5. this needs to be secured, production ready avoid doing out side the scope ( our app is multi tenant and the whole stuff we use django-tenants)
+# 6. avoid doing anything that is not needed, only do what is needed do not go on writing anything not needed in the code or functions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import logging
+# import random
+# import requests
+# from datetime import timedelta
+# from django.utils import timezone
+# from django.db import transaction
+# from django.conf import settings
+# from accounts.models import decrypt, encrypt
+# from django_tenants.utils import tenant_context
+
+# logger = logging.getLogger(__name__)
+
+# def publish_pending_post():
+#     """
+#     Publishes pending posts for all tenants, respecting plan limits and platform-specific requirements.
+#     """
+#     logger.info("Starting publish_pending_post task")
+    
+#     try:
+#         tenants = Organization.objects.all()
+        
+#         for tenant in tenants:
+#             try:
+#                 with tenant_context(tenant):
+#                     _process_tenant_posts(tenant)
+#             except Exception as e:
+#                 logger.error(f"Error processing tenant {tenant.schema_name}: {e}")
+#                 continue
+                
+#     except Exception as e:
+#         logger.error(f"Critical error in publish_pending_post: {e}")
+    
+#     logger.info("Completed publish_pending_post task")
+
+
+# def _process_tenant_posts(tenant):
+#     """Process posts for a specific tenant."""
+#     logger.info(f"Processing tenant: {tenant.schema_name}")
+    
+#     # Get organization owner
+#     owner = _get_organization_owner(tenant)
+#     if not owner:
+#         logger.warning(f"No owner found for {tenant.schema_name}")
+#         return
+    
+#     # Check plan limits
+#     if not _check_post_limits(owner):
+#         logger.info(f"Post limit reached for owner {owner.email}")
+#         return
+    
+#     # Get posts ready for publishing
+#     posts_to_publish = _get_posts_ready_for_publishing()
+#     if not posts_to_publish:
+#         logger.info("No posts ready for publishing")
+#         return
+    
+#     # Group posts by platform
+#     platform_posts = _group_posts_by_platform(posts_to_publish)
+    
+#     # Process each platform
+#     for platform, posts in platform_posts.items():
+#         if posts:
+#             _publish_platform_posts(tenant, platform, posts)
+
+
+# def _get_organization_owner(tenant):
+#     """Get the owner of the organization."""
+#     try:
+#         owner_role = UserOrganizationRole.objects.filter(
+#             organization=tenant, 
+#             role="owner"
+#         ).select_related("user").first()
+        
+#         return owner_role.user if owner_role else None
+#     except Exception as e:
+#         logger.error(f"Error getting organization owner: {e}")
+#         return None
+
+
+# def _check_post_limits(owner):
+#     """Check if user has reached post limits across all their organizations."""
+#     if owner.plan != UserAccount.BASIC:
+#         return True
+    
+#     # Get all organizations where this user is the owner
+#     user_org_ids = Organization.objects.filter(owner=owner).values_list("id", flat=True)
+    
+#     # Count published posts across all owned organizations
+#     published_posts_count = Post.objects.filter(
+#         organization_id__in=user_org_ids,
+#         status=Post.Status.PUBLISHED,
+#         is_deleted=False,
+#         is_inactive=False
+#     ).count()
+    
+#     max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+    
+#     if published_posts_count >= max_posts:
+#         logger.warning(f"Post limit reached: {published_posts_count}/{max_posts}")
+#         return False
+    
+#     return True
+
+
+# def _get_posts_ready_for_publishing():
+#     """Get posts that are ready for publishing."""
+#     max_delay = timedelta(minutes=15)
+#     current_time = timezone.now()
+    
+#     return Post.objects.filter(
+#         is_deleted=False,
+#         is_inactive=False,
+#         status__in=[Post.Status.SCHEDULED],
+#         scheduled_publish_time__isnull=False,
+#         scheduled_publish_time__lte=current_time + max_delay,
+#         scheduled_publish_time__gte=current_time - max_delay
+#     ).select_related('repository', 'organization')
+
+
+# def _group_posts_by_platform(posts):
+#     """Group posts by platform."""
+#     platform_posts = {}
+#     for post in posts:
+#         platform = post.platform
+#         if platform not in platform_posts:
+#             platform_posts[platform] = []
+#         platform_posts[platform].append(post)
+    
+#     return platform_posts
+
+
+# def _publish_platform_posts(tenant, platform, posts):
+#     """Publish posts for a specific platform."""
+#     try:
+#         # Select post to publish
+#         selected_post = _select_post_to_publish(posts)
+#         if not selected_post:
+#             logger.warning(f"No post selected for {platform}")
+#             return
+        
+#         # Get integration for the platform
+#         integration = _get_platform_integration(selected_post.repository, platform)
+#         if not integration:
+#             logger.error(f"No integration found for {platform}")
+#             return
+        
+#         # Publish the post
+#         success = _publish_post(selected_post, integration, platform)
+        
+#         if success:
+#             with transaction.atomic():
+#                 selected_post.publish()
+#                 # _delete_other_posts(selected_post, posts)
+#                 _send_publish_notification(tenant, selected_post)
+        
+#     except Exception as e:
+#         logger.error(f"Error publishing {platform} posts: {e}")
+
+
+# def _select_post_to_publish(posts):
+#     """Select which post to publish from the available posts."""
+#     if not posts:
+#         return None
+    
+#     # Separate priority and non-priority posts
+#     priority_posts = [post for post in posts if post.priority]
+#     non_priority_posts = [post for post in posts if not post.priority]
+    
+#     # Select post
+#     if priority_posts:
+#         return priority_posts[0]  # First priority post
+#     elif non_priority_posts:
+#         return random.choice(non_priority_posts)  # Random non-priority post
+    
+#     return None
+
+
+# def _get_platform_integration(repository, platform):
+#     """Get the integration for a specific platform."""
+#     try:
+#         return ConnectedIntegration.objects.filter(
+#             repository=repository,
+#             platform=platform,
+#             is_active=True
+#         ).first()
+#     except Exception as e:
+#         logger.error(f"Error getting integration for {platform}: {e}")
+#         return None
+
+
+# def _publish_post(post, integration, platform):
+#     """Publish a post to the specified platform."""
+#     try:
+#         if platform == ConnectedIntegration.Platform.LINKEDIN:
+#             return _publish_linkedin_post(post, integration)
+#         elif platform == ConnectedIntegration.Platform.SLACK:
+#             return _publish_slack_post(post, integration)
+#         elif platform == ConnectedIntegration.Platform.DISCORD:
+#             return _publish_discord_post(post, integration)
+#         else:
+#             logger.warning(f"Unsupported platform: {platform}")
+#             return False
+#     except Exception as e:
+#         logger.error(f"Error publishing to {platform}: {e}")
+#         return False
+
+
+# def _publish_linkedin_post(post, integration):
+#     """Publish a post to LinkedIn."""
+#     try:
+#         # Get decrypted access token and member ID
+#         access_token = integration.get_access_token()
+#         member_id = integration.get_external_id()
+        
+#         if not access_token or not member_id:
+#             logger.error("Missing LinkedIn access token or member ID")
+#             return False
+        
+#         # Refresh token if needed
+#         if integration.is_token_expired():
+#             logger.error("Access Token Expired")
+#             return False
+#             # access_token = integration.refresh_token_if_needed()
+        
+#         # Prepare post data
+#         post_data = {
+#             "author": f"urn:li:person:{member_id}",
+#             "lifecycleState": "PUBLISHED",
+#             "specificContent": {
+#                 "com.linkedin.ugc.ShareContent": {
+#                     "shareCommentary": {"text": post.content},
+#                     "shareMediaCategory": "NONE"
+#                 }
+#             },
+#             "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+#         }
+        
+#         # Make API request
+#         headers = {
+#             "Authorization": f"Bearer {access_token}",
+#             "X-Restli-Protocol-Version": "2.0.0",
+#             "Content-Type": "application/json"
+#         }
+        
+#         response = requests.post(
+#             "https://api.linkedin.com/v2/ugcPosts",
+#             json=post_data,
+#             headers=headers,
+#             timeout=30
+#         )
+        
+#         if response.status_code == 201:
+#             logger.info(f"LinkedIn post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"LinkedIn API error: {response.status_code} - {response.text}")
+#             return False
+            
+#     except Exception as e:
+#         logger.error(f"Error publishing LinkedIn post: {e}")
+#         return False
+
+
+# def _publish_slack_post(post, integration):
+#     """Publish a post to Slack via webhook."""
+#     try:
+#         webhook_url = integration.get_webhook_url()
+#         if not webhook_url:
+#             logger.error("Missing Slack webhook URL")
+#             return False
+        
+#         payload = {
+#             "text": post.content,
+#             "username": "Push to Post",
+#             "icon_emoji": ":robot_face:"
+#         }
+        
+#         response = requests.post(
+#             webhook_url,
+#             json=payload,
+#             timeout=30
+#         )
+        
+#         if response.status_code == 200:
+#             logger.info(f"Slack post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"Slack webhook error: {response.status_code} - {response.text}")
+#             return False
+            
+#     except Exception as e:
+#         logger.error(f"Error publishing Slack post: {e}")
+#         return False
+
+
+# def _publish_discord_post(post, integration):
+#     """Publish a post to Discord via webhook."""
+#     try:
+#         webhook_url = integration.get_webhook_url()
+#         if not webhook_url:
+#             logger.error("Missing Discord webhook URL")
+#             return False
+        
+#         payload = {
+#             "content": post.content,
+#             "username": "Push to Post",
+#             "avatar_url": "https://example.com/bot-avatar.png"  # Optional
+#         }
+        
+#         response = requests.post(
+#             webhook_url,
+#             json=payload,
+#             timeout=30
+#         )
+        
+#         if response.status_code == 204:
+#             logger.info(f"Discord post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"Discord webhook error: {response.status_code} - {response.text}")
+#             return False
+            
+#     except Exception as e:
+#         logger.error(f"Error publishing Discord post: {e}")
+#         return False
+
+
+# def _send_publish_notification(tenant, post):
+#     """Send notification about successful post publication."""
+#     try:
+#         title = "Your Post Has Been Published"
+#         message = f"Your post has been successfully published to {post.platform}."
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             triggered_by=None,
+#             organization=tenant,
+#             template_path='emails/notification_email_published.html'
+#         )
+        
+#     except Exception as e:
+#         logger.error(f"Error sending notification: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from notifications.models import Notification
+# from django.core.mail import EmailMessage
+# from django.template.loader import render_to_string
+# from django.conf import settings
+# from django.urls import reverse
+# from organizations.models import UserOrganizationRole
+# from django.contrib.contenttypes.models import ContentType
+# from django.utils import timezone
+# import logging
+
+# logger = logging.getLogger(__name__)
+
+# class NotificationHandler:
+#     """
+#     Enhanced notification handler with flexible data passing and link generation.
+#     """
+    
+#     def __init__(self):
+#         self.default_template = 'emails/notification_email.html'
+    
+#     def create_and_notify(self, organization, title, message, **kwargs):
+#         """
+#         Create a notification and send an email to organization admins and owner.
+
+#         Args:
+#             organization: The organization instance for which the notification is created.
+#             title (str): Title of the notification.
+#             message (str): Message body of the notification.
+            
+#         Keyword Args:
+#             triggered_by: User instance that triggered the notification.
+#             related_object: Object associated with the notification.
+#             template_path (str): Custom email template path.
+#             email_data (dict): Additional data to pass to email template.
+#             action_url (str): Direct URL for the main action.
+#             action_text (str): Text for the action button.
+#             details (dict): Additional details to display.
+#             priority (str): Notification priority ('low', 'medium', 'high').
+#             category (str): Notification category for filtering.
+#             send_email (bool): Whether to send email notification (default: True).
+
+#         Returns:
+#             Notification: The created notification instance.
+#         """
+#         # Extract parameters
+#         triggered_by = kwargs.get('triggered_by')
+#         email_data = kwargs.get('email_data', {})
+#         send_email = kwargs.get('send_email', True)
+#         priority = kwargs.get('priority', 'medium')
+#         category = kwargs.get('category', 'general')
+#         related_object = kwargs.get('related_object')
+#         template_path = kwargs.get('template_path', self.default_template)
+        
+#         # Create the notification
+#         object_id = None
+#         content_type = None
+
+#         if related_object:
+#             object_id = related_object.id
+#             content_type = ContentType.objects.get_for_model(related_object)
+
+#         try:
+#             notification = Notification.objects.create(
+#                 title=title,
+#                 message=message,
+#                 priority=priority,
+#                 category=category,
+#                 object_id=object_id,
+#                 triggered_by=triggered_by,
+#                 content_type=content_type,
+#                 created_at=timezone.now(),
+#                 organization=organization,
+#             )
+
+#             # Send email if requested
+#             if send_email:
+#                 self._send_notification_email(
+#                     organization,
+#                     notification, 
+#                     extra_data=email_data,
+#                     template_path=template_path,
+#                     **kwargs
+#                 )
+
+#             logger.info(f"Notification created successfully: {notification.id}")
+#             return notification
+
+#         except Exception as e:
+#             logger.error(f"Failed to create notification: {str(e)}")
+#             raise
+
+#     def _send_notification_email(self, organization, notification, template_path=None, extra_data=None, **kwargs):
+#         """
+#         Send an enhanced email to organization admins and owner about the notification.
+
+#         Args:
+#             organization: The organization instance.
+#             notification: The notification instance.
+#             template_path (str): Custom email template path.
+#             extra_data (dict): Additional data for the email template.
+#             **kwargs: Additional parameters for email customization.
+#         """
+#         extra_data = extra_data or {}
+#         template_path = template_path or self.default_template
+        
+#         # Fetch admins and owner
+#         admin_roles = UserOrganizationRole.objects.filter(
+#             organization=organization,
+#             role__in=["admin", "owner"]
+#         ).select_related('user')
+
+#         if not admin_roles.exists():
+#             logger.warning(f"No admin/owner roles found for organization {organization.id}")
+#             return
+
+#         # Generate action URL if not provided
+#         action_url = kwargs.get('action_url')
+#         if not action_url and notification.content_type and notification.object_id:
+#             action_url = self._generate_action_url(notification)
+
+#         # Prepare base email context
+#         base_context = {
+#             'organization': organization,
+#             'notification': notification,
+#             'message': notification.message,
+#             'title': notification.title,
+#             'triggered_by': notification.triggered_by.username if notification.triggered_by else 'System',
+#             'triggered_by_full_name': self._get_user_full_name(notification.triggered_by),
+#             'action_url': action_url,
+#             'action_text': kwargs.get('action_text', 'View Details'),
+#             'details': kwargs.get('details', {}),
+#             'priority': notification.priority,
+#             'category': notification.category,
+#             'timestamp': notification.created_at,
+#             'organization_dashboard_url': self._get_organization_dashboard_url(organization),
+#         }
+
+#         # Merge with extra data
+#         base_context.update(extra_data)
+
+#         # Send email to each admin/owner
+#         for role_entry in admin_roles:
+#             user = role_entry.user
+#             if not user.email:
+#                 logger.warning(f"User {user.id} has no email address")
+#                 continue
+
+#             try:
+#                 # Add user-specific context
+#                 user_context = base_context.copy()
+#                 user_context.update({
+#                     'user': user,
+#                     'user_role': role_entry.role.capitalize(),
+#                     'user_first_name': user.first_name or user.username,
+#                     'unsubscribe_url': self._get_unsubscribe_url(user, organization),
+#                 })
+
+#                 # Render email content
+#                 subject = self._generate_email_subject(organization, notification, kwargs.get('custom_subject'))
+#                 html_message = render_to_string(template_path, user_context)
+
+#                 # Create and send email
+#                 email = EmailMessage(
+#                     subject=subject,
+#                     body=html_message,
+#                     from_email=settings.DEFAULT_FROM_EMAIL,
+#                     to=[user.email],
+#                     headers={
+#                         'X-Notification-ID': str(notification.id),
+#                         'X-Organization-ID': str(organization.id),
+#                         'X-Priority': notification.priority,
+#                     }
+#                 )
+#                 email.content_subtype = "html"
+#                 email.send(fail_silently=False)
+
+#                 logger.info(f"Email sent successfully to {user.email}")
+
+#             except Exception as e:
+#                 logger.error(f"Failed to send email to {user.email}: {str(e)}")
+#                 continue
+
+#     def _generate_action_url(self, notification):
+#         """Generate action URL based on the related object."""
+#         if not notification.content_type or not notification.object_id:
+#             return None
+        
+#         model_class = notification.content_type.model_class()
+#         model_name = model_class._meta.model_name
+        
+#         # Common URL patterns - customize based on your URL structure
+#         url_patterns = {
+#             'post': 'posts:detail',
+#             'user': 'users:profile',
+#             'project': 'projects:detail',
+#             'event': 'events:detail',
+#             'task': 'tasks:detail',
+#             'comment': 'comments:detail',
+#         }
+        
+#         url_name = url_patterns.get(model_name)
+#         if url_name:
+#             try:
+#                 return reverse(url_name, kwargs={'pk': notification.object_id})
+#             except:
+#                 pass
+        
+#         return None
+
+#     def _get_user_full_name(self, user):
+#         """Get user's full name or username."""
+#         if not user:
+#             return 'System'
+        
+#         if user.first_name and user.last_name:
+#             return f"{user.first_name} {user.last_name}"
+#         elif user.first_name:
+#             return user.first_name
+#         else:
+#             return user.username
+
+#     def _get_organization_dashboard_url(self, organization):
+#         """Get organization dashboard URL."""
+#         try:
+#             return reverse('organizations:dashboard', kwargs={'org_id': organization.id})
+#         except:
+#             return '/dashboard/'
+
+#     def _get_unsubscribe_url(self, user, organization):
+#         """Get unsubscribe URL for the user."""
+#         try:
+#             return reverse('notifications:unsubscribe', kwargs={
+#                 'user_id': user.id,
+#                 'org_id': organization.id
+#             })
+#         except:
+#             return None
+
+#     def _generate_email_subject(self, organization, notification, custom_subject=None):
+#         """Generate email subject with priority indicators."""
+#         if custom_subject:
+#             return custom_subject
+        
+#         priority_prefix = {
+#             'high': '🚨 [URGENT] ',
+#             'medium': '📢 ',
+#             'low': '📝 '
+#         }.get(notification.priority, '📢 ')
+        
+#         return f"{priority_prefix}{organization.name}: {notification.title}"
+
+
+# # Convenience functions for common notification types
+# def notify_user_action(organization, action_type, user, target_object=None, **kwargs):
+#     """
+#     Notify about user actions like joins, leaves, posts, etc.
+    
+#     Usage:
+#         notify_user_action(
+#             organization=org,
+#             action_type='user_joined',
+#             user=new_user,
+#             details={'role': 'member'},
+#             action_url='/users/profile/123/'
+#         )
+#     """
+#     handler = NotificationHandler()
+    
+#     action_messages = {
+#         'user_joined': f"{user.username} has joined the organization",
+#         'user_left': f"{user.username} has left the organization",
+#         'post_created': f"{user.username} created a new post",
+#         'comment_added': f"{user.username} added a comment",
+#         'project_created': f"{user.username} created a new project",
+#     }
+    
+#     title = action_messages.get(action_type, f"New {action_type} by {user.username}")
+#     message = kwargs.get('message', title)
+    
+#     return handler.create_and_notify(
+#         organization=organization,
+#         title=title,
+#         message=message,
+#         triggered_by=user,
+#         related_object=target_object,
+#         category='user_action',
+#         **kwargs
+#     )
+
+
+# def notify_system_event(organization, event_type, **kwargs):
+#     """
+#     Notify about system events like maintenance, updates, etc.
+    
+#     Usage:
+#         notify_system_event(
+#             organization=org,
+#             event_type='maintenance_scheduled',
+#             details={'date': '2024-01-15', 'duration': '2 hours'},
+#             priority='high'
+#         )
+#     """
+#     handler = NotificationHandler()
+    
+#     event_messages = {
+#         'maintenance_scheduled': 'Scheduled maintenance notification',
+#         'system_update': 'System update notification',
+#         'backup_completed': 'Backup completed successfully',
+#         'security_alert': 'Security alert notification',
+#     }
+    
+#     title = event_messages.get(event_type, f"System {event_type}")
+#     message = kwargs.get('message', title)
+    
+#     return handler.create_and_notify(
+#         organization=organization,
+#         title=title,
+#         message=message,
+#         category='system',
+#         **kwargs
+#     )
+
+
+# # Example usage:
+# """
+# # Basic usage
+# handler = NotificationHandler()
+# notification = handler.create_and_notify(
+#     organization=my_org,
+#     title="New Post Created",
+#     message="A new post has been created in your organization",
+#     triggered_by=user,
+#     related_object=post,
+#     details={
+#         'post_title': post.title,
+#         'post_category': post.category,
+#         'creation_date': post.created_at
+#     },
+#     action_url=f'/posts/{post.id}/',
+#     action_text="View Post",
+#     priority='medium'
+# )
+
+# # Using convenience functions
+# notify_user_action(
+#     organization=my_org,
+#     action_type='user_joined',
+#     user=new_user,
+#     details={'role': 'member', 'department': 'Engineering'},
+#     priority='low'
+# )
+
+# notify_system_event(
+#     organization=my_org,
+#     event_type='maintenance_scheduled',
+#     message="System maintenance is scheduled for tomorrow at 2 AM",
+#     details={'date': '2024-01-15', 'duration': '2 hours'},
+#     priority='high',
+#     action_url='/maintenance-info/',
+#     action_text="View Maintenance Details"
+# )
+# """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import logging
+# from django.conf import settings
+# from django.urls import reverse
+# from django.utils import timezone
+# from django.core.mail import EmailMessage
+# from notifications.models import Notification
+# from django.contrib.auth import get_user_model
+# from django.template.loader import render_to_string
+# from organizations.models import UserOrganizationRole
+# from django.contrib.contenttypes.models import ContentType
+
+# User = get_user_model()
+# logger = logging.getLogger(__name__)
+
+# class EmailHandler:
+#     """
+#     Global email handler for sending authenticated emails across the application.
+#     Handles notifications, transactional emails, marketing emails, etc.
+#     """
+    
+#     def __init__(self):
+#         self.default_marketing_template = 'emails/marketing_email.html'
+#         self.default_notification_template = 'emails/notification_email.html'
+#         self.default_transactional_template = 'emails/transactional_email.html'
+    
+#     def send_notification_email(self, organization, notification, **kwargs):
+#         """
+#         Send notification email to organization admins and owners.
+#         Works with your existing Notification model without changes.
+        
+#         Args:
+#             organization: Organization instance
+#             notification: Notification instance
+#             **kwargs: Additional email customization options
+#         """
+#         # Get recipients (admins and owners)
+#         recipients = self._get_notification_recipients(organization, kwargs.get('additional_recipients', []))
+        
+#         if not recipients:
+#             logger.warning(f"No recipients found for notification {notification.id}")
+#             return []
+        
+#         # Prepare email context
+#         context = self._build_notification_context(organization, notification, **kwargs)
+        
+#         # Send emails
+#         sent_emails = []
+#         for recipient in recipients:
+#             try:
+#                 email_sent = self._send_single_email(
+#                     context=context,
+#                     recipient=recipient,
+#                     email_type='notification',
+#                     template_path=kwargs.get('template_path', self.default_notification_template),
+#                     **kwargs
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send notification email to {recipient['email']}: {str(e)}")
+#                 continue
+        
+#         return sent_emails
+    
+#     def send_transactional_email(self, recipients, subject, template_path=None, context=None, **kwargs):
+#         """
+#         Send transactional emails (password reset, account verification, etc.)
+        
+#         Args:
+#             subject: Email subject
+#             context: Template context data
+#             **kwargs: Additional email options
+#             template_path: Path to email template
+#             recipients: List of email addresses or User objects
+#         """
+#         context = context or {}
+#         template_path = template_path or self.default_transactional_template
+        
+#         # Normalize recipients
+#         normalized_recipients = self._normalize_recipients(recipients)
+        
+#         sent_emails = []
+#         for recipient in normalized_recipients:
+#             try:
+#                 # Add recipient-specific context
+#                 recipient_context = context.copy()
+#                 recipient_context.update({
+#                     'recipient': recipient,
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'first_name': recipient.get('first_name', ''),
+#                 })
+                
+#                 email_sent = self._send_single_email(
+#                     subject=subject,
+#                     recipient=recipient,
+#                     context=recipient_context,
+#                     email_type='transactional',
+#                     template_path=template_path,
+#                     **kwargs
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send transactional email to {recipient['email']}: {str(e)}")
+#                 continue
+        
+#         return sent_emails
+    
+#     def send_marketing_email(self, recipients, subject, template_path=None, context=None, **kwargs):
+#         """
+#         Send marketing emails (newsletters, announcements, etc.)
+        
+#         Args:
+#             subject: Email subject
+#             context: Template context data
+#             **kwargs: Additional email options
+#             template_path: Path to email template
+#             recipients: List of email addresses or User objects
+#         """
+#         context = context or {}
+#         template_path = template_path or self.default_marketing_template
+        
+#         # Normalize recipients
+#         normalized_recipients = self._normalize_recipients(recipients)
+        
+#         sent_emails = []
+#         for recipient in normalized_recipients:
+#             try:
+#                 # Add recipient-specific context
+#                 recipient_context = context.copy()
+#                 recipient_context.update({
+#                     'recipient': recipient,
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'first_name': recipient.get('first_name', ''),
+#                     'unsubscribe_url': kwargs.get('unsubscribe_url'),
+#                 })
+                
+#                 email_sent = self._send_single_email(
+#                     subject=subject,
+#                     recipient=recipient,
+#                     email_type='marketing',
+#                     context=recipient_context,
+#                     template_path=template_path,
+#                     **kwargs
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send marketing email to {recipient['email']}: {str(e)}")
+#                 continue
+        
+#         return sent_emails
+    
+#     def _send_single_email(self, recipient, context, template_path, email_type='notification', **kwargs):
+#         """Send a single email to a recipient."""
+#         try:
+#             # Generate subject if not provided
+#             subject = kwargs.get('subject')
+#             if not subject:
+#                 subject = self._generate_email_subject(context, email_type, **kwargs)
+            
+#             # Render email content
+#             html_message = render_to_string(template_path, context)
+            
+#             # Prepare email headers
+#             headers = {
+#                 'X-Email-Type': email_type,
+#                 'X-Mailer': 'Django-EmailHandler',
+#             }
+            
+#             # Add notification-specific headers
+#             if email_type == 'notification' and context.get('notification'):
+#                 headers.update({
+#                     'X-Notification-ID': str(context['notification'].id),
+#                     'X-Organization-ID': str(context['organization'].id),
+#                 })
+            
+#             # Add custom headers
+#             if kwargs.get('headers'):
+#                 headers.update(kwargs['headers'])
+            
+#             # Create email
+#             email = EmailMessage(
+#                 subject=subject,
+#                 headers=headers,
+#                 body=html_message,
+#                 to=[recipient['email']],
+#                 cc=kwargs.get('cc', []),
+#                 bcc=kwargs.get('bcc', []),
+#                 from_email=kwargs.get('from_email', settings.DEFAULT_FROM_EMAIL)
+#             )
+            
+#             email.content_subtype = "html"
+            
+#             # Add attachments if provided
+#             if kwargs.get('attachments'):
+#                 for attachment in kwargs['attachments']:
+#                     email.attach(attachment['filename'], attachment['content'], attachment['mimetype'])
+            
+#             # Send email
+#             email.send(fail_silently=False)
+#             logger.info(f"Email sent successfully to {recipient['email']}")
+#             return True
+            
+#         except Exception as e:
+#             logger.error(f"Failed to send email to {recipient['email']}: {str(e)}")
+#             return False
+    
+#     def _get_notification_recipients(self, organization, additional_recipients=None):
+#         """Get recipients for notification emails."""
+#         # Get organization admins and owners
+#         admin_roles = UserOrganizationRole.objects.filter(
+#             organization=organization,
+#             role__in=["admin", "owner"]
+#         ).select_related('user')
+        
+#         recipients = []
+        
+#         # Add admin/owner recipients
+#         for role_entry in admin_roles:
+#             user = role_entry.user
+#             if user.email:
+#                 recipients.append({
+#                     'user': user,
+#                     'email': user.email,
+#                     'role': role_entry.role,
+#                     'organization': organization,
+#                     'last_name': user.last_name or '',
+#                     'first_name': user.first_name or user.username,
+#                 })
+        
+#         # Add additional recipients
+#         if additional_recipients:
+#             for recipient in additional_recipients:
+#                 if isinstance(recipient, str):
+#                     recipients.append({
+#                         'user': None,
+#                         'last_name': '',
+#                         'first_name': '',
+#                         'role': 'external',
+#                         'email': recipient,
+#                         'organization': organization,
+#                     })
+#                 elif isinstance(recipient, User):
+#                     recipients.append({
+#                         'user': recipient,
+#                         'role': 'external',
+#                         'email': recipient.email,
+#                         'organization': organization,
+#                         'last_name': recipient.last_name or '',
+#                         'first_name': recipient.first_name or recipient.username,
+#                     })
+        
+#         return recipients
+    
+#     def _normalize_recipients(self, recipients):
+#         """Normalize recipients to a consistent format."""
+#         normalized = []
+        
+#         for recipient in recipients:
+#             if isinstance(recipient, str):
+#                 # Email string
+#                 normalized.append({
+#                     'user': None,
+#                     'last_name': '',
+#                     'first_name': '',
+#                     'email': recipient,
+#                 })
+#             elif isinstance(recipient, User):
+#                 # User object
+#                 normalized.append({
+#                     'user': recipient,
+#                     'email': recipient.email,
+#                     'last_name': recipient.last_name or '',
+#                     'first_name': recipient.first_name or recipient.username,
+#                 })
+#             elif isinstance(recipient, dict):
+#                 # Dictionary with email info
+#                 normalized.append({
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'last_name': recipient.get('last_name', ''),
+#                     'first_name': recipient.get('first_name', ''),
+#                 })
+        
+#         return normalized
+    
+#     def _build_notification_context(self, organization, notification, **kwargs):
+#         """Build context for notification emails."""
+#         # Generate action URL if not provided
+#         action_url = kwargs.get('action_url')
+#         if not action_url and notification.content_type and notification.object_id:
+#             action_url = self._generate_action_url(notification)
+        
+#         # Base context
+#         context = {
+#             'action_url': action_url,
+#             'title': notification.title,
+#             'organization': organization,
+#             'email_type': 'notification',
+#             'notification': notification,
+#             'message': notification.message,
+#             'details': kwargs.get('details', {}),
+#             'timestamp': notification.created_at,
+#             'action_text': kwargs.get('action_text', 'View Details'),
+#             'triggered_by_full_name': self._get_user_full_name(notification.triggered_by),
+#             'organization_dashboard_url': self._get_organization_dashboard_url(organization),
+#             'triggered_by': notification.triggered_by.username if notification.triggered_by else 'System',
+#         }
+        
+#         # Merge with additional context
+#         if kwargs.get('context'):
+#             context.update(kwargs['context'])
+        
+#         return context
+    
+#     def _generate_action_url(self, notification):
+#         """Generate action URL based on the related object."""
+#         if not notification.content_type or not notification.object_id:
+#             return None
+        
+#         model_class = notification.content_type.model_class()
+#         model_name = model_class._meta.model_name
+        
+#         # Common URL patterns - customize based on your URL structure
+#         url_patterns = {
+#             'post': 'posts:detail',
+#             'task': 'tasks:detail',
+#             'user': 'users:profile',
+#             'event': 'events:detail',
+#             'comment': 'comments:detail',
+#             'project': 'projects:detail',
+#         }
+        
+#         url_name = url_patterns.get(model_name)
+#         if url_name:
+#             try:
+#                 return reverse(url_name, kwargs={'pk': notification.object_id})
+#             except:
+#                 pass
+        
+#         return None
+    
+#     def _get_user_full_name(self, user):
+#         """Get user's full name or username."""
+#         if not user:
+#             return 'System'
+        
+#         if user.first_name and user.last_name:
+#             return f"{user.first_name} {user.last_name}"
+#         elif user.first_name:
+#             return user.first_name
+#         else:
+#             return user.username
+    
+#     def _get_organization_dashboard_url(self, organization):
+#         """Get organization dashboard URL."""
+#         try:
+#             return reverse('organizations:dashboard', kwargs={'org_id': organization.id})
+#         except:
+#             return '/dashboard/'
+    
+#     def _generate_email_subject(self, context, email_type, **kwargs):
+#         """Generate email subject based on type and context."""
+#         if email_type == 'notification':
+#             organization = context.get('organization')
+#             notification = context.get('notification')
+#             if organization and notification:
+#                 return f"📢 {organization.name}: {notification.title}"
+        
+#         return kwargs.get('default_subject', 'Email from your application')
+
+
+# class NotificationHandler:
+#     """
+#     Notification-specific handler that works with your existing Notification model.
+#     Uses the global EmailHandler for sending emails.
+#     """
+    
+#     def __init__(self):
+#         self.email_handler = EmailHandler()
+    
+#     def create_and_notify(self, organization, title, message, **kwargs):
+#         """
+#         Create a notification and send emails. 
+#         Works with your existing Notification model without changes.
+        
+#         Args:
+#             organization: Organization instance
+#             title: Notification title
+#             message: Notification message
+#             **kwargs: Additional options
+#         """
+#         # Extract parameters
+#         triggered_by = kwargs.get('triggered_by')
+#         send_email = kwargs.get('send_email', True)
+#         related_object = kwargs.get('related_object')
+        
+#         # Create the notification (works with your existing model)
+#         content_type = None
+#         object_id = None
+
+#         if related_object:
+#             content_type = ContentType.objects.get_for_model(related_object)
+#             object_id = str(related_object.pk)  # Convert to string for your model
+
+#         try:
+#             notification = Notification.objects.create(
+#                 organization=organization,
+#                 title=title,
+#                 message=message,
+#                 triggered_by=triggered_by,
+#                 content_type=content_type,
+#                 object_id=object_id
+#             )
+
+#             # Send email if requested
+#             if send_email:
+#                 sent_emails = self.email_handler.send_notification_email(
+#                     organization=organization,
+#                     notification=notification,
+#                     **kwargs
+#                 )
+#                 logger.info(f"Notification emails sent to: {sent_emails}")
+
+#             logger.info(f"Notification created successfully: {notification.id}")
+#             return notification
+
+#         except Exception as e:
+#             logger.error(f"Failed to create notification: {str(e)}")
+#             raise
+
+
+# # Convenience functions for different email types
+# def send_notification_email(organization, notification, **kwargs):
+#     """Send notification email using existing notification."""
+#     handler = EmailHandler()
+#     return handler.send_notification_email(organization, notification, **kwargs)
+
+# def send_password_reset_email(user, reset_url, **kwargs):
+#     """Send password reset email."""
+#     handler = EmailHandler()
+#     return handler.send_transactional_email(
+#         recipients=[user],
+#         subject="Password Reset Request",
+#         template_path="emails/password_reset.html",
+#         context={
+#             'reset_url': reset_url,
+#             'user': user,
+#         },
+#         **kwargs
+#     )
+
+# def send_account_verification_email(user, verification_url, **kwargs):
+#     """Send account verification email."""
+#     handler = EmailHandler()
+#     return handler.send_transactional_email(
+#         recipients=[user],
+#         subject="Verify Your Account",
+#         template_path="emails/account_verification.html",
+#         context={
+#             'verification_url': verification_url,
+#             'user': user,
+#         },
+#         **kwargs
+#     )
+
+# def send_marketing_newsletter(recipients, subject, content, **kwargs):
+#     """Send marketing newsletter."""
+#     handler = EmailHandler()
+#     return handler.send_marketing_email(
+#         recipients=recipients,
+#         subject=subject,
+#         template_path="emails/newsletter.html",
+#         context={
+#             'content': content,
+#             'newsletter_date': timezone.now(),
+#         },
+#         **kwargs
+#     )
+
+# def create_and_notify(organization, title, message, **kwargs):
+#     """
+#     Create notification and send emails (backward compatibility).
+#     This maintains your existing function signature.
+#     """
+#     handler = NotificationHandler()
+#     return handler.create_and_notify(organization, title, message, **kwargs)
+
+
+# # Usage Examples:
+# """
+# # 1. NOTIFICATION EMAILS (your existing use case)
+# notification = create_and_notify(
+#     organization=my_org,
+#     title="New Post Created",
+#     message="A new post has been created",
+#     triggered_by=user,
+#     related_object=post,
+#     details={'post_title': post.title},
+#     action_url=f'/posts/{post.id}/',
+#     action_text="View Post"
+# )
+
+# # 2. TRANSACTIONAL EMAILS
+# send_password_reset_email(
+#     user=user,
+#     reset_url="https://example.com/reset/token123",
+#     from_email="noreply@example.com"
+# )
+
+# send_account_verification_email(
+#     user=new_user,
+#     verification_url="https://example.com/verify/token456"
+# )
+
+# # 3. MARKETING EMAILS
+# send_marketing_newsletter(
+#     recipients=[user1, user2, "external@example.com"],
+#     subject="Monthly Newsletter",
+#     content="This month's updates...",
+#     unsubscribe_url="https://example.com/unsubscribe"
+# )
+
+# # 4. CUSTOM EMAILS WITH TEMPLATES
+# handler = EmailHandler()
+# handler.send_transactional_email(
+#     recipients=["admin@example.com"],
+#     subject="System Alert",
+#     template_path="emails/system_alert.html",
+#     context={
+#         'alert_type': 'High CPU Usage',
+#         'server': 'web-01',
+#         'timestamp': timezone.now()
+#     }
+# )
+# """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from accounts.models import UserAccount
+# from core.models import Post, ConnectedIntegration
+# from notifications.utils import create_and_notify, EmailHandler
+# from organizations.models import Organization, UserOrganizationRole
+# from apscheduler.schedulers.background import BackgroundScheduler
+
+
+# import logging
+# import random
+# import requests
+# from datetime import timedelta
+# from django.utils import timezone
+# from django.db import transaction
+# from django.conf import settings
+# from django_tenants.utils import tenant_context
+# from django.urls import reverse
+
+# logger = logging.getLogger(__name__)
+
+
+# def publish_pending_post():
+#     """
+#     Publishes pending posts for all tenants, respecting plan limits and platform-specific requirements.
+#     """
+#     logger.info("Starting publish_pending_post task")
+
+#     try:
+#         tenants = Organization.objects.all()
+
+#         for tenant in tenants:
+#             try:
+#                 with tenant_context(tenant):
+#                     _process_tenant_posts(tenant)
+#             except Exception as e:
+#                 logger.error(f"Error processing tenant {tenant.schema_name}: {e}")
+#                 continue
+
+#     except Exception as e:
+#         logger.error(f"Critical error in publish_pending_post: {e}")
+
+#     logger.info("Completed publish_pending_post task")
+
+
+# def _process_tenant_posts(tenant):
+#     """Process posts for a specific tenant."""
+#     logger.info(f"Processing tenant: {tenant.schema_name}")
+
+#     # Get organization owner
+#     owner = _get_organization_owner(tenant)
+#     if not owner:
+#         logger.warning(f"No owner found for {tenant.schema_name}")
+#         return
+
+#     # Check plan limits
+#     if not _check_post_limits(owner):
+#         logger.info(f"Post limit reached for owner {owner.email}")
+#         # Send limit reached notification
+#         _send_post_limit_notification(tenant, owner)
+#         return
+
+#     # Get posts ready for publishing
+#     posts_to_publish = _get_posts_ready_for_publishing()
+#     if not posts_to_publish:
+#         logger.info("No posts ready for publishing")
+#         return
+
+#     # Group posts by platform
+#     platform_posts = _group_posts_by_platform(posts_to_publish)
+
+#     # Process each platform
+#     for platform, posts in platform_posts.items():
+#         if posts:
+#             _publish_platform_posts(tenant, platform, posts, owner)
+
+
+# def _get_organization_owner(tenant):
+#     """Get the owner of the organization."""
+#     try:
+#         owner_role = UserOrganizationRole.objects.filter(
+#             organization=tenant,
+#             role="owner"
+#         ).select_related("user").first()
+
+#         return owner_role.user if owner_role else None
+#     except Exception as e:
+#         logger.error(f"Error getting organization owner: {e}")
+#         return None
+
+
+# def _check_post_limits(owner):
+#     """Check if user has reached post limits across all their organizations."""
+#     if owner.plan != UserAccount.BASIC:
+#         return True
+
+#     # Get all organizations where this user is the owner
+#     user_org_ids = Organization.objects.filter(owner=owner).values_list("id", flat=True)
+
+#     # Count published posts across all owned organizations
+#     published_posts_count = Post.objects.filter(
+#         organization_id__in=user_org_ids,
+#         status=Post.Status.PUBLISHED,
+#         is_deleted=False,
+#         is_inactive=False
+#     ).count()
+
+#     max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+
+#     if published_posts_count >= max_posts:
+#         logger.warning(f"Post limit reached: {published_posts_count}/{max_posts}")
+#         return False
+
+#     return True
+
+
+# def _get_posts_ready_for_publishing():
+#     """Get posts that are ready for publishing."""
+#     max_delay = timedelta(minutes=15)
+#     current_time = timezone.now()
+
+#     return Post.objects.filter(
+#         is_deleted=False,
+#         is_inactive=False,
+#         status__in=[Post.Status.SCHEDULED],
+#         scheduled_publish_time__isnull=False,
+#         scheduled_publish_time__lte=current_time + max_delay,
+#         scheduled_publish_time__gte=current_time - max_delay
+#     ).select_related('repository', 'organization')
+
+
+# def _group_posts_by_platform(posts):
+#     """Group posts by platform."""
+#     platform_posts = {}
+#     for post in posts:
+#         platform = post.platform
+#         if platform not in platform_posts:
+#             platform_posts[platform] = []
+#         platform_posts[platform].append(post)
+
+#     return platform_posts
+
+
+# def _publish_platform_posts(tenant, platform, posts, owner):
+#     """Publish posts for a specific platform."""
+#     try:
+#         # Select post to publish
+#         selected_post = _select_post_to_publish(posts)
+#         if not selected_post:
+#             logger.warning(f"No post selected for {platform}")
+#             return
+
+#         # Get integration for the platform
+#         integration = _get_platform_integration(selected_post.repository, platform)
+#         if not integration:
+#             logger.error(f"No integration found for {platform}")
+#             _send_integration_error_notification(tenant, platform, selected_post, owner)
+#             return
+
+#         # Publish the post
+#         success = _publish_post(selected_post, integration, platform)
+
+#         if success:
+#             with transaction.atomic():
+#                 selected_post.publish()
+#                 # _delete_other_posts(selected_post, posts)
+#                 _send_publish_success_notification(tenant, selected_post, owner)
+#         else:
+#             _send_publish_failure_notification(tenant, selected_post, platform, owner)
+
+#     except Exception as e:
+#         logger.error(f"Error publishing {platform} posts: {e}")
+#         _send_publish_error_notification(tenant, platform, posts, owner, str(e))
+
+
+# def _select_post_to_publish(posts):
+#     """Select which post to publish from the available posts."""
+#     if not posts:
+#         return None
+
+#     # Separate priority and non-priority posts
+#     priority_posts = [post for post in posts if post.priority]
+#     non_priority_posts = [post for post in posts if not post.priority]
+
+#     # Select post
+#     if priority_posts:
+#         return priority_posts[0]  # First priority post
+#     elif non_priority_posts:
+#         return random.choice(non_priority_posts)  # Random non-priority post
+
+#     return None
+
+
+# def _get_platform_integration(repository, platform):
+#     """Get the integration for a specific platform."""
+#     try:
+#         return ConnectedIntegration.objects.filter(
+#             repository=repository,
+#             platform=platform,
+#             is_active=True
+#         ).first()
+#     except Exception as e:
+#         logger.error(f"Error getting integration for {platform}: {e}")
+#         return None
+
+
+# def _publish_post(post, integration, platform):
+#     """Publish a post to the specified platform."""
+#     try:
+#         if platform == ConnectedIntegration.Platform.LINKEDIN:
+#             return _publish_linkedin_post(post, integration)
+#         elif platform == ConnectedIntegration.Platform.SLACK:
+#             return _publish_slack_post(post, integration)
+#         elif platform == ConnectedIntegration.Platform.DISCORD:
+#             return _publish_discord_post(post, integration)
+#         else:
+#             logger.warning(f"Unsupported platform: {platform}")
+#             return False
+#     except Exception as e:
+#         logger.error(f"Error publishing to {platform}: {e}")
+#         return False
+
+
+# def _publish_linkedin_post(post, integration):
+#     """Publish a post to LinkedIn."""
+#     try:
+#         # Get decrypted access token and member ID
+#         access_token = integration.get_access_token()
+#         member_id = integration.get_external_id()
+
+#         if not access_token or not member_id:
+#             logger.error("Missing LinkedIn access token or member ID")
+#             return False
+
+#         # Refresh token if needed
+#         if integration.is_token_expired():
+#             logger.error("Access Token Expired")
+#             return False
+#             # access_token = integration.refresh_token_if_needed()
+
+#         # Prepare post data
+#         post_data = {
+#             "author": f"urn:li:person:{member_id}",
+#             "lifecycleState": "PUBLISHED",
+#             "specificContent": {
+#                 "com.linkedin.ugc.ShareContent": {
+#                     "shareCommentary": {"text": post.content},
+#                     "shareMediaCategory": "NONE"
+#                 }
+#             },
+#             "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+#         }
+
+#         # Make API request
+#         headers = {
+#             "Authorization": f"Bearer {access_token}",
+#             "X-Restli-Protocol-Version": "2.0.0",
+#             "Content-Type": "application/json"
+#         }
+
+#         response = requests.post(
+#             "https://api.linkedin.com/v2/ugcPosts",
+#             json=post_data,
+#             headers=headers,
+#             timeout=30
+#         )
+
+#         if response.status_code == 201:
+#             post.posted_channels = ["linkedin"]
+#             post.status = Post.Status.PUBLISHED
+#             post.save()
+#             logger.info(f"LinkedIn post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"LinkedIn API error: {response.status_code} - {response.text}")
+#             return False
+
+#     except Exception as e:
+#         logger.error(f"Error publishing LinkedIn post: {e}")
+#         return False
+
+
+# def _publish_slack_post(post, integration):
+#     """Publish a post to Slack via webhook."""
+#     try:
+#         webhook_url = integration.get_webhook_url()
+#         if not webhook_url:
+#             logger.error("Missing Slack webhook URL")
+#             return False
+
+#         payload = {
+#             "text": post.content,
+#             "username": "Push to Post",
+#             "icon_emoji": ":robot_face:"
+#         }
+
+#         response = requests.post(
+#             webhook_url,
+#             json=payload,
+#             timeout=30
+#         )
+
+#         if response.status_code == 200:
+#             post.posted_channels = ["slack"]
+#             post.status = Post.Status.PUBLISHED
+#             post.save()
+#             logger.info(f"Slack post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"Slack webhook error: {response.status_code} - {response.text}")
+#             return False
+
+#     except Exception as e:
+#         logger.error(f"Error publishing Slack post: {e}")
+#         return False
+
+
+# def _publish_discord_post(post, integration):
+#     """Publish a post to Discord via webhook."""
+#     try:
+#         webhook_url = integration.get_webhook_url()
+#         if not webhook_url:
+#             logger.error("Missing Discord webhook URL")
+#             return False
+
+#         payload = {
+#             "content": post.content,
+#             "username": "Push to Post",
+#             "avatar_url": "https://example.com/bot-avatar.png"  # Optional
+#         }
+
+#         response = requests.post(
+#             webhook_url,
+#             json=payload,
+#             timeout=30
+#         )
+
+#         if response.status_code == 204:
+#             post.posted_channels = ["discord"]
+#             post.status = Post.Status.PUBLISHED
+#             post.save()
+#             logger.info(f"Discord post published successfully: {post.id}")
+#             return True
+#         else:
+#             logger.error(f"Discord webhook error: {response.status_code} - {response.text}")
+#             return False
+
+#     except Exception as e:
+#         logger.error(f"Error publishing Discord post: {e}")
+#         return False
+
+
+# # Enhanced notification functions with comprehensive email context
+
+# def _send_publish_success_notification(tenant, post, owner):
+#     """Send notification about successful post publication with detailed context."""
+#     try:
+#         title = f"🎉 Post Successfully Published to {post.platform.title()}"
+#         message = f"Your post has been successfully published to {post.platform.title()}."
+        
+#         # Build comprehensive context
+#         context = {
+#             'post': post,
+#             'platform': post.platform,
+#             'owner': owner,
+#             'organization': tenant,
+#             'post_content_preview': post.content[:100] + "..." if len(post.content) > 100 else post.content,
+#             'published_at': timezone.now(),
+#             'platform_emoji': _get_platform_emoji(post.platform),
+#             'success': True,
+#             'post_url': _get_post_url(post),
+#             'dashboard_url': _get_dashboard_url(tenant),
+#             'platform_name': post.platform.title(),
+#         }
+        
+#         # Generate action URL for viewing the post
+#         action_url = _get_post_detail_url(post)
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             organization=tenant,
+#             triggered_by=None,  # System triggered
+#             related_object=post,
+#             send_email=True,
+#             template_path='emails/post_published_success.html',
+#             context=context,
+#             action_url=action_url,
+#             action_text="View Post Details",
+#             details={
+#                 'platform': post.platform,
+#                 'post_id': post.id,
+#                 'content_length': len(post.content),
+#                 'scheduled_time': post.scheduled_publish_time,
+#                 'actual_publish_time': timezone.now(),
+#             }
+#         )
+
+#     except Exception as e:
+#         logger.error(f"Error sending publish success notification: {e}")
+
+
+# def _send_publish_failure_notification(tenant, post, platform, owner):
+#     """Send notification about failed post publication."""
+#     try:
+#         title = f"❌ Post Publication Failed on {platform.title()}"
+#         message = f"Your post failed to publish to {platform.title()}. Please check your integration settings."
+        
+#         context = {
+#             'post': post,
+#             'platform': platform,
+#             'owner': owner,
+#             'organization': tenant,
+#             'post_content_preview': post.content[:100] + "..." if len(post.content) > 100 else post.content,
+#             'failed_at': timezone.now(),
+#             'platform_emoji': _get_platform_emoji(platform),
+#             'success': False,
+#             'integration_url': _get_integration_settings_url(tenant, platform),
+#             'dashboard_url': _get_dashboard_url(tenant),
+#             'platform_name': platform.title(),
+#         }
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             organization=tenant,
+#             triggered_by=None,
+#             related_object=post,
+#             send_email=True,
+#             template_path='emails/post_published_failure.html',
+#             context=context,
+#             action_url=_get_integration_settings_url(tenant, platform),
+#             action_text="Check Integration Settings",
+#             details={
+#                 'platform': platform,
+#                 'post_id': post.id,
+#                 'error_type': 'publication_failed',
+#                 'scheduled_time': post.scheduled_publish_time,
+#                 'failure_time': timezone.now(),
+#             }
+#         )
+
+#     except Exception as e:
+#         logger.error(f"Error sending publish failure notification: {e}")
+
+
+# def _send_integration_error_notification(tenant, platform, post, owner):
+#     """Send notification about integration errors."""
+#     try:
+#         title = f"🔧 Integration Issue with {platform.title()}"
+#         message = f"No active integration found for {platform.title()}. Please check your connection settings."
+        
+#         context = {
+#             'post': post,
+#             'platform': platform,
+#             'owner': owner,
+#             'organization': tenant,
+#             'platform_emoji': _get_platform_emoji(platform),
+#             'integration_url': _get_integration_settings_url(tenant, platform),
+#             'dashboard_url': _get_dashboard_url(tenant),
+#             'platform_name': platform.title(),
+#         }
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             organization=tenant,
+#             triggered_by=None,
+#             related_object=post,
+#             send_email=True,
+#             template_path='emails/integration_error.html',
+#             context=context,
+#             action_url=_get_integration_settings_url(tenant, platform),
+#             action_text="Configure Integration",
+#             details={
+#                 'platform': platform,
+#                 'error_type': 'integration_missing',
+#                 'post_id': post.id,
+#             }
+#         )
+
+#     except Exception as e:
+#         logger.error(f"Error sending integration error notification: {e}")
+
+
+# def _send_post_limit_notification(tenant, owner):
+#     """Send notification about post limit reached."""
+#     try:
+#         max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+        
+#         title = f"📊 Post Limit Reached ({max_posts} posts)"
+#         message = f"You've reached your plan limit of {max_posts} posts. Upgrade to continue publishing."
+        
+#         context = {
+#             'owner': owner,
+#             'organization': tenant,
+#             'max_posts': max_posts,
+#             'plan_name': owner.plan,
+#             'upgrade_url': _get_upgrade_url(tenant),
+#             'dashboard_url': _get_dashboard_url(tenant),
+#             'current_posts_count': max_posts,
+#         }
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             organization=tenant,
+#             triggered_by=None,
+#             send_email=True,
+#             template_path='emails/post_limit_reached.html',
+#             context=context,
+#             action_url=_get_upgrade_url(tenant),
+#             action_text="Upgrade Plan",
+#             details={
+#                 'limit_type': 'post_limit',
+#                 'current_plan': owner.plan,
+#                 'max_posts': max_posts,
+#             }
+#         )
+
+#     except Exception as e:
+#         logger.error(f"Error sending post limit notification: {e}")
+
+
+# def _send_publish_error_notification(tenant, platform, posts, owner, error_message):
+#     """Send notification about general publishing errors."""
+#     try:
+#         title = f"⚠️ Publishing Error on {platform.title()}"
+#         message = f"An error occurred while publishing to {platform.title()}. Technical details: {error_message[:100]}..."
+        
+#         context = {
+#             'platform': platform,
+#             'owner': owner,
+#             'organization': tenant,
+#             'error_message': error_message,
+#             'posts_count': len(posts),
+#             'platform_emoji': _get_platform_emoji(platform),
+#             'dashboard_url': _get_dashboard_url(tenant),
+#             'platform_name': platform.title(),
+#             'support_url': _get_support_url(),
+#         }
+        
+#         create_and_notify(
+#             title=title,
+#             message=message,
+#             organization=tenant,
+#             triggered_by=None,
+#             send_email=True,
+#             template_path='emails/publish_error.html',
+#             context=context,
+#             action_url=_get_support_url(),
+#             action_text="Contact Support",
+#             details={
+#                 'platform': platform,
+#                 'error_type': 'publishing_error',
+#                 'error_message': error_message,
+#                 'posts_affected': len(posts),
+#             }
+#         )
+
+#     except Exception as e:
+#         logger.error(f"Error sending publish error notification: {e}")
+
+
+# # Helper functions for URLs and context
+
+# def _get_platform_emoji(platform):
+#     """Get emoji for platform."""
+#     platform_emojis = {
+#         'linkedin': '💼',
+#         'slack': '💬',
+#         'discord': '🎮',
+#         'twitter': '🐦',
+#         'facebook': '📘',
+#         'instagram': '📸',
+#     }
+#     return platform_emojis.get(platform.lower(), '📱')
+
+
+# def _get_post_url(post):
+#     """Get URL for viewing the post."""
+#     try:
+#         return reverse('posts:detail', kwargs={'pk': post.pk})
+#     except:
+#         return '/posts/'
+
+
+# def _get_post_detail_url(post):
+#     """Get detailed URL for the post."""
+#     try:
+#         return reverse('posts:detail', kwargs={'pk': post.pk})
+#     except:
+#         return '/posts/'
+
+
+# def _get_dashboard_url(tenant):
+#     """Get dashboard URL for the organization."""
+#     try:
+#         return reverse('organizations:dashboard', kwargs={'org_id': tenant.id})
+#     except:
+#         return '/dashboard/'
+
+
+# def _get_integration_settings_url(tenant, platform):
+#     """Get integration settings URL."""
+#     try:
+#         return reverse('integrations:settings', kwargs={'platform': platform})
+#     except:
+#         return '/integrations/'
+
+
+# def _get_upgrade_url(tenant):
+#     """Get upgrade URL."""
+#     try:
+#         return reverse('accounts:upgrade')
+#     except:
+#         return '/upgrade/'
+
+
+# def _get_support_url():
+#     """Get support URL."""
+#     return getattr(settings, 'SUPPORT_URL', '/support/')
+
+
+# # Enhanced email sending with direct EmailHandler usage
+
+# def send_bulk_marketing_email_to_users(subject, content, user_filter=None):
+#     """
+#     Send marketing emails to multiple users across organizations.
+#     Example of using EmailHandler directly for bulk operations.
+#     """
+#     try:
+#         email_handler = EmailHandler()
+        
+#         # Get users based on filter
+#         if user_filter:
+#             users = UserAccount.objects.filter(**user_filter)
+#         else:
+#             users = UserAccount.objects.filter(is_active=True)
+        
+#         # Send emails in batches
+#         batch_size = 50
+#         for i in range(0, len(users), batch_size):
+#             batch_users = users[i:i + batch_size]
+            
+#             sent_emails = email_handler.send_marketing_email(
+#                 recipients=batch_users,
+#                 subject=subject,
+#                 template_path='emails/marketing_newsletter.html',
+#                 context={
+#                     'content': content,
+#                     'newsletter_date': timezone.now(),
+#                     'company_name': getattr(settings, 'COMPANY_NAME', 'Your Company'),
+#                 },
+#                 unsubscribe_url=reverse('accounts:unsubscribe'),
+#                 headers={
+#                     'X-Campaign-Type': 'newsletter',
+#                     'X-Batch-Number': str(i // batch_size + 1),
+#                 }
+#             )
+            
+#             logger.info(f"Sent marketing emails to batch {i // batch_size + 1}: {len(sent_emails)} emails")
+    
+#     except Exception as e:
+#         logger.error(f"Error sending bulk marketing emails: {e}")
+
+
+# def send_system_maintenance_notification(maintenance_date, duration_hours):
+#     """
+#     Send system maintenance notifications to all organization owners.
+#     """
+#     try:
+#         email_handler = EmailHandler()
+        
+#         # Get all organization owners
+#         owners = UserAccount.objects.filter(
+#             userrole__role='owner',
+#             is_active=True
+#         ).distinct()
+        
+#         subject = f"Scheduled Maintenance - {maintenance_date.strftime('%B %d, %Y')}"
+        
+#         context = {
+#             'maintenance_date': maintenance_date,
+#             'duration_hours': duration_hours,
+#             'company_name': getattr(settings, 'COMPANY_NAME', 'Your Company'),
+#             'support_email': getattr(settings, 'SUPPORT_EMAIL', 'support@yourcompany.com'),
+#         }
+        
+#         sent_emails = email_handler.send_transactional_email(
+#             recipients=owners,
+#             subject=subject,
+#             template_path='emails/maintenance_notification.html',
+#             context=context,
+#             headers={
+#                 'X-Email-Type': 'maintenance',
+#                 'X-Priority': 'high',
+#             }
+#         )
+        
+#         logger.info(f"Sent maintenance notifications to {len(sent_emails)} owners")
+        
+#     except Exception as e:
+#         logger.error(f"Error sending maintenance notifications: {e}")
+
+
+# # Legacy function for backward compatibility
+# def _send_publish_notification(tenant, post):
+#     """
+#     Legacy function - now calls the enhanced version.
+#     Kept for backward compatibility.
+#     """
+#     owner = _get_organization_owner(tenant)
+#     _send_publish_success_notification(tenant, post, owner)
+
+
+
+
+
+
+
+
+
+import logging
+# from django.conf import settings
+# from django.urls import reverse
+# from django.utils import timezone
+# from django.core.mail import EmailMessage
+# from notifications.models import Notification
+# from django.contrib.auth import get_user_model
+# from django.template.loader import render_to_string
+# from organizations.models import UserOrganizationRole
+# from django.contrib.contenttypes.models import ContentType
+
+# User = get_user_model()
+# logger = logging.getLogger(__name__)
+
+
+# class EmailHandler:
+#     """
+#     Global email handler for sending authenticated emails across the application.
+#     Handles notifications, transactional emails, marketing emails, etc.
+#     """
+
+#     def __init__(self):
+#         self.default_marketing_template = 'emails/marketing_email.html'
+#         self.default_notification_template = 'emails/notification_email.html'
+#         self.default_transactional_template = 'emails/transactional_email.html'
+
+#     # def send_notification_email(self, organization, notification, **kwargs):
+#     #     """
+#     #     Send notification email to organization admins and owners.
+#     #     Works with your existing Notification model without changes.
+#     #
+#     #     Args:
+#     #         organization: Organization instance
+#     #         notification: Notification instance
+#     #         **kwargs: Additional email customization options
+#     #     """
+#     #     # Get recipients (admins and owners)
+#     #     print(kwargs, "Key Arurments")
+#     #     recipients = self._get_notification_recipients(organization, kwargs.get('additional_recipients', []))
+#     #
+#     #     if not recipients:
+#     #         logger.warning(f"No recipients found for notification {notification.id}")
+#     #         return []
+#     #
+#     #     # Prepare email context
+#     #     context = self._build_notification_context(organization, notification, **kwargs)
+#     #
+#     #     # Send emails
+#     #     sent_emails = []
+#     #     template_path = kwargs.get('template_path', self.default_notification_template)
+#     #     kwargs = {k: v for k, v in kwargs.items() if k != 'template_path'}
+#     #     for recipient in recipients:
+#     #         try:
+#     #             email_sent = self._send_single_email(
+#     #                 context=context,
+#     #                 recipient=recipient,
+#     #                 email_type='notification',
+#     #                 template_path=template_path,
+#     #                 **kwargs
+#     #             )
+#     #             if email_sent:
+#     #                 sent_emails.append(recipient['email'])
+#     #         except Exception as e:
+#     #             logger.error(f"Failed to send notification email to {recipient['email']}: {str(e)}")
+#     #             continue
+#     #
+#     #     return sent_emails
+
+#     def send_notification_email(self, organization, notification, **kwargs):
+#         """
+#         Send notification email to organization admins and owners.
+#         Works with your existing Notification model without changes.
+
+#         Args:
+#             organization: Organization instance
+#             notification: Notification instance
+#             **kwargs: Additional email customization options
+#         """
+#         print(kwargs, "Key Arguments")
+#         # Extract and clean up special kwargs
+#         template_path = kwargs.pop('template_path', self.default_notification_template)
+#         additional_recipients = kwargs.pop('additional_recipients', [])
+#         context_override = kwargs.pop('context', {})
+
+#         # Pop these too if they were passed via outer dict
+#         kwargs.pop('organization', None)
+#         kwargs.pop('notification', None)
+
+#         # Get recipients (admins and owners)
+#         recipients = self._get_notification_recipients(organization, additional_recipients)
+
+#         if not recipients:
+#             logger.warning(f"No recipients found for notification {notification.id}")
+#             return []
+
+#         # Prepare email context
+#         context = self._build_notification_context(
+#             organization,
+#             notification,
+#             **{**kwargs, **context_override}  # context override still usable
+#         )
+
+#         sent_emails = []
+#         for recipient in recipients:
+#             try:
+#                 email_sent = self._send_single_email(
+#                     context=context,
+#                     recipient=recipient,
+#                     email_type='notification',
+#                     template_path=template_path,
+#                     **kwargs  # Now safe
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send notification email to {recipient['email']}: {str(e)}")
+#                 continue
+
+#         return sent_emails
+
+#     def send_transactional_email(self, recipients, subject, template_path=None, context=None, **kwargs):
+#         """
+#         Send transactional emails (password reset, account verification, etc.)
+
+#         Args:
+#             subject: Email subject
+#             context: Template context data
+#             **kwargs: Additional email options
+#             template_path: Path to email template
+#             recipients: List of email addresses or User objects
+#         """
+#         context = context or {}
+#         template_path = template_path or self.default_transactional_template
+
+#         # Normalize recipients
+#         normalized_recipients = self._normalize_recipients(recipients)
+
+#         sent_emails = []
+#         for recipient in normalized_recipients:
+#             try:
+#                 # Add recipient-specific context
+#                 recipient_context = context.copy()
+#                 recipient_context.update({
+#                     'recipient': recipient,
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'first_name': recipient.get('first_name', ''),
+#                 })
+
+#                 email_sent = self._send_single_email(
+#                     subject=subject,
+#                     recipient=recipient,
+#                     context=recipient_context,
+#                     email_type='transactional',
+#                     template_path=template_path,
+#                     **kwargs
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send transactional email to {recipient['email']}: {str(e)}")
+#                 continue
+
+#         return sent_emails
+
+#     def send_marketing_email(self, recipients, subject, template_path=None, context=None, **kwargs):
+#         """
+#         Send marketing emails (newsletters, announcements, etc.)
+
+#         Args:
+#             subject: Email subject
+#             context: Template context data
+#             **kwargs: Additional email options
+#             template_path: Path to email template
+#             recipients: List of email addresses or User objects
+#         """
+#         context = context or {}
+#         template_path = template_path or self.default_marketing_template
+
+#         # Normalize recipients
+#         normalized_recipients = self._normalize_recipients(recipients)
+
+#         sent_emails = []
+#         for recipient in normalized_recipients:
+#             try:
+#                 # Add recipient-specific context
+#                 recipient_context = context.copy()
+#                 recipient_context.update({
+#                     'recipient': recipient,
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'first_name': recipient.get('first_name', ''),
+#                     'unsubscribe_url': kwargs.get('unsubscribe_url'),
+#                 })
+
+#                 email_sent = self._send_single_email(
+#                     subject=subject,
+#                     recipient=recipient,
+#                     email_type='marketing',
+#                     context=recipient_context,
+#                     template_path=template_path,
+#                     **kwargs
+#                 )
+#                 if email_sent:
+#                     sent_emails.append(recipient['email'])
+#             except Exception as e:
+#                 logger.error(f"Failed to send marketing email to {recipient['email']}: {str(e)}")
+#                 continue
+
+#         return sent_emails
+
+#     def _send_single_email(self, recipient, context, template_path, email_type='notification', **kwargs):
+#         """Send a single email to a recipient."""
+#         try:
+#             # Generate subject if not provided
+#             subject = kwargs.get('subject')
+#             if not subject:
+#                 subject = self._generate_email_subject(context, email_type, **kwargs)
+
+#             print(template_path, "Templated")
+
+#             # Render email content
+#             html_message = render_to_string(template_path, context)
+
+#             # Prepare email headers
+#             headers = {
+#                 'X-Email-Type': email_type,
+#                 'X-Mailer': 'Django-EmailHandler',
+#             }
+
+#             # Add notification-specific headers
+#             if email_type == 'notification' and context.get('notification'):
+#                 headers.update({
+#                     'X-Notification-ID': str(context['notification'].id),
+#                     'X-Organization-ID': str(context['organization'].id),
+#                 })
+
+#             # Add custom headers
+#             if kwargs.get('headers'):
+#                 headers.update(kwargs['headers'])
+
+#             # Create email
+#             email = EmailMessage(
+#                 subject=subject,
+#                 headers=headers,
+#                 body=html_message,
+#                 to=[recipient['email']],
+#                 cc=kwargs.get('cc', []),
+#                 bcc=kwargs.get('bcc', []),
+#                 from_email=kwargs.get('from_email', settings.DEFAULT_FROM_EMAIL)
+#             )
+
+#             email.content_subtype = "html"
+
+#             # Add attachments if provided
+#             if kwargs.get('attachments'):
+#                 for attachment in kwargs['attachments']:
+#                     email.attach(attachment['filename'], attachment['content'], attachment['mimetype'])
+
+#             # Send email
+#             email.send(fail_silently=False)
+#             logger.info(f"Email sent successfully to {recipient['email']}")
+#             return True
+
+#         except Exception as e:
+#             logger.error(f"Failed to send email to {recipient['email']}: {str(e)}")
+#             return False
+
+#     def _get_notification_recipients(self, organization, additional_recipients=None):
+#         """Get recipients for notification emails."""
+#         # Get organization admins and owners
+#         admin_roles = UserOrganizationRole.objects.filter(
+#             organization=organization,
+#             role__in=["admin", "owner"]
+#         ).select_related('user')
+
+#         recipients = []
+
+#         # Add admin/owner recipients
+#         for role_entry in admin_roles:
+#             user = role_entry.user
+#             if user.email:
+#                 recipients.append({
+#                     'user': user,
+#                     'email': user.email,
+#                     'role': role_entry.role,
+#                     'organization': organization,
+#                     'last_name': user.last_name or '',
+#                     'first_name': user.first_name or user.username,
+#                 })
+
+#         # Add additional recipients
+#         if additional_recipients:
+#             for recipient in additional_recipients:
+#                 if isinstance(recipient, str):
+#                     recipients.append({
+#                         'user': None,
+#                         'last_name': '',
+#                         'first_name': '',
+#                         'role': 'external',
+#                         'email': recipient,
+#                         'organization': organization,
+#                     })
+#                 elif isinstance(recipient, User):
+#                     recipients.append({
+#                         'user': recipient,
+#                         'role': 'external',
+#                         'email': recipient.email,
+#                         'organization': organization,
+#                         'last_name': recipient.last_name or '',
+#                         'first_name': recipient.first_name or recipient.username,
+#                     })
+
+#         return recipients
+
+#     def _normalize_recipients(self, recipients):
+#         """Normalize recipients to a consistent format."""
+#         normalized = []
+
+#         for recipient in recipients:
+#             if isinstance(recipient, str):
+#                 # Email string
+#                 normalized.append({
+#                     'user': None,
+#                     'last_name': '',
+#                     'first_name': '',
+#                     'email': recipient,
+#                 })
+#             elif isinstance(recipient, User):
+#                 # User object
+#                 normalized.append({
+#                     'user': recipient,
+#                     'email': recipient.email,
+#                     'last_name': recipient.last_name or '',
+#                     'first_name': recipient.first_name or recipient.username,
+#                 })
+#             elif isinstance(recipient, dict):
+#                 # Dictionary with email info
+#                 normalized.append({
+#                     'email': recipient['email'],
+#                     'user': recipient.get('user'),
+#                     'last_name': recipient.get('last_name', ''),
+#                     'first_name': recipient.get('first_name', ''),
+#                 })
+
+#         return normalized
+
+#     def _build_notification_context(self, organization, notification, **kwargs):
+#         """Build context for notification emails."""
+#         # Generate action URL if not provided
+#         action_url = kwargs.get('action_url')
+#         if not action_url and notification.content_type and notification.object_id:
+#             action_url = self._generate_action_url(notification)
+
+#         # Base context
+#         context = {
+#             'action_url': action_url,
+#             'title': notification.title,
+#             'organization': organization,
+#             'email_type': 'notification',
+#             'notification': notification,
+#             'message': notification.message,
+#             'details': kwargs.get('details', {}),
+#             'timestamp': notification.created_at,
+#             'action_text': kwargs.get('action_text', 'View Details'),
+#             'triggered_by_full_name': self._get_user_full_name(notification.triggered_by),
+#             'organization_dashboard_url': self._get_organization_dashboard_url(organization),
+#             'triggered_by': notification.triggered_by.username if notification.triggered_by else 'System',
+#         }
+
+#         # Merge with additional context
+#         if kwargs.get('context'):
+#             context.update(kwargs['context'])
+
+#         return context
+
+#     def _generate_action_url(self, notification):
+#         """Generate action URL based on the related object."""
+#         if not notification.content_type or not notification.object_id:
+#             return None
+
+#         model_class = notification.content_type.model_class()
+#         model_name = model_class._meta.model_name
+
+#         # Common URL patterns - customize based on your URL structure
+#         url_patterns = {
+#             'post': 'posts:detail',
+#             'task': 'tasks:detail',
+#             'user': 'users:profile',
+#             'event': 'events:detail',
+#             'comment': 'comments:detail',
+#             'project': 'projects:detail',
+#         }
+
+#         url_name = url_patterns.get(model_name)
+#         if url_name:
+#             try:
+#                 return reverse(url_name, kwargs={'pk': notification.object_id})
+#             except:
+#                 pass
+
+#         return None
+
+#     def _get_user_full_name(self, user):
+#         """Get user's full name or username."""
+#         if not user:
+#             return 'System'
+
+#         if user.first_name and user.last_name:
+#             return f"{user.first_name} {user.last_name}"
+#         elif user.first_name:
+#             return user.first_name
+#         else:
+#             return user.username
+
+#     def _get_organization_dashboard_url(self, organization):
+#         """Get organization dashboard URL."""
+#         try:
+#             return reverse('organizations:dashboard', kwargs={'org_id': organization.id})
+#         except:
+#             return '/dashboard/'
+
+#     def _generate_email_subject(self, context, email_type, **kwargs):
+#         """Generate email subject based on type and context."""
+#         if email_type == 'notification':
+#             organization = context.get('organization')
+#             notification = context.get('notification')
+#             if organization and notification:
+#                 return f"📢 {organization.name}: {notification.title}"
+
+#         return kwargs.get('default_subject', 'Email from your application')
+
+
+# class NotificationHandler:
+#     """
+#     Notification-specific handler that works with your existing Notification model.
+#     Uses the global EmailHandler for sending emails.
+#     """
+
+#     def __init__(self):
+#         self.email_handler = EmailHandler()
+
+#     def create_and_notify(self, organization, title, message, **kwargs):
+#         """
+#         Create a notification and send emails. 
+#         Works with your existing Notification model without changes.
+
+#         Args:
+#             organization: Organization instance
+#             title: Notification title
+#             message: Notification message
+#             **kwargs: Additional options
+#         """
+#         # Extract parameters
+#         triggered_by = kwargs.get('triggered_by')
+#         send_email = kwargs.get('send_email', True)
+#         related_object = kwargs.get('related_object')
+
+#         # Create the notification (works with your existing model)
+#         content_type = None
+#         object_id = None
+
+#         if related_object:
+#             content_type = ContentType.objects.get_for_model(related_object)
+#             object_id = str(related_object.pk)  # Convert to string for your model
+
+#         try:
+#             notification = Notification.objects.create(
+#                 organization=organization,
+#                 title=title,
+#                 message=message,
+#                 triggered_by=triggered_by,
+#                 content_type=content_type,
+#                 object_id=object_id
+#             )
+
+#             # Send email if requested
+#             if send_email:
+#                 sent_emails = self.email_handler.send_notification_email(
+#                     organization=organization,
+#                     notification=notification,
+#                     **kwargs
+#                 )
+#                 logger.info(f"Notification emails sent to: {sent_emails}")
+
+#             logger.info(f"Notification created successfully: {notification.id}")
+#             return notification
+
+#         except Exception as e:
+#             logger.error(f"Failed to create notification: {str(e)}")
+#             raise
+
+
+# # Convenience functions for different email types
+# def send_notification_email(organization, notification, **kwargs):
+#     """Send notification email using existing notification."""
+#     handler = EmailHandler()
+#     return handler.send_notification_email(organization, notification, **kwargs)
+
+
+# def send_password_reset_email(user, reset_url, **kwargs):
+#     """Send password reset email."""
+#     handler = EmailHandler()
+#     return handler.send_transactional_email(
+#         recipients=[user],
+#         subject="Password Reset Request",
+#         template_path="emails/password_reset.html",
+#         context={
+#             'reset_url': reset_url,
+#             'user': user,
+#         },
+#         **kwargs
+#     )
+
+
+# def send_account_verification_email(user, verification_url, **kwargs):
+#     """Send account verification email."""
+#     handler = EmailHandler()
+#     return handler.send_transactional_email(
+#         recipients=[user],
+#         subject="Verify Your Account",
+#         template_path="emails/account_verification.html",
+#         context={
+#             'verification_url': verification_url,
+#             'user': user,
+#         },
+#         **kwargs
+#     )
+
+
+# def send_marketing_newsletter(recipients, subject, content, **kwargs):
+#     """Send marketing newsletter."""
+#     handler = EmailHandler()
+#     return handler.send_marketing_email(
+#         recipients=recipients,
+#         subject=subject,
+#         template_path="emails/newsletter.html",
+#         context={
+#             'content': content,
+#             'newsletter_date': timezone.now(),
+#         },
+#         **kwargs
+#     )
+
+
+# def create_and_notify(organization, title, message, **kwargs):
+#     """
+#     Create notification and send emails (backward compatibility).
+#     This maintains your existing function signature.
+#     """
+#     handler = NotificationHandler()
+#     return handler.create_and_notify(organization, title, message, **kwargs)
+
+
+
+# we needto make work great and stuff so we can be able to pass stuff to it and format it like passing a value from like notification hanler right and be able to pass informations like details, name, create like links to it  and stuff like we need the to be optimized , and be able to work really fine been getting errors like:
+
+
+# ction_text': 'Check Integration Settings', 'details': {'platform': 'slack', 'post_id': UUID('e70aefc5-2c59-41f4-a62b-e497ef1d27cc'), 'error_type': 'publication_failed', 'scheduled_time': datetime.datetime(2025, 7, 18, 19, 47, 30, tzinfo=datetime.timezone.utc), 'failure_time': datetime.datetime(2025, 7, 18, 19, 47, 1, 488348, tzinfo=datetime.timezone.utc)}} Key Arguments
+# [2025-07-18 19:47:01,505] ERROR notifications.utlis - Failed to create notification: EmailHandler._build_notification_context() got multiple values for argument 'organization'
+# [2025-07-18 19:47:01,524] ERROR core.tasks - Error sending publish failure notification: EmailHandler._build_notification_context() got multiple values for argument 'organization'
+# [2025-07-18 19:47:01,541] INFO core.tasks - Processing tenant: johhnd-b38c4a07
+
+
+# {'triggered_by': None, 'related_object': <Post: Post (published) - testing_webhook - slack>, 'send_email': True, 'template_path': 'emails/post_published_success.html', 'context': {'post': <Post: Post (published) - testing_webhook - slack>, 'owner': <UserAccount: whitelord721+dev30@gmail.com>, 'success': True, 'organization': <Organization: Dellion>, 'platform': 'slack', 'published_at': datetime.datetime(2025, 7, 18, 19, 12, 15, 394559, tzinfo=datetime.timezone.utc), 'post_url': '/posts/', 'platform_name': 'Slack', 'dashboard_url': '/dashboard/', 'platform_emoji': '💬', 'post_content_preview': 'Howdy Leo Damingss'}, 'action_url': '/posts/', 'action_text': 'View Post Details', 'details': {'platform': 'slack', 'post_id': UUID('e70aefc5-2c59-41f4-a62b-e497ef1d27cc'), 'content_length': 18, 'scheduled_time': datetime.datetime(2025, 7, 18, 19, 12, 40, tzinfo=datetime.timezone.utc), 'actual_publish_time': datetime.datetime(2025, 7, 18, 19, 12, 15, 397272, tzinfo=datetime.timezone.utc)}}
+#  Key Arguments
+# [2025-07-18 19:29:58,397] ERROR notifications.utlis - Failed to create notification: EmailHandler._build_notification_context() got multiple values for argument 'organization'
+# [2025-07-18 19:29:58,410] ERROR core.tasks - Error sending publish success notification: EmailHandler._build_notification_context() got multiple values for argument 'organization'
+# [2025-07-18 19:29:58,442] INFO core.tasks - Processing tenant: johhnd-b38c4a07
+
+
+
+# we tried to po stuff but still same issues 
+
+# check throught code and find source of issue and provide a fix to it ( we need to ensure  we are able to do stuff without issues) also this is the kwarg data coming from the sport its' being triggered from 
+# {'triggered_by': None, 'related_object': <Post: Post (published) - testing_webhook - slack>, 'send_email': True, 'template_path': 'emails/post_published_success.html', 'context': {'post': <Post: Post (published) - testing_webhook - slack>, 'owner': <UserAccount: whitelord721+dev30@gmail.com>, 'success': True, 'organization': <Organization: Dellion>, 'platform': 'slack', 'published_at': datetime.datetime(2025, 7, 18, 19, 12, 15, 394559, tzinfo=datetime.timezone.utc), 'post_url': '/posts/', 'platform_name': 'Slack', 'dashboard_url': '/dashboard/', 'platform_emoji': '💬', 'post_content_preview': 'Howdy Leo Damingss'}, 'action_url': '/posts/', 'action_text': 'View Post Details', 'details': {'platform': 'slack', 'post_id': UUID('e70aefc5-2c59-41f4-a62b-e497ef1d27cc'), 'content_length': 18, 'scheduled_time': datetime.datetime(2025, 7, 18, 19, 12, 40, tzinfo=datetime.timezone.utc), 'actual_publish_time': datetime.datetime(2025, 7, 18, 19, 12, 15, 397272, tzinfo=datetime.timezone.utc)}}
+#  Key Arguments
+
+#  we need to avoid issues also we need to check for possible cases thath could be a cause of bugs also we need to make sure we cover all cases that can happend and make sure to avoid bug and issues and make sure to go through  all possible cases and everything, also we need you to rewrite the whole thing and also make sure to fix everything also stuff like clean up kwarg stuff and all to avoid duplicates and all
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+# Production-Grade Twitter Bot Helper for Django Applications
+
+# This module provides a robust Twitter API client using OAuth 2.0 with PKCE
+# for Django applications. It includes comprehensive error handling, logging,
+# rate limiting, token management, and security features.
+
+# Requirements:
+# - requests>=2.28.0
+# - requests-oauthlib>=1.3.0
+# - django>=3.2
+# - redis>=4.0.0 (optional, for distributed token storage)
+
+# Django Settings Required:
+# TWITTER_CLIENT_ID = 'your_client_id'
+# TWITTER_CLIENT_SECRET = 'your_client_secret' 
+# TWITTER_REDIRECT_URI = 'https://yourdomain.com/twitter/callback'
+# REDIS_URL = 'redis://localhost:6379/0' (optional)
+# """
+
+# import base64
+# import hashlib
+# import json
+# import logging
+# import os
+# import re
+# import time
+# from datetime import datetime, timedelta
+# from typing import Dict, Optional, Tuple, Any
+# from urllib.parse import parse_qs, urlparse
+
+# import requests
+# from django.conf import settings
+# from django.core.cache import cache
+# from django.core.exceptions import ImproperlyConfigured
+# from django.utils import timezone
+# from requests.adapters import HTTPAdapter
+# from requests.exceptions import RequestException, Timeout, ConnectionError
+# from requests_oauthlib import OAuth2Session
+# from urllib3.util.retry import Retry
+
+# # Configure logging
+# logger = logging.getLogger(__name__)
+
+# class TwitterAPIError(Exception):
+#     """Custom exception for Twitter API errors"""
+#     def __init__(self, message: str, status_code: int = None, response_data: dict = None):
+#         super().__init__(message)
+#         self.status_code = status_code
+#         self.response_data = response_data or {}
+
+# class TwitterRateLimitError(TwitterAPIError):
+#     """Exception raised when rate limit is exceeded"""
+#     def __init__(self, reset_time: int = None):
+#         super().__init__("Twitter API rate limit exceeded")
+#         self.reset_time = reset_time
+
+# class TwitterAuthenticationError(TwitterAPIError):
+#     """Exception raised for authentication errors"""
+#     pass
+
+# class TwitterBotHelper:
+#     """
+#     Production-grade Twitter Bot Helper for Django applications
+    
+#     Features:
+#     - OAuth 2.0 with PKCE authentication
+#     - Automatic token refresh
+#     - Rate limiting and retry logic
+#     - Comprehensive error handling
+#     - Django cache integration
+#     - Security best practices
+#     - Logging and monitoring
+#     """
+    
+#     # API Endpoints
+#     AUTH_URL = "https://twitter.com/i/oauth2/authorize"
+#     TOKEN_URL = "https://api.x.com/2/oauth2/token"
+#     TWEETS_URL = "https://api.x.com/2/tweets"
+#     USER_URL = "https://api.x.com/2/users/me"
+    
+#     # Scopes
+#     DEFAULT_SCOPES = ["tweet.read", "users.read", "tweet.write", "offline.access"]
+    
+#     # Rate limiting
+#     RATE_LIMIT_WINDOW = 900  # 15 minutes in seconds
+#     MAX_RETRIES = 3
+#     BACKOFF_FACTOR = 1.0
+    
+#     def __init__(self, user_id: str = None, use_cache: bool = True):
+#         """
+#         Initialize Twitter Bot Helper
+        
+#         Args:
+#             user_id: Unique identifier for the user (for multi-user apps)
+#             use_cache: Whether to use Django cache for token storage
+#         """
+#         self.user_id = user_id or 'default'
+#         self.use_cache = use_cache
+        
+#         # Load configuration from Django settings
+#         self._load_config()
+        
+#         # Setup HTTP session with retry strategy
+#         self.session = self._create_session()
+        
+#         # Initialize OAuth session
+#         self.oauth_session = None
+#         self.code_verifier = None
+#         self.code_challenge = None
+        
+#         logger.info(f"TwitterBotHelper initialized for user: {self.user_id}")
+    
+#     def _load_config(self):
+#         """Load configuration from Django settings with validation"""
+#         try:
+#             self.client_id = getattr(settings, 'TWITTER_CLIENT_ID', None)
+#             self.client_secret = getattr(settings, 'TWITTER_CLIENT_SECRET', None)
+#             self.redirect_uri = getattr(settings, 'TWITTER_REDIRECT_URI', None)
+            
+#             if not all([self.client_id, self.client_secret, self.redirect_uri]):
+#                 raise ImproperlyConfigured(
+#                     "TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, and TWITTER_REDIRECT_URI "
+#                     "must be set in Django settings"
+#                 )
+            
+#             # Optional settings
+#             self.scopes = getattr(settings, 'TWITTER_SCOPES', self.DEFAULT_SCOPES)
+#             self.redis_url = getattr(settings, 'REDIS_URL', None)
+            
+#         except AttributeError as e:
+#             raise ImproperlyConfigured(f"Missing Twitter configuration in settings: {e}")
+    
+#     def _create_session(self) -> requests.Session:
+#         """Create HTTP session with retry strategy and timeouts"""
+#         session = requests.Session()
+        
+#         # Configure retry strategy
+#         retry_strategy = Retry(
+#             total=self.MAX_RETRIES,
+#             backoff_factor=self.BACKOFF_FACTOR,
+#             status_forcelist=[429, 500, 502, 503, 504],
+#             allowed_methods=["GET", "POST", "PUT", "DELETE"]
+#         )
+        
+#         # Mount adapter with retry strategy
+#         adapter = HTTPAdapter(max_retries=retry_strategy)
+#         session.mount("https://", adapter)
+#         session.mount("http://", adapter)
+        
+#         # Set default timeout
+#         session.request = lambda *args, **kwargs: requests.Session.request(
+#             session, *args, **kwargs, timeout=kwargs.get('timeout', 30)
+#         )
+        
+#         return session
+    
+#     def _get_cache_key(self, key_type: str) -> str:
+#         """Generate cache key for different data types"""
+#         return f"twitter_bot:{self.user_id}:{key_type}"
+    
+#     def _generate_pkce_codes(self):
+#         """Generate PKCE code verifier and challenge"""
+#         try:
+#             # Generate cryptographically secure random code verifier
+#             self.code_verifier = base64.urlsafe_b64encode(
+#                 os.urandom(32)
+#             ).decode("utf-8").rstrip("=")
+            
+#             # Clean code verifier (PKCE spec compliance)
+#             self.code_verifier = re.sub("[^a-zA-Z0-9._~-]+", "", self.code_verifier)
+            
+#             # Generate code challenge
+#             digest = hashlib.sha256(self.code_verifier.encode("utf-8")).digest()
+#             self.code_challenge = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
+            
+#             logger.debug(f"PKCE codes generated for user: {self.user_id}")
+            
+#         except Exception as e:
+#             logger.error(f"Error generating PKCE codes: {e}")
+#             raise TwitterAPIError(f"Failed to generate PKCE codes: {e}")
+    
+#     def get_authorization_url(self, state: str = None) -> Tuple[str, str]:
+#         """
+#         Generate authorization URL for OAuth 2.0 flow
+        
+#         Args:
+#             state: Optional state parameter for CSRF protection
+            
+#         Returns:
+#             Tuple of (authorization_url, state)
+#         """
+#         try:
+#             self._generate_pkce_codes()
+            
+#             self.oauth_session = OAuth2Session(
+#                 self.client_id,
+#                 redirect_uri=self.redirect_uri,
+#                 scope=self.scopes
+#             )
+            
+#             authorization_url, oauth_state = self.oauth_session.authorization_url(
+#                 self.AUTH_URL,
+#                 code_challenge=self.code_challenge,
+#                 code_challenge_method="S256",
+#                 state=state
+#             )
+            
+#             # Cache PKCE codes for callback
+#             if self.use_cache:
+#                 cache_data = {
+#                     'code_verifier': self.code_verifier,
+#                     'oauth_state': oauth_state,
+#                     'timestamp': timezone.now().isoformat()
+#                 }
+#                 cache.set(
+#                     self._get_cache_key('pkce_data'), 
+#                     cache_data, 
+#                     timeout=600  # 10 minutes
+#                 )
+            
+#             logger.info(f"Authorization URL generated for user: {self.user_id}")
+#             return authorization_url, oauth_state
+            
+#         except Exception as e:
+#             logger.error(f"Error generating authorization URL: {e}")
+#             raise TwitterAPIError(f"Failed to generate authorization URL: {e}")
+    
+#     def handle_callback(self, callback_url: str, expected_state: str = None) -> Dict[str, Any]:
+#         """
+#         Handle OAuth callback and exchange code for tokens
+        
+#         Args:
+#             callback_url: Full callback URL with authorization code
+#             expected_state: Expected state parameter for CSRF protection
+            
+#         Returns:
+#             Token dictionary containing access_token, refresh_token, etc.
+#         """
+#         try:
+#             # Parse callback URL
+#             parsed_url = urlparse(callback_url)
+#             query_params = parse_qs(parsed_url.query)
+            
+#             # Extract authorization code and state
+#             if 'code' not in query_params:
+#                 raise TwitterAuthenticationError("No authorization code in callback URL")
+            
+#             code = query_params['code'][0]
+#             callback_state = query_params.get('state', [None])[0]
+            
+#             # Verify state parameter (CSRF protection)
+#             if expected_state and callback_state != expected_state:
+#                 raise TwitterAuthenticationError("State parameter mismatch - possible CSRF attack")
+            
+#             # Retrieve PKCE codes from cache
+#             pkce_data = None
+#             if self.use_cache:
+#                 pkce_data = cache.get(self._get_cache_key('pkce_data'))
+            
+#             if not pkce_data:
+#                 raise TwitterAuthenticationError("PKCE codes not found - authorization session expired")
+            
+#             code_verifier = pkce_data['code_verifier']
+            
+#             # Exchange code for tokens
+#             oauth_session = OAuth2Session(
+#                 self.client_id,
+#                 redirect_uri=self.redirect_uri
+#             )
+            
+#             tokens = oauth_session.fetch_token(
+#                 token_url=self.TOKEN_URL,
+#                 code=code,
+#                 client_secret=self.client_secret,
+#                 code_verifier=code_verifier,
+#                 include_client_id=True
+#             )
+            
+#             # Add metadata to tokens
+#             tokens['created_at'] = timezone.now().isoformat()
+#             tokens['user_id'] = self.user_id
+            
+#             # Save tokens
+#             self._save_tokens(tokens)
+            
+#             # Clean up PKCE cache
+#             if self.use_cache:
+#                 cache.delete(self._get_cache_key('pkce_data'))
+            
+#             logger.info(f"OAuth callback handled successfully for user: {self.user_id}")
+#             return tokens
+            
+#         except Exception as e:
+#             logger.error(f"Error handling OAuth callback: {e}")
+#             if isinstance(e, TwitterAPIError):
+#                 raise
+#             raise TwitterAuthenticationError(f"Failed to handle OAuth callback: {e}")
+    
+#     def _save_tokens(self, tokens: Dict[str, Any]):
+#         """Save tokens to cache/storage"""
+#         try:
+#             if self.use_cache:
+#                 cache.set(
+#                     self._get_cache_key('tokens'),
+#                     tokens,
+#                     timeout=None  # No expiration, we'll handle refresh
+#                 )
+            
+#             logger.debug(f"Tokens saved for user: {self.user_id}")
+            
+#         except Exception as e:
+#             logger.error(f"Error saving tokens: {e}")
+#             # Don't raise here - tokens might still be usable in memory
+    
+#     def _load_tokens(self) -> Optional[Dict[str, Any]]:
+#         """Load tokens from cache/storage"""
+#         try:
+#             if self.use_cache:
+#                 tokens = cache.get(self._get_cache_key('tokens'))
+#                 if tokens:
+#                     logger.debug(f"Tokens loaded from cache for user: {self.user_id}")
+#                     return tokens
+            
+#             logger.warning(f"No tokens found for user: {self.user_id}")
+#             return None
+            
+#         except Exception as e:
+#             logger.error(f"Error loading tokens: {e}")
+#             return None
+    
+#     def _refresh_tokens(self, refresh_token: str) -> Optional[Dict[str, Any]]:
+#         """Refresh access tokens using refresh token"""
+#         try:
+#             oauth_session = OAuth2Session(self.client_id)
+            
+#             new_tokens = oauth_session.refresh_token(
+#                 token_url=self.TOKEN_URL,
+#                 refresh_token=refresh_token,
+#                 client_id=self.client_id,
+#                 client_secret=self.client_secret
+#             )
+            
+#             # Add metadata
+#             new_tokens['created_at'] = timezone.now().isoformat()
+#             new_tokens['user_id'] = self.user_id
+            
+#             # Save new tokens
+#             self._save_tokens(new_tokens)
+            
+#             logger.info(f"Tokens refreshed successfully for user: {self.user_id}")
+#             return new_tokens
+            
+#         except Exception as e:
+#             logger.error(f"Error refreshing tokens: {e}")
+#             raise TwitterAuthenticationError(f"Failed to refresh tokens: {e}")
+    
+#     def _get_valid_tokens(self) -> Dict[str, Any]:
+#         """Get valid tokens, refreshing if necessary"""
+#         tokens = self._load_tokens()
+        
+#         if not tokens:
+#             raise TwitterAuthenticationError("No tokens found - user needs to authenticate")
+        
+#         # Check if tokens need refresh (access tokens expire in 2 hours)
+#         created_at = datetime.fromisoformat(tokens.get('created_at', ''))
+#         token_age = timezone.now() - timezone.make_aware(created_at) if timezone.is_naive(created_at) else timezone.now() - created_at
+        
+#         # Refresh if token is older than 1.5 hours (safety margin)
+#         if token_age > timedelta(minutes=90):
+#             if 'refresh_token' not in tokens:
+#                 raise TwitterAuthenticationError("No refresh token available - user needs to re-authenticate")
+            
+#             logger.info(f"Refreshing expired tokens for user: {self.user_id}")
+#             tokens = self._refresh_tokens(tokens['refresh_token'])
+        
+#         return tokens
+    
+#     def _make_api_request(self, method: str, url: str, **kwargs) -> requests.Response:
+#         """Make authenticated API request with error handling and rate limiting"""
+#         tokens = self._get_valid_tokens()
+        
+#         # Set authorization header
+#         headers = kwargs.get('headers', {})
+#         headers['Authorization'] = f"Bearer {tokens['access_token']}"
+#         headers['Content-Type'] = 'application/json'
+#         kwargs['headers'] = headers
+        
+#         # Add user agent
+#         headers['User-Agent'] = f"Django-Twitter-Bot/1.0 (+{self.redirect_uri})"
+        
+#         try:
+#             response = self.session.request(method, url, **kwargs)
+            
+#             # Handle rate limiting
+#             if response.status_code == 429:
+#                 reset_time = int(response.headers.get('x-rate-limit-reset', 0))
+#                 logger.warning(f"Rate limit exceeded for user: {self.user_id}")
+#                 raise TwitterRateLimitError(reset_time)
+            
+#             # Handle other API errors
+#             if not response.ok:
+#                 error_data = {}
+#                 try:
+#                     error_data = response.json()
+#                 except:
+#                     pass
+                
+#                 error_message = f"Twitter API error: {response.status_code}"
+#                 if 'title' in error_data:
+#                     error_message += f" - {error_data['title']}"
+                
+#                 logger.error(f"API request failed: {error_message}")
+#                 raise TwitterAPIError(
+#                     error_message,
+#                     status_code=response.status_code,
+#                     response_data=error_data
+#                 )
+            
+#             return response
+            
+#         except (Timeout, ConnectionError) as e:
+#             logger.error(f"Network error in API request: {e}")
+#             raise TwitterAPIError(f"Network error: {e}")
+#         except RequestException as e:
+#             logger.error(f"Request error in API request: {e}")
+#             raise TwitterAPIError(f"Request error: {e}")
+    
+#     def post_tweet(self, text: str, **kwargs) -> Dict[str, Any]:
+#         """
+#         Post a tweet
+        
+#         Args:
+#             text: Tweet text (max 280 characters)
+#             **kwargs: Additional tweet parameters (media_ids, reply_settings, etc.)
+            
+#         Returns:
+#             Tweet data from API response
+#         """
+#         if not text or len(text.strip()) == 0:
+#             raise ValueError("Tweet text cannot be empty")
+        
+#         if len(text) > 280:
+#             raise ValueError(f"Tweet text too long: {len(text)} characters (max 280)")
+        
+#         # Prepare payload
+#         payload = {"text": text.strip()}
+#         payload.update(kwargs)
+        
+#         try:
+#             logger.info(f"Posting tweet for user: {self.user_id}")
+#             response = self._make_api_request('POST', self.TWEETS_URL, json=payload)
+            
+#             tweet_data = response.json()
+#             logger.info(f"Tweet posted successfully: {tweet_data['data']['id']}")
+            
+#             return tweet_data
+            
+#         except Exception as e:
+#             logger.error(f"Error posting tweet: {e}")
+#             raise
+    
+#     def get_user_info(self) -> Dict[str, Any]:
+#         """Get authenticated user information"""
+#         try:
+#             logger.debug(f"Fetching user info for user: {self.user_id}")
+#             response = self._make_api_request('GET', self.USER_URL)
+            
+#             user_data = response.json()
+#             logger.debug(f"User info retrieved successfully")
+            
+#             return user_data
+            
+#         except Exception as e:
+#             logger.error(f"Error fetching user info: {e}")
+#             raise
+    
+#     def is_authenticated(self) -> bool:
+#         """Check if user has valid authentication"""
+#         try:
+#             tokens = self._load_tokens()
+#             if not tokens:
+#                 return False
+            
+#             # Try to make a simple API call to verify tokens
+#             self.get_user_info()
+#             return True
+            
+#         except Exception:
+#             return False
+    
+#     def revoke_tokens(self):
+#         """Revoke tokens and clear cache"""
+#         try:
+#             # Clear from cache
+#             if self.use_cache:
+#                 cache.delete(self._get_cache_key('tokens'))
+#                 cache.delete(self._get_cache_key('pkce_data'))
+            
+#             logger.info(f"Tokens revoked for user: {self.user_id}")
+            
+#         except Exception as e:
+#             logger.error(f"Error revoking tokens: {e}")
+
+# # Utility functions for Django views
+
+# def get_twitter_bot(user_id: str = None) -> TwitterBotHelper:
+#     """
+#     Factory function to create TwitterBotHelper instance
+    
+#     Args:
+#         user_id: Unique identifier for the user
+        
+#     Returns:
+#         TwitterBotHelper instance
+#     """
+#     return TwitterBotHelper(user_id=user_id)
+
+# def post_tweet_safe(text: str, user_id: str = None) -> Tuple[bool, str, Dict[str, Any]]:
+#     """
+#     Safe wrapper for posting tweets that returns success status
+    
+#     Args:
+#         text: Tweet text
+#         user_id: User identifier
+        
+#     Returns:
+#         Tuple of (success, message, data)
+#     """
+#     try:
+#         bot = get_twitter_bot(user_id)
+#         result = bot.post_tweet(text)
+#         return True, "Tweet posted successfully", result
+        
+#     except TwitterRateLimitError as e:
+#         return False, "Rate limit exceeded - please try again later", {"reset_time": e.reset_time}
+        
+#     except TwitterAuthenticationError as e:
+#         return False, "Authentication required", {}
+        
+#     except TwitterAPIError as e:
+#         return False, f"Twitter API error: {e}", {"status_code": e.status_code}
+        
+#     except Exception as e:
+#         logger.error(f"Unexpected error in post_tweet_safe: {e}")
+#         return False, "An unexpected error occurred", {}
+
+# # Django management command helper
+# class TwitterBotCommand:
+#     """Helper class for Django management commands"""
+    
+#     @staticmethod
+#     def handle_authentication(user_id: str = None):
+#         """Interactive authentication for management commands"""
+#         bot = get_twitter_bot(user_id)
+        
+#         if bot.is_authenticated():
+#             print(f"✅ User {user_id or 'default'} is already authenticated")
+#             return bot
+        
+#         print("🔐 Authentication required...")
+#         auth_url, state = bot.get_authorization_url()
+        
+#         print(f"📱 Open this URL in your browser: {auth_url}")
+#         callback_url = input("🔗 Paste the callback URL here: ").strip()
+        
+#         try:
+#             bot.handle_callback(callback_url, state)
+#             print("✅ Authentication successful!")
+#             return bot
+            
+#         except Exception as e:
+#             print(f"❌ Authentication failed: {e}")
+#             return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

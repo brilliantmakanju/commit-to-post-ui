@@ -1,6 +1,4 @@
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -22,43 +20,16 @@ import useUserStore from "@/zustand/useuser-store";
 
 import AuthButtons from "./auth-buttons";
 import { links } from "./data";
-import Logo from "./logo";
-import NavLinks from "./nav-links";
 
 const TopNavigation = () => {
 	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
 	const { data, status } = useSession();
-	const [isVisible, setIsVisible] = useState(true);
-	const [lastScrollY, setLastScrollY] = useState(0);
-	const [isScrolled, setIsScrolled] = useState(false);
 	const [localStatus, setLocalStatus] = useState("loading");
 	const [loadingTimeout, setLoadingTimeout] = useState(false);
 	const userEmail = userStore.email || data?.user?.email;
 
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-	// Handle navbar visibility based on scroll
-	useEffect(() => {
-		const handleScroll = () => {
-			const currentScrollY = window.scrollY;
-			setIsScrolled(currentScrollY > 50);
-
-			if (currentScrollY > lastScrollY) {
-				setIsVisible(false);
-			} else {
-				setIsVisible(true);
-			}
-
-			setLastScrollY(currentScrollY);
-		};
-
-		window.addEventListener("scroll", handleScroll, { passive: true });
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, [lastScrollY]);
-
 	// Set a maximum loading time to prevent infinite loading
 	useEffect(() => {
 		// If we're still showing loading after 1 second, force a status decision
@@ -98,7 +69,11 @@ const TopNavigation = () => {
 			(localStatus === "loading" && userEmail)
 		) {
 			return (
-				<NavbarButton variant="secondary" className="w-full" href="/dashboard">
+				<NavbarButton
+					variant="secondary"
+					className="w-full bg-transparent hover:bg-transparent"
+					href="/dashboard"
+				>
 					<Button variant="default" className="w-full">
 						Dashboard
 					</Button>
@@ -110,46 +85,44 @@ const TopNavigation = () => {
 	};
 
 	return (
-		<>
-			<Navbar>
-				{/* Desktop Navigation */}
-				<NavBody className="mt-[-30px]">
+		<Navbar>
+			{/* Desktop Navigation */}
+			<NavBody>
+				<NavbarLogo />
+				<NavItems items={links} />
+				<div className="flex items-center gap-4">{renderAuthContent()}</div>
+			</NavBody>
+
+			{/* Mobile Navigation */}
+			<MobileNav>
+				<MobileNavHeader>
 					<NavbarLogo />
-					<NavItems items={links} />
-					<div className="flex items-center gap-4">{renderAuthContent()}</div>
-				</NavBody>
-
-				{/* Mobile Navigation */}
-				<MobileNav className="mt-[-60px]">
-					<MobileNavHeader>
-						<NavbarLogo />
-						<MobileNavToggle
-							isOpen={isMobileMenuOpen}
-							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-						/>
-					</MobileNavHeader>
-
-					<MobileNavMenu
+					<MobileNavToggle
 						isOpen={isMobileMenuOpen}
-						onClose={() => setIsMobileMenuOpen(false)}
-					>
-						{links.map((item, index) => (
-							<a
-								key={`mobile-link-${index}`}
-								href={item.link}
-								onClick={() => setIsMobileMenuOpen(false)}
-								className="relative text-neutral-600 dark:text-neutral-300"
-							>
-								<span className="block">{item.name}</span>
-							</a>
-						))}
-						<div className="flex w-full flex-col gap-4">
-							{renderAuthContent()}
-						</div>
-					</MobileNavMenu>
-				</MobileNav>
-			</Navbar>
-		</>
+						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+					/>
+				</MobileNavHeader>
+
+				<MobileNavMenu
+					isOpen={isMobileMenuOpen}
+					onClose={() => setIsMobileMenuOpen(false)}
+				>
+					{links.map((item, index) => (
+						<a
+							key={`mobile-link-${index}`}
+							href={item.link}
+							onClick={() => setIsMobileMenuOpen(false)}
+							className="relative text-neutral-600 dark:text-neutral-300"
+						>
+							<span className="block">{item.name}</span>
+						</a>
+					))}
+					<div className="flex w-full flex-col gap-4">
+						{renderAuthContent()}
+					</div>
+				</MobileNavMenu>
+			</MobileNav>
+		</Navbar>
 	);
 };
 

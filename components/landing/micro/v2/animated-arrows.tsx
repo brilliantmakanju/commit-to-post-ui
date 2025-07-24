@@ -55,7 +55,7 @@ export const AnimatedArrows: React.FC<AnimatedArrowsProps> = ({
 			animate="visible"
 			viewBox="0 0 491 793"
 			xmlns="http://www.w3.org/2000/svg"
-			className="mt-[-120px] max-h-screen max-w-md rotate-[-25deg]"
+			className="mt-[-130px] max-h-screen max-w-md rotate-[-25deg]"
 		>
 			{/* Main arrow/swoosh path */}
 			<motion.path

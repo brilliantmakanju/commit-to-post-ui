@@ -67,14 +67,13 @@ export default function Layout({
 				}
 			>
 				<Suspense>
-					<MaintenanceBanner />
 					<TopNavigation />
 					<main
 						role="main"
 						className="relative flex w-full flex-col items-start justify-start xl:container xl:mx-auto"
 					>
 						{children}
-						<Link
+						{/* <Link
 							href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
 							target="_blank"
 							className="fixed bottom-4 right-4 z-50"
@@ -86,12 +85,12 @@ export default function Layout({
 								height={54}
 								className="h-[54px] w-[250px]"
 							/>
-						</Link>
+						</Link> */}
 					</main>
 					<Toaster />
 					<Footer />
 					{/* <MaintenanceModal /> */}
-					<MaintenanceCornerBanner />
+					{/* <MaintenanceCornerBanner /> */}
 					<Analytics />
 				</Suspense>
 			</body>

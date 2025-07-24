@@ -149,19 +149,19 @@ export const Terminal: React.FC<TerminalProps> = ({
 
 	const containerVariants = {
 		initial: {
-			scale: 0.95,
-			y: "0%",
-			width: 480,
-			top: "50%",
+			y: "10%",
+			top: "54%",
 			opacity: 0,
+			scale: 0.95,
+			width: "100%",
 			position: "absolute" as const,
 		},
 		center: {
 			scale: 1,
-			y: "-66%",
+			y: "-42%",
 			top: "70%",
-			width: 480,
 			opacity: 1,
+			width: "100%",
 			position: "absolute" as const,
 			transition: { duration: 0.3, ease: "easeOut" },
 		},
@@ -169,8 +169,8 @@ export const Terminal: React.FC<TerminalProps> = ({
 			scale: 1,
 			top: "54%",
 			y: "-230%",
-			width: 480,
 			opacity: 1,
+			width: "100%",
 			position: "absolute" as const,
 			transition: { duration: 0.4, ease: "easeInOut" },
 		},
@@ -187,7 +187,7 @@ export const Terminal: React.FC<TerminalProps> = ({
 	return (
 		<motion.div
 			initial="initial"
-			className="w-[480px]"
+			className="w-full"
 			variants={containerVariants}
 			animate={getAnimationState()}
 		>
@@ -205,20 +205,20 @@ export const Terminal: React.FC<TerminalProps> = ({
 					<div className="flex items-center gap-2">
 						{/* Ubuntu window controls */}
 						<div
-							className={`rounded-full transition-all duration-200 ${
-								isMinimized ? "h-2 w-2" : "h-3 w-3"
+							className={`cursor-pointer rounded-full transition-all duration-200 ${
+								isMinimized ? "h-3 w-3" : "h-3 w-3"
 							}`}
 							style={{ backgroundColor: "#EF2929" }}
 						/>
 						<div
-							className={`rounded-full transition-all duration-200 ${
-								isMinimized ? "h-2 w-2" : "h-3 w-3"
+							className={`cursor-pointer rounded-full transition-all duration-200 ${
+								isMinimized ? "h-3 w-3" : "h-3 w-3"
 							}`}
 							style={{ backgroundColor: "#FCE94F" }}
 						/>
 						<div
-							className={`rounded-full transition-all duration-200 ${
-								isMinimized ? "h-2 w-2" : "h-3 w-3"
+							className={`cursor-pointer rounded-full transition-all duration-200 ${
+								isMinimized ? "h-3 w-3" : "h-3 w-3"
 							}`}
 							style={{ backgroundColor: "#8AE234" }}
 						/>
@@ -239,7 +239,7 @@ export const Terminal: React.FC<TerminalProps> = ({
 				ref={contentRef}
 				className={`rounded-b-lg border-x-2 border-b-2 font-mono shadow-2xl transition-all duration-200 ${
 					isMinimized ? "max-h-[60px] p-3 text-xs" : "p-4 text-sm"
-				} scrollbar-hide overflow-y-auto`}
+				} scrollbar-hide w-full overflow-y-auto`}
 				style={{
 					color: UBUNTU_COLORS.text,
 					borderColor: UBUNTU_COLORS.border,
