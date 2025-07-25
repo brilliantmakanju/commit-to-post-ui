@@ -1,71 +1,48 @@
 "use client";
 import {
 	FaChartLine,
-	FaCodeBranch,
 	FaGlobe,
-	FaHandHoldingHeart,
 	FaMagic,
 	FaRegClock,
 	FaRobot,
-	FaRocket,
 } from "react-icons/fa";
 
 // eslint-disable-next-line import/no-unresolved
-import { Heading } from "@/components/general/micro/typography";
-// eslint-disable-next-line import/no-unresolved
-import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
+import { Heading, Paragraph } from "@/components/general/micro/typography";
 // eslint-disable-next-line import/no-unresolved
 import { cn } from "@/lib/utils";
 
 export function FeaturesSectionDemo() {
 	const features = [
 		{
-			title: "AI-Powered Commit Summaries",
+			title: "AI Powered Commit Summaries",
 			description:
-				"Instantly turn your raw Git commits into clear, engaging social content — no writing required.",
+				"Instantly convert raw Git commits into clean, readable posts. No writing, no stress, just fast and clear updates built for humans.",
 			icon: <FaMagic />,
 		},
 		{
-			title: "First to Market",
+			title: "Multi Platform Publishing",
 			description:
-				"The original platform built to transform commits into posts. Join the front line of a new content era.",
-			icon: <FaRocket />,
-		},
-		{
-			title: "Multi-Platform Publishing",
-			description:
-				"Auto-post to LinkedIn, Slack, and Discord in one click. Maximum visibility, zero copy-paste.",
+				"Automatically publish to LinkedIn, Slack, and Discord in one click. Reach more people without switching tabs or copy pasting anything.",
 			icon: <FaGlobe />,
 		},
 		{
-			title: "Fresh Commits Only",
+			title: "Smart Hashtags and Formatting",
 			description:
-				"We focus only on your latest work — no outdated commits, no clutter, just current progress.",
-			icon: <FaCodeBranch />,
-		},
-		{
-			title: "Smart Hashtags & Formatting",
-			description:
-				"Let AI handle tags, structure, and styling so your posts stand out — with zero manual effort.",
+				"Let AI handle structure, hashtags, and formatting. Make your posts look polished and engaging without lifting a finger.",
 			icon: <FaRobot />,
-		},
-		{
-			title: "Level Up Your Build in Public",
-			description:
-				"Stay consistent and visible with smart, automated updates tailored for devs and indie hackers.",
-			icon: <FaChartLine />,
 		},
 		{
 			title: "Full Control Before Publishing",
 			description:
-				"Preview and tweak every post before it goes live. You're always in control of your narrative.",
+				"Review and edit every post before it goes live. You decide what gets published and how it looks every time.",
 			icon: <FaRegClock />,
 		},
 		{
-			title: "Built by Developers, for Developers",
+			title: "Level Up Your Build in Public",
 			description:
-				"Crafted with love by builders who get it. This tool respects your time, workflow, and momentum.",
-			icon: <FaHandHoldingHeart />,
+				"Stay visible and consistent with automatic updates designed for devs, indie hackers, and makers who want to grow in public.",
+			icon: <FaChartLine />,
 		},
 	];
 
@@ -74,17 +51,21 @@ export function FeaturesSectionDemo() {
 			id="why-choose-us"
 			className="container mx-auto flex w-full flex-col gap-8"
 		>
-			<div className="flex w-full flex-col items-center justify-center gap-2 text-center">
-				<p className="text-xs uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-					Built Different
-				</p>
-				<Heading className="text-2xl font-bold text-gray-900 dark:text-white">
-					Tools That Actually Do the Work
+			<div className="flex w-full flex-col items-center justify-center gap-1 text-center sm:gap-2">
+				<Paragraph
+					className={
+						"mb-1 flex w-auto items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-center text-xs uppercase tracking-wider text-zinc-100 dark:text-zinc-400 sm:mb-2 md:text-sm"
+					}
+				>
+					<span className="mr-3 h-2 w-2 rounded-full bg-gray-100" /> Built for
+					Developers
+				</Paragraph>
+				<Heading
+					as="h3"
+					className={"text-md md:text-md font-bold text-gray-900"}
+				>
+					Smart. Fast. Automated.
 				</Heading>
-				<p className="text-sm text-gray-600 dark:text-gray-400">
-					Everything you need to grow your reach while keeping your dev flow
-					smooth.
-				</p>
 			</div>
 
 			<div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 py-10 md:grid-cols-2 lg:grid-cols-4">

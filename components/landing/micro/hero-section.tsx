@@ -68,9 +68,9 @@ const HeroSection = () => {
 	];
 
 	return (
-		<section className="relative w-full bg-white px-4 py-20 sm:px-6 lg:px-12">
+		<section className="relative w-full rounded-xl bg-[#0e0f11] px-4 py-20 sm:px-6 lg:px-12">
 			{/* Subtle background pattern */}
-			<div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-30" />
+			{/* <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-30" /> */}
 
 			{/* Main content grid */}
 			<div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -85,7 +85,7 @@ const HeroSection = () => {
 					>
 						<Badge
 							variant="secondary"
-							className="hover:bg-zince-800/80 inline-flex items-center gap-2 border border-black/10 bg-black px-3 py-1.5 text-sm text-white sm:px-4 sm:py-2"
+							className="inline-flex items-center gap-2 border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur-sm hover:bg-white/20 sm:px-4 sm:py-2"
 						>
 							<Zap className="h-3 w-3" />
 							First AI-powered Git-to-Social Tool
@@ -99,17 +99,17 @@ const HeroSection = () => {
 						transition={{ duration: 0.5, delay: 0.1 }}
 						className="space-y-4 text-center lg:space-y-6 lg:text-left"
 					>
-						<Heading className="text-5xl font-bold leading-[1] text-gray-900 lg:text-[48px]">
+						<Heading className="text-5xl font-bold leading-[1] text-white lg:text-[48px]">
 							Push code.
 							<br />
 							Build audience.
 							<br />
-							<span className="text-gray-500">No extra thinking.</span>
+							<span className="text-gray-300">No extra thinking.</span>
 						</Heading>
 
-						<Span className="max-w-lg text-[18px] leading-tight text-gray-600">
-							The first and fastest way to auto-post your Git commits. Ship
-							code, skip the writing.
+						<Span className="max-w-lg text-[18px] leading-tight text-gray-300">
+							The first and fastest way to auto-post your Git commits. <br />{" "}
+							Ship code, skip the writing.
 						</Span>
 					</motion.div>
 
@@ -123,34 +123,34 @@ const HeroSection = () => {
 						<div className="space-y-3 text-[18px]">
 							{targetAudience.map((item, index) => (
 								<div key={index} className="flex items-start gap-3">
-									<CheckCircle className="mt-1 h-4 w-4 flex-shrink-0 text-green-500" />
-									<span className="text-gray-600">{item}</span>
+									<CheckCircle className="mt-1 h-4 w-4 flex-shrink-0 text-green-400" />
+									<span className="text-gray-300">{item}</span>
 								</div>
 							))}
 						</div>
 					</motion.div>
 
 					{/* CTA Button */}
-					<div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start lg:gap-6">
+					<div className="flex flex-wrap items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start lg:gap-6">
 						<div className="flex flex-col items-center text-center lg:items-start lg:text-left">
 							{localStatus === "loading" && !loadingTimeout ? (
 								<>
 									<RainbowButton
 										onClick={() => openModal("signup")}
-										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-gray-800 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
+										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-white/10 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
 									>
 										<TextAnimate animation="scaleUp" by="word" once>
 											Sign Up – It&#39;s Free
 										</TextAnimate>
 									</RainbowButton>
-									<span className="mt-2 text-xs text-gray-500 lg:mt-3">
+									<span className="mt-2 text-xs text-gray-400 lg:mt-3">
 										30 seconds or less
 									</span>
 								</>
 							) : localStatus === "authenticated" ||
 							  (localStatus === "loading" && userEmail) ? (
 								<Link href="/dashboard">
-									<RainbowButton className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-gray-800 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base">
+									<RainbowButton className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-white/10 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base">
 										<TextAnimate animation="scaleUp" by="word" once>
 											Dashboard
 										</TextAnimate>
@@ -160,13 +160,13 @@ const HeroSection = () => {
 								<>
 									<RainbowButton
 										onClick={() => openModal("signup")}
-										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-gray-800 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
+										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-white/10 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
 									>
 										<TextAnimate animation="scaleUp" by="word" once>
 											Sign Up – It&#39;s Free
 										</TextAnimate>
 									</RainbowButton>
-									<span className="mt-2 text-xs text-gray-500 lg:mt-3">
+									<span className="mt-2 text-xs text-gray-400 lg:mt-3">
 										30 seconds or less
 									</span>
 								</>
@@ -177,19 +177,19 @@ const HeroSection = () => {
 						<div className="flex flex-col items-center lg:items-start">
 							<button
 								// onClick={openDemoModal}
-								className="group relative flex items-center gap-2 px-0 py-2 text-gray-700 transition-all duration-300 hover:text-black focus:outline-none lg:gap-3"
+								className="group relative flex items-center gap-2 px-0 py-2 text-gray-300 transition-all duration-300 hover:text-white focus:outline-none lg:gap-3"
 							>
 								{/* Text with developer brackets */}
 								<span className="text-sm font-medium lg:text-base">
-									<span className="text-gray-400 transition-colors duration-300 group-hover:text-gray-600">
+									<span className="text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
 										{"{"}
 									</span>
 									<span className="relative mx-1">
 										Watch Demo
 										{/* Animated underline */}
-										<span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gray-700 transition-all duration-300 group-hover:w-full"></span>
+										<span className="absolute -bottom-0.5 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
 									</span>
-									<span className="text-gray-400 transition-colors duration-300 group-hover:text-gray-600">
+									<span className="text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
 										{"}"}
 									</span>
 								</span>
@@ -207,7 +207,7 @@ const HeroSection = () => {
 						{features.map((feature, index) => (
 							<div key={index} className="flex items-center gap-2">
 								<svg
-									className="h-3 w-3 text-black sm:h-4 sm:w-4"
+									className="h-3 w-3 text-green-400 sm:h-4 sm:w-4"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -217,7 +217,7 @@ const HeroSection = () => {
 								>
 									<path d="M20 6L9 17L4 12"></path>
 								</svg>
-								<span className="text-xs text-black/70 sm:text-sm">
+								<span className="text-xs text-gray-300 sm:text-sm">
 									{feature}
 								</span>
 							</div>
@@ -234,7 +234,7 @@ const HeroSection = () => {
 				>
 					<div className="relative w-full max-w-md">
 						{/* Background circle for emphasis */}
-						<div className="absolute inset-0 rounded-full bg-black/5 blur-3xl" />
+						<div className="absolute inset-0 rounded-full bg-white/5 blur-3xl" />
 						<GitFlowAnimation />
 					</div>
 				</motion.div>

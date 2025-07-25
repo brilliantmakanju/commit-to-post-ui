@@ -6,6 +6,7 @@ import { FaClock, FaCode, FaHandshake, FaRocket } from "react-icons/fa";
 import SubAuthPage from "@/components/auth/sub-modal";
 import CtaSection from "@/components/call-to-action";
 import FAQs from "@/components/faqs";
+import VideoPlayer from "@/components/landing/demo";
 import BentoGridFeature from "@/components/landing/feature/bento-grid-features";
 import { FeaturesSectionDemo } from "@/components/landing/feature/v2/features";
 import HeroSection from "@/components/landing/micro/hero-section";
@@ -97,7 +98,8 @@ export default function Home() {
 		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)]">
 			{isOpen && <SubAuthPage />}
 			<HeroSection />
-			{/* <WorkflowDemo /> */}
+			<WorkflowDemo />
+			<VideoPlayer />
 			<FeaturesSectionDemo />
 			<CtaSection />
 			<FAQs />

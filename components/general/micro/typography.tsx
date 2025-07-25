@@ -14,7 +14,7 @@ export const Heading: React.FC<
 	return (
 		<Component
 			className={cn(
-				"text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl",
+				"text-2xl font-bold tracking-tighter sm:text-2xl xl:text-5xl",
 				className,
 			)}
 		>
