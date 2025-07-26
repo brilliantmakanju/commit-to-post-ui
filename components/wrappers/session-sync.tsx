@@ -20,12 +20,12 @@ export default function SessionSync() {
 		}
 	}, [session, status]);
 
-	useEffect(() => {
-		// Handle unauthenticated state
-		if (status === "unauthenticated") {
-			router.push("/");
-		}
-	}, [status, router]);
+	// useEffect(() => {
+	// 	// Handle unauthenticated state
+	// 	if (status === "unauthenticated") {
+	// 		router.push("/");
+	// 	}
+	// }, [status, router]);
 
 	return <></>; // This component doesn't render anything
 }
