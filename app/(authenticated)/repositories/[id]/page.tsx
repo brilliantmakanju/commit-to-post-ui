@@ -35,8 +35,10 @@ const ViewRepo = () => {
 			}
 			return result.data;
 		},
-		retry: 1,
-		enabled: !!repoId,
+		retryOnMount: true,
+		refetchOnMount: true,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
 	});
 
 	const { repoDetails } = useRepoSuperDetails(repoId);

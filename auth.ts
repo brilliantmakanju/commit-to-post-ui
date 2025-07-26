@@ -76,6 +76,11 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 			},
 		}),
 	],
+	session: {
+		strategy: "jwt",
+		updateAge: 24 * 60 * 60,
+		maxAge: 30 * 24 * 60 * 60,
+	},
 	callbacks: {
 		jwt: async ({ token, account, user }) => {
 			// user is only available the first time a user signs in authorized

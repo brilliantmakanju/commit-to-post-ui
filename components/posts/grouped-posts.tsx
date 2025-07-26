@@ -1,5 +1,8 @@
 "use client";
 
+import { UUID } from "node:crypto";
+
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	format,
 	formatDistanceToNow,
@@ -16,9 +19,18 @@ import {
 	MoreVertical,
 	Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { FaDiscord, FaLinkedin, FaSlack, FaTwitter } from "react-icons/fa";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import {
+	FaCalendarAlt,
+	FaDiscord,
+	FaEdit,
+	FaLinkedin,
+	FaSlack,
+	FaTrash,
+	FaTwitter,
+} from "react-icons/fa";
+import { toast } from "sonner";
 
 import {
 	Accordion,
@@ -47,11 +59,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -123,26 +130,6 @@ const getStatusLabel = (status: PostStatus) => {
 	return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
-const gridClasses = (count: number) => {
-	switch (count) {
-		case 1: {
-			return "grid-cols-1 grid-rows-1";
-		}
-		case 2: {
-			return "grid-cols-2 grid-rows-1";
-		}
-		case 3: {
-			return "grid-cols-2 grid-rows-2";
-		}
-		case 4: {
-			return "grid-cols-2 grid-rows-2";
-		}
-		default: {
-			return "grid-cols-2 grid-rows-2";
-		}
-	}
-};
-
 const itemClasses = (count: number, index: number) => {
 	if (count === 3) {
 		if (index === 0) return "col-span-2";
@@ -152,9 +139,8 @@ const itemClasses = (count: number, index: number) => {
 };
 
 export default function GroupedPostCard({ group }: GroupedPostCardProps) {
-	const router = useRouter();
-	const { toast } = useToast();
-	const [showEditDialog, setShowEditDialog] = useState(false);
+	const params = useParams();
+	const queryClient = useQueryClient();
 	const [isLoading, setIsLoading] = useState(false);
 	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
 	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
@@ -164,12 +150,29 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		new Date(),
 	);
 	const [newScheduleTime, setNewScheduleTime] = useState("12:00");
+
+	// Separate states for dialog and accordion
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [openAccordionItem, setOpenAccordionItem] = useState<
 		string | undefined
 	>();
 
+	const [isPageLoading, setIsPageLoading] = useState(true);
+
+	const markLoaded = useCallback(() => {
+		// Delay just to ensure rendering complete (optional but useful)
+		requestAnimationFrame(() => {
+			setIsPageLoading(false);
+		});
+	}, []);
+
+	useEffect(() => {
+		// Only run once on mount
+		markLoaded();
+	}, [markLoaded]);
 	const refreshData = () => {
-		router.refresh();
+		queryClient.invalidateQueries({ queryKey: ["posts"] });
+		queryClient.fetchQuery({ queryKey: ["posts"] });
 	};
 
 	const startReschedule = (posts: PostItem[]) => {
@@ -182,11 +185,9 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 			setNewScheduleDate(initialDate);
 			setNewScheduleTime(format(initialDate, "HH:mm"));
 		} else {
-			toast({
-				variant: "destructive",
-				title: "Cannot Reschedule",
-				description: "No draft or scheduled posts to reschedule.",
-			});
+			toast.error(
+				"Cannot reschedule: No draft or scheduled posts to reschedule.",
+			);
 		}
 	};
 
@@ -196,25 +197,18 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		try {
 			const [hours, minutes] = newScheduleTime.split(":").map(Number);
 			const finalDate = setMinutes(setHours(newScheduleDate, hours), minutes);
-
 			await Promise.all(
 				reschedulingPosts.map(post =>
-					reschedulePost("mock-org-id", post.id, finalDate.toISOString()),
+					reschedulePost(params.id as UUID, post.id, finalDate.toISOString()),
 				),
 			);
-
 			refreshData();
-			toast({
-				title: "Success",
-				description: `${reschedulingPosts.length} post(s) rescheduled successfully.`,
-			});
 			setReschedulingPosts([]);
+			toast.success(
+				`${reschedulingPosts.length} ${reschedulingPosts.length === 1 ? "post" : "posts"} rescheduled successfully.`,
+			);
 		} catch {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Failed to reschedule posts.",
-			});
+			toast.error("Failed to reschedule posts.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -225,20 +219,13 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setIsLoading(true);
 		try {
 			await Promise.all(
-				[...selectedPosts].map(postId => deletePost("mock-org-id", postId)),
+				[...selectedPosts].map(postId => deletePost(params.id as UUID, postId)),
 			);
 			setSelectedPosts(new Set());
 			refreshData();
-			toast({
-				title: "Success",
-				description: `${selectedPosts.size} posts deleted successfully.`,
-			});
+			toast.success(`${selectedPosts.size} posts deleted successfully.`);
 		} catch {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Failed to delete posts.",
-			});
+			toast.error("Failed to delete posts.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -247,18 +234,14 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const handleDeleteSingle = async (postId: string) => {
 		setIsLoading(true);
 		try {
-			await deletePost("mock-org-id", postId);
+			await deletePost(params.id as UUID, postId);
 			refreshData();
-			toast({ title: "Success", description: "Post deleted successfully." });
+			toast.success("Post deleted successfully.");
 			const newSelected = new Set(selectedPosts);
 			newSelected.delete(postId);
 			setSelectedPosts(newSelected);
 		} catch {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Failed to delete post.",
-			});
+			toast.error("Failed to delete post.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -268,19 +251,12 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setIsLoading(true);
 		try {
 			await Promise.all(
-				group.posts.map(post => deletePost("mock-org-id", post.id)),
+				group.posts.map(post => deletePost(params.id as UUID, post.id)),
 			);
 			refreshData();
-			toast({
-				title: "Success",
-				description: "Post group deleted successfully.",
-			});
+			toast.success("Post group deleted successfully.");
 		} catch {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Failed to delete post group.",
-			});
+			toast.error("Failed to delete post group.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -290,17 +266,13 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		if (!editingPost) return;
 		setIsLoading(true);
 		try {
-			await updatePost("mock-org-id", editingPost.id, editedContent);
+			await updatePost(params.id as UUID, editingPost.id, editedContent);
 			setEditingPost(undefined);
 			setEditedContent("");
 			refreshData();
-			toast({ title: "Success", description: "Post updated successfully." });
+			toast.success("Post updated successfully.");
 		} catch {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Failed to update post.",
-			});
+			toast.error("Failed to update post.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -326,31 +298,51 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setEditedContent(post.content);
 	};
 
+	// Fixed: Separate the dialog opening from accordion state
 	const handleCardClick = (postId: string) => {
-		setOpenAccordionItem(postId);
-		setShowEditDialog(true);
+		setIsDialogOpen(true);
+		setOpenAccordionItem(postId); // Set the accordion item to open by default
+	};
+
+	// Fixed: Handle dialog close properly
+	const handleDialogClose = () => {
+		setIsDialogOpen(false);
+		setOpenAccordionItem(undefined); // Reset accordion state when dialog closes
 	};
 
 	return (
 		<>
-			<Card className="group relative flex aspect-square flex-col overflow-hidden rounded-xl border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20">
-				<CardContent className="h-full flex-grow p-1.5">
-					<div
-						className={cn(
-							"grid h-full w-full gap-1.5",
-							gridClasses(group.posts.length),
-						)}
-					>
+			<Card
+				className={cn(
+					"group relative flex aspect-square h-[227px] w-full flex-col overflow-hidden rounded-xl border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
+					{
+						"pointer-events-none opacity-50 grayscale": isPageLoading, // disables interaction + gives visual cue
+					},
+				)}
+			>
+				{/* Optional: overlay to block interaction + show spinner */}
+				{isPageLoading && (
+					<div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+						<div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+					</div>
+				)}
+
+				<CardContent className="flex h-[227px] w-full items-center justify-center p-1.5">
+					<div className="flex h-full w-full gap-1.5">
 						{group.posts.map((post, index) => {
 							const channel = post.planned_channels[0];
 							return (
 								<div
 									key={post.id}
 									className={cn(
-										"flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
+										"flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
 										itemClasses(group.posts.length, index),
 									)}
-									onClick={() => handleCardClick(post.id)}
+									onClick={() => {
+										if (!isPageLoading) {
+											handleCardClick(post.id);
+										}
+									}}
 								>
 									{getChannelIcon(channel)}
 									<Badge
@@ -369,7 +361,8 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 				</CardContent>
 			</Card>
 
-			<Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+			{/* Fixed: Use separate state for dialog */}
+			<Dialog open={!!isDialogOpen} onOpenChange={() => handleDialogClose()}>
 				<DialogContent className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border-zinc-800/50 bg-zinc-900/50 shadow-2xl shadow-black/40 backdrop-blur-sm">
 					<DialogHeader className="pb-6">
 						<DialogTitle className="text-xl font-light text-zinc-100">
@@ -461,44 +454,77 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 											value={post.id}
 											className="rounded-xl border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/50 hover:shadow-lg hover:shadow-black/20"
 										>
-											<div className="flex items-center p-4">
-												<Checkbox
-													checked={selectedPosts.has(post.id)}
-													onCheckedChange={() => togglePostSelection(post.id)}
-													className="mr-4 border-zinc-600 data-[state=checked]:border-zinc-600 data-[state=checked]:bg-zinc-700"
-												/>
-												<AccordionTrigger className="flex-1 py-0 text-left hover:no-underline">
-													<div className="flex w-full flex-col gap-3">
-														<div className="flex flex-wrap items-center gap-3">
-															{postChannels.map((channel, index) => (
-																<div
-																	key={index}
-																	className="flex items-center gap-2 rounded-full border-zinc-700/50 bg-zinc-800/50 px-3 py-1 backdrop-blur-sm transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/70"
-																>
-																	{getChannelIcon(channel)}
-																	<span className="text-xs font-medium capitalize text-zinc-300">
-																		{channel}
-																	</span>
-																	<span
-																		className={`h-1.5 w-1.5 rounded-full ${getStatusIndicatorColor(post.status)}`}
-																		title={getStatusLabel(post.status)}
-																	/>
-																</div>
-															))}
+											<div className="flex w-full items-center justify-between gap-4 border-b border-zinc-700 p-4">
+												<div className="flex w-auto items-start justify-start gap-3">
+													<Checkbox
+														checked={selectedPosts.has(post.id)}
+														onCheckedChange={() => togglePostSelection(post.id)}
+														className="mt-[8px] border-zinc-600 data-[state=checked]:border-zinc-600 data-[state=checked]:bg-zinc-700"
+													/>
+
+													<AccordionTrigger className="flex-1 gap-3 py-0 text-left hover:no-underline">
+														<div className="flex w-full flex-col gap-4">
+															{/* Channel Badges */}
+															<div className="flex flex-wrap items-center gap-2">
+																{postChannels.map((channel, index) => (
+																	<div
+																		key={index}
+																		className="flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-800/50 px-3 py-1 backdrop-blur-sm transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/70"
+																	>
+																		<span className="text-sm text-zinc-300">
+																			{getChannelIcon(channel)}
+																		</span>
+																		<span className="text-xs font-medium capitalize text-zinc-300">
+																			{channel}
+																		</span>
+																		<span
+																			className={`h-1.5 w-1.5 rounded-full ${getStatusIndicatorColor(post.status)}`}
+																			title={getStatusLabel(post.status)}
+																		/>
+																	</div>
+																))}
+															</div>
 														</div>
-													</div>
-												</AccordionTrigger>
+													</AccordionTrigger>
+												</div>
+
+												{/* Action Buttons */}
+												<div className="flex w-auto flex-wrap gap-3">
+													{post.status !== "published" && (
+														<>
+															<Button
+																onClick={() => startEdit(post)}
+																className="flex items-center gap-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+															>
+																<FaEdit className="h-4 w-4 text-zinc-400" />
+															</Button>
+															<Button
+																onClick={() => startReschedule([post])}
+																className="flex items-center gap-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+															>
+																<FaCalendarAlt className="h-4 w-4 text-zinc-400" />
+															</Button>
+														</>
+													)}
+													<Button
+														onClick={() => handleDeleteSingle(post.id)}
+														className="border-red-800/50 bg-red-900/50 text-red-300 transition-all duration-300 hover:border-red-700/70 hover:bg-red-800/70 hover:text-red-100 disabled:opacity-50"
+													>
+														<FaTrash className="h-4 w-4" />
+													</Button>
+												</div>
 											</div>
+
 											<AccordionContent>
 												<div className="space-y-4 px-4 pb-4">
-													<div className="rounded-lg border-zinc-800/30 bg-zinc-800/30 p-4 backdrop-blur-sm">
+													<div className="mt-6 rounded-lg border-zinc-800/30 bg-zinc-800/30 p-4 backdrop-blur-sm">
 														<div className="scrollbar-hide max-h-32 overflow-y-auto">
 															<p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-300">
 																{post.content}
 															</p>
 														</div>
 													</div>
-													<div className="flex flex-wrap items-center justify-between gap-3">
+													<div className="flex w-full flex-wrap items-center justify-end gap-3">
 														<div className="text-xs text-zinc-500">
 															{post.status === "scheduled" &&
 																post.scheduled_publish_time && (
@@ -530,45 +556,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 																</span>
 															)}
 														</div>
-														<DropdownMenu>
-															<DropdownMenuTrigger asChild>
-																<Button
-																	variant="ghost"
-																	size="icon"
-																	className="h-8 w-8 rounded-lg border-zinc-700/50 bg-zinc-800/50 text-zinc-400 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-200"
-																>
-																	<MoreHorizontal className="h-4 w-4" />
-																</Button>
-															</DropdownMenuTrigger>
-															<DropdownMenuContent
-																align="end"
-																className="rounded-xl border-zinc-800/50 bg-zinc-900/90 backdrop-blur-sm"
-															>
-																{post.status !== "published" && (
-																	<>
-																		<DropdownMenuItem
-																			onClick={() => startEdit(post)}
-																			className="text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
-																		>
-																			<Edit className="mr-2 h-4 w-4" /> Edit
-																		</DropdownMenuItem>
-																		<DropdownMenuItem
-																			onClick={() => startReschedule([post])}
-																			className="text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
-																		>
-																			<CalendarClock className="mr-2 h-4 w-4" />{" "}
-																			Reschedule
-																		</DropdownMenuItem>
-																	</>
-																)}
-																<DropdownMenuItem
-																	onClick={() => handleDeleteSingle(post.id)}
-																	className="text-red-400 hover:bg-red-900/30 hover:text-red-300"
-																>
-																	<Trash2 className="mr-2 h-4 w-4" /> Delete
-																</DropdownMenuItem>
-															</DropdownMenuContent>
-														</DropdownMenu>
 													</div>
 												</div>
 											</AccordionContent>
@@ -642,7 +629,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 				open={reschedulingPosts.length > 0}
 				onOpenChange={open => !open && setReschedulingPosts([])}
 			>
-				<DialogContent className="w-full max-w-md rounded-2xl border-zinc-800/50 bg-zinc-900/50 shadow-2xl shadow-black/40 backdrop-blur-sm">
+				<DialogContent className="w-auto rounded-xl border border-zinc-800/50 bg-zinc-900/95 text-zinc-300 backdrop-blur-md">
 					<DialogHeader className="pb-6">
 						<DialogTitle className="text-xl font-light text-zinc-100">
 							Reschedule Posts
@@ -654,33 +641,25 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 					<div className="grid gap-6 py-4">
 						<div className="grid gap-3">
 							<Label className="text-sm font-medium text-zinc-300">Date</Label>
-							<Popover>
-								<PopoverTrigger asChild>
-									<Button
-										variant="outline"
-										className={cn(
-											"w-full justify-start rounded-xl border-zinc-800/50 bg-zinc-800/30 text-left font-normal text-zinc-300 backdrop-blur-sm transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-800/50 hover:text-zinc-100",
-											!newScheduleDate && "text-zinc-500",
-										)}
-									>
-										<CalendarIcon className="mr-2 h-4 w-4" />
-										{newScheduleDate ? (
-											format(newScheduleDate, "PPP")
-										) : (
-											<span>Pick a date</span>
-										)}
-									</Button>
-								</PopoverTrigger>
-								<PopoverContent className="w-auto rounded-xl border-zinc-800/50 bg-zinc-900/90 p-0 backdrop-blur-sm">
-									<Calendar
-										mode="single"
-										selected={newScheduleDate}
-										onSelect={setNewScheduleDate}
-										initialFocus
-										className="text-zinc-300"
-									/>
-								</PopoverContent>
-							</Popover>
+							<Calendar
+								initialFocus
+								mode="single"
+								selected={newScheduleDate}
+								onSelect={setNewScheduleDate}
+								className="w-full rounded-lg"
+								disabled={date => {
+									// Get today's date and set time to midnight for proper comparison
+									const today = new Date();
+									today.setHours(0, 0, 0, 0);
+
+									// Calculate date 1 months from today
+									const twoWeeksFromNow = new Date(today);
+									twoWeeksFromNow.setDate(today.getDate() + 30);
+
+									// Disable dates before today or after 1 month from today
+									return date < today || date > twoWeeksFromNow;
+								}}
+							/>
 						</div>
 						<div className="grid gap-3">
 							<Label
@@ -694,7 +673,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 								type="time"
 								value={newScheduleTime}
 								onChange={event_ => setNewScheduleTime(event_.target.value)}
-								className="rounded-xl border-zinc-800/50 bg-zinc-800/30 text-zinc-200 backdrop-blur-sm transition-all duration-300 focus:border-zinc-600/70 focus:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-600/30"
+								className="col-span-3 rounded-lg border-zinc-800/50 bg-zinc-900/50 text-zinc-300 transition-all duration-200 focus:border-zinc-700/50"
 							/>
 						</div>
 					</div>
@@ -723,16 +702,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-
-			<style jsx>{`
-				.scrollbar-hide {
-					scrollbar-width: none;
-					-ms-overflow-style: none;
-				}
-				.scrollbar-hide::-webkit-scrollbar {
-					display: none;
-				}
-			`}</style>
 		</>
 	);
 }

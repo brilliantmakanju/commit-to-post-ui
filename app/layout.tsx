@@ -3,6 +3,7 @@ import "@/app/globals.css";
 import { SessionProvider } from "next-auth/react";
 
 import { ReactQueryClientProvider } from "@/components/wrappers/reactQuery/react-query-provider";
+import SessionSync from "@/components/wrappers/session-sync";
 
 export default function RootLayout({
 	children,
@@ -11,7 +12,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<SessionProvider>
-			<ReactQueryClientProvider>{children}</ReactQueryClientProvider>
+			<ReactQueryClientProvider>
+				<SessionSync />
+				{children}
+			</ReactQueryClientProvider>
 		</SessionProvider>
 	);
 }

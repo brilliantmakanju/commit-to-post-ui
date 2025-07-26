@@ -22,8 +22,8 @@ const HeroSection = () => {
 	const { data, status } = useSession();
 	const userEmail = userStore.email || data?.user?.email;
 	const [localStatus, setLocalStatus] = useState("loading");
-	const openModal = useAuthModalStore(state => state.openModal);
 	const [loadingTimeout, setLoadingTimeout] = useState(false);
+	const openModal = useAuthModalStore(state => state.openModal);
 
 	// Set a maximum loading time to prevent infinite loading
 	useEffect(() => {

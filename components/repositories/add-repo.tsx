@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FaStar } from "react-icons/fa";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -425,6 +426,11 @@ export function AddRepositoryModal({
 											const isSelected = selectedRepo.includes(
 												repo.id.toString(),
 											);
+											const repoSelectLimitReached = selectedRepo.length >= 4;
+
+											// Only disable checkbox if user hit limit and this one isn't already selected
+											const shouldDisable =
+												repoSelectLimitReached && !isSelected;
 
 											return (
 												<div
@@ -432,10 +438,13 @@ export function AddRepositoryModal({
 													className={cn(
 														"flex items-center space-x-3 rounded-lg border p-4 transition-all",
 														"cursor-pointer hover:bg-muted/50",
+														shouldDisable && "cursor-not-allowed opacity-50",
 													)}
-													onClick={() =>
-														handleRepoSelection(repo.id.toString())
-													}
+													onClick={() => {
+														if (!shouldDisable) {
+															handleRepoSelection(repo.id.toString());
+														}
+													}}
 												>
 													<input
 														type="checkbox"
@@ -443,13 +452,16 @@ export function AddRepositoryModal({
 														onChange={() =>
 															handleRepoSelection(repo.id.toString())
 														}
+														disabled={shouldDisable}
 														className="form-checkbox h-4 w-4 text-primary"
 													/>
+
 													<div className="flex-1">
 														<div className="flex items-center space-x-2">
 															<Label className="cursor-pointer font-medium">
 																{repo.name}
 															</Label>
+
 															{repo.private && (
 																<Badge variant="secondary" className="text-xs">
 																	Private
@@ -461,13 +473,18 @@ export function AddRepositoryModal({
 																</Badge>
 															)}
 														</div>
+
 														{repo.description && (
 															<p className="mt-1 text-sm text-muted-foreground">
 																{repo.description}
 															</p>
 														)}
+
 														<div className="mt-2 flex items-center space-x-3 text-xs text-muted-foreground">
-															<span>⭐ {repo.stargazers_count}</span>
+															<span className="flex gap-2">
+																<FaStar className="text-yellow-300" />{" "}
+																{repo.stargazers_count}
+															</span>
 															<span>Default: {repo.default_branch}</span>
 															<span>
 																Updated{" "}
@@ -546,18 +563,18 @@ export function AddRepositoryModal({
 												{connectedRepos.map(repo => (
 													<div
 														key={repo.id}
-														className="flex cursor-pointer items-center space-x-3 rounded-lg border border-green-200 bg-green-50/50 p-4 hover:bg-green-50"
-														onClick={() => {
-															toast.info("Repository Settings", {
-																description:
-																	"Redirecting to repository settings...",
-															});
+														className="flex items-center space-x-3 rounded-lg border border-green-200 bg-green-50/50 p-4 hover:bg-green-50"
+														// onClick={() => {
+														// 	toast.info("Repository Settings", {
+														// 		description:
+														// 			"Redirecting to repository settings...",
+														// 	});
 
-															// In real app: navigate to repo settings
-															setTimeout(() => {
-																globalThis.location.href = `/repositories/${repo.id}/settings`;
-															}, 1000);
-														}}
+														// 	// In real app: navigate to repo settings
+														// 	setTimeout(() => {
+														// 		globalThis.location.href = `/repositories/${repo.id}/settings`;
+														// 	}, 1000);
+														// }}
 													>
 														<div className="flex h-4 w-4 items-center justify-center">
 															<Check className="h-3 w-3 text-green-600" />
@@ -570,17 +587,17 @@ export function AddRepositoryModal({
 																	</span>
 																	{getRepoStatusBadge(repo)}
 																</div>
-																<ExternalLink className="h-4 w-4 text-muted-foreground" />
+																{/* <ExternalLink className="h-4 w-4 text-muted-foreground" /> */}
 															</div>
-															{repo.description && (
+															{/* {repo.description && (
 																<p className="mt-1 text-sm text-muted-foreground">
 																	{repo.description}
 																</p>
-															)}
-															<p className="mt-1 text-xs text-green-700">
+															)} */}
+															{/* <p className="mt-1 text-xs text-green-700">
 																Click to view settings and manage this
 																repository
-															</p>
+															</p> */}
 														</div>
 													</div>
 												))}
@@ -665,6 +682,10 @@ export function AddRepositoryModal({
 														}))
 													}
 													placeholder={repo?.default_branch}
+													disabled={
+														webhookStatus === "setting-up" ||
+														webhookStatus === "success"
+													}
 												/>
 												<p className="text-xs text-muted-foreground">
 													Repository default: {repo?.default_branch}
@@ -732,6 +753,10 @@ export function AddRepositoryModal({
 													</div>
 													<Select
 														value={settings.tone}
+														disabled={
+															webhookStatus === "setting-up" ||
+															webhookStatus === "success"
+														}
 														onValueChange={value =>
 															setRepoSettings(previous => ({
 																...previous,
@@ -862,14 +887,14 @@ export function AddRepositoryModal({
 				<DialogHeader>
 					<DialogTitle>Add New Repository</DialogTitle>
 					<DialogDescription>
-						Step {currentStep} of 4: Connect your Git repository to start
+						Step {currentStep} of 3: Connect your Git repository to start
 						generating social media posts
 					</DialogDescription>
 				</DialogHeader>
 
 				{/* Progress indicator */}
 				<div className="mb-6 flex items-center space-x-2">
-					{[1, 2, 3, 4].map(step => (
+					{[1, 2, 3].map(step => (
 						<div key={step} className="flex items-center">
 							<div
 								className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
@@ -880,7 +905,7 @@ export function AddRepositoryModal({
 							>
 								{step < currentStep ? <Check className="h-4 w-4" /> : step}
 							</div>
-							{step < 4 && (
+							{step < 3 && (
 								<div
 									className={`h-0.5 w-8 ${step < currentStep ? "bg-primary" : "bg-muted"}`}
 								/>
@@ -906,7 +931,7 @@ export function AddRepositoryModal({
 						{currentStep === 1 ? "Cancel" : "Back"}
 					</Button>
 					<Button
-						onClick={currentStep === 4 ? handleWebhookSetup : handleNext}
+						onClick={currentStep === 3 ? handleWebhookSetup : handleNext}
 						disabled={
 							isLoading ||
 							webhookStatus === "setting-up" ||
@@ -918,7 +943,7 @@ export function AddRepositoryModal({
 						{webhookStatus === "setting-up" ? (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						) : undefined}
-						{currentStep === 4 ? "Set Up Webhook" : "Next"}
+						{currentStep === 3 ? "Set Up Repo" : "Next"}
 					</Button>
 				</div>
 			</DialogContent>

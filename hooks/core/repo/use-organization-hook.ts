@@ -225,6 +225,7 @@ export const useFetchOrganizations = () => {
 				"organization-ownership",
 				"upcoming_posts_metrics",
 				"retrieving_social_status",
+				"unread_notification_counts",
 			];
 
 			debugLog("BACKGROUND", "Refreshing query keys", keys);

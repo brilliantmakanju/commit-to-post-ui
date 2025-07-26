@@ -69,8 +69,8 @@ export default function VideoPlayer() {
 	const updateIntervalRef = useRef<NodeJS.Timeout>();
 	const playerContainerRef = useRef<HTMLDivElement>(undefined);
 
-	const videoId = "iz3FJTQ3mM4";
-	const videoUrl = "https://www.youtube.com/watch?v=iz3FJTQ3mM4";
+	const videoId = "WXsnbXjd3dU";
+	const videoUrl = "https://youtu.be/WXsnbXjd3dU";
 
 	// Load YouTube API with better error handling
 	useEffect(() => {

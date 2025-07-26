@@ -66,9 +66,13 @@ export default function NotificationsPage() {
 		markAsRead(id);
 
 		const response = await readNotifications({ id });
-		if (!response.success) {
-			// You could rollback state here if needed
+		if (response.success) {
 			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			queryClient.fetchQuery({ queryKey: ["notifications"] });
+			queryClient.invalidateQueries({
+				queryKey: ["unread_notification_counts"],
+			});
+			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
 	};
 
@@ -76,8 +80,13 @@ export default function NotificationsPage() {
 		localNotifications.forEach(n => markAsRead(n.id));
 
 		const response = await readAllNotifications();
-		if (!response.success) {
+		if (response.success) {
 			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			queryClient.fetchQuery({ queryKey: ["notifications"] });
+			queryClient.invalidateQueries({
+				queryKey: ["unread_notification_counts"],
+			});
+			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
 	};
 
@@ -125,7 +134,7 @@ export default function NotificationsPage() {
 					</div>
 					<div className="flex items-center gap-3">
 						<Badge
-							variant="secondary"
+							// variant="secondary"
 							className="border-zinc-700 bg-zinc-800 text-zinc-200"
 						>
 							{unread_count} unread
