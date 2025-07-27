@@ -98,13 +98,13 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		status !== "loading" && isClient && !logoutStore.logout && !isLoading;
 
 	return (
-		<SidebarProvider className="h-screen overflow-hidden md:rounded-[20px]">
+		<SidebarProvider className="scrollbar-hide h-screen overflow-hidden md:rounded-[20px]">
 			<LogoutModal showByDefault={showLoadingModal} />
 
 			<div className="flex h-screen w-full">
 				<AppSidebar />
 
-				<SidebarInset className="relative flex-1 overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
+				<SidebarInset className="scrollbar-hide relative flex-1 overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
 					<main
 						className={`relative mb-2 h-full w-full md:mb-0 ${
 							showMainContent
