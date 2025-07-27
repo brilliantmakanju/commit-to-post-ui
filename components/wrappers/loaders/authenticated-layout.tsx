@@ -110,7 +110,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 							showMainContent
 								? "overflow-y-auto text-[#EAF6FF]"
 								: "flex items-center justify-center"
-						}`}
+						} scrollbar-hide`}
 					>
 						{/* <TopNavigation>
 						</TopNavigation> */}
