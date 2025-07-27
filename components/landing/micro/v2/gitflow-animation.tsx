@@ -72,9 +72,9 @@ export const GitFlowAnimation: React.FC = React.memo(() => {
 	const initializeFlow = useCallback(() => {
 		setLines([]);
 		setCurrentPosts({
-			linkedin: "",
 			slack: "",
 			discord: "",
+			linkedin: "",
 		});
 		setCurrentRepo("");
 		setCurrentBranch("");
@@ -82,8 +82,8 @@ export const GitFlowAnimation: React.FC = React.memo(() => {
 		setFlowState("empty");
 
 		const repo = getRandomItem(repos);
-		const commit = getRandomItem(commitMessages);
 		const branch = getRandomItem(branches);
+		const commit = getRandomItem(commitMessages);
 		const posts = getPostsForCommit(commit);
 
 		setCurrentRepo(repo);
@@ -108,11 +108,6 @@ export const GitFlowAnimation: React.FC = React.memo(() => {
 							id: "commit-output",
 							type: "output" as const,
 							content: "[main 7c4f2e1] " + currentCommit,
-						},
-						{
-							id: "commit-files",
-							type: "output" as const,
-							content: " 3 files changed, 47 insertions(+), 12 deletions(-)",
 						},
 					]);
 					createManagedTimeout(() => setFlowState("push"), 1500);
@@ -154,9 +149,9 @@ export const GitFlowAnimation: React.FC = React.memo(() => {
 	const handleCardCycleComplete = useCallback(() => {
 		setLines([]);
 		setCurrentPosts({
-			linkedin: "",
 			slack: "",
 			discord: "",
+			linkedin: "",
 		});
 		setFlowState("closing");
 		createManagedTimeout(() => {

@@ -140,12 +140,9 @@ const HeroSection = () => {
 										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-white/10 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
 									>
 										<TextAnimate animation="scaleUp" by="word" once>
-											Sign Up – It&#39;s Free
+											Generate My First Post
 										</TextAnimate>
 									</RainbowButton>
-									<span className="mt-2 text-xs text-gray-400 lg:mt-3">
-										30 seconds or less
-									</span>
 								</>
 							) : localStatus === "authenticated" ||
 							  (localStatus === "loading" && userEmail) ? (
@@ -163,12 +160,9 @@ const HeroSection = () => {
 										className="w-full rounded-full px-5 py-4 text-sm text-white hover:bg-white/10 sm:w-auto sm:px-6 sm:py-5 lg:px-7 lg:py-6 lg:text-base"
 									>
 										<TextAnimate animation="scaleUp" by="word" once>
-											Sign Up – It&#39;s Free
+											Generate My First Post
 										</TextAnimate>
 									</RainbowButton>
-									<span className="mt-2 text-xs text-gray-400 lg:mt-3">
-										30 seconds or less
-									</span>
 								</>
 							)}
 						</div>

@@ -11,6 +11,7 @@ import BentoGridFeature from "@/components/landing/feature/bento-grid-features";
 import { FeaturesSectionDemo } from "@/components/landing/feature/v2/features";
 import HeroSection from "@/components/landing/micro/hero-section";
 import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
+import PricingTable from "@/components/landing/pricing";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grids";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
@@ -99,9 +100,10 @@ export default function Home() {
 			{isOpen && <SubAuthPage />}
 			<HeroSection />
 			<WorkflowDemo />
-			<VideoPlayer />
 			<FeaturesSectionDemo />
+			<VideoPlayer />
 			<CtaSection />
+			<PricingTable />
 			<FAQs />
 		</div>
 	);

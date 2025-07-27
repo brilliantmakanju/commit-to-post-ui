@@ -18,21 +18,39 @@ export interface PlanPrice {
 
 export interface LifetimeDeal {
 	price: number;
-	previousPrice?: number;
-	spotsLeft?: number;
 	endsIn: number; // hours
 	productId: string;
+	spotsLeft?: number;
+	previousPrice?: number;
 }
 
-export interface Plan {
-	name: "Free" | "Pro" | "Lifetime Deal" | "Custom";
+interface PlanFeature {
+	name: string;
+	available: boolean;
+}
+
+interface Plan {
+	name: string;
 	badge: string;
-	price: PlanPrice;
-	features: (string | PricingFeature)[];
+	popular: boolean;
 	buttonText: string;
-	buttonVariant: "outline" | "default" | "success";
-	popular?: boolean;
-	lifetime?: LifetimeDeal;
+	features: (string | PlanFeature)[];
+	price: {
+		monthly: number;
+		annual: number;
+		previous?: {
+			monthly?: number;
+			annual?: number;
+		};
+		productIds: {
+			monthly: string;
+			annual: string;
+		};
+	};
+	lifetime?: {
+		endsIn: number;
+		productId: string;
+	};
 }
 
 export interface PricingData {
@@ -41,63 +59,37 @@ export interface PricingData {
 }
 
 export const pricingData: PricingData = {
-	title: "AI Commit-to-Post Pricing",
+	title: "Push to Post Pricing",
 	plans: [
 		{
 			name: "Free",
-			badge: "Free Plan",
+			badge: "Starter Plan",
 			price: {
 				monthly: 0,
 				annual: 0,
 				productIds: {
-					monthly: "free_plan",
-					annual: "free_plan",
+					monthly: "starter_plan_monthly",
+					annual: "starter_plan_annual",
 				},
 			},
 			features: [
-				{ name: "Generate up to 5 posts/month", available: true },
-				{ name: "Connect GitHub and LinkedIn", available: true },
-				{ name: "Default post generation tone", available: true },
-				{ name: "Post rescheduling", available: false },
-				{ name: "Priority support", available: false },
+				{ name: "Connect LinkedIn only", available: true },
+				{ name: "Up to 4 posts per month", available: true },
+				{ name: "Fixed tone (Professional)", available: true },
+				{ name: "Connect 1 GitHub Repository", available: true },
 			],
 			buttonText: "Start for Free",
-			buttonVariant: "outline",
-		},
-		{
-			name: "Lifetime Deal",
-			badge: "Limited Offer",
-			price: {
-				monthly: 0,
-				annual: 0,
-				productIds: {
-					monthly: "",
-					annual: "",
-				},
-			},
-			lifetime: {
-				price: 79,
-				previousPrice: 199,
-				spotsLeft: 200,
-				endsIn: 79, // 72-hour countdown
-				productId: "pri_01jvjv1c6y0zme3awz0zrndprk",
-			},
-			features: [
-				{ name: "Everything in Pro", available: true },
-				{ name: "Future feature upgrades", available: true },
-			],
-			buttonText: "Claim Lifetime Access",
-			buttonVariant: "default",
+			popular: false,
 		},
 		{
 			name: "Pro",
-			badge: "Premium",
+			badge: "Best Value",
 			price: {
-				monthly: 5,
-				annual: 50,
+				monthly: 11.99,
+				annual: 8.99,
 				previous: {
-					monthly: 12,
-					annual: 120,
+					monthly: 14.99,
+					annual: 11.99,
 				},
 				productIds: {
 					monthly: "pri_01jvjty2hpznp9yag1reeax2my",
@@ -105,15 +97,43 @@ export const pricingData: PricingData = {
 				},
 			},
 			features: [
-				{ name: "Unlimited post generation", available: true },
-				{ name: "Post rescheduling", available: true },
-				{ name: "Priority customer support", available: true },
-				{ name: "Multiple tones & shuffle tone", available: true },
-				{ name: "Team collaboration (Coming Soon)", available: true },
+				{ name: "Priority support", available: true },
+				{ name: "Everything in Free plan", available: true },
+				{ name: "Up to 100 posts per month", available: true },
+				{ name: "Smart hashtag suggestions", available: true },
+				{ name: "Connect LinkedIn, Slack & Discord", available: true },
+				{ name: "Choose from multiple writing styles", available: true },
+				{ name: "Connect up to 5 GitHub Repositories", available: true },
 			],
-			buttonText: "Go Pro",
-			buttonVariant: "success",
+			buttonText: "Upgrade to Pro",
+			// buttonVariant: "success",
 			popular: true,
+		},
+		{
+			name: "Studio",
+			badge: "Studio Plan",
+			price: {
+				monthly: 39.99,
+				annual: 29.99,
+				previous: {
+					monthly: 49.99,
+					annual: 139.99,
+				},
+				productIds: {
+					monthly: "studio_plan_monthly",
+					annual: "studio_plan_annual",
+				},
+			},
+			features: [
+				{ name: "Everything in Pro plan", available: true },
+				{ name: "Unlimited post generation", available: true },
+				{ name: "Access all writing styles", available: true },
+				{ name: "Manage multiple organizations", available: true },
+				{ name: "Team management (early access)", available: true },
+				{ name: "Connect unlimited GitHub Repositories", available: true },
+			],
+			buttonText: "Request Studio Access",
+			popular: false,
 		},
 	],
 };

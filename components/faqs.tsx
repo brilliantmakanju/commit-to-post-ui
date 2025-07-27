@@ -1,93 +1,84 @@
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "./ui/accordion";
+
 export default function FAQs() {
+	const faqData = [
+		{
+			q: "What is Push to Post?",
+			a: "Push to Post turns your GitHub activity into shareable social media content. It helps you stay active online by automatically generating posts from your commits.",
+		},
+		{
+			q: "How does it connect to GitHub?",
+			a: "Once you link your GitHub account, we set up webhooks to track commits and generate content based on your activity.",
+		},
+		{
+			q: "Is my data secure?",
+			a: "Yes. We use strong encryption and never share or expose your GitHub or social media credentials.",
+		},
+		{
+			q: "Do posts go out automatically?",
+			a: "No. You always review and approve each post before it's shared. Total control, always.",
+		},
+		{
+			q: "Which platforms are supported?",
+			a: "Currently LinkedIn, Slack, and Discord. More like X and custom blogs are on the way.",
+		},
+		{
+			q: "Can I edit the posts?",
+			a: "Yes. Every post is fully editable. Tweak the message, tone, or hashtags before publishing.",
+		},
+		{
+			q: "Is AI used?",
+			a: "Yes. AI powers summaries, hashtags, formatting, and tone — all behind the scenes.",
+		},
+		{
+			q: "Do I need perfect commit messages?",
+			a: "Nope. We clean them up, fix grammar, and turn them into readable, polished updates.",
+		},
+		{
+			q: "Is there a free plan?",
+			a: "Yes. The Free plan includes 5 posts per month. Paid plans unlock higher limits and more control.",
+		},
+	];
+
 	return (
-		<section
-			id="faq"
-			className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-1 py-0 pt-12 font-mono md:px-0 md:py-0 md:pt-12 lg:py-20 lg:pl-12"
-		>
-			<div className="mx-auto max-w-6xl px-6">
-				<div className="grid gap-y-12 px-2 lg:[grid-template-columns:1fr_auto]">
-					<div className="text-center lg:text-left">
-						<h2 className="mb-4 text-3xl font-semibold text-[#1F2937] dark:text-white md:text-4xl">
-							Your Questions, <br className="hidden lg:block" /> Answered.
+		<section className="w-full border-t border-gray-100 px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+			<div className="mx-auto max-w-6xl">
+				<div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+					{/* Header Section */}
+					<div className="text-center lg:col-span-4 lg:text-left">
+						<h2 className="mb-4 text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:mb-6 sm:text-4xl lg:text-5xl">
+							Your Questions,
+							<br className="hidden lg:block" />
+							<span className="text-gray-600">Answered.</span>
 						</h2>
-						<p className="text-[#6B7280] dark:text-[#D1D5DB]">
+						<p className="text-base leading-relaxed text-gray-600 sm:text-lg">
 							Everything you need to know about Push to Post.
 						</p>
 					</div>
 
-					<div className="divide-y divide-dashed sm:mx-auto sm:max-w-lg lg:mx-0">
-						{/* FAQ 1 */}
-						<div className="pb-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								What is Push to Post?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Push to Post turns your GitHub activity into shareable social
-								media content. It helps you stay active online by automatically
-								generating posts from your commits, so you don’t have to write
-								updates manually.
-							</p>
-						</div>
-
-						{/* FAQ 2 */}
-						<div className="py-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								How does it connect to my GitHub?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Once you connect your GitHub account, we automatically set up a
-								webhook for your selected repositories. This lets us track
-								commit activity and generate content on your behalf. GitHub
-								currently requires broad permissions for this setup.
-							</p>
-						</div>
-
-						{/* FAQ 3 */}
-						<div className="py-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Is my data secure?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Yes. We use strong encryption to keep your data private and
-								secure. Your GitHub and LinkedIn details are never shared or
-								exposed.
-							</p>
-						</div>
-
-						{/* FAQ 4 */}
-						<div className="py-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Can I control how my posts look?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Yes. You can adjust the writing style, review the generated
-								content, and make changes before publishing. It’s flexible and
-								easy to use.
-							</p>
-						</div>
-
-						{/* FAQ 5 */}
-						<div className="py-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Which platforms are supported?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Right now, we support posting to LinkedIn, Slack and Discord.
-								More platforms like X (Twitter) and personal sites are planned
-								in the future.
-							</p>
-						</div>
-
-						{/* FAQ 6 */}
-						<div className="py-6">
-							<h3 className="font-medium text-[#1F2937] dark:text-white">
-								Is there a free plan?
-							</h3>
-							<p className="mt-4 text-[#6B7280] dark:text-[#D1D5DB]">
-								Yes. The Free plan includes up to 5 posts per month. Paid plans
-								offer higher limits and extra features.
-							</p>
-						</div>
+					{/* FAQ Accordion */}
+					<div className="lg:col-span-8">
+						<Accordion type="single" collapsible className="space-y-0">
+							{faqData.map((item, index) => (
+								<AccordionItem
+									key={index}
+									value={`item-${index}`}
+									className="border-b border-gray-100 last:border-b-0"
+								>
+									<AccordionTrigger className="py-6 text-left text-base font-medium leading-relaxed text-gray-900 transition-colors duration-200 hover:text-gray-700 hover:no-underline sm:text-lg">
+										{item.q}
+									</AccordionTrigger>
+									<AccordionContent className="pb-6 text-sm leading-relaxed text-gray-600 sm:text-base">
+										{item.a}
+									</AccordionContent>
+								</AccordionItem>
+							))}
+						</Accordion>
 					</div>
 				</div>
 			</div>
