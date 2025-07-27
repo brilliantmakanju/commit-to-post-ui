@@ -96,7 +96,7 @@ export default function PricingSection() {
 					</h2>
 
 					{/* Global Countdown Banner */}
-					<div className="mb-8 rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+					{/* <div className="mb-8 rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
 						<div className="mb-3 flex items-center justify-center">
 							<Clock className="mr-2 h-5 w-5 text-zinc-800 dark:text-zinc-200" />
 							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
@@ -117,7 +117,7 @@ export default function PricingSection() {
 							<AlertCircle className="mr-1 h-3 w-3" />
 							<span>After this period, prices will increase</span>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Billing Toggle */}
 					<div className="mb-8 flex justify-center">
@@ -152,7 +152,6 @@ export default function PricingSection() {
 					{/* Pricing Cards */}
 					<div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
 						{sortedPlans.map(plan => {
-							const isLifetimeDeal = plan.name === "Lifetime Deal";
 							const isPro = plan.popular;
 							const productId = getProductId(plan);
 
@@ -186,77 +185,29 @@ export default function PricingSection() {
 									</CardHeader>
 
 									<CardContent className="pt-6">
-										{isLifetimeDeal && plan.lifetime ? (
-											<div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
-												<div className="mb-2 flex items-center justify-between">
-													<div className="flex items-center gap-2">
-														<span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-															Lifetime Access
-														</span>
-													</div>
-													{plan.lifetime.spotsLeft && (
-														<Badge
-															variant="outline"
-															className="border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-														>
-															<Users className="mr-1 h-3 w-3" />
-															{plan.lifetime.spotsLeft} spots left
-														</Badge>
-													)}
-												</div>
-												<div className="flex items-baseline">
-													<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
-														$
+										<div className="flex items-baseline">
+											<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
+												$
+											</span>
+											<span className="text-5xl font-semibold text-zinc-900 dark:text-zinc-100">
+												{plan.name === "Free"
+													? "0"
+													: billingCycle === "monthly"
+														? plan.price.monthly
+														: plan.price.annual}
+											</span>
+											<span className="ml-1 text-sm text-zinc-500">
+												{plan.name === "Free"
+													? "forever"
+													: `/${billingCycle === "monthly" ? "mo" : "yr"}`}
+											</span>
+											{plan.price.previous &&
+												plan.price.previous[billingCycle] && (
+													<span className="ml-2 text-sm text-zinc-400 line-through">
+														${plan.price.previous[billingCycle]}
 													</span>
-													<span className="text-4xl font-semibold text-zinc-900 dark:text-zinc-100">
-														{plan.lifetime.price}
-													</span>
-													{plan.lifetime.previousPrice && (
-														<>
-															<span className="ml-2 text-sm text-zinc-400 line-through">
-																${plan.lifetime.previousPrice}
-															</span>
-															<span className="ml-2 text-sm text-zinc-700 dark:text-zinc-300">
-																Save{" "}
-																{calculateDiscount(
-																	plan.lifetime.previousPrice,
-																	plan.lifetime.price,
-																)}
-																%
-															</span>
-														</>
-													)}
-												</div>
-												{/* Use the global countdown timer instead of the local one */}
-												<div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-													<GlobalCountdownTimer compact={true} />
-												</div>
-											</div>
-										) : (
-											<div className="flex items-baseline">
-												<span className="text-2xl font-medium text-zinc-700 dark:text-zinc-300">
-													$
-												</span>
-												<span className="text-5xl font-semibold text-zinc-900 dark:text-zinc-100">
-													{plan.name === "Free"
-														? "0"
-														: billingCycle === "monthly"
-															? plan.price.monthly
-															: plan.price.annual}
-												</span>
-												<span className="ml-1 text-sm text-zinc-500">
-													{plan.name === "Free"
-														? "forever"
-														: `/${billingCycle === "monthly" ? "mo" : "yr"}`}
-												</span>
-												{plan.price.previous &&
-													plan.price.previous[billingCycle] && (
-														<span className="ml-2 text-sm text-zinc-400 line-through">
-															${plan.price.previous[billingCycle]}
-														</span>
-													)}
-											</div>
-										)}
+												)}
+										</div>
 
 										{plan.price.previous &&
 											plan.price.previous[billingCycle] && (

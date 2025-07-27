@@ -190,7 +190,7 @@ const Pricing = () => {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="pt-6">
-								{plan.name === "Lifetime Deal" ? (
+								{/* {plan.name === "Lifetime Deal" ? (
 									<div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
 										<div className="mb-2 flex items-center justify-between">
 											<div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ const Pricing = () => {
 											</span>
 										)}
 									</div>
-								)}
+								)} */}
 
 								{plan.price.previous && plan.price.previous[interval] && (
 									<span className="mt-1 block text-sm text-zinc-700 dark:text-zinc-300">
