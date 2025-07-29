@@ -4,14 +4,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	Check,
-	ExternalLink,
+	Crown,
 	Github,
 	Info,
 	Loader2,
-	Pause,
-	PauseCircleIcon,
+	PauseCircle,
+	Star,
+	Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { toast } from "sonner";
@@ -41,11 +43,11 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
 import { useGithubConnectedStatus } from "@/hooks/settings/use-github-connected";
 import { cn } from "@/lib/utils";
 import { connectGithubRepoBatch } from "@/server-actions/user-actions/connect-git-repo";
 import { getGitHubRepos } from "@/server-actions/user-actions/get-repos";
-import useUserStore from "@/zustand/useuser-store";
 
 interface AddRepositoryModalProps {
 	open: boolean;
@@ -93,6 +95,23 @@ type RepoSetting = {
 	aiEnabled: boolean;
 };
 
+const getPlanLimits = (plan: any) => {
+	switch (plan) {
+		case "free": {
+			return { maxRepos: 1, maxSelection: 1 };
+		}
+		case "pro": {
+			return { maxRepos: 5, maxSelection: 4 };
+		}
+		case "studio": {
+			return { maxRepos: Infinity, maxSelection: 4 };
+		}
+		default: {
+			return { maxRepos: 1, maxSelection: 1 };
+		}
+	}
+};
+
 export function AddRepositoryModal({
 	open,
 	onSuccess,
@@ -100,10 +119,13 @@ export function AddRepositoryModal({
 }: AddRepositoryModalProps) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const { data: session } = useSession();
 	const [isLoading, setIsLoading] = useState(false);
 	const githubConnected = useGithubConnectedStatus();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [repoFilter, setRepoFilter] = useState("all");
+	const { totalRepositories, isLoadingRepos: isLoadingConnectedRepo } =
+		useRetrieveConnectedRepos();
 	const [selectedRepo, setSelectedRepo] = useState<string[]>([]);
 	const [currentStep, setCurrentStep] = useState(githubConnected ? 2 : 1);
 
@@ -317,6 +339,53 @@ export function AddRepositoryModal({
 		return;
 	};
 
+	const planLimits = getPlanLimits(session?.user.plan);
+	const remainingSlots = Math.max(0, planLimits.maxRepos - totalRepositories);
+	const maxSelectionAllowed = Math.min(planLimits.maxSelection, remainingSlots);
+
+	const getPlanIcon = (plan: any) => {
+		switch (plan) {
+			case "pro": {
+				return <Crown className="h-4 w-4" />;
+			}
+			case "studio": {
+				return <Zap className="h-4 w-4" />;
+			}
+			default: {
+				return <Star className="h-4 w-4" />;
+			}
+		}
+	};
+
+	const getPlanUpgradeMessage = () => {
+		const plan = session?.user.plan;
+
+		if (plan === "free") {
+			return {
+				title: "Upgrade to Pro",
+				description:
+					"Connect up to 5 repositories and unlock advanced features",
+				buttonText: "Upgrade to Pro",
+				icon: <Crown className="h-4 w-4" />,
+			};
+		} else if (plan === "pro") {
+			return {
+				title: "Upgrade to Studio",
+				description: "Unlimited repositories and premium features",
+				buttonText: "Upgrade to Studio",
+				icon: <Zap className="h-4 w-4" />,
+			};
+		}
+		return;
+	};
+
+	const shouldShowUpgradePrompt = () => {
+		const plan = session?.user.plan;
+		return (
+			(plan === "free" && totalRepositories >= 1) ||
+			(plan === "pro" && totalRepositories >= 5)
+		);
+	};
 	const renderStepContent = () => {
 		switch (currentStep) {
 			case 1: {
@@ -414,30 +483,79 @@ export function AddRepositoryModal({
 							</div>
 
 							<div className="scrollbar-hide max-h-80 space-y-6 overflow-y-auto">
-								{isLoadingRepos ? (
+								{isLoadingRepos || isLoadingConnectedRepo ? (
 									<div className="flex items-center justify-center py-8">
 										<Loader2 className="h-6 w-6 animate-spin" />
 										<span className="ml-2">Loading repositories...</span>
 									</div>
 								) : (
 									<>
+										{/* Plan Status and Limits */}
+										<div className="rounded-lg border bg-muted/30 p-4">
+											<div className="flex items-center justify-between">
+												<div className="flex items-center space-x-2">
+													{getPlanIcon(session?.user.plan)}
+													<span className="font-medium capitalize">
+														{session?.user.plan} Plan
+													</span>
+													<Badge variant="outline" className="text-xs">
+														{totalRepositories}/
+														{planLimits.maxRepos === Infinity
+															? "∞"
+															: planLimits.maxRepos}{" "}
+														repos
+													</Badge>
+												</div>
+
+												{shouldShowUpgradePrompt() && (
+													<Button
+														variant="outline"
+														size="sm"
+														className="text-xs"
+													>
+														{getPlanUpgradeMessage()?.icon}
+														<span className="ml-1">
+															{getPlanUpgradeMessage()?.buttonText}
+														</span>
+													</Button>
+												)}
+											</div>
+
+											{shouldShowUpgradePrompt() && (
+												<div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+													<p className="text-sm text-amber-800">
+														<strong>Repository limit reached.</strong>{" "}
+														{getPlanUpgradeMessage()?.description}
+													</p>
+												</div>
+											)}
+
+											{!shouldShowUpgradePrompt() && remainingSlots > 0 && (
+												<p className="mt-2 text-xs text-muted-foreground">
+													You can select up to {maxSelectionAllowed}{" "}
+													repositories to connect.
+													{remainingSlots} slots remaining.
+												</p>
+											)}
+										</div>
+
 										{/* Available Repositories - Primary Selection */}
 										{availableRepos.map(repo => {
 											const isSelected = selectedRepo.includes(
 												repo.id.toString(),
 											);
-											const repoSelectLimitReached = selectedRepo.length >= 4;
-
-											// Only disable checkbox if user hit limit and this one isn't already selected
 											const shouldDisable =
-												repoSelectLimitReached && !isSelected;
+												!isSelected &&
+												(selectedRepo.length >= maxSelectionAllowed ||
+													shouldShowUpgradePrompt());
 
 											return (
 												<div
 													key={repo.id}
 													className={cn(
 														"flex items-center space-x-3 rounded-lg border p-4 transition-all",
-														"cursor-pointer hover:bg-muted/50",
+														!shouldDisable &&
+															"cursor-pointer hover:bg-muted/50",
 														shouldDisable && "cursor-not-allowed opacity-50",
 													)}
 													onClick={() => {
@@ -481,8 +599,8 @@ export function AddRepositoryModal({
 														)}
 
 														<div className="mt-2 flex items-center space-x-3 text-xs text-muted-foreground">
-															<span className="flex gap-2">
-																<FaStar className="text-yellow-300" />{" "}
+															<span className="flex items-center gap-1">
+																<FaStar className="text-yellow-300" />
 																{repo.stargazers_count}
 															</span>
 															<span>Default: {repo.default_branch}</span>
@@ -495,6 +613,19 @@ export function AddRepositoryModal({
 												</div>
 											);
 										})}
+
+										{/* Selection Summary */}
+										{selectedRepo.length > 0 && (
+											<div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+												<div className="flex items-center justify-between">
+													<span className="text-sm font-medium">
+														{selectedRepo.length} repository
+														{selectedRepo.length === 1 ? "" : "ies"} selected
+													</span>
+													<Button size="sm">Connect Selected</Button>
+												</div>
+											</div>
+										)}
 
 										{/* Paused Repositories - Reconnection Options */}
 										{pausedRepos.length > 0 && (
@@ -514,8 +645,6 @@ export function AddRepositoryModal({
 																description:
 																	"Redirecting to repository settings...",
 															});
-
-															// In real app: navigate to repo settings
 															setTimeout(() => {
 																globalThis.location.href = `/repositories/${repo.id}/settings`;
 															}, 1000);
@@ -523,15 +652,12 @@ export function AddRepositoryModal({
 														className="flex cursor-pointer items-center space-x-3 rounded-lg border border-amber-200 bg-amber-50/50 p-4 hover:bg-amber-50"
 													>
 														<div className="flex h-4 w-4 items-center justify-center">
-															<PauseCircleIcon className="h-10 w-10 text-amber-700" />
+															<PauseCircle className="h-10 w-10 text-amber-700" />
 														</div>
 														<div className="flex-1">
 															<div className="flex items-center justify-between">
 																<div className="flex items-center space-x-2">
-																	<Label
-																		htmlFor={repo.id.toString()}
-																		className="cursor-pointer font-medium"
-																	>
+																	<Label className="cursor-pointer font-medium">
 																		{repo.name}
 																	</Label>
 																	<Badge variant="secondary">Paused</Badge>
@@ -564,17 +690,6 @@ export function AddRepositoryModal({
 													<div
 														key={repo.id}
 														className="flex items-center space-x-3 rounded-lg border border-green-200 bg-green-50/50 p-4 hover:bg-green-50"
-														// onClick={() => {
-														// 	toast.info("Repository Settings", {
-														// 		description:
-														// 			"Redirecting to repository settings...",
-														// 	});
-
-														// 	// In real app: navigate to repo settings
-														// 	setTimeout(() => {
-														// 		globalThis.location.href = `/repositories/${repo.id}/settings`;
-														// 	}, 1000);
-														// }}
 													>
 														<div className="flex h-4 w-4 items-center justify-center">
 															<Check className="h-3 w-3 text-green-600" />
@@ -587,17 +702,7 @@ export function AddRepositoryModal({
 																	</span>
 																	{getRepoStatusBadge(repo)}
 																</div>
-																{/* <ExternalLink className="h-4 w-4 text-muted-foreground" /> */}
 															</div>
-															{/* {repo.description && (
-																<p className="mt-1 text-sm text-muted-foreground">
-																	{repo.description}
-																</p>
-															)} */}
-															{/* <p className="mt-1 text-xs text-green-700">
-																Click to view settings and manage this
-																repository
-															</p> */}
 														</div>
 													</div>
 												))}

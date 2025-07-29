@@ -108,8 +108,6 @@ export default function PricingSection() {
 
 	return (
 		<>
-			{isOpen && <SubAuthModal />}
-
 			<section id="pricing" className="w-full py-20 dark:bg-black">
 				<div className="container mx-auto max-w-7xl px-6">
 					{/* Header */}

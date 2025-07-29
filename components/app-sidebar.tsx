@@ -34,11 +34,6 @@ const navigationItems = [
 		icon: FolderGit2,
 	},
 	{
-		title: "Billing",
-		url: "/billing",
-		icon: CreditCard,
-	},
-	{
 		title: "Notifications",
 		url: "/notifications",
 		icon: Bell,

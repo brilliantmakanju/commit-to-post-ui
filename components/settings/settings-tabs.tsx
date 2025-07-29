@@ -4,9 +4,12 @@ import { GitBranch, SettingsIcon, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FaCreditCard } from "react-icons/fa";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useOrganizationStore from "@/zustand/useorganization-store";
+
+import BillingSettings from "./billing-settings";
 
 const GeneralSettings = dynamic(
 	() => import("@/components/settings/general-settings"),
@@ -90,7 +93,7 @@ export function SettingsTabs() {
 				className="w-full"
 				onValueChange={handleTabChange}
 			>
-				<TabsList className="mb-8 grid w-full grid-cols-2 rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-1 backdrop-blur-xl">
+				<TabsList className="mb-8 grid w-full grid-cols-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-1 backdrop-blur-xl">
 					{isOwner && (
 						<TabsTrigger
 							value="general"
@@ -107,6 +110,13 @@ export function SettingsTabs() {
 						<User className="h-4 w-4" />
 						Profile
 					</TabsTrigger>
+					<TabsTrigger
+						value="billing"
+						className="flex items-center gap-2 rounded-lg text-zinc-400 transition-all duration-200 data-[state=active]:bg-zinc-800/50 data-[state=active]:text-zinc-100 data-[state=active]:shadow-sm"
+					>
+						<FaCreditCard className="h-4 w-4" />
+						Billing
+					</TabsTrigger>
 				</TabsList>
 
 				{isOwner && (
@@ -116,6 +126,9 @@ export function SettingsTabs() {
 				)}
 				<TabsContent value="profile">
 					<ProfileSettings />
+				</TabsContent>
+				<TabsContent value="billing">
+					<BillingSettings />
 				</TabsContent>
 			</Tabs>
 
