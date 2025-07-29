@@ -4,8 +4,6 @@ import { Check, Star } from "lucide-react";
 import { type Key, useEffect, useState } from "react";
 
 // eslint-disable-next-line import/no-unresolved
-import SubAuthModal from "@/components/auth/sub-modal";
-// eslint-disable-next-line import/no-unresolved
 import { Button } from "@/components/ui/button";
 // eslint-disable-next-line import/no-unresolved
 import { Card, CardContent } from "@/components/ui/card";
