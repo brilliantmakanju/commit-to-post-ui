@@ -1,3 +1,189 @@
+<!-- Yes — now that you've locked in the **section order**, it's time to make **smart adjustments for layout, clarity, and conversion**.
+
+Here's the breakdown of **what to optimize**, **what to avoid**, and **layout format tips** section-by-section — especially for a waitlist landing page that needs to *hit hard and fast*.
+
+---
+
+## 🔧 **Section-by-Section Tweaks + Layout Guidance**
+
+---
+
+### 1. **Hero Section**
+
+✅ **Must Have:**
+
+* Strong one-line value prop. No fluff.
+* Subtext that explains **what it does and for whom**.
+* CTA button: *“Join the waitlist”* (no multi-option confusion).
+* Visual: either minimal animation or subtle screenshot, not too loud.
+
+🚫 Avoid:
+
+* Buzzwords like "revolutionary", "seamless" — just show value.
+* Two CTAs — pick one primary action.
+
+💡 **Layout Tip:**
+
+* Use a **Z-pattern**: Headline left, visual right (on desktop).
+* Mobile-first layout: stack headline → subtext → CTA → image
+
+---
+
+### 2. **Demo Section**
+
+✅ **Must Have:**
+
+* Embed YouTube demo or a fast-loading MP4/WEBM (mute autoplay is OK).
+* Keep demo under **60 seconds**.
+* Caption or quick text next to it: *“See how Commit → Post works in real time.”*
+
+🚫 Avoid:
+
+* YouTube thumbnails with cluttered titles or ads.
+* Slow GIFs or huge video files — optimize for mobile and data users.
+
+💡 **Layout Tip:**
+
+* Full-width with caption text under video or floated left/right depending on screen size.
+* If using custom images, use **carousel** (swipe left/right on mobile).
+
+---
+
+### 3. **How It Works**
+
+✅ **Must Have:**
+
+* 3 steps max. No more. (e.g. “1. Push commit → 2. AI writes post → 3. You approve/publish”)
+* Use icons or visuals to show process.
+* Include short explainer text for each step.
+
+🚫 Avoid:
+
+* Over-engineering this part. People want *clear process*, not buzz.
+
+💡 **Layout Tip:**
+
+* Horizontal flow on desktop (Step 1 → 2 → 3)
+* Vertical stack on mobile with fade/slide animations.
+
+---
+
+### 4. **Features Section**
+
+✅ **Must Have:**
+
+* 3–6 concise, value-driven features (ex: “Human-like tone,” “No hallucination,” “Hashtag control,” etc.)
+* Icon + bold feature title + short subtext (1 sentence max)
+
+🚫 Avoid:
+
+* Long paragraphs or “feature bloat.”
+* Technical jargon like “LLM scoring layer” unless your audience cares.
+
+💡 **Layout Tip:**
+
+* Grid layout (2 or 3 columns) with **consistent height cards**
+* Use hover effect on desktop, static on mobile
+
+---
+
+### 5. **Use Cases / Who It's For**
+
+✅ **Must Have:**
+
+* 3–4 clear audience types. Use bold tags:
+
+  * “For daily committers”
+  * “For indie hackers building in public”
+  * “For open source maintainers”
+* Tie each to a **problem + benefit**.
+
+🚫 Avoid:
+
+* Vague personas like “innovators” or “creators” — be specific.
+
+💡 **Layout Tip:**
+
+* Icons or avatars + text block
+* Alternate layout (zigzag) or tiles depending on style
+
+---
+
+### 6. **Pricing Section**
+
+✅ **Must Have:**
+
+* If free, **say so** (“Free during beta”)
+* Use “Simple pricing” — no tables yet.
+* 1–2 plans max. Use “Coming Soon” if paid isn’t ready.
+
+🚫 Avoid:
+
+* Complex pricing charts or vague promises
+* Hidden fees or “ask us for pricing”
+
+💡 **Layout Tip:**
+
+* Use card layout — plan title, price, 3–4 bullets
+* Highlight the most appealing one (border, badge, etc.)
+
+---
+
+### 7. **Final CTA**
+
+✅ **Must Have:**
+
+* Headline + CTA button (same as top)
+* Re-state core benefit
+* Add trust line (“Built by devs. For devs. No spam.”)
+
+🚫 Avoid:
+
+* Overloading with links or 3+ buttons
+
+💡 **Layout Tip:**
+
+* Full-width centered, high contrast
+* Add a soft background color to make it pop
+
+---
+
+### 8. **Footer**
+
+✅ **Must Have:**
+
+* Basic links: Terms, Privacy, Email, Twitter/X
+* Add copyright and brand name
+
+🚫 Avoid:
+
+* Fancy widgets or newsletter forms here
+
+💡 **Layout Tip:**
+
+* Minimalist and clean
+* Mobile responsive — 2-column layout on desktop, stacked on mobile
+
+---
+
+## 🔑 Overall Page Tips for Conversion
+
+* **First screen (hero) should be able to “sell” alone** – even if users don’t scroll.
+* **Use a sticky top navbar** with anchor links to scroll (especially mobile).
+* **Button text = action** — “Join waitlist” > “Learn more.”
+* **Keep F-pattern reading in mind**: put value left/top, CTA right/below.
+
+---
+
+### Optional (If you get them soon):
+
+* Later, you can plug **social proof** right *after demo* or *before final CTA*.
+  Just don’t fake it — use real feedback, tweet embeds, logos, or numbers.
+
+---
+
+You want me to prep the **full page wireframe layout with copy** based on this final structure? I can write the actual copy in your tone with layout notes so dev/design can implement directly. Just say the word. -->
+
 <!-- nice but 
 1. we need everything to have a fix design
 2. for the card layout we need them simple and detailed 
@@ -8306,6 +8492,7 @@ import logging
 
 
 
+<!-- 
 
 
 
@@ -8314,3 +8501,1848 @@ import logging
 
 
 
+import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+// import { PROTECTED_SUB_ROUTES, PUBLIC_ROUTES } from "@/lib/routes";
+
+// import { auth } from "./auth";
+
+// export default auth(async request => {
+// 	const isLoggedIn = !!request.auth;
+// 	const { nextUrl } = request;
+
+// 	// Add session validation - check if auth object has valid data
+// 	const hasValidSession =
+// 		request.auth?.user?.email || request.auth?.expires > Date.now();
+
+// 	const isPublicRoute = PUBLIC_ROUTES.some(route =>
+// 		nextUrl.pathname.startsWith(route),
+// 	);
+// 	const isProtectedRoute = PROTECTED_SUB_ROUTES.some(route =>
+// 		nextUrl.pathname.startsWith(route),
+// 	);
+
+// 	const sessionData = await getDecryptedCookie("user_state");
+// 	const isNewUser = sessionData?.new_user || false;
+
+// 	// If session exists but is invalid, don't redirect to dashboard
+// 	if (isLoggedIn && !hasValidSession) {
+// 		// Clear the invalid session and redirect to home
+// 		return Response.redirect(
+// 			new URL("/api/auth/signout?callbackUrl=/", request.url),
+// 		);
+// 	}
+
+// 	// Setup flow for new users
+// 	if (
+// 		isLoggedIn &&
+// 		hasValidSession &&
+// 		isNewUser &&
+// 		!request.url.includes("/setup")
+// 	) {
+// 		return Response.redirect(new URL("/setup", request.url));
+// 	}
+
+// 	if (
+// 		isLoggedIn &&
+// 		hasValidSession &&
+// 		!isNewUser &&
+// 		request.url.includes("/setup")
+// 	) {
+// 		return Response.redirect(new URL("/dashboard", request.url));
+// 	}
+
+// 	// Only redirect to dashboard if session is valid AND not already on dashboard
+// 	if (
+// 		isPublicRoute &&
+// 		isLoggedIn &&
+// 		hasValidSession &&
+// 		!nextUrl.pathname.startsWith("/dashboard")
+// 	) {
+// 		return Response.redirect(new URL("/dashboard", nextUrl));
+// 	}
+
+// 	// Redirect unauthenticated users from protected routes
+// 	if (!isLoggedIn && isProtectedRoute) {
+// 		return Response.redirect(new URL("/", nextUrl));
+// 	}
+
+// 	return;
+// }); -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+// "use client";
+
+// import { useSession, signOut } from "next-auth/react";
+// import { useRouter } from "next/navigation";
+// import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+
+// import { clearCookies } from "@/lib/cookies/create-cookies";
+// import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+// import { logout } from "@/server-actions/auth/signout";
+// import useLogoutStore from "@/zustand/logout-store";
+// import useOrganizationStore from "@/zustand/useorganization-store";
+// import useUserStore from "@/zustand/useuser-store";
+
+// export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+
+// interface AuthContextType {
+// 	status: AuthStatus;
+// 	isLoading: boolean;
+// 	showLogoutModal: boolean;
+// 	handleLogout: (reason?: string) => Promise<void>;
+// 	refreshAuthState: () => Promise<void>;
+// }
+
+// const AuthContext = createContext<AuthContextType | null>(null);
+
+// interface AuthProviderProps {
+// 	children: React.ReactNode;
+// }
+
+// export function AuthProvider({ children }: AuthProviderProps) {
+// 	const { data: session, status: nextAuthStatus } = useSession();
+// 	const router = useRouter();
+// 	const userStore = useUserStore();
+// 	const logoutStore = useLogoutStore();
+// 	const organizationStore = useOrganizationStore();
+	
+// 	const [status, setStatus] = useState<AuthStatus>('loading');
+// 	const [showLogoutModal, setShowLogoutModal] = useState(false);
+// 	const [loadingTimeout, setLoadingTimeout] = useState(false);
+// 	const [isClient, setIsClient] = useState(false);
+
+// 	// Set client-side flag
+// 	useEffect(() => {
+// 		setIsClient(true);
+// 	}, []);
+
+// 	// Loading timeout handler
+// 	useEffect(() => {
+// 		let timeoutId: NodeJS.Timeout;
+		
+// 		if (nextAuthStatus === 'loading') {
+// 			timeoutId = setTimeout(() => {
+// 				setLoadingTimeout(true);
+// 			}, 5000); // 5 second timeout
+// 		} else {
+// 			setLoadingTimeout(false);
+// 		}
+
+// 		return () => {
+// 			if (timeoutId) clearTimeout(timeoutId);
+// 		};
+// 	}, [nextAuthStatus]);
+
+// 	// Enhanced logout handler
+// 	const handleLogout = useCallback(async (reason?: string) => {
+// 		try {
+// 			// Set logout state immediately
+// 			logoutStore.setLogout(true);
+// 			setShowLogoutModal(true);
+// 			setStatus('unauthenticated');
+			
+// 			// Clear stores
+// 			organizationStore.clearOrganization();
+// 			userStore.clearUser?.();
+			
+// 			// Clear cookies and sign out
+// 			await Promise.all([
+// 				clearCookies(),
+// 				logout(),
+// 				signOut({ redirect: false })
+// 			]);
+			
+// 			// Redirect after a brief delay to show modal
+// 			setTimeout(() => {
+// 				if (typeof window !== 'undefined') {
+// 					window.location.href = "/";
+// 				}
+// 			}, 1000);
+			
+// 		} catch (error) {
+// 			console.error('Logout error:', error);
+// 			// Force redirect even if logout fails
+// 			if (typeof window !== 'undefined') {
+// 				window.location.href = "/";
+// 			}
+// 		}
+// 	}, [logoutStore, organizationStore, userStore]);
+
+// 	// Cookie validation
+// 	const validateCookieState = useCallback(async (): Promise<boolean> => {
+// 		try {
+// 			const cookieState = await getDecryptedCookie("cookie_state");
+// 			const userState = await getDecryptedCookie("user_state");
+			
+// 			// Check if essential cookies exist
+// 			return !!(cookieState?.access_token && userState);
+// 		} catch {
+// 			return false;
+// 		}
+// 	}, []);
+
+// 	// Refresh auth state
+// 	const refreshAuthState = useCallback(async () => {
+// 		if (!isClient) return;
+
+// 		try {
+// 			const cookiesValid = await validateCookieState();
+			
+// 			// If cookies are invalid but next-auth thinks we're authenticated
+// 			if (!cookiesValid && nextAuthStatus === 'authenticated') {
+// 				await handleLogout('cookies_invalid');
+// 				return;
+// 			}
+			
+// 			// Update status based on multiple factors
+// 			if (logoutStore.logout) {
+// 				setStatus('unauthenticated');
+// 			} else if (nextAuthStatus === 'authenticated' && session?.user && cookiesValid) {
+// 				setStatus('authenticated');
+// 				setShowLogoutModal(false);
+// 			} else if (nextAuthStatus === 'unauthenticated') {
+// 				setStatus('unauthenticated');
+// 			} else if (nextAuthStatus === 'loading' && !loadingTimeout) {
+// 				setStatus('loading');
+// 			} else if (loadingTimeout) {
+// 				// Make best guess when loading times out
+// 				const hasUserData = session?.user?.email || userStore.user?.email;
+// 				setStatus(hasUserData && cookiesValid ? 'authenticated' : 'unauthenticated');
+// 			} else {
+// 				setStatus('loading');
+// 			}
+// 		} catch (error) {
+// 			console.error('Auth state refresh error:', error);
+// 			setStatus('error');
+// 		}
+// 	}, [
+// 		isClient,
+// 		nextAuthStatus,
+// 		session,
+// 		logoutStore.logout,
+// 		loadingTimeout,
+// 		userStore.user?.email,
+// 		validateCookieState,
+// 		handleLogout
+// 	]);
+
+// 	// Auth state effect
+// 	useEffect(() => {
+// 		refreshAuthState();
+// 	}, [refreshAuthState]);
+
+// 	// Listen for auth events from API client
+// 	useEffect(() => {
+// 		if (!isClient) return;
+
+// 		const handleAuthLogout = (event: CustomEvent) => {
+// 			handleLogout(event.detail?.reason || 'api_logout');
+// 		};
+
+// 		window.addEventListener('auth:logout', handleAuthLogout as EventListener);
+		
+// 		return () => {
+// 			window.removeEventListener('auth:logout', handleAuthLogout as EventListener);
+// 		};
+// 	}, [isClient, handleLogout]);
+
+// 	// Periodic auth validation (every 30 seconds)
+// 	useEffect(() => {
+// 		if (!isClient || status !== 'authenticated') return;
+
+// 		const interval = setInterval(async () => {
+// 			const cookiesValid = await validateCookieState();
+// 			if (!cookiesValid) {
+// 				await handleLogout('periodic_check_failed');
+// 			}
+// 		}, 30000);
+
+// 		return () => clearInterval(interval);
+// 	}, [isClient, status, validateCookieState, handleLogout]);
+
+// 	// Hydrate user store when authenticated
+// 	useEffect(() => {
+// 		if (
+// 			status === 'authenticated' &&
+// 			session?.user &&
+// 			!userStore.hasHydratedUser
+// 		) {
+// 			userStore.setUser({
+// 				github_connected: session.user.github_connected,
+// 				hasHydratedUser: true,
+// 				email: session.user.email,
+// 			});
+// 		}
+// 	}, [status, session, userStore]);
+
+// 	const contextValue: AuthContextType = {
+// 		status,
+// 		isLoading: status === 'loading',
+// 		showLogoutModal,
+// 		handleLogout,
+// 		refreshAuthState,
+// 	};
+
+// 	return (
+// 		<AuthContext.Provider value={contextValue}>
+// 			{children}
+// 		</AuthContext.Provider>
+// 	);
+// }
+
+// export function useAuth() {
+// 	const context = useContext(AuthContext);
+// 	if (!context) {
+// 		throw new Error('useAuth must be used within an AuthProvider');
+// 	}
+// 	return context;
+// }
+
+// // Hook for auth status in components
+// export function useAuthStatus() {
+// 	const { status, isLoading } = useAuth();
+	
+// 	return {
+// 		status,
+// 		isLoading,
+// 		isAuthenticated: status === 'authenticated',
+// 		isUnauthenticated: status === 'unauthenticated',
+// 		hasError: status === 'error',
+// 	};
+// }
+
+
+
+
+
+
+
+
+
+
+
+// // "use client";
+
+// // import { UUID } from "node:crypto";
+
+// // import { useQueryClient } from "@tanstack/react-query";
+// // import {
+// // 	format,
+// // 	formatDistanceToNow,
+// // 	parseISO,
+// // 	setHours,
+// // 	setMinutes,
+// // } from "date-fns";
+// // import {
+// // 	Calendar as CalendarIcon,
+// // 	CalendarClock,
+// // 	Edit,
+// // 	Loader2,
+// // 	MoreHorizontal,
+// // 	MoreVertical,
+// // 	Trash2,
+// // } from "lucide-react";
+// // import { useParams, useRouter } from "next/navigation";
+// // import { useState } from "react";
+// // import { FaDiscord, FaLinkedin, FaSlack, FaTwitter } from "react-icons/fa";
+
+// // import {
+// // 	Accordion,
+// // 	AccordionContent,
+// // 	AccordionItem,
+// // 	AccordionTrigger,
+// // } from "@/components/ui/accordion";
+// // import { Badge } from "@/components/ui/badge";
+// // import { Button } from "@/components/ui/button";
+// // import { Calendar } from "@/components/ui/calendar";
+// // import { Card, CardContent } from "@/components/ui/card";
+// // import { Checkbox } from "@/components/ui/checkbox";
+// // import {
+// // 	Dialog,
+// // 	DialogContent,
+// // 	DialogDescription,
+// // 	DialogFooter,
+// // 	DialogHeader,
+// // 	DialogTitle,
+// // } from "@/components/ui/dialog";
+// // import {
+// // 	DropdownMenu,
+// // 	DropdownMenuContent,
+// // 	DropdownMenuItem,
+// // 	DropdownMenuTrigger,
+// // } from "@/components/ui/dropdown-menu";
+// // import { Input } from "@/components/ui/input";
+// // import { Label } from "@/components/ui/label";
+// // import {
+// // 	Popover,
+// // 	PopoverContent,
+// // 	PopoverTrigger,
+// // } from "@/components/ui/popover";
+// // import { Textarea } from "@/components/ui/textarea";
+// // import { useToast } from "@/hooks/use-toast";
+// // import { cn } from "@/lib/utils";
+// // import { deletePost } from "@/server-actions/core/delete-post";
+// // import { updatePost } from "@/server-actions/core/edit-post";
+// // import { reschedulePost } from "@/server-actions/core/reschedule-post";
+// // import type { PostGroup, PostItem, PostStatus } from "@/types";
+
+// // interface GroupedPostCardProps {
+// // 	group: PostGroup;
+// // }
+
+// // const getStatusIndicatorColor = (status: PostStatus) => {
+// // 	switch (status) {
+// // 		case "published": {
+// // 			return "bg-green-500";
+// // 		}
+// // 		case "scheduled": {
+// // 			return "bg-blue-500";
+// // 		}
+// // 		case "drafted": {
+// // 			return "bg-gray-500";
+// // 		}
+// // 		default: {
+// // 			return "bg-gray-500";
+// // 		}
+// // 	}
+// // };
+
+// // const getBadgeStyles = (status: PostStatus) => {
+// // 	switch (status) {
+// // 		case "published": {
+// // 			return "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20";
+// // 		}
+// // 		case "scheduled": {
+// // 			return "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20";
+// // 		}
+// // 		case "drafted": {
+// // 			return "bg-gray-500/10 text-gray-400 border-gray-500/20 hover:bg-gray-500/20";
+// // 		}
+// // 		default: {
+// // 			return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+// // 		}
+// // 	}
+// // };
+
+// // const getChannelIcon = (channel: string) => {
+// // 	const iconClass = "h-5 w-5 transition-all duration-200";
+// // 	switch (channel) {
+// // 		case "linkedin": {
+// // 			return <FaLinkedin className={`${iconClass} text-blue-300`} />;
+// // 		}
+// // 		case "twitter": {
+// // 			return <FaTwitter className={`${iconClass} text-sky-300`} />;
+// // 		}
+// // 		case "slack": {
+// // 			return <FaSlack className={`${iconClass} text-purple-300`} />;
+// // 		}
+// // 		case "discord": {
+// // 			return <FaDiscord className={`${iconClass} text-indigo-300`} />;
+// // 		}
+// // 		default: {
+// // 			return;
+// // 		}
+// // 	}
+// // };
+
+// // const getStatusLabel = (status: PostStatus) => {
+// // 	return status.charAt(0).toUpperCase() + status.slice(1);
+// // };
+
+// // const itemClasses = (count: number, index: number) => {
+// // 	if (count === 3) {
+// // 		if (index === 0) return "col-span-2";
+// // 		return "col-span-1";
+// // 	}
+// // 	return "";
+// // };
+
+// // export default function GroupedPostCard({ group }: GroupedPostCardProps) {
+// // 	const params = useParams();
+// // 	const { toast } = useToast();
+// // 	const queryClient = useQueryClient();
+// // 	const [isLoading, setIsLoading] = useState(false);
+// // 	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
+// // 	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
+// // 	const [editedContent, setEditedContent] = useState("");
+// // 	const [reschedulingPosts, setReschedulingPosts] = useState<PostItem[]>([]);
+// // 	const [newScheduleDate, setNewScheduleDate] = useState<Date | undefined>(
+// // 		new Date(),
+// // 	);
+// // 	const [newScheduleTime, setNewScheduleTime] = useState("12:00");
+	
+// // 	// Separate states for dialog and accordion
+// // 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+// // 	const [openAccordionItem, setOpenAccordionItem] = useState<string | undefined>();
+
+// // 	const refreshData = () => {
+// // 		queryClient.fetchQuery({ queryKey: ["posts"] });
+// // 		queryClient.invalidateQueries({ queryKey: ["posts"] });
+// // 	};
+
+// // 	const startReschedule = (posts: PostItem[]) => {
+// // 		const postsToReschedule = posts.filter(p => p.status !== "published");
+// // 		if (postsToReschedule.length > 0) {
+// // 			setReschedulingPosts(postsToReschedule);
+// // 			const initialDate = postsToReschedule[0]?.scheduled_publish_time
+// // 				? parseISO(postsToReschedule[0].scheduled_publish_time)
+// // 				: new Date();
+// // 			setNewScheduleDate(initialDate);
+// // 			setNewScheduleTime(format(initialDate, "HH:mm"));
+// // 		} else {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Cannot Reschedule",
+// // 				description: "No draft or scheduled posts to reschedule.",
+// // 			});
+// // 		}
+// // 	};
+
+// // 	const handleReschedule = async () => {
+// // 		if (!newScheduleDate || reschedulingPosts.length === 0) return;
+// // 		setIsLoading(true);
+// // 		toast({
+// // 			title: "Success",
+// // 			description: `${reschedulingPosts.length} post(s) rescheduled successfully.`,
+// // 		});
+// // 		try {
+// // 			const [hours, minutes] = newScheduleTime.split(":").map(Number);
+// // 			const finalDate = setMinutes(setHours(newScheduleDate, hours), minutes);
+
+// // 			await Promise.all(
+// // 				reschedulingPosts.map(post =>
+// // 					reschedulePost(params.id as UUID, post.id, finalDate.toISOString()),
+// // 				),
+// // 			);
+
+// // 			refreshData();
+// // 			setReschedulingPosts([]);
+// // 		} catch {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Error",
+// // 				description: "Failed to reschedule posts.",
+// // 			});
+// // 		} finally {
+// // 			setIsLoading(false);
+// // 		}
+// // 	};
+
+// // 	const handleDeleteSelected = async () => {
+// // 		if (selectedPosts.size === 0) return;
+// // 		setIsLoading(true);
+// // 		try {
+// // 			await Promise.all(
+// // 				[...selectedPosts].map(postId => deletePost(params.id as UUID, postId)),
+// // 			);
+// // 			setSelectedPosts(new Set());
+// // 			refreshData();
+// // 			toast({
+// // 				title: "Success",
+// // 				description: `${selectedPosts.size} posts deleted successfully.`,
+// // 			});
+// // 		} catch {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Error",
+// // 				description: "Failed to delete posts.",
+// // 			});
+// // 		} finally {
+// // 			setIsLoading(false);
+// // 		}
+// // 	};
+
+// // 	const handleDeleteSingle = async (postId: string) => {
+// // 		setIsLoading(true);
+// // 		try {
+// // 			await deletePost(params.id as UUID, postId);
+// // 			refreshData();
+// // 			toast({ title: "Success", description: "Post deleted successfully." });
+// // 			const newSelected = new Set(selectedPosts);
+// // 			newSelected.delete(postId);
+// // 			setSelectedPosts(newSelected);
+// // 		} catch {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Error",
+// // 				description: "Failed to delete post.",
+// // 			});
+// // 		} finally {
+// // 			setIsLoading(false);
+// // 		}
+// // 	};
+
+// // 	const handleDeleteGroup = async () => {
+// // 		setIsLoading(true);
+// // 		try {
+// // 			await Promise.all(
+// // 				group.posts.map(post => deletePost(params.id as UUID, post.id)),
+// // 			);
+// // 			refreshData();
+// // 			toast({
+// // 				title: "Success",
+// // 				description: "Post group deleted successfully.",
+// // 			});
+// // 		} catch {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Error",
+// // 				description: "Failed to delete post group.",
+// // 			});
+// // 		} finally {
+// // 			setIsLoading(false);
+// // 		}
+// // 	};
+
+// // 	const handleEditPost = async () => {
+// // 		if (!editingPost) return;
+// // 		setIsLoading(true);
+// // 		try {
+// // 			await updatePost(params.id as UUID, editingPost.id, editedContent);
+// // 			setEditingPost(undefined);
+// // 			setEditedContent("");
+// // 			refreshData();
+// // 			toast({ title: "Success", description: "Post updated successfully." });
+// // 		} catch {
+// // 			toast({
+// // 				variant: "destructive",
+// // 				title: "Error",
+// // 				description: "Failed to update post.",
+// // 			});
+// // 		} finally {
+// // 			setIsLoading(false);
+// // 		}
+// // 	};
+
+// // 	const togglePostSelection = (postId: string) => {
+// // 		const newSelected = new Set(selectedPosts);
+// // 		if (newSelected.has(postId)) newSelected.delete(postId);
+// // 		else newSelected.add(postId);
+// // 		setSelectedPosts(newSelected);
+// // 	};
+
+// // 	const selectAll = () => {
+// // 		setSelectedPosts(
+// // 			selectedPosts.size === group.posts.length
+// // 				? new Set()
+// // 				: new Set(group.posts.map(p => p.id)),
+// // 		);
+// // 	};
+
+// // 	const startEdit = (post: PostItem) => {
+// // 		setEditingPost(post);
+// // 		setEditedContent(post.content);
+// // 	};
+
+// // 	// Fixed: Separate the dialog opening from accordion state
+// // 	const handleCardClick = (postId: string) => {
+// // 		setIsDialogOpen(true);
+// // 		setOpenAccordionItem(postId); // Set the accordion item to open by default
+// // 	};
+
+// // 	// Fixed: Handle dialog close properly
+// // 	const handleDialogClose = () => {
+// // 		setIsDialogOpen(false);
+// // 		setOpenAccordionItem(undefined); // Reset accordion state when dialog closes
+// // 	};
+
+// // 	return (
+// // 		<>
+// // 			<Card className="group relative flex aspect-square h-[227px] w-full flex-col overflow-hidden rounded-xl border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20">
+// // 				<CardContent className="flex h-[227px] w-full items-center justify-center p-1.5">
+// // 					<div className={cn("flex h-full w-full gap-1.5")}>
+// // 						{group.posts.map((post, index) => {
+// // 							const channel = post.planned_channels[0];
+// // 							return (
+// // 								<div
+// // 									key={post.id}
+// // 									className={cn(
+// // 										"flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
+// // 										itemClasses(group.posts.length, index),
+// // 									)}
+// // 									onClick={() => handleCardClick(post.id)}
+// // 								>
+// // 									{getChannelIcon(channel)}
+// // 									<Badge
+// // 										variant="outline"
+// // 										className={cn(
+// // 											"text-xs font-semibold",
+// // 											getBadgeStyles(post.status),
+// // 										)}
+// // 									>
+// // 										{getStatusLabel(post.status)}
+// // 									</Badge>
+// // 								</div>
+// // 							);
+// // 						})}
+// // 					</div>
+// // 				</CardContent>
+// // 			</Card>
+
+// // 			{/* Fixed: Use separate state for dialog */}
+// // 			<Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
+// // 				<DialogContent className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border-zinc-800/50 bg-zinc-900/50 shadow-2xl shadow-black/40 backdrop-blur-sm">
+// // 					<DialogHeader className="pb-6">
+// // 						<DialogTitle className="text-xl font-light text-zinc-100">
+// // 							Manage Posts
+// // 						</DialogTitle>
+// // 						<DialogDescription className="text-zinc-400">
+// // 							{group.posts.length} posts in this group
+// // 						</DialogDescription>
+// // 					</DialogHeader>
+
+// // 					{/* Action Bar */}
+// // 					<div className="flex items-center justify-between gap-3 rounded-xl border-zinc-800/30 bg-zinc-800/30 p-4 backdrop-blur-sm">
+// // 						<div className="flex items-center space-x-3">
+// // 							<Checkbox
+// // 								id="select-all"
+// // 								checked={
+// // 									selectedPosts.size > 0 &&
+// // 									selectedPosts.size === group.posts.length
+// // 								}
+// // 								onCheckedChange={selectAll}
+// // 								className="border-zinc-600 data-[state=checked]:border-zinc-600 data-[state=checked]:bg-zinc-700"
+// // 							/>
+// // 							<label
+// // 								htmlFor="select-all"
+// // 								className="text-sm font-medium text-zinc-300"
+// // 							>
+// // 								Select All
+// // 							</label>
+// // 						</div>
+
+// // 						<div className="flex items-center gap-2">
+// // 							<Button
+// // 								variant="outline"
+// // 								size="sm"
+// // 								onClick={() =>
+// // 									startReschedule(
+// // 										group.posts.filter(p => selectedPosts.has(p.id)),
+// // 									)
+// // 								}
+// // 								disabled={
+// // 									selectedPosts.size === 0 ||
+// // 									isLoading ||
+// // 									![...selectedPosts].some(
+// // 										postId =>
+// // 											group.posts.find(p => p.id === postId)?.status !==
+// // 											"published",
+// // 									)
+// // 								}
+// // 								className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-100 disabled:opacity-50"
+// // 							>
+// // 								<CalendarClock className="mr-2 h-4 w-4" />
+// // 								Reschedule
+// // 							</Button>
+// // 							<Button
+// // 								variant="destructive"
+// // 								size="sm"
+// // 								onClick={handleDeleteSelected}
+// // 								disabled={selectedPosts.size === 0 || isLoading}
+// // 								className="border-red-800/50 bg-red-900/50 text-red-300 transition-all duration-300 hover:border-red-700/70 hover:bg-red-800/70 hover:text-red-100 disabled:opacity-50"
+// // 							>
+// // 								{isLoading ? (
+// // 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+// // 								) : (
+// // 									<Trash2 className="mr-2 h-4 w-4" />
+// // 								)}
+// // 								Delete ({selectedPosts.size})
+// // 							</Button>
+// // 						</div>
+// // 					</div>
+
+// // 					{/* Posts List */}
+// // 					<div className="flex-1 overflow-hidden">
+// // 						<div className="scrollbar-hide h-full overflow-y-auto pr-2">
+// // 							<Accordion
+// // 								type="single"
+// // 								collapsible
+// // 								className="w-full space-y-3"
+// // 								value={openAccordionItem}
+// // 								onValueChange={setOpenAccordionItem}
+// // 							>
+// // 								{group.posts.map(post => {
+// // 									const postChannels =
+// // 										post.status === "published"
+// // 											? post.posted_channels
+// // 											: post.planned_channels;
+// // 									return (
+// // 										<AccordionItem
+// // 											key={post.id}
+// // 											value={post.id}
+// // 											className="rounded-xl border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/50 hover:shadow-lg hover:shadow-black/20"
+// // 										>
+// // 											<div className="flex items-center p-4">
+// // 												<Checkbox
+// // 													checked={selectedPosts.has(post.id)}
+// // 													onCheckedChange={() => togglePostSelection(post.id)}
+// // 													className="mr-4 border-zinc-600 data-[state=checked]:border-zinc-600 data-[state=checked]:bg-zinc-700"
+// // 												/>
+// // 												<AccordionTrigger className="flex-1 py-0 text-left hover:no-underline">
+// // 													<div className="flex w-full flex-col gap-3">
+// // 														<div className="flex flex-wrap items-center gap-3">
+// // 															{postChannels.map((channel, index) => (
+// // 																<div
+// // 																	key={index}
+// // 																	className="flex items-center gap-2 rounded-full border-zinc-700/50 bg-zinc-800/50 px-3 py-1 backdrop-blur-sm transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/70"
+// // 																>
+// // 																	{getChannelIcon(channel)}
+// // 																	<span className="text-xs font-medium capitalize text-zinc-300">
+// // 																		{channel}
+// // 																	</span>
+// // 																	<span
+// // 																		className={`h-1.5 w-1.5 rounded-full ${getStatusIndicatorColor(post.status)}`}
+// // 																		title={getStatusLabel(post.status)}
+// // 																	/>
+// // 																</div>
+// // 															))}
+// // 														</div>
+// // 													</div>
+// // 												</AccordionTrigger>
+// // 											</div>
+// // 											<AccordionContent>
+// // 												<div className="space-y-4 px-4 pb-4">
+// // 													<div className="rounded-lg border-zinc-800/30 bg-zinc-800/30 p-4 backdrop-blur-sm">
+// // 														<div className="scrollbar-hide max-h-32 overflow-y-auto">
+// // 															<p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-300">
+// // 																{post.content}
+// // 															</p>
+// // 														</div>
+// // 													</div>
+// // 													<div className="flex flex-wrap items-center justify-between gap-3">
+// // 														<div className="text-xs text-zinc-500">
+// // 															{post.status === "scheduled" &&
+// // 																post.scheduled_publish_time && (
+// // 																	<span>
+// // 																		Scheduled:{" "}
+// // 																		{formatDistanceToNow(
+// // 																			parseISO(post.scheduled_publish_time),
+// // 																			{ addSuffix: true },
+// // 																		)}
+// // 																	</span>
+// // 																)}
+// // 															{post.status === "published" &&
+// // 																post.actual_publish_time && (
+// // 																	<span>
+// // 																		Published:{" "}
+// // 																		{formatDistanceToNow(
+// // 																			parseISO(post.actual_publish_time),
+// // 																			{ addSuffix: true },
+// // 																		)}
+// // 																	</span>
+// // 																)}
+// // 															{post.status === "drafted" && (
+// // 																<span>
+// // 																	Created:{" "}
+// // 																	{formatDistanceToNow(
+// // 																		parseISO(post.created_at),
+// // 																		{ addSuffix: true },
+// // 																	)}
+// // 																</span>
+// // 															)}
+// // 														</div>
+// // 														<DropdownMenu>
+// // 															<DropdownMenuTrigger asChild>
+// // 																<Button
+// // 																	variant="ghost"
+// // 																	size="icon"
+// // 																	className="h-8 w-8 rounded-lg border-zinc-700/50 bg-zinc-800/50 text-zinc-400 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-200"
+// // 																>
+// // 																	<MoreHorizontal className="h-4 w-4" />
+// // 																</Button>
+// // 															</DropdownMenuTrigger>
+// // 															<DropdownMenuContent
+// // 																align="end"
+// // 																className="rounded-xl border-zinc-800/50 bg-zinc-900/90 backdrop-blur-sm"
+// // 															>
+// // 																{post.status !== "published" && (
+// // 																	<>
+// // 																		<DropdownMenuItem
+// // 																			onClick={() => startEdit(post)}
+// // 																			className="text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+// // 																		>
+// // 																			<Edit className="mr-2 h-4 w-4" /> Edit
+// // 																		</DropdownMenuItem>
+// // 																		<DropdownMenuItem
+// // 																			onClick={() => startReschedule([post])}
+// // 																			className="text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+// // 																		>
+// // 																			<CalendarClock className="mr-2 h-4 w-4" />{" "}
+// // 																			Reschedule
+// // 																		</DropdownMenuItem>
+// // 																	</>
+// // 																)}
+// // 																<DropdownMenuItem
+// // 																	onClick={() => handleDeleteSingle(post.id)}
+// // 																	className="text-red-400 hover:bg-red-900/30 hover:text-red-300"
+// // 																>
+// // 																	<Trash2 className="mr-2 h-4 w-4" /> Delete
+// // 																</DropdownMenuItem>
+// // 															</DropdownMenuContent>
+// // 														</DropdownMenu>
+// // 													</div>
+// // 												</div>
+// // 											</AccordionContent>
+// // 										</AccordionItem>
+// // 									);
+// // 								})}
+// // 							</Accordion>
+// // 						</div>
+// // 					</div>
+// // 				</DialogContent>
+// // 			</Dialog>
+
+// // 			{/* Edit Post Dialog */}
+// // 			<Dialog
+// // 				open={!!editingPost}
+// // 				onOpenChange={open => !open && setEditingPost(undefined)}
+// // 			>
+// // 				<DialogContent className="w-full max-w-2xl rounded-2xl border-zinc-800/50 bg-zinc-900/50 shadow-2xl shadow-black/40 backdrop-blur-sm">
+// // 					<DialogHeader className="pb-6">
+// // 						<DialogTitle className="text-xl font-light text-zinc-100">
+// // 							Edit Post
+// // 						</DialogTitle>
+// // 						<DialogDescription className="text-zinc-400">
+// // 							Make changes to your post content
+// // 						</DialogDescription>
+// // 					</DialogHeader>
+// // 					<div className="grid gap-4 py-4">
+// // 						<Label
+// // 							htmlFor="content"
+// // 							className="text-sm font-medium text-zinc-300"
+// // 						>
+// // 							Content
+// // 						</Label>
+// // 						<Textarea
+// // 							id="content"
+// // 							value={editedContent}
+// // 							onChange={event_ => setEditedContent(event_.target.value)}
+// // 							rows={12}
+// // 							className="resize-none rounded-xl border-zinc-800/50 bg-zinc-800/30 text-zinc-200 backdrop-blur-sm transition-all duration-300 placeholder:text-zinc-500 focus:border-zinc-600/70 focus:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-600/30"
+// // 							placeholder="Write your post content here..."
+// // 						/>
+// // 					</div>
+// // 					<DialogFooter className="gap-3">
+// // 						<Button
+// // 							variant="outline"
+// // 							onClick={() => setEditingPost(undefined)}
+// // 							className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-100"
+// // 						>
+// // 							Cancel
+// // 						</Button>
+// // 						<Button
+// // 							onClick={handleEditPost}
+// // 							disabled={isLoading}
+// // 							className="border-zinc-700/50 bg-zinc-700/50 text-zinc-100 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-600/70 hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
+// // 						>
+// // 							{isLoading ? (
+// // 								<>
+// // 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+// // 									Saving...
+// // 								</>
+// // 							) : (
+// // 								"Save changes"
+// // 							)}
+// // 						</Button>
+// // 						</Button>
+// // 					</DialogFooter>
+// // 				</DialogContent>
+// // 			</Dialog>
+
+// // 			{/* Reschedule Dialog */}
+// // 			<Dialog
+// // 				open={reschedulingPosts.length > 0}
+// // 				onOpenChange={open => !open && setReschedulingPosts([])}
+// // 			>
+// // 				<DialogContent className="w-auto rounded-xl border border-zinc-800/50 bg-zinc-900/95 text-zinc-300 backdrop-blur-md">
+// // 					<DialogHeader className="pb-6">
+// // 						<DialogTitle className="text-xl font-light text-zinc-100">
+// // 							Reschedule Posts
+// // 						</DialogTitle>
+// // 						<DialogDescription className="text-zinc-400">
+// // 							Select new date and time for {reschedulingPosts.length} post(s)
+// // 						</DialogDescription>
+// // 					</DialogHeader>
+// // 					<div className="grid gap-6 py-4">
+// // 						<div className="grid gap-3">
+// // 							<Label className="text-sm font-medium text-zinc-300">Date</Label>
+// // 							<Calendar
+// // 								initialFocus
+// // 								mode="single"
+// // 								selected={newScheduleDate}
+// // 								onSelect={setNewScheduleDate}
+// // 								className="w-full rounded-lg"
+// // 								disabled={date => {
+// // 									// Get today's date and set time to midnight for proper comparison
+// // 									const today = new Date();
+// // 									today.setHours(0, 0, 0, 0);
+
+// // 									// Calculate date 1 months from today
+// // 									const twoWeeksFromNow = new Date(today);
+// // 									twoWeeksFromNow.setDate(today.getDate() + 30);
+
+// // 									// Disable dates before today or after 1 month from today
+// // 									return date < today || date > twoWeeksFromNow;
+// // 								}}
+// // 							/>
+// // 						</div>
+// // 						<div className="grid gap-3">
+// // 							<Label
+// // 								htmlFor="time"
+// // 								className="text-sm font-medium text-zinc-300"
+// // 							>
+// // 								Time
+// // 							</Label>
+// // 							<Input
+// // 								id="time"
+// // 								type="time"
+// // 								value={newScheduleTime}
+// // 								onChange={event_ => setNewScheduleTime(event_.target.value)}
+// // 								className="col-span-3 rounded-lg border-zinc-800/50 bg-zinc-900/50 text-zinc-300 transition-all duration-200 focus:border-zinc-700/50"
+// // 							/>
+// // 						</div>
+// // 					</div>
+// // 					<DialogFooter className="gap-3">
+// // 						<Button
+// // 							variant="outline"
+// // 							onClick={() => setReschedulingPosts([])}
+// // 							className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-100"
+// // 						>
+// // 							Cancel
+// // 						</Button>
+// // 						<Button
+// // 							onClick={handleReschedule}
+// // 							disabled={isLoading}
+// // 							className="border-zinc-700/50 bg-zinc-700/50 text-zinc-100 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-600/70 hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
+// // 						>
+// // 							{isLoading ? (
+// // 								<>
+// // 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+// // 									Rescheduling...
+// // 								</>
+// // 							) : (
+// // 								"Confirm"
+// // 							)}
+// // 						</Button>
+// // 					</DialogFooter>
+// // 				</DialogContent>
+// // 			</Dialog>
+// // 		</>
+// // 	);
+// // }
+
+
+
+
+
+
+// // import { ChevronDown } from "lucide-react";
+// // import { useState } from "react";
+
+// // const faqData = [
+// // 	{
+// // 		q: "Do posts go out automatically?",
+// // 		a: "No. You always review and approve before sharing.",
+// // 	},
+// // 	{
+// // 		q: "Which platforms are supported?",
+// // 		a: "LinkedIn, Slack, and Discord for now. More coming.",
+// // 	},
+// // 	{
+// // 		q: "Do I need perfect commit messages?",
+// // 		a: "No. We clean up the format, correct grammar, and make it readable.",
+// // 	},
+// // 	{
+// // 		q: "Is AI used?",
+// // 		a: "Yes. Quietly, behind the scenes. No gimmicks.",
+// // 	},
+// // 	{
+// // 		q: "What is Push to Post?",
+// // 		a: "Push to Post turns your GitHub activity into shareable social media content. It helps you stay active online by automatically generating posts from your commits.",
+// // 	},
+// // 	{
+// // 		q: "Is my data secure?",
+// // 		a: "Yes. We use strong encryption to keep your data private and secure. Your GitHub and social media details are never shared or exposed.",
+// // 	},
+// // 	{
+// // 		q: "Can I control how my posts look?",
+// // 		a: "Yes. You can adjust the writing style, review the generated content, and make changes before publishing. It's flexible and easy to use.",
+// // 	},
+// // 	{
+// // 		q: "Is there a free plan?",
+// // 		a: "Yes. The Free plan includes up to 5 posts per month. Paid plans offer higher limits and extra features.",
+// // 	},
+// // ];
+
+// // export default function FAQSection() {
+// // 	const [openIndex, setOpenIndex] = useState(null);
+
+// // 	const toggleAccordion = index => {
+// // 		setOpenIndex(openIndex === index ? null : index);
+// // 	};
+
+// // 	return (
+// // 		<section
+// // 			id="faq"
+// // 			className="shadow-fade relative mx-auto mb-1 w-full max-w-[1200px] gap-8 overflow-hidden rounded-xl border border-[#969DAD] border-opacity-15 bg-[#FFFFFF] px-1 py-0 pt-12 font-mono md:px-0 md:py-0 md:pt-12 lg:py-20 lg:pl-12"
+// // 		>
+// // 			<div className="mx-auto max-w-6xl px-6">
+// // 				<div className="grid gap-y-12 px-2 lg:[grid-template-columns:1fr_auto]">
+// // 					<div className="text-center lg:text-left">
+// // 						<h2 className="mb-4 text-3xl font-semibold text-[#1F2937] dark:text-white md:text-4xl">
+// // 							Your Questions, <br className="hidden lg:block" /> Answered.
+// // 						</h2>
+// // 						<p className="text-[#6B7280] dark:text-[#D1D5DB]">
+// // 							Everything you need to know about Push to Post.
+// // 						</p>
+// // 					</div>
+
+// // 					<div className="sm:mx-auto sm:max-w-lg lg:mx-0">
+// // 						{faqData.map((item, index) => (
+// // 							<div
+// // 								key={index}
+// // 								className="border-b border-dashed border-[#969DAD] border-opacity-30 last:border-b-0"
+// // 							>
+// // 								<button
+// // 									onClick={() => toggleAccordion(index)}
+// // 									className="group flex w-full items-center justify-between py-6 text-left transition-all duration-200 hover:opacity-80"
+// // 								>
+// // 									<span className="pr-4 font-medium leading-relaxed text-[#1F2937] dark:text-white">
+// // 										{item.q}
+// // 									</span>
+// // 									<ChevronDown
+// // 										className={`h-5 w-5 flex-shrink-0 text-[#6B7280] transition-transform duration-200 ${openIndex === index ? "rotate-180" : ""} `}
+// // 									/>
+// // 								</button>
+
+// // 								<div
+// // 									className={`overflow-hidden transition-all duration-300 ease-out ${openIndex === index ? "max-h-96 pb-6" : "max-h-0"} `}
+// // 								>
+// // 									<p className="leading-relaxed text-[#6B7280] dark:text-[#D1D5DB]">
+// // 										{item.a}
+// // 									</p>
+// // 								</div>
+// // 							</div>
+// // 						))}
+// // 					</div>
+// // 				</div>
+// // 			</div>
+// // 		</section>
+// // 	);
+// // }
+
+
+
+
+// // "use client";
+
+// // import {
+// // 	ArrowRight,
+// // 	GitCommit,
+// // 	Github,
+// // 	Linkedin,
+// // 	MessageSquare,
+// // 	Moon,
+// // 	Play,
+// // 	Sun,
+// // } from "lucide-react";
+// // import { useEffect, useState } from "react";
+
+// // import {
+// // 	Accordion,
+// // 	AccordionContent,
+// // 	AccordionItem,
+// // 	AccordionTrigger,
+// // } from "@/components/ui/accordion";
+// // import { Button } from "@/components/ui/button";
+
+// // export default function LandingPage() {
+// // 	const [isDarkMode, setIsDarkMode] = useState(true);
+// // 	const [activeStep, setActiveStep] = useState(0);
+
+// // 	useEffect(() => {
+// // 		const interval = setInterval(() => {
+// // 			setActiveStep(previous => (previous + 1) % 3);
+// // 		}, 3000);
+// // 		return () => clearInterval(interval);
+// // 	}, []);
+
+// // 	const bgClass = isDarkMode ? "bg-[#0d0d0d]" : "bg-[#ffffff]";
+// // 	const textClass = isDarkMode ? "text-[#f6f6f6]" : "text-[#111111]";
+// // 	const mutedTextClass = isDarkMode ? "text-[#a1a1a1]" : "text-[#666666]";
+// // 	const borderClass = isDarkMode ? "border-[#2a2a2a]" : "border-[#e5e5e5]";
+// // 	const cardBgClass = isDarkMode ? "bg-[#1a1a1a]" : "bg-[#f9f9f9]";
+
+// // 	return (
+// // 		<div
+// // 			className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-300`}
+// // 		>
+// // 			{/* Navigation */}
+// // 			<nav className={`border-b px-6 py-4 ${borderClass}`}>
+// // 				<div className="container mx-auto flex max-w-6xl items-center justify-between">
+// // 					<div className="flex items-center gap-2">
+// // 						<GitCommit className="h-6 w-6" />
+// // 						<span className="text-lg font-semibold">Push to Post</span>
+// // 					</div>
+// // 					<Button
+// // 						variant="ghost"
+// // 						size="sm"
+// // 						onClick={() => setIsDarkMode(!isDarkMode)}
+// // 						className={`${mutedTextClass} hover:${textClass} transition-colors`}
+// // 					>
+// // 						{isDarkMode ? (
+// // 							<Sun className="h-4 w-4" />
+// // 						) : (
+// // 							<Moon className="h-4 w-4" />
+// // 						)}
+// // 					</Button>
+// // 				</div>
+// // 			</nav>
+
+// // 			{/* Hero Section */}
+// // 			<section className="px-6 pb-32 pt-24">
+// // 				<div className="container mx-auto max-w-4xl text-center">
+// // 					<div className="space-y-8">
+// // 						<div className="space-y-6">
+// // 							<h1 className="text-5xl font-bold leading-tight tracking-[-0.02em] lg:text-7xl">
+// // 								Push code. We handle the post.
+// // 							</h1>
+// // 							<div className="mx-auto max-w-2xl space-y-4">
+// // 								<p className="text-xl font-light leading-relaxed lg:text-2xl">
+// // 									Turn Git commits into polished updates.
+// // 								</p>
+// // 								<p className="text-lg font-light leading-relaxed lg:text-xl">
+// // 									Share to LinkedIn, Slack, and Discord in one click.
+// // 								</p>
+// // 							</div>
+// // 						</div>
+
+// // 						<Button
+// // 							size="lg"
+// // 							className={`${isDarkMode ? "bg-[#f6f6f6] text-[#0d0d0d] hover:bg-[#e5e5e5]" : "bg-[#111111] text-[#ffffff] hover:bg-[#333333]"} rounded-lg px-8 py-4 text-lg font-medium transition-all duration-200`}
+// // 						>
+// // 							Get Started
+// // 							<ArrowRight className="ml-2 h-5 w-5" />
+// // 						</Button>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* How It Works */}
+// // 			<section className={`border-t px-6 py-24 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-5xl">
+// // 					<div className="space-y-16">
+// // 						<div className="space-y-4 text-center">
+// // 							<h2 className="text-4xl font-bold tracking-[-0.01em] lg:text-5xl">
+// // 								Connect once. Push as usual. Post instantly.
+// // 							</h2>
+// // 						</div>
+
+// // 						<div className="grid gap-12 lg:grid-cols-3">
+// // 							{[
+// // 								{
+// // 									title: "Connect",
+// // 									desc: "Link GitHub and your preferred platforms.",
+// // 									icon: Github,
+// // 								},
+// // 								{
+// // 									title: "Commit",
+// // 									desc: "Each push becomes a clean, ready-to-share update.",
+// // 									icon: GitCommit,
+// // 								},
+// // 								{
+// // 									title: "Post",
+// // 									desc: "Review, edit lightly if needed, then publish.",
+// // 									icon: MessageSquare,
+// // 								},
+// // 							].map((step, index) => (
+// // 								<div
+// // 									key={index}
+// // 									className={`space-y-6 transition-all duration-500 ${activeStep === index ? "scale-105" : ""}`}
+// // 								>
+// // 									<div
+// // 										className={`h-16 w-16 rounded-xl ${activeStep === index ? (isDarkMode ? "bg-[#f6f6f6]" : "bg-[#111111]") : cardBgClass} ${borderClass} flex items-center justify-center border transition-all duration-500`}
+// // 									>
+// // 										<step.icon
+// // 											className={`h-8 w-8 ${activeStep === index ? (isDarkMode ? "text-[#0d0d0d]" : "text-[#ffffff]") : mutedTextClass}`}
+// // 										/>
+// // 									</div>
+// // 									<div className="space-y-3">
+// // 										<h3 className="text-2xl font-semibold">{step.title}</h3>
+// // 										<p className={`${mutedTextClass} text-lg leading-relaxed`}>
+// // 											{step.desc}
+// // 										</p>
+// // 									</div>
+// // 								</div>
+// // 							))}
+// // 						</div>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* Features */}
+// // 			<section className={`border-t px-6 py-24 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-5xl">
+// // 					<div className="space-y-16">
+// // 						<div className="space-y-4 text-center">
+// // 							<h2 className="text-4xl font-bold tracking-[-0.01em] lg:text-5xl">
+// // 								Built for developers who'd rather build.
+// // 							</h2>
+// // 						</div>
+
+// // 						<div className="grid gap-12 lg:grid-cols-2">
+// // 							{[
+// // 								{
+// // 									title: "Clean, human-readable posts",
+// // 									desc: "Your commit activity becomes clear, well-structured updates.",
+// // 								},
+// // 								{
+// // 									title: "Multi-platform support",
+// // 									desc: "Publish to LinkedIn, Slack, and Discord from one place.",
+// // 								},
+// // 								{
+// // 									title: "Frictionless workflow",
+// // 									desc: "No context switching. No extra tabs. No manual formatting.",
+// // 								},
+// // 								{
+// // 									title: "Total control",
+// // 									desc: "Every post is reviewed before it goes live. You decide what gets published.",
+// // 								},
+// // 								{
+// // 									title: "Stay consistent",
+// // 									desc: "Maintain your visibility without breaking your flow.",
+// // 								},
+// // 							].map((feature, index) => (
+// // 								<div key={index} className="group space-y-4">
+// // 									<div className="flex items-start gap-4">
+// // 										<div
+// // 											className={`h-2 w-2 rounded-full ${isDarkMode ? "bg-[#f6f6f6]" : "bg-[#111111]"} mt-3 transition-transform duration-200 group-hover:scale-150`}
+// // 										/>
+// // 										<div className="space-y-3">
+// // 											<h3 className="text-xl font-semibold tracking-[-0.01em]">
+// // 												{feature.title}
+// // 											</h3>
+// // 											<p className={`${mutedTextClass} leading-relaxed`}>
+// // 												{feature.desc}
+// // 											</p>
+// // 										</div>
+// // 									</div>
+// // 								</div>
+// // 							))}
+// // 						</div>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* Visual Demo */}
+// // 			<section className={`border-t px-6 py-24 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-4xl">
+// // 					<div className="flex items-center justify-center">
+// // 						<div className="grid w-full grid-cols-1 items-center gap-8 md:grid-cols-5">
+// // 							{/* GitHub Commit */}
+// // 							<div className="space-y-4 text-center">
+// // 								<div
+// // 									className={`mx-auto h-20 w-20 rounded-xl ${cardBgClass} ${borderClass} flex items-center justify-center border`}
+// // 								>
+// // 									<Github className="h-10 w-10" />
+// // 								</div>
+// // 								<div className="space-y-1">
+// // 									<div className="text-sm font-medium">Git commit</div>
+// // 									<div className={`text-xs ${mutedTextClass}`}>Keep coding</div>
+// // 								</div>
+// // 							</div>
+
+// // 							{/* Arrow */}
+// // 							<div className="flex justify-center">
+// // 								<ArrowRight className={`h-6 w-6 ${mutedTextClass}`} />
+// // 							</div>
+
+// // 							{/* Processing */}
+// // 							<div className="space-y-4 text-center">
+// // 								<div
+// // 									className={`mx-auto h-20 w-20 rounded-xl ${cardBgClass} ${borderClass} flex items-center justify-center border`}
+// // 								>
+// // 									<div
+// // 										className={`h-3 w-3 rounded-full ${isDarkMode ? "bg-[#f6f6f6]" : "bg-[#111111]"} animate-pulse`}
+// // 									/>
+// // 								</div>
+// // 								<div className="space-y-1">
+// // 									<div className="text-sm font-medium">AI processing</div>
+// // 									<div className={`text-xs ${mutedTextClass}`}>
+// // 										Clean & format
+// // 									</div>
+// // 								</div>
+// // 							</div>
+
+// // 							{/* Arrow */}
+// // 							<div className="flex justify-center">
+// // 								<ArrowRight className={`h-6 w-6 ${mutedTextClass}`} />
+// // 							</div>
+
+// // 							{/* Social Posts */}
+// // 							<div className="space-y-4 text-center">
+// // 								<div className="flex justify-center gap-2">
+// // 									<div
+// // 										className={`h-12 w-12 rounded-lg ${cardBgClass} ${borderClass} flex items-center justify-center border`}
+// // 									>
+// // 										<Linkedin className="h-6 w-6 text-blue-600" />
+// // 									</div>
+// // 									<div
+// // 										className={`h-12 w-12 rounded-lg ${cardBgClass} ${borderClass} flex items-center justify-center border`}
+// // 									>
+// // 										<MessageSquare className="h-6 w-6 text-green-600" />
+// // 									</div>
+// // 									<div
+// // 										className={`h-12 w-12 rounded-lg ${cardBgClass} ${borderClass} flex items-center justify-center border`}
+// // 									>
+// // 										<MessageSquare className="h-6 w-6 text-indigo-600" />
+// // 									</div>
+// // 								</div>
+// // 								<div className="space-y-1">
+// // 									<div className="text-sm font-medium">Published</div>
+// // 									<div className={`text-xs ${mutedTextClass}`}>
+// // 										All platforms
+// // 									</div>
+// // 								</div>
+// // 							</div>
+// // 						</div>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* FAQ */}
+// // 			<section className={`border-t px-6 py-24 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-3xl">
+// // 					<div className="space-y-12">
+// // 						<h2 className="text-center text-4xl font-bold tracking-[-0.01em]">
+// // 							FAQ
+// // 						</h2>
+
+// // 						<Accordion type="single" collapsible className="space-y-1">
+// // 							{[
+// // 								{
+// // 									q: "Do posts go out automatically?",
+// // 									a: "No. You always review and approve before sharing.",
+// // 								},
+// // 								{
+// // 									q: "Which platforms are supported?",
+// // 									a: "LinkedIn, Slack, and Discord for now. More coming.",
+// // 								},
+// // 								{
+// // 									q: "Do I need perfect commit messages?",
+// // 									a: "No. We clean up the format, correct grammar, and make it readable.",
+// // 								},
+// // 								{
+// // 									q: "Is AI used?",
+// // 									a: "Yes. Quietly, behind the scenes. No gimmicks.",
+// // 								},
+// // 							].map((item, index) => (
+// // 								<AccordionItem
+// // 									key={index}
+// // 									value={`item-${index}`}
+// // 									className={`${borderClass} border-b`}
+// // 								>
+// // 									<AccordionTrigger className="py-6 text-left font-medium transition-opacity hover:no-underline hover:opacity-80">
+// // 										{item.q}
+// // 									</AccordionTrigger>
+// // 									<AccordionContent
+// // 										className={`${mutedTextClass} pb-6 leading-relaxed`}
+// // 									>
+// // 										{item.a}
+// // 									</AccordionContent>
+// // 								</AccordionItem>
+// // 							))}
+// // 						</Accordion>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* Final CTA */}
+// // 			<section className={`border-t px-6 py-32 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-4xl text-center">
+// // 					<div className="space-y-12">
+// // 						<div className="space-y-6">
+// // 							<h2 className="text-5xl font-bold leading-tight tracking-[-0.02em] lg:text-6xl">
+// // 								Keep building. We'll keep posting.
+// // 							</h2>
+// // 							<p className="mx-auto max-w-2xl text-xl font-light lg:text-2xl">
+// // 								Post smarter. Stay visible. Zero extra effort.
+// // 							</p>
+// // 						</div>
+
+// // 						<div className="flex flex-col justify-center gap-4 sm:flex-row">
+// // 							<Button
+// // 								size="lg"
+// // 								className={`${isDarkMode ? "bg-[#f6f6f6] text-[#0d0d0d] hover:bg-[#e5e5e5]" : "bg-[#111111] text-[#ffffff] hover:bg-[#333333]"} rounded-lg px-8 py-4 text-lg font-medium transition-all duration-200`}
+// // 							>
+// // 								Join Free Beta
+// // 								<ArrowRight className="ml-2 h-5 w-5" />
+// // 							</Button>
+// // 							<Button
+// // 								variant="outline"
+// // 								size="lg"
+// // 								className={`${borderClass} ${textClass} hover:${cardBgClass} rounded-lg bg-transparent px-8 py-4 text-lg font-medium transition-all duration-200`}
+// // 							>
+// // 								<Play className="mr-2 h-5 w-5" />
+// // 								See Demo
+// // 							</Button>
+// // 						</div>
+// // 					</div>
+// // 				</div>
+// // 			</section>
+
+// // 			{/* Footer */}
+// // 			<footer className={`border-t px-6 py-12 ${borderClass}`}>
+// // 				<div className="container mx-auto max-w-4xl text-center">
+// // 					<p className={`${mutedTextClass} text-sm`}>© 2024 Push to Post</p>
+// // 				</div>
+// // 			</footer>
+
+// // 			<style jsx global>{`
+// // 				@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+// // 			`}</style>
+// // 		</div>
+// // 	);
+// // }
+
+
+
+
+
+
+
+// // "use client";
+
+// // import { useEffect, useState } from "react";
+// // import { useRouter } from "next/navigation";
+// // import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+
+// // import {
+// // 	Dialog,
+// // 	DialogContent,
+// // 	DialogHeader,
+// // 	DialogTitle,
+// // } from "@/components/ui/dialog";
+// // import { Button } from "@/components/ui/button";
+// // import { useAuth } from "./auth-context"; // Adjust import path
+
+// // interface LogoutModalProps {
+// // 	showByDefault?: boolean;
+// // }
+
+// // export function LogoutModal({ showByDefault = false }: LogoutModalProps) {
+// // 	const { status, showLogoutModal, handleLogout } = useAuth();
+// // 	const router = useRouter();
+// // 	const [logoutStep, setLogoutStep] = useState<'idle' | 'logging_out' | 'complete'>('idle');
+// // 	const [isOpen, setIsOpen] = useState(false);
+
+// // 	// Determine when to show modal
+// // 	useEffect(() => {
+// // 		const shouldShow = showByDefault || 
+// // 			status === 'loading' || 
+// // 			showLogoutModal ||
+// // 			logoutStep === 'logging_out' ||
+// // 			logoutStep === 'complete';
+			
+// // 		setIsOpen(shouldShow);
+// // 	}, [showByDefault, status, showLogoutModal, logoutStep]);
+
+// // 	// Handle manual logout
+// // 	const performLogout = async () => {
+// // 		setLogoutStep('logging_out');
+		
+// // 		try {
+// // 			await handleLogout('manual_logout');
+// // 			setLogoutStep('complete');
+			
+// // 			// Redirect after showing completion
+// // 			setTimeout(() => {
+// // 				router.push('/');
+// // 			}, 1500);
+// // 		} catch (error) {
+// // 			console.error('Manual logout failed:', error);
+// // 			// Force redirect even if logout fails
+// // 			router.push('/');
+// // 		}
+// // 	};
+
+// // 	// Get modal content based on current state
+// // 	const getModalContent = () => {
+// // 		if (logoutStep === 'logging_out') {
+// // 			return {
+// // 				title: "Signing Out...",
+// // 				content: (
+// // 					<div className="flex flex-col items-center space-y-4 py-6">
+// // 						<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+// // 						<p className="text-center text-gray-600">
+// // 							Please wait while we securely sign you out...
+// // 						</p>
+// // 					</div>
+// // 				),
+// // 				showButton: false,
+// // 			};
+// // 		}
+
+// // 		if (logoutStep === 'complete') {
+// // 			return {
+// // 				title: "Signed Out Successfully",
+// // 				content: (
+// // 					<div className="flex flex-col items-center space-y-4 py-6">
+// // 						<CheckCircle className="h-8 w-8 text-green-500" />
+// // 						<p className="text-center text-gray-600">
+// // 							You have been signed out successfully. Redirecting...
+// // 						</p>
+// // 					</div>
+// // 				),
+// // 				showButton: false,
+// // 			};
+// // 		}
+
+// // 		if (showLogoutModal) {
+// // 			return {
+// // 				title: "Session Expired",
+// // 				content: (
+// // 					<div className="flex flex-col items-center space-y-4 py-6">
+// // 						<AlertCircle className="h-8 w-8 text-amber-500" />
+// // 						<div className="text-center space-y-2">
+// // 							<p className="text-gray-600">
+// // 								Your session has expired or is no longer valid.
+// // 							</p>
+// // 							<p className="text-sm text-gray-500">
+// // 								Please sign in again to continue.
+// // 							</p>
+// // 						</div>
+// // 					</div>
+// // 				),
+// // 				showButton: true,
+// // 				buttonText: "Return to Home",
+// // 				buttonAction: () => router.push('/'),
+// // 			};
+// // 		}
+
+// // 		// Default loading state
+// // 		return {
+// // 			title: "Loading...",
+// // 			content: (
+// // 				<div className="flex flex-col items-center space-y-4 py-8">
+// // 					<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+// // 					<p className="text-center text-gray-600">
+// // 						Initializing your session...
+// // 					</p>
+// // 				</div>
+// // 			),
+// // 			showButton: false,
+// // 		};
+// // 	};
+
+// // 	const modalContent = getModalContent();
+
+// // 	return (
+// // 		<Dialog open={isOpen} onOpenChange={() => {}}>
+// // 			<DialogContent className="sm:max-w-md" hideCloseButton>
+// // 				<DialogHeader>
+// // 					<DialogTitle className="text-center">
+// // 						{modalContent.title}
+// // 					</DialogTitle>
+// // 				</DialogHeader>
+				
+// // 				<div className="px-6 pb-6">
+// // 					{modalContent.content}
+					
+// // 					{modalContent.showButton && (
+// // 						<div className="flex justify-center mt-6">
+// // 							<Button 
+// // 								onClick={modalContent.buttonAction || performLogout}
+// // 								className="min-w-[120px]"
+// // 							>
+// // 								{modalContent.buttonText || "Sign Out"}
+// // 							</Button>
+// // 						</div>
+// // 					)}
+// // 				</div>
+// // 			</DialogContent>
+// // 		</Dialog>
+// // 	);
+// // }
+
+
+
+
+
+
+// // <Dialog
+// // 	open={isRescheduleDialogOpen && hasAccess}
+// // 	onOpenChange={setIsRescheduleDialogOpen}
+// // >
+// // 	<DialogContent className="w-auto rounded-xl border border-zinc-800/50 bg-zinc-900/95 text-zinc-300 backdrop-blur-md">
+// // 		<DialogHeader>
+// // 			<DialogTitle className="text-zinc-100">Reschedule Post</DialogTitle>
+// // 			<DialogDescription className="text-zinc-400">
+// // 				Choose a new date and time for your post.
+// // 			</DialogDescription>
+// // 		</DialogHeader>
+// // 		<div className="grid gap-4 py-4">
+// // 			<div className="flex h-auto flex-col items-start justify-start gap-4">
+// // 				<Label htmlFor="date" className="font-medium text-zinc-300">
+// // 					Date
+// // 				</Label>
+// // 				<Calendar
+// // 					initialFocus
+// // 					mode="single"
+// // 					className="w-full rounded-lg border border-zinc-800/50 bg-zinc-900/50 text-zinc-300"
+// // 					selected={rescheduleDate}
+// // 					onSelect={setRescheduleDate}
+// // 					disabled={date => {
+// // 						// Get today's date and set time to midnight for proper comparison
+// // 						const today = new Date();
+// // 						today.setHours(0, 0, 0, 0);
+
+// // 						// Calculate date 2 weeks from today
+// // 						const twoWeeksFromNow = new Date(today);
+// // 						twoWeeksFromNow.setDate(today.getDate() + 14);
+
+// // 						// Disable dates before today or after 2 weeks from today
+// // 						return date < today || date > twoWeeksFromNow;
+// // 					}}
+// // 				/>
+// // 			</div>
+// // 			<div className="flex flex-col items-start justify-start gap-4">
+// // 				<Label htmlFor="time" className="font-medium text-zinc-300">
+// // 					Time
+// // 				</Label>
+// // 				<Input
+// // 					id="time"
+// // 					type="time"
+// // 					value={rescheduleDate ? format(rescheduleDate, "HH:mm") : ""}
+// // 					onChange={event => {
+// // 						const [hours, minutes] = event.target.value.split(":");
+// // 						const newDate = new Date(rescheduleDate || new Date());
+// // 						newDate.setHours(Number.parseInt(hours), Number.parseInt(minutes));
+// // 						setRescheduleDate(newDate);
+// // 					}}
+// // 					className="col-span-3 rounded-lg border-zinc-800/50 bg-zinc-900/50 text-zinc-300 transition-all duration-200 focus:border-zinc-700/50"
+// // 				/>
+// // 			</div>
+// // 		</div>
+// // 		<DialogFooter>
+// // 			<Button
+// // 				variant="outline"
+// // 				onClick={() => setIsRescheduleDialogOpen(false)}
+// // 				className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-200 hover:bg-zinc-700/50 hover:text-zinc-100"
+// // 			>
+// // 				Cancel
+// // 			</Button>
+// // 			<Button
+// // 				onClick={handleReschedule}
+// // 				disabled={isLoading}
+// // 				className="border border-blue-500/20 bg-blue-500/10 text-blue-400 transition-all duration-200 hover:border-blue-500/30 hover:bg-blue-500/20"
+// // 			>
+// // 				{isLoading ? (
+// // 					<>
+// // 						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+// // 						Rescheduling...
+// // 					</>
+// // 				) : (
+// // 					"Reschedule"
+// // 				)}
+// // 			</Button>
+// // 		</DialogFooter>
+// // 	</DialogContent>
+// // </Dialog>;
+
+// // {
+// // 	/* Edit Dialog */
+// // }
+// // <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+// // 	<DialogContent className="w-full max-w-2xl rounded-xl border border-zinc-800/50 bg-zinc-900/95 text-zinc-300 backdrop-blur-md">
+// // 		<DialogHeader>
+// // 			<DialogTitle className="text-zinc-100">Edit Post</DialogTitle>
+// // 			<DialogDescription className="text-zinc-400">
+// // 				Make changes to your post here. Click save when you&apos;re done.
+// // 			</DialogDescription>
+// // 		</DialogHeader>
+// // 		<div className="grid gap-4 py-4">
+// // 			<div className="flex flex-col items-start justify-center gap-4">
+// // 				<Label htmlFor="content" className="font-medium text-zinc-300">
+// // 					Content
+// // 				</Label>
+// // 				<Textarea
+// // 					id="content"
+// // 					value={editedPost.content}
+// // 					onChange={event =>
+// // 						setEditedPost({ ...editedPost, content: event.target.value })
+// // 					}
+// // 					rows={12}
+// // 					className="col-span-3 resize-none rounded-lg border-zinc-800/50 bg-zinc-900/50 text-zinc-300 transition-all duration-200 focus:border-zinc-700/50"
+// // 				/>
+// // 			</div>
+// // 		</div>
+// // 		<DialogFooter>
+// // 			<Button
+// // 				variant="outline"
+// // 				onClick={() => setIsEditDialogOpen(false)}
+// // 				className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-200 hover:bg-zinc-700/50 hover:text-zinc-100"
+// // 			>
+// // 				Cancel
+// // 			</Button>
+// // 			<Button
+// // 				onClick={handleEdit}
+// // 				disabled={isLoading}
+// // 				className="border border-green-500/20 bg-green-500/10 text-green-400 transition-all duration-200 hover:border-green-500/30 hover:bg-green-500/20"
+// // 			>
+// // 				{isLoading ? (
+// // 					<ButtonDialogFooter>
+// // 						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+// // 						Saving...
+// // 					</>
+// // 				) : (
+// // 					"Save changes"
+// // 				)}
+// // 			</Button>
+// // 		</DialogFooter>
+// // 	</DialogContent>
+// // </Dialog>; -->

@@ -12,16 +12,8 @@ export default function FAQs() {
 			a: "Push to Post turns your GitHub activity into shareable social media content. It helps you stay active online by automatically generating posts from your commits.",
 		},
 		{
-			q: "How does it connect to GitHub?",
-			a: "Once you link your GitHub account, we set up webhooks to track commits and generate content based on your activity.",
-		},
-		{
 			q: "Is my data secure?",
 			a: "Yes. We use strong encryption and never share or expose your GitHub or social media credentials.",
-		},
-		{
-			q: "Do posts go out automatically?",
-			a: "No. You always review and approve each post before it's shared. Total control, always.",
 		},
 		{
 			q: "Which platforms are supported?",
@@ -30,10 +22,6 @@ export default function FAQs() {
 		{
 			q: "Can I edit the posts?",
 			a: "Yes. Every post is fully editable. Tweak the message, tone, or hashtags before publishing.",
-		},
-		{
-			q: "Is AI used?",
-			a: "Yes. AI powers summaries, hashtags, formatting, and tone — all behind the scenes.",
 		},
 		{
 			q: "Do I need perfect commit messages?",

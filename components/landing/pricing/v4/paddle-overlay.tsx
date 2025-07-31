@@ -1,5 +1,4 @@
 "use client";
-
 import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -25,6 +24,13 @@ interface PaddleCheckoutProps {
 	children: React.ReactNode;
 	displayMode: "overlay" | "inline";
 	environment: "sandbox" | "production";
+	tooltipMessage?: string;
+	forceDisabled?: boolean;
+	disabledReason?:
+		| "current-plan"
+		| "has-access"
+		| "not-initialized"
+		| "loading";
 }
 
 export default function PaddleCheckout({
@@ -35,13 +41,14 @@ export default function PaddleCheckout({
 	displayMode,
 	locale = "en",
 	successUrl = process.env.NEXT_PUBLIC_PADDLE_SUCCESS,
+	tooltipMessage,
+	forceDisabled = false,
+	disabledReason,
 }: PaddleCheckoutProps) {
 	const hasAccess = useCheckAccess();
-
-	const userStore = useUserStore();
 	const { status, data } = useSession();
 	const [loading, setLoading] = useState(false);
-	const [paddle, setPaddle] = useState<Paddle>();
+	const [paddle, setPaddle] = useState<Paddle | undefined>();
 	const { openModal } = useAuthModalStore();
 
 	useEffect(() => {
@@ -51,89 +58,147 @@ export default function PaddleCheckout({
 		}).then(setPaddle);
 	}, [environment]);
 
-	const handleCheckout = async () => {
+	const handleCheckout = async (): Promise<void> => {
 		if (paddle) {
 			if (status === "unauthenticated") {
 				openModal("login");
 			} else if (status === "authenticated") {
+				// Don't show toast for current plan - let the tooltip handle it
+				if (disabledReason === "current-plan") {
+					return;
+				}
+
+				// Handle existing subscription check only for upgrades
 				if (hasAccess) {
 					toast.info("You already have an active subscription.");
 					return;
-				} else {
-					setLoading(true);
+				}
 
-					try {
-						paddle.Checkout.open({
-							items: [
-								{
-									priceId: productId,
-									quantity: 1,
-								},
-							],
-							customer: {
-								email: userStore.email || data.user.email || "",
+				setLoading(true);
+
+				try {
+					paddle.Checkout.open({
+						items: [
+							{
+								priceId: productId,
+								quantity: 1,
 							},
-							settings: {
-								theme: theme,
-								locale: locale,
-								allowLogout: true,
-								showAddTaxId: false,
-								variant: "one-page",
-								showAddDiscounts: false,
-								allowedPaymentMethods: ["card", "paypal"],
-								successUrl: successUrl,
-								displayMode: displayMode,
-							},
-							// settings: {
-							// 	variant: "one-page",
-							// 	displayMode: "inline",
-							// 	theme: "light",
-							// 	frameTarget: "paddle-checkout-frame",
-							// 	frameInitialHeight: 450,
-							// 	frameStyle:
-							// 		"width: 100%; background-color: transparent; border: none",
-							// 	successUrl: successUrl,
-							// },
-						});
-					} catch {
-					} finally {
-						setLoading(false);
-					}
+						],
+						customer: {
+							email: data?.user?.email || "",
+						},
+						settings: {
+							theme: theme,
+							locale: locale,
+							allowLogout: true,
+							showAddTaxId: true,
+							variant: "one-page",
+							showAddDiscounts: false,
+							successUrl: successUrl,
+							displayMode: displayMode,
+							allowedPaymentMethods: ["card", "paypal"],
+						},
+					});
+					setLoading(false);
+				} catch {
+					toast.error("Failed to open checkout. Please try again.");
+					setLoading(false);
 				}
 			}
 		} else {
-			toast.info("Paddle not initialized");
-
+			toast.info("Payment system is initializing. Please wait...");
 			return;
 		}
 	};
 
+	// Determine if component should be disabled
+	const isDisabled =
+		!paddle ||
+		loading ||
+		forceDisabled ||
+		(hasAccess && disabledReason !== "current-plan");
+
+	// Determine tooltip content and visibility
+	const getTooltipContent = (): string => {
+		// Use custom tooltip message if provided
+		if (tooltipMessage) {
+			return tooltipMessage;
+		}
+
+		// Fallback to default messages based on state
+		switch (disabledReason) {
+			case "current-plan": {
+				return "This is your current plan.";
+			}
+			case "has-access": {
+				return "You already have an active subscription.";
+			}
+			case "not-initialized": {
+				return "Payment system is initializing...";
+			}
+			case "loading": {
+				return "Processing...";
+			}
+			default: {
+				if (hasAccess && disabledReason !== "current-plan") {
+					return "You already have an active subscription.";
+				}
+				if (!paddle) {
+					return "Payment system is initializing...";
+				}
+				if (loading) {
+					return "Processing...";
+				}
+				return "";
+			}
+		}
+	};
+
+	const shouldShowTooltip = isDisabled || Boolean(tooltipMessage);
+	const tooltipContent = getTooltipContent();
+
 	return (
 		<TooltipProvider>
-			<Tooltip delayDuration={300} open={hasAccess ? undefined : false}>
-				<TooltipTrigger asChild>
+			<Tooltip
+				delayDuration={300}
+				open={shouldShowTooltip && tooltipContent ? undefined : false}
+			>
+				<TooltipTrigger
+					asChild
+					className="relative flex w-full items-center justify-center"
+				>
 					<div
-						onClick={handleCheckout}
+						onClick={() => {
+							handleCheckout();
+							if (!isDisabled) {
+							}
+						}}
 						className={cn(
-							"relative transition-all duration-200",
-							!paddle || loading || hasAccess
-								? "cursor-not-allowed opacity-35"
-								: "cursor-pointer opacity-100 hover:opacity-90 active:scale-95",
+							"relative mb-8 w-full transition-all duration-200",
+							"cursor-pointer opacity-100 hover:opacity-90 active:scale-95",
 						)}
 					>
 						{loading && (
-							<div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
-								<Loader2 className="h-5 w-5 animate-spin text-black" />
+							<div className="rounded-inherit absolute inset-0 z-10 flex cursor-progress items-center justify-center bg-black/5 backdrop-blur-[1px]">
+								<Loader2 className="h-5 w-5 animate-spin text-black dark:text-white" />
 							</div>
 						)}
-						{children}
+						<div className={cn(loading && "opacity-50", "w-full")}>
+							{children}
+						</div>
 					</div>
 				</TooltipTrigger>
-				<TooltipContent side="bottom" className="bg-black text-white">
-					<p>You already have an active subscription.</p>
-				</TooltipContent>
+				{tooltipContent && (
+					<TooltipContent
+						side="bottom"
+						align="center"
+						sideOffset={0.5}
+						className="max-w-xs border border-gray-200 bg-black text-center text-white dark:border-gray-700 dark:bg-white dark:text-black"
+					>
+						<p className="text-xs">{tooltipContent}</p>
+					</TooltipContent>
+				)}
 			</Tooltip>
-			{/* <div className={"paddle-checkout-frame"} /> */}
 		</TooltipProvider>
 	);
 }
