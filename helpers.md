@@ -5,7 +5,6 @@ Here's the breakdown of **what to optimize**, **what to avoid**, and **layout fo
 ---
 
 ## 🔧 **Section-by-Section Tweaks + Layout Guidance**
-
 ---
 ### 1. **Hero Section**
 
