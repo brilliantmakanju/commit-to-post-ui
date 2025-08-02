@@ -9,7 +9,6 @@ Here's the breakdown of **what to optimize**, **what to avoid**, and **layout fo
 ### 1. **Hero Section**
 
 ✅ **Must Have:**
-
 * Strong one-line value prop. No fluff.
 * Subtext that explains **what it does and for whom**.
 * CTA button: *“Join the waitlist”* (no multi-option confusion).
