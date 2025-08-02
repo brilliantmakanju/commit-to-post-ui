@@ -8,7 +8,6 @@ Here's the breakdown of **what to optimize**, **what to avoid**, and **layout fo
 
 ---
 
-
 ### 1. **Hero Section**
 
 
