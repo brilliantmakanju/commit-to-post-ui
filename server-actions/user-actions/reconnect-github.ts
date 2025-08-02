@@ -2,31 +2,17 @@
 "use server";
 
 import { apiClient } from "@/lib/utils/api-client";
-import { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 
-export const connectGithub = async ({
-	code,
-}: {
-	code: string;
-}): Promise<{
+export const reconnectGithub = async (): Promise<{
 	[x: string]: any;
 	success: boolean;
 	message?: string;
-	url?: string;
-	installation_id?: string;
 }> => {
-	const data = {
-		code: code,
-	};
-	const parsedData = connectAccountSchema.parse(data);
-
 	http: try {
 		// Make the API call to get organizations
 		const response = await apiClient.post(
-			"/api/v1/managements/github/login/",
-			{
-				installation_id: parsedData.code,
-			},
+			"/api/v1/managements/github/reconnect/",
+			{},
 			{},
 			10000,
 		);
@@ -40,9 +26,8 @@ export const connectGithub = async ({
 
 		// Return success with the organizations data
 		return {
-			success: true,
-			url: response.data.authorization_url,
-			installation_id: response.data.installation_id,
+			success: response.data.success,
+			message: response.data.message,
 		};
 	} catch (error: any) {
 		// Catch any errors and return them

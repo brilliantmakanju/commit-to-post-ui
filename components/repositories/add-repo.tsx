@@ -48,6 +48,8 @@ import { useGithubConnectedStatus } from "@/hooks/settings/use-github-connected"
 import { cn } from "@/lib/utils";
 import { connectGithubRepoBatch } from "@/server-actions/user-actions/connect-git-repo";
 import { getGitHubRepos } from "@/server-actions/user-actions/get-repos";
+import { reconnectGithub } from "@/server-actions/user-actions/reconnect-github";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 interface AddRepositoryModalProps {
 	open: boolean;
@@ -121,11 +123,18 @@ export function AddRepositoryModal({
 	const queryClient = useQueryClient();
 	const { data: session } = useSession();
 	const [isLoading, setIsLoading] = useState(false);
-	const githubConnected = useGithubConnectedStatus();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [repoFilter, setRepoFilter] = useState("all");
 	const { totalRepositories, isLoadingRepos: isLoadingConnectedRepo } =
 		useRetrieveConnectedRepos();
+
+	const { organization, updateInstallationStatus } = useOrganizationStore();
+
+	const githubConnected = useOrganizationStore(
+		state =>
+			state.organization.github_installation_status === "active" &&
+			!!state.organization.github_installation_id,
+	);
 	const [selectedRepo, setSelectedRepo] = useState<string[]>([]);
 	const [currentStep, setCurrentStep] = useState(githubConnected ? 2 : 1);
 
@@ -195,11 +204,27 @@ export function AddRepositoryModal({
 		repo => !repo.is_connected && !repo.status,
 	);
 
-	const handleConnectGitHub = () => {
+	const handleConnectGitHub = async () => {
 		setIsLoading(true);
-		router.push(
-			`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GIT_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_SITE_URL}/&scope=repo,admin:repo_hook,read:user&prompt=consent`,
-		);
+		try {
+			if (organization.github_installation_status === "disconnected") {
+				const response = await reconnectGithub();
+				if (response.success) {
+					updateInstallationStatus(organization.id, "active", organization.id);
+					toast.success(response.message);
+				} else {
+					router.push("https://github.com/apps/push-to-post/installations/new");
+					toast.error(response.message);
+				}
+			} else if (organization.github_installation_status === "unknown") {
+				router.push("https://github.com/apps/push-to-post/installations/new");
+			} else {
+			}
+			setIsLoading(false);
+		} catch {
+			toast.error("Failed to initiate GitHub connection.");
+			setIsLoading(false);
+		}
 	};
 
 	const handleRepoSelection = (repoId: string) => {

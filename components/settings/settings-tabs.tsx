@@ -48,8 +48,7 @@ export function SettingsTabs() {
 		// Fix the malformed query string
 		const fixedSearch = rawParams.replace("/&", "&"); // turns ?github=true/&code=... into ?github=true&code=...
 		const fixedParams = new URLSearchParams(fixedSearch);
-
-		const code = fixedParams.get("code");
+		const code = fixedParams.get("installation_id");
 		const tab = fixedParams.get("tab");
 
 		if (code) {

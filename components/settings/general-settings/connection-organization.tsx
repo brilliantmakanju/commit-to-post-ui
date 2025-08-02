@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import {
 import type { connectAccountSchema } from "@/resolvers/organizations/organization-schema";
 // import { postLinkedInConnection } from "@/server-actions/organizations/post-linkedin-connection";
 import { connectGithub } from "@/server-actions/user-actions/connect-github";
+import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
 interface ConnectionStatus {
@@ -24,80 +26,6 @@ interface ConnectionStatus {
 	closeModal: (value: boolean) => void;
 	type: "github" | "linkedin" | "twitter" | "slack" | "discord";
 }
-
-// ----- Shared connection logic -----
-const connectSocialAccount = async (
-	type: "github" | "linkedin" | "twitter" | "slack" | "discord",
-	code: string,
-	setMessage: (message: string) => void,
-	setStatus: (status: "success" | "error") => void,
-	closeModal: (value: boolean) => void,
-	queryClient: ReturnType<typeof useQueryClient>,
-	pathname: string,
-	searchParams: URLSearchParams,
-	router: ReturnType<typeof useRouter>,
-	userStore: any,
-) => {
-	try {
-		const values = { code };
-		const response = await connectGithub(
-			values as z.infer<typeof connectAccountSchema>,
-		);
-		// type === "github"
-		// 	?
-		// : await postLinkedInConnection(values);
-
-		if (response?.success) {
-			// Create a copy of current search params
-			const nextSearchParams = new URLSearchParams(searchParams.toString());
-
-			// Always remove `code`
-			nextSearchParams.delete("code");
-
-			// Remove `github` only if it exists
-			// if (nextSearchParams.has("github")) {
-			// 	nextSearchParams.delete("github");
-			// }
-
-			// Replace current URL with cleaned-up one
-			router.replace(`${pathname}?${nextSearchParams.toString()}`);
-			userStore.setUser({
-				hasHydratedUser: true,
-				github_connected: true,
-			});
-
-			// Set connection status
-			setMessage("Your Github account connected successfully!");
-			setStatus("success");
-			// type === "github"
-			// ?
-			// : "Your LinkedIn account has been connected successfully!",
-
-			// Invalidate relevant queries
-			// if (type === "linkedin") {
-			// 	await queryClient.invalidateQueries({
-			// 		queryKey: ["retrieving_webhooks"],
-			// 	});
-			// 	await queryClient.invalidateQueries({
-			// 		queryKey: ["organization-ownership"],
-			// 	});
-			// 	await queryClient.invalidateQueries({
-			// 		queryKey: ["retrieving_social_status"],
-			// 	});
-			// }
-
-			closeModal(false);
-		} else {
-			setStatus("error");
-			setMessage(response?.message || "Connection failed");
-			setTimeout(() => closeModal(false), 3000);
-		}
-	} catch {
-		setStatus("error");
-		setMessage("Connection failed. Please try again.");
-		setTimeout(() => closeModal(false), 3000);
-	}
-};
 
 // ----- Main component -----
 const SocialConnectCallback = ({
@@ -108,9 +36,10 @@ const SocialConnectCallback = ({
 }: ConnectionStatus) => {
 	const router = useRouter();
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const queryClient = useQueryClient();
 	const userStore = useUserStore();
+	const queryClient = useQueryClient();
+	const searchParams = useSearchParams();
+	const { organization, updateInstallationStatus } = useOrganizationStore();
 
 	const [status, setStatus] = useState<"connecting" | "success" | "error">(
 		"connecting",
@@ -119,6 +48,85 @@ const SocialConnectCallback = ({
 
 	// Prevent double-execution in development
 	const hasRunRef = useRef(false);
+	// ----- Shared connection logic -----
+	const connectSocialAccount = async (
+		type: "github" | "linkedin" | "twitter" | "slack" | "discord",
+		code: string,
+		setMessage: (message: string) => void,
+		setStatus: (status: "success" | "error") => void,
+		closeModal: (value: boolean) => void,
+		queryClient: ReturnType<typeof useQueryClient>,
+		pathname: string,
+		searchParams: URLSearchParams,
+		router: ReturnType<typeof useRouter>,
+		userStore: any,
+	) => {
+		try {
+			const values = { code };
+			const response = await connectGithub(
+				values as z.infer<typeof connectAccountSchema>,
+			);
+			// type === "github"
+			// 	?
+			// : await postLinkedInConnection(values);
+
+			if (response?.success) {
+				// Create a copy of current search params
+				const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+				// Always remove `code`
+				nextSearchParams.delete("code");
+				nextSearchParams.delete("setup_action");
+				nextSearchParams.delete("installation_id");
+
+				// Remove `github` only if it exists
+				// if (nextSearchParams.has("github")) {
+				// 	nextSearchParams.delete("github");
+				// }
+
+				// Replace current URL with cleaned-up one
+				router.replace(`${pathname}?${nextSearchParams.toString()}`);
+
+				if (response.installation_id) {
+					updateInstallationStatus(
+						organization.id,
+						"active",
+						response.installation_id,
+					);
+				}
+
+				// Set connection status
+				setMessage("Your Github account connected successfully!");
+				setStatus("success");
+				// type === "github"
+				// ?
+				// : "Your LinkedIn account has been connected successfully!",
+
+				// Invalidate relevant queries
+				// if (type === "linkedin") {
+				// 	await queryClient.invalidateQueries({
+				// 		queryKey: ["retrieving_webhooks"],
+				// 	});
+				// 	await queryClient.invalidateQueries({
+				// 		queryKey: ["organization-ownership"],
+				// 	});
+				// 	await queryClient.invalidateQueries({
+				// 		queryKey: ["retrieving_social_status"],
+				// 	});
+				// }
+
+				closeModal(false);
+			} else {
+				setStatus("error");
+				setMessage(response?.message || "Connection failed");
+				setTimeout(() => closeModal(false), 3000);
+			}
+		} catch {
+			setStatus("error");
+			setMessage("Connection failed. Please try again.");
+			setTimeout(() => closeModal(false), 3000);
+		}
+	};
 
 	useEffect(() => {
 		if (hasRunRef.current) return;
@@ -147,6 +155,7 @@ const SocialConnectCallback = ({
 		pathname,
 		searchParams,
 		router,
+		connectSocialAccount,
 	]);
 
 	// Prevent background scroll when modal is open
