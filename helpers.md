@@ -16,7 +16,6 @@ Here's the breakdown of **what to optimize**, **what to avoid**, and **layout fo
 * Visual: either minimal animation or subtle screenshot, not too loud.
 
 🚫 Avoid:
-
 * Buzzwords like "revolutionary", "seamless" — just show value.
 * Two CTAs — pick one primary action.
 
