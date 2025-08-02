@@ -80,7 +80,6 @@ export function NavUser({
 		// logout();
 		await clearCookies();
 		await signOut({ redirect: false });
-		globalThis.location.href = "/";
 	};
 
 	if (status === "loading" || isLoadingAttachment) {
