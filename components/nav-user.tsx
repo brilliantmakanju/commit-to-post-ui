@@ -76,7 +76,6 @@ export function NavUser({
 		organizationStore.clearOrganization();
 		logoutStore.setLogout(true);
 		userStore.clearUser();
-
 		// logout();
 		await clearCookies();
 		await signOut({ redirect: false });
