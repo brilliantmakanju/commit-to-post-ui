@@ -20,14 +20,14 @@ export const RepoCards = () => {
 
 	if (!topRepoMetrics || topRepoMetrics.length === 0) {
 		return (
-			<div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
+			<div className="flex h-[10rem] items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
 				No active repositories. Connect one to see its stats here.
 			</div>
 		);
 	}
 
 	return (
-		<div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
+		<div className="grid h-full grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
 			{topRepoMetrics.map((repo: any) => (
 				<Card
 					key={repo.name}

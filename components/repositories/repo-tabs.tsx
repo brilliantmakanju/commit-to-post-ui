@@ -317,8 +317,9 @@ export function RepoTabs({
 		// Filter by tab
 		if (
 			activeTab !== "all" &&
-			activeTab !== "settings" &&
-			activeTab !== "webhooks"
+			activeTab !== "settings"
+			// &&
+			// activeTab !== "webhooks"
 		) {
 			filtered = filtered.filter(group => getGroupStatus(group) === activeTab);
 		}
@@ -603,7 +604,7 @@ export function RepoTabs({
 									</TabsTrigger> */}
 
 									{/* Webhooks */}
-									<TabsTrigger
+									{/* <TabsTrigger
 										value="webhooks"
 										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
@@ -613,14 +614,14 @@ export function RepoTabs({
 											Webhooks
 										</span>
 										<span className="font-medium sm:hidden">Hooks</span>
-										{/* {webhookErrorCount > 0 && (
+										{webhookErrorCount > 0 && (
 											<div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-2">
 												<span className="text-xs font-semibold text-white">
 													{webhookErrorCount}
 												</span>
 											</div>
-										)} */}
-									</TabsTrigger>
+										)}
+									</TabsTrigger> */}
 
 									{/* Settings */}
 									<TabsTrigger
@@ -742,9 +743,9 @@ export function RepoTabs({
 				<PostsGrid posts={filteredAndSortedPosts} />
 			</TabsContent> */}
 
-			<TabsContent value="webhooks" className="space-y-6">
+			{/* <TabsContent value="webhooks" className="space-y-6">
 				<WebhookTable logs={webhookLogs} isLoading={false} />
-			</TabsContent>
+			</TabsContent> */}
 
 			<TabsContent value="settings" className="space-y-6">
 				<SettingsPanel repo_id={repo_id} />

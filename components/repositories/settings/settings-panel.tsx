@@ -30,7 +30,7 @@ import { RepoCommitFiltersCard } from "./commit-filters";
 import { RepoDangerZoneCard } from "./danger-zone";
 import { RepoGeneralSettingsCard } from "./general-settings";
 import { RepoPostingSettingsCard } from "./posting-settings";
-import { RepoWebhookHealthCard } from "./webhook-health";
+// import { RepoWebhookHealthCard } from "./webhook-health";
 
 interface SettingsPanelProps {
 	repo_id: UUID;
@@ -203,11 +203,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					getSocialLabel={() => ""}
 				/>
 
-				<RepoWebhookHealthCard
+				{/* <RepoWebhookHealthCard
 					loading
 					webhookStatus="inactive"
 					getWebhookStatusIcon={() => ""}
-				/>
+				/> */}
 				{/* <RepoDangerZoneCard onDisconnect={() => {}} loading /> */}
 			</div>
 		);
@@ -330,11 +330,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/>
 
 			{/* Webhook Health */}
-			<RepoWebhookHealthCard
+			{/* <RepoWebhookHealthCard
 				loading={isLoadingRepoDetails}
 				getWebhookStatusIcon={getWebhookStatusIcon}
 				webhookStatus={repository.stats.webhook_status}
-			/>
+			/> */}
 
 			{/* Danger Zone */}
 			{/* <RepoDangerZoneCard

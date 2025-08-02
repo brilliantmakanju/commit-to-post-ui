@@ -42,14 +42,6 @@ const Page = () => {
 							<UpcomingPosts />
 						</CardContent>
 					</Card>
-					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
-						<CardHeader>
-							<CardTitle>Top Repositories</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<RepoCards />
-						</CardContent>
-					</Card>
 				</div>
 
 				{/* Side Panel */}
@@ -71,16 +63,24 @@ const Page = () => {
 						</CardContent>
 					</Card>
 
-					<Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+					{/* <Card className="border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
 						<CardHeader>
 							<CardTitle>Webhook Errors</CardTitle>
 						</CardHeader>
 						<CardContent>
 							<WebhookErrors />
 						</CardContent>
-					</Card>
+					</Card> */}
 				</div>
 			</div>
+			<Card className="h-full w-full border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+				<CardHeader>
+					<CardTitle>Top Repositories</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<RepoCards />
+				</CardContent>
+			</Card>
 		</section>
 	);
 };
