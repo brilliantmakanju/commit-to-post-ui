@@ -221,11 +221,11 @@ export const useSessionManager = ({
 		if (status !== "authenticated" || isLoggingOutRef.current) return;
 
 		const events = [
-			// "mousedown",
-			// "mousemove",
-			// "keypress",
-			// "scroll",
-			// "touchstart",
+			"mousedown",
+			"mousemove",
+			"keypress",
+			"scroll",
+			"touchstart",
 			"click",
 		];
 
