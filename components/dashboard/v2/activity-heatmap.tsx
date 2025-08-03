@@ -167,7 +167,7 @@ export const ActivityHeatmap = () => {
 				setTimeout(checkScrollButtons, 500);
 			}, 100);
 		}
-	}, [checkScrollButtons, isHeatmapLoading]);
+	}, [checkScrollButtons, isHeatmapLoading, data]);
 
 	useEffect(() => {
 		const container = scrollContainerRef.current;

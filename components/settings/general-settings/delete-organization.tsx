@@ -31,22 +31,30 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { deleteCookie } from "@/lib/cookies/create-cookies";
+import {
+	createEncryptedCookie,
+	deleteCookie,
+} from "@/lib/cookies/create-cookies";
 import {
 	type DeleteOrganizationFormValues,
 	deleteOrganizationSchema,
 } from "@/resolvers/organizations/organization-settings-schema";
 import { deleteOrganization } from "@/server-actions/organizations/delete-organization";
-import useOrganizationStore from "@/zustand/useorganization-store";
+import useOrganizationStore, {
+	Organization,
+} from "@/zustand/useorganization-store";
 
 export function DeleteOrganization() {
 	const queryClient = useQueryClient();
 	const [open, setOpen] = useState(false);
-	const { organization } = useOrganizationStore();
-	const organizationStore = useOrganizationStore();
+	const {
+		currentOrganization,
+		organizations,
+		removeOrganization,
+		updateOrganizations,
+	} = useOrganizationStore();
 	const [isDeleting, setIsDeleting] = useState(false);
-	const { organizations, setOrganization } = useOrganizationStore();
-	const isOnlyOrganization = organizations.length === 1 ? true : false;
+	const isOnlyOrganization = organizations.length === 1;
 
 	const form = useForm<DeleteOrganizationFormValues>({
 		resolver: zodResolver(deleteOrganizationSchema),
@@ -55,46 +63,101 @@ export function DeleteOrganization() {
 		},
 	});
 
+	const handleOrganizationSwitch = async (
+		nextOrg: Organization | undefined,
+	) => {
+		if (nextOrg) {
+			// Update the cookie with the new organization
+			await createEncryptedCookie("organization", nextOrg);
+
+			// Invalidate and refetch queries that depend on the organization
+			await queryClient.invalidateQueries({
+				predicate: query => {
+					const queryKey = query.queryKey;
+					return (
+						Array.isArray(queryKey) &&
+						(queryKey.includes("organizations") ||
+							queryKey.includes("organization") ||
+							queryKey.some(
+								key => typeof key === "string" && key.includes("org"),
+							))
+					);
+				},
+			});
+
+			toast.success(`Switched to ${nextOrg.name}`);
+		} else {
+			// No organizations left, clear cookie and redirect
+			await deleteCookie("organization");
+			toast.error(
+				"No organizations remaining. Please create a new organization.",
+			);
+			// Redirect to create organization page or wherever appropriate
+			globalThis.window.location.href = "/create-organization";
+		}
+	};
+
 	const onSubmit = async (data: DeleteOrganizationFormValues) => {
-		if (data.organizationName !== organization?.name) {
+		if (data.organizationName !== currentOrganization?.name) {
+			form.setError("organizationName", {
+				type: "manual",
+				message: "Organization name doesn't match",
+			});
 			return;
 		}
 
 		try {
 			setIsDeleting(true);
+
+			// Delete the organization
 			const response = await deleteOrganization();
+
 			if (response.success) {
-				await deleteCookie("organization");
 				toast.success(response.message || "Organization deleted successfully");
-				organizationStore.clearOrganization();
-				globalThis.window.location.reload();
 
-				// const updatedOrganizations = await queryClient.fetchQuery<
-				// 	{
-				// 		id: string;
-				// 		name: string;
-				// 		description: string;
-				// 		domains: string[];
-				// 	}[]
-				// >({
-				// 	queryKey: ["organizations"],
-				// });
+				// Remove the organization from the store and get the next available org
+				const nextOrg = removeOrganization(currentOrganization!.id);
 
-				// if (updatedOrganizations && updatedOrganizations.length > 0) {
-				// 	setOrganization({
-				// 		...updatedOrganizations[0],
-				// 		domains: updatedOrganizations[0].domains[0],
-				// 	});
-				// }
+				// Update organizations list from server to ensure consistency
+				try {
+					const updatedOrganizations = await queryClient.fetchQuery<
+						{
+							id: string;
+							name: string;
+							description: string;
+							domains: string[];
+						}[]
+					>({
+						queryKey: ["organizations"],
+					});
 
-				// form.reset({
-				// 	organizationName: "",
-				// });
+					if (updatedOrganizations) {
+						// Convert the domains format if needed (your store expects string, API returns array)
+						const formattedOrgs = updatedOrganizations.map(org => ({
+							...org,
+							domains: Array.isArray(org.domains)
+								? org.domains[0] || ""
+								: org.domains,
+						}));
+
+						updateOrganizations(formattedOrgs);
+					}
+				} catch (error) {
+					console.error("Failed to refresh organizations list:", error);
+					// Continue with local state management if server sync fails
+				}
+
+				// Handle organization switching
+				await handleOrganizationSwitch(nextOrg);
+
+				// Reset form and close dialog
+				form.reset({ organizationName: "" });
+				setOpen(false);
 			} else {
 				toast.error(response.message || "Failed to delete organization");
 			}
-			setOpen(false);
-		} catch {
+		} catch (error) {
+			console.error("Delete organization error:", error);
 			toast.error("Failed to delete organization");
 		} finally {
 			setIsDeleting(false);
@@ -119,6 +182,9 @@ export function DeleteOrganization() {
 						open={open}
 						onOpenChange={newOpen => {
 							setOpen(newOpen);
+							if (!newOpen) {
+								form.reset({ organizationName: "" });
+							}
 						}}
 					>
 						{isOnlyOrganization ? (
@@ -158,21 +224,15 @@ export function DeleteOrganization() {
 									<Trash2 className="mr-2 h-5 w-5 text-red-500" />
 									Delete Organization
 								</DialogTitle>
-								{isOnlyOrganization ? (
-									<DialogDescription className="text-zinc-400">
-										You cannot delete your only organization. Please create
-										another organization first before deleting this one.
-									</DialogDescription>
-								) : (
-									<DialogDescription className="text-zinc-400">
-										This action cannot be undone. Please type{" "}
-										<strong className="font-mono font-semibold text-white">
-											{organization?.name}
-										</strong>{" "}
-										to confirm.
-									</DialogDescription>
-								)}
+								<DialogDescription className="text-zinc-400">
+									This action cannot be undone. Please type{" "}
+									<strong className="font-mono font-semibold text-white">
+										{currentOrganization?.name}
+									</strong>{" "}
+									to confirm.
+								</DialogDescription>
 							</DialogHeader>
+
 							{isDeleting ? (
 								<div className="flex h-32 items-center justify-center">
 									<div className="relative">
@@ -184,55 +244,62 @@ export function DeleteOrganization() {
 									</span>
 								</div>
 							) : (
-								!isOnlyOrganization && (
-									<Form {...form}>
-										<form
-											onSubmit={form.handleSubmit(onSubmit)}
-											className="space-y-4"
-										>
-											<FormField
-												control={form.control}
-												name="organizationName"
-												render={({ field }) => (
-													<FormItem>
-														<FormControl>
-															<Input
-																{...field}
-																placeholder="Enter organization name"
-																disabled={isDeleting}
-																className="border-[#232323] bg-[#121212] font-mono text-white focus:border-red-900/50 focus:ring-red-900/20"
-															/>
-														</FormControl>
-														<FormMessage className="text-red-400" />
-													</FormItem>
+								<Form {...form}>
+									<form
+										onSubmit={form.handleSubmit(onSubmit)}
+										className="space-y-4"
+									>
+										<FormField
+											control={form.control}
+											name="organizationName"
+											render={({ field }) => (
+												<FormItem>
+													<FormControl>
+														<Input
+															{...field}
+															placeholder="Enter organization name"
+															disabled={isDeleting}
+															className="border-[#232323] bg-[#121212] font-mono text-white focus:border-red-900/50 focus:ring-red-900/20"
+														/>
+													</FormControl>
+													<FormMessage className="text-red-400" />
+												</FormItem>
+											)}
+										/>
+										<DialogFooter>
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => setOpen(false)}
+												disabled={isDeleting}
+												className="border-[#232323] bg-transparent text-zinc-400 hover:bg-[#232323] hover:text-white"
+											>
+												Cancel
+											</Button>
+											<Button
+												type="submit"
+												variant="destructive"
+												className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900 disabled:border-[#232323] disabled:bg-[#232323] disabled:text-zinc-500"
+												disabled={
+													form.watch("organizationName") !==
+														currentOrganization?.name || isDeleting
+												}
+											>
+												{isDeleting ? (
+													<div className="flex items-center">
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+														<span>Deleting...</span>
+													</div>
+												) : (
+													<div className="flex items-center">
+														<Trash2 className="mr-2 h-4 w-4" />
+														<span>Delete Organization</span>
+													</div>
 												)}
-											/>
-											<DialogFooter>
-												<Button
-													type="submit"
-													variant="destructive"
-													className="border border-red-900/50 bg-red-900/50 text-white hover:bg-red-900 disabled:border-[#232323] disabled:bg-[#232323] disabled:text-zinc-500"
-													disabled={
-														form.watch("organizationName") !==
-															organization?.name || isDeleting
-													}
-												>
-													{isDeleting ? (
-														<div className="flex items-center">
-															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-															<span>Deleting...</span>
-														</div>
-													) : (
-														<div className="flex items-center">
-															<Trash2 className="mr-2 h-4 w-4" />
-															<span>Delete Organization</span>
-														</div>
-													)}
-												</Button>
-											</DialogFooter>
-										</form>
-									</Form>
-								)
+											</Button>
+										</DialogFooter>
+									</form>
+								</Form>
 							)}
 						</DialogContent>
 					</Dialog>

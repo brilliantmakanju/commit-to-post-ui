@@ -208,7 +208,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					webhookStatus="inactive"
 					getWebhookStatusIcon={() => ""}
 				/> */}
-				{/* <RepoDangerZoneCard onDisconnect={() => {}} loading /> */}
+				<RepoDangerZoneCard onDisconnect={() => {}} loading />
 			</div>
 		);
 	}
@@ -337,11 +337,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/> */}
 
 			{/* Danger Zone */}
-			{/* <RepoDangerZoneCard
+			<RepoDangerZoneCard
 				onDisconnect={() => {}}
 				loading={isLoadingRepoDetails}
 				disabled={isLoadingRepoDetails}
-			/> */}
+			/>
 		</div>
 	);
 }

@@ -21,10 +21,10 @@ export const useSessionManager = ({
 	inactivityTimeout = 30,
 	warningTime = 5,
 }: UseSessionManagerOptions = {}) => {
-	const { data: session, status } = useSession();
-	const logoutStore = useLogoutStore();
-	const organizationStore = useOrganizationStore();
-	const userStore = useUserStore();
+	const { status } = useSession();
+	const { clearUser } = useUserStore();
+	const { setLogout } = useLogoutStore();
+	const { clearOrganization } = useOrganizationStore();
 
 	// UI state for the warning modal
 	const [showWarningModal, setShowWarningModal] = useState(false);
@@ -90,10 +90,9 @@ export const useSessionManager = ({
 			setShowWarningModal(false);
 
 			// Clear stores
-			organizationStore.clearOrganization();
-			userStore.clearUser();
-			logoutStore.setLogout(true);
-
+			setLogout(true);
+			clearUser();
+			clearOrganization();
 			// Clear cookies and sign out
 			await clearCookies();
 			await signOut({ redirect: false });
@@ -104,7 +103,7 @@ export const useSessionManager = ({
 			// Force redirect even if logout fails
 			globalThis.location.href = "/";
 		}
-	}, [organizationStore, userStore, logoutStore]);
+	}, [clearOrganization, clearUser, setLogout]);
 
 	// Check if session is still valid
 	const validateSession = useCallback(async () => {
@@ -150,9 +149,9 @@ export const useSessionManager = ({
 	}, []);
 
 	// Handle logout from modal
-	const handleLogoutFromModal = useCallback(() => {
+	const handleLogoutFromModal = useCallback(async () => {
 		setShowWarningModal(false);
-		performLogout();
+		await performLogout();
 	}, [performLogout]);
 
 	// Show warning before logout

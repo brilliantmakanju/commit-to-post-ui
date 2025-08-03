@@ -54,7 +54,7 @@ const Page = () => {
 							<ActivityHeatmap />
 						</CardContent>
 					</Card>
-					<Card className="h-[272px] border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
+					<Card className="h-[280px] border-zinc-800/50 bg-zinc-900/40 text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-900/60">
 						<CardHeader>
 							<CardTitle>Channel Distribution</CardTitle>
 						</CardHeader>

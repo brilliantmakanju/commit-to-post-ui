@@ -207,7 +207,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 		[backgroundRefresh, isSwitching, setOrganization],
 	);
 
-	// Render loading skeleton
+	// Render loading skeleton with consistent avatar size
 	const renderSkeleton = useCallback(
 		(showOrgInfo = false) => (
 			<SidebarMenu>
@@ -217,28 +217,34 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							<SidebarMenuButton
 								size="lg"
 								disabled
-								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+								className="h-auto p-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								{showOrgInfo && activeTeam ? (
-									<>
-										<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-											{activeTeam.name[0].toUpperCase()}
+									<div className="flex w-full items-center justify-between">
+										<div className="flex items-center space-x-3">
+											<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground">
+												{activeTeam.name[0].toUpperCase()}
+											</div>
+											<div className="flex flex-col items-start">
+												<span className="truncate text-base font-bold leading-none">
+													{activeTeam.name}
+												</span>
+												<span className="mt-1 truncate text-xs text-muted-foreground">
+													Active Organization
+												</span>
+											</div>
 										</div>
-										<div className="grid flex-1 text-left text-sm leading-tight">
-											<span className="truncate font-semibold">
-												{activeTeam.name}
-											</span>
-											<span className="truncate text-xs">Active</span>
-										</div>
-									</>
+									</div>
 								) : (
-									<>
-										<Skeleton className="h-8 w-8 rounded-lg" />
-										<div className="grid flex-1 gap-1 text-left text-sm leading-tight">
-											<Skeleton className="h-4 w-24" />
-											<Skeleton className="h-3 w-16" />
+									<div className="flex w-full items-center justify-between">
+										<div className="flex items-center space-x-3">
+											<Skeleton className="h-8 w-8 rounded-lg" />
+											<div className="flex flex-col gap-2">
+												<Skeleton className="h-4 w-28" />
+												<Skeleton className="h-3 w-20" />
+											</div>
 										</div>
-									</>
+									</div>
 								)}
 							</SidebarMenuButton>
 						</DropdownMenuTrigger>
@@ -265,7 +271,11 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 			return (
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<div className="text-sm text-red-500">No organization found</div>
+						<div className="p-4 text-center">
+							<div className="text-sm font-medium text-red-500">
+								No organization found
+							</div>
+						</div>
 					</SidebarMenuItem>
 				</SidebarMenu>
 			);
@@ -284,8 +294,8 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 		return renderSkeleton();
 	}
 
-	const isDropdownDisabled = isSwitching || organizations.length <= 1;
-	const showChevron = organizations.length > 1 && !isSwitching;
+	const isDropdownDisabled = isSwitching;
+	const showChevron = !isSwitching;
 
 	return (
 		<SidebarMenu>
@@ -294,26 +304,41 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 					<DropdownMenuTrigger disabled={isDropdownDisabled} asChild>
 						<SidebarMenuButton
 							size="lg"
-							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+							className="h-auto p-4 transition-colors hover:bg-sidebar-accent/50 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
-							<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-								{activeTeam.name[0].toUpperCase()}
+							<div className="flex w-full items-center justify-between">
+								<div className="flex items-center space-x-3">
+									<div className="relative">
+										<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground shadow-sm">
+											{activeTeam.name[0].toUpperCase()}
+										</div>
+										{organizations.length > 1 && (
+											<div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500"></div>
+										)}
+									</div>
+									<div className="flex min-w-0 flex-1 flex-col items-start">
+										<span className="truncate text-base font-bold leading-tight">
+											{activeTeam.name}
+										</span>
+										<div className="mt-0.5 flex items-center">
+											<span className="truncate text-xs text-muted-foreground">
+												{organizations.length === 1
+													? "Personal workspace"
+													: `Active • ${organizations.length} total`}
+											</span>
+										</div>
+									</div>
+								</div>
+								<div className="ml-2 flex items-center">
+									{isSwitching ? (
+										<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+									) : showChevron ? (
+										<ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+									) : (
+										<></>
+									)}
+								</div>
 							</div>
-							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">
-									{activeTeam.name}
-								</span>
-								<span className="truncate text-xs">
-									{organizations.length === 1 ? "Only Organization" : "Active"}
-								</span>
-							</div>
-							{isSwitching ? (
-								<Loader2 className="ml-auto h-4 w-4 animate-spin" />
-							) : showChevron ? (
-								<ChevronsUpDown className="ml-auto h-4 w-4" />
-							) : (
-								<></>
-							)}
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 
@@ -321,24 +346,33 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 						align="start"
 						sideOffset={4}
 						side={isMobile ? "bottom" : "right"}
-						className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+						className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-xl shadow-lg"
 					>
-						<DropdownMenuLabel className="text-xs text-muted-foreground">
-							{organizations.length === 1 ? "Organization" : "Organizations"}
+						<DropdownMenuLabel className="px-3 py-2 text-xs text-muted-foreground">
+							{organizations.length === 1
+								? "Your Workspace"
+								: "Switch Organization"}
 						</DropdownMenuLabel>
 
 						{/* Show current org if only one organization */}
 						{organizations.length === 1 && (
 							<DropdownMenuItem
-								className="gap-2 p-2"
+								className="mx-2 mb-1 gap-3 rounded-lg p-3"
 								onClick={() => handleTeamChange(activeTeam)}
 								disabled={isSwitching}
 							>
-								<div className="flex size-6 items-center justify-center rounded-sm border">
+								<div className="flex size-6 items-center justify-center rounded-sm border-2 border-sidebar-primary bg-sidebar-primary font-medium text-sidebar-primary-foreground">
 									{activeTeam.name[0].toUpperCase()}
 								</div>
-								{activeTeam.name}
-								<DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
+								<div className="flex flex-col">
+									<span className="font-medium">{activeTeam.name}</span>
+									<span className="text-xs text-muted-foreground">
+										Current workspace
+									</span>
+								</div>
+								<DropdownMenuShortcut className="ml-auto">
+									⌘1
+								</DropdownMenuShortcut>
 							</DropdownMenuItem>
 						)}
 
@@ -347,31 +381,39 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							<DropdownMenuItem
 								key={team.id}
 								onClick={() => handleTeamChange(team)}
-								className="gap-2 p-2"
+								className="mx-2 mb-1 gap-3 rounded-lg p-3 hover:bg-sidebar-accent"
 								disabled={isSwitching}
 							>
-								<div className="flex size-6 items-center justify-center rounded-sm border">
+								<div className="flex size-6 items-center justify-center rounded-sm border bg-muted font-medium">
 									{team.name[0].toUpperCase()}
 								</div>
-								{team.name}
+								<div className="flex min-w-0 flex-1 flex-col">
+									<span className="truncate font-medium">{team.name}</span>
+									<span className="text-xs text-muted-foreground">
+										Switch to this org
+									</span>
+								</div>
 								<DropdownMenuShortcut>⌘{index + 2}</DropdownMenuShortcut>
 							</DropdownMenuItem>
 						))}
 
-						<DropdownMenuSeparator />
+						<DropdownMenuSeparator className="my-2" />
 
 						<DropdownMenuItem
 							onClick={() => setCreateModalOpen(true)}
-							className="gap-2 p-2"
+							className="mx-2 mb-2 gap-3 rounded-lg bg-muted/30 p-3 hover:bg-muted/50"
 							disabled={isSwitching}
 						>
-							<div className="flex size-6 items-center justify-center rounded-md border bg-background">
-								<Plus className="size-4" />
+							<div className="flex size-6 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground bg-background">
+								<Plus className="size-4 text-muted-foreground" />
 							</div>
-							<div className="font-medium text-muted-foreground">
-								{hasAccess
-									? "Create Organization"
-									: "Upgrade to Create Organization"}
+							<div className="flex flex-col">
+								<span className="font-medium text-muted-foreground">
+									{hasAccess ? "Create Organization" : "Upgrade Plan"}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									{hasAccess ? "Add new workspace" : "Unlock team features"}
+								</span>
 							</div>
 						</DropdownMenuItem>
 					</DropdownMenuContent>

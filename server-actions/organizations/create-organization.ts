@@ -9,10 +9,15 @@ export const createOrganization = async (data: OrganizationFormValues) => {
 	try {
 		const validatedData = organizationSchema.parse(data);
 
-		const response = await apiClient.post("/api/v1/organizations/", {
-			name: validatedData.name,
-			description: validatedData.description,
-		});
+		const response = await apiClient.post(
+			"/api/v1/organizations/",
+			{
+				name: validatedData.name,
+				description: validatedData.description,
+			},
+			{},
+			10000,
+		);
 
 		return response; // Return the created organization data
 	} catch (error: unknown) {

@@ -134,7 +134,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 	// Show logout modal when logging out
 	if (shouldLogout) {
-		return <LogoutModal showByDefault={true} />;
+		return <LogoutModal showByDefault={shouldLogout} />;
 	}
 
 	// Show loading states with appropriate messages
