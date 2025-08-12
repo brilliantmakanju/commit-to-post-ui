@@ -23,78 +23,35 @@ import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 // eslint-disable-next-line import/no-unresolved
 import { useOAuthFlow } from "@/hooks/use-oauth-flow";
 
-type Provider = "github" | "linkedin" | "twitter";
+type Provider = "linkedin" | "twitter";
 
 interface ProviderConfig {
 	name: string;
 	icon: React.ReactNode;
 	terminalTheme: {
-		primary: string;
-		secondary: string;
-		success: string;
 		error: string;
+		primary: string;
+		success: string;
+		secondary: string;
 		background: string;
 	};
 	messages: {
+		success: string[];
+		processing: string[];
 		initializing: string[];
 		authenticating: string[];
-		processing: string[];
-		success: string[];
 	};
 }
 
 const PROVIDER_CONFIGS: Record<Provider, ProviderConfig> = {
-	github: {
-		name: "GitHub",
-		icon: <FaGithub className="h-5 w-5" />,
-		terminalTheme: {
-			primary: "text-green-400",
-			secondary: "text-gray-300",
-			success: "text-green-300",
-			error: "text-red-400",
-			background: "bg-black",
-		},
-		messages: {
-			initializing: [
-				"→ Booting up GitHub OAuth sequence...",
-				"→ Fetching repositories from your account...",
-				"→ Setting up commit webhooks...",
-				"→ Preparing repo-to-social pipeline...",
-				"[INFO] Pulling your most active branches...",
-			],
-			authenticating: [
-				"→ Authenticating via GitHub API...",
-				"→ Validating webhook permissions...",
-				"→ Linking commits to your workspace...",
-				"→ Saving repo config to organization...",
-				"[INFO] Scanning commit metadata in real-time...",
-				"[INFO] Git hooks successfully attached...",
-			],
-			processing: [
-				"→ Listening for future commits on selected branches...",
-				"→ Mapping commit messages to content pipeline...",
-				"→ Preparing post generator config...",
-				"→ Linking commit triggers to social outputs...",
-				"[INFO] Post generation presets active (tone, hashtags)...",
-				"[INFO] Commit-to-social automation is now live...",
-			],
-			success: [
-				"✓ GitHub connected successfully",
-				"✓ Repo access and webhooks in place",
-				"✓ Your commits are now ready to go live",
-				"[SUCCESS] Git to post pipeline initialized!",
-			],
-		},
-	},
-
 	linkedin: {
 		name: "LinkedIn",
 		icon: <FaLinkedin className="h-5 w-5" />,
 		terminalTheme: {
+			error: "text-red-400",
+			success: "text-blue-200",
 			primary: "text-blue-300",
 			secondary: "text-gray-300",
-			success: "text-blue-200",
-			error: "text-red-400",
 			background: "bg-slate-900",
 		},
 		messages: {
@@ -102,19 +59,19 @@ const PROVIDER_CONFIGS: Record<Provider, ProviderConfig> = {
 				"→ Kicking off LinkedIn OAuth process...",
 				"→ Loading your professional identity...",
 				"→ Mapping LinkedIn post capabilities...",
-				"[INFO] Preparing to sync posts from commits...",
+				// "[INFO] Preparing to sync posts from commits...",
 			],
 			authenticating: [
 				"→ Authenticating via LinkedIn API...",
 				"→ Validating publishing permissions...",
-				"→ Linking your profile to workspace...",
-				"→ Setting tone and hashtag strategy...",
-				"[INFO] Calibrating for technical + career-friendly output...",
+				"→ Linking your profile to repo...",
+				// "→ Setting tone and hashtag strategy...",
+				// "[INFO] Calibrating for technical + career-friendly output...",
 			],
 			processing: [
 				"→ Connecting commit activity to your feed...",
-				"→ Formatting posts for professional tone...",
-				"→ Embedding commit logs into readable content...",
+				// "→ Formatting posts for professional tone...",
+				// "→ Embedding commit logs into readable content...",
 				"[INFO] Your posts will auto-publish as you build...",
 			],
 			success: [
@@ -129,37 +86,37 @@ const PROVIDER_CONFIGS: Record<Provider, ProviderConfig> = {
 		name: "Twitter",
 		icon: <FaTwitter className="h-5 w-5" />,
 		terminalTheme: {
-			primary: "text-cyan-300",
-			secondary: "text-gray-300",
-			success: "text-cyan-200",
 			error: "text-red-400",
+			primary: "text-cyan-300",
+			success: "text-cyan-200",
 			background: "bg-gray-900",
+			secondary: "text-gray-300",
 		},
 		messages: {
 			initializing: [
 				"→ Initializing Twitter OAuth handshake...",
-				"→ Pulling account metadata...",
+				// "→ Pulling account metadata...",
 				"→ Setting up tweet automation...",
-				"[INFO] Preparing content templates from your commit logs...",
+				// "[INFO] Preparing content templates from your commit logs...",
 			],
 			authenticating: [
 				"→ Authenticating via Twitter API...",
 				"→ Verifying post permissions...",
 				"→ Linking Twitter to active repos...",
-				"[INFO] Establishing commit → thread connection...",
+				// "[INFO] Establishing commit → thread connection...",
 				"[INFO] Ready to build your developer audience...",
 			],
 			processing: [
-				"→ Mapping commit history to tweet format...",
-				"→ Optimizing threads for engagement...",
+				// "→ Mapping commit history to tweet format...",
+				// "→ Optimizing threads for engagement...",
 				"→ Scheduling auto-post logic...",
-				"[INFO] Hashtag and emoji preferences applied...",
+				// "[INFO] Hashtag and emoji preferences applied...",
 				"[INFO] You're now tweeting while you ship...",
 			],
 			success: [
 				"✓ Twitter connection successful",
 				"✓ Tweets now linked to repo commits",
-				"[SUCCESS] Welcome to auto-thread mode — devlog style.",
+				"[SUCCESS] Welcome to auto-tweet mode — devlog style.",
 			],
 		},
 	},
@@ -168,52 +125,78 @@ const PROVIDER_CONFIGS: Record<Provider, ProviderConfig> = {
 export default function Component() {
 	const searchParams = useSearchParams();
 	const [showCursor, setShowCursor] = useState(true);
-	const [provider, setProvider] = useState<Provider>("github");
+	const [provider, setProvider] = useState<Provider | undefined>();
+	const [isProviderReady, setIsProviderReady] = useState(false);
+	const [isInitializing, setIsInitializing] = useState(true);
 
 	// Memoize search params to prevent unnecessary re-renders
 	const { code, state, providerParam } = useMemo(
 		() => ({
 			code: searchParams.get("code"),
 			state: searchParams.get("state"),
-			providerParam:
-				searchParams.get("provider") ||
-				searchParams.get("oauth") ||
-				searchParams.get("social"),
+			providerParam: searchParams.get("provider"),
 		}),
 		[searchParams],
 	);
 
-	// Detect provider from URL with optimization
+	// Detect provider from URL with initialization delay
 	useEffect(() => {
-		if (providerParam) {
-			const lowerParameter = providerParam.toLowerCase();
-			if (lowerParameter.includes("github")) {
-				setProvider("github");
-			} else if (lowerParameter.includes("linkedin")) {
+		const initializeProvider = async () => {
+			// Show loading screen for a bit to ensure everything is set up
+			await new Promise(resolve => setTimeout(resolve, 1000));
+
+			if (providerParam) {
+				const lowerParameter = providerParam.toLowerCase();
+				let detectedProvider: Provider;
+
+				if (lowerParameter.includes("linkedin")) {
+					detectedProvider = "linkedin";
+				} else if (lowerParameter.includes("twitter")) {
+					detectedProvider = "twitter";
+				} else {
+					// Default fallback if provider is not recognized
+					detectedProvider = "linkedin";
+				}
+
+				console.log(
+					`Provider detected: ${detectedProvider} from param: ${providerParam}`,
+				);
+				setProvider(detectedProvider);
+			} else {
+				// If no provider param, default to linkedin
+				console.log("No provider param found, defaulting to linkedin");
 				setProvider("linkedin");
-			} else if (lowerParameter.includes("twitter")) {
-				setProvider("twitter");
 			}
-		}
+
+			// Small delay to ensure state is updated
+			await new Promise(resolve => setTimeout(resolve, 200));
+			setIsProviderReady(true);
+			setIsInitializing(false);
+		};
+
+		initializeProvider();
 	}, [providerParam]);
 
-	// Memoize config to prevent unnecessary re-renders
-	const config = useMemo(() => PROVIDER_CONFIGS[provider], [provider]);
+	// Memoize config to prevent unnecessary re-renders - use fallback for initial render
+	const config = useMemo(() => {
+		return provider ? PROVIDER_CONFIGS[provider] : PROVIDER_CONFIGS.linkedin;
+	}, [provider]);
 
-	// OAuth flow hook
+	// OAuth flow hook - always call but conditionally enable
 	const {
-		connectionState,
-		terminalLines,
-		currentLine,
 		isTyping,
-		waitingForBackend,
-		errorMessage,
+		currentLine,
 		handleRetry,
+		errorMessage,
+		terminalLines,
+		connectionState,
+		waitingForBackend,
 	} = useOAuthFlow({
-		provider: "linkedin",
-		config: PROVIDER_CONFIGS["linkedin"],
+		config: config,
 		code: code || "",
 		state: state || "",
+		provider: provider || "linkedin",
+		enabled: isProviderReady && provider !== null,
 	});
 
 	// Cursor animation with cleanup
@@ -289,6 +272,25 @@ export default function Component() {
 			}
 		}
 	}, [connectionState, config.name, errorMessage]);
+
+	// Don't render anything until provider is determined
+	if (!isProviderReady || !provider) {
+		return (
+			<Suspense>
+				<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+					<div className="text-center">
+						<RefreshCw className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-400" />
+						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
+							Initializing OAuth Flow
+						</h1>
+						<p className="text-gray-600 dark:text-gray-400">
+							Detecting provider and setting up authentication...
+						</p>
+					</div>
+				</section>
+			</Suspense>
+		);
+	}
 
 	// Show error if missing required params
 	if (!code || !state) {

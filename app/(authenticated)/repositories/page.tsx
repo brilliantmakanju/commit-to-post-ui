@@ -1,8 +1,9 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 
-import { Github, Loader2, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { FaGithub } from "react-icons/fa";
 
 import { Header } from "@/components/general/micro/header";
 import { AddRepositoryModal } from "@/components/repositories/add-repo";
@@ -90,7 +91,7 @@ export default function RepositoriesPage() {
 			return (
 				<div className="mt-8 flex h-[400px] items-center justify-center rounded-lg border border-dashed border-zinc-800/50">
 					<div className="space-y-6 text-center">
-						<Github className="mx-auto h-16 w-16 text-zinc-600" />
+						<FaGithub className="mx-auto h-16 w-16 text-zinc-600" />
 						<div className="space-y-3">
 							<h3 className="text-xl font-medium text-zinc-100">
 								{searchQuery

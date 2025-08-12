@@ -3,15 +3,7 @@
 import { UUID } from "node:crypto";
 
 import { useQueryClient } from "@tanstack/react-query";
-import {
-	AlertCircle,
-	Code,
-	ExternalLink,
-	Loader2,
-	Plus,
-	Trash2,
-	X,
-} from "lucide-react";
+import { Code, ExternalLink, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { toast } from "sonner";
@@ -20,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import {
 	disconnectSlackAndDiscord,
 	getConnectLinkedinOauth,
+	getConnectTwitterOauth,
 } from "@/server-actions/core/repo/social-connect";
 
 interface SocialConnection {
@@ -70,16 +63,16 @@ const toastStyles = {
 };
 
 export function OAuthModal({
-	repo_id,
 	isOpen,
+	repo_id,
 	onClose,
 	platform,
 	existingConnection,
 }: OAuthModalProps) {
 	const queryClient = useQueryClient();
-	const [currentStep, setCurrentStep] = useState<OAuthStep>("initializing");
 	const [isLoading, setIsLoading] = useState(false);
 	const [mode, setMode] = useState<ModalMode>("create");
+	const [currentStep, setCurrentStep] = useState<OAuthStep>("initializing");
 
 	const config = platformConfig[platform];
 	const PlatformIcon = config?.icon;
@@ -111,6 +104,8 @@ export function OAuthModal({
 			let result;
 			if (platform === "linkedin") {
 				result = await getConnectLinkedinOauth(repo_id);
+			} else if (platform === "twitter") {
+				result = await getConnectTwitterOauth(repo_id);
 			} else {
 				showToast.error("OAuth not yet implemented for this platform");
 				return;
@@ -146,7 +141,7 @@ export function OAuthModal({
 		try {
 			const response = await disconnectSlackAndDiscord(
 				repo_id,
-				platform as "linkedin" | "slack" | "discord",
+				platform as "linkedin" | "slack" | "discord" | "twitter",
 			);
 
 			if (!response.success) {

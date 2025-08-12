@@ -1,7 +1,7 @@
 "use client";
 import { UUID } from "node:crypto";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isEqual from "fast-deep-equal";
 import {
 	AlertCircle,
@@ -10,6 +10,7 @@ import {
 	RotateCcw,
 	XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaDiscord, FaLinkedinIn, FaSlack, FaTwitter } from "react-icons/fa";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/tooltip"; // Assuming you’re using shadcn or similar
 // eslint-disable-next-line import/no-unresolved
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
+import { deleteRepo } from "@/server-actions/core/repo/repo-status";
 import { updateRepoSettings } from "@/server-actions/user-actions/repo/edit-repo";
 
 import { RepoAISettingsCard } from "./ai-settings";
@@ -112,6 +114,8 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 		isLoadingRepoDetails,
 		repoDetails: repository,
 	} = useRepoSuperDetails(repo_id);
+	const router = useRouter();
+	const queryClient = useQueryClient();
 	const [localSettings, setLocalSettings] = useState<any | undefined>();
 	const [originalSettings, setOriginalSettings] = useState<any | undefined>();
 
@@ -149,6 +153,25 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 
 	const handleRevertSettings = () => {
 		setLocalSettings(originalSettings);
+	};
+
+	const onDelete = async () => {
+		const result = await deleteRepo({
+			repoId: repo_id,
+		});
+
+		if (result.success) {
+			queryClient.invalidateQueries({
+				queryKey: ["connected_repos"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["dashboard_metrics"],
+			});
+			router.push("/repositories");
+			toast.success(result.message);
+		} else {
+			toast.error(result.message);
+		}
 	};
 
 	if (
@@ -208,7 +231,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					webhookStatus="inactive"
 					getWebhookStatusIcon={() => ""}
 				/> */}
-				<RepoDangerZoneCard onDisconnect={() => {}} loading />
+				<RepoDangerZoneCard repo_id={repo_id} onDelete={() => {}} loading />
 			</div>
 		);
 	}
@@ -338,7 +361,8 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 
 			{/* Danger Zone */}
 			<RepoDangerZoneCard
-				onDisconnect={() => {}}
+				repo_id={repo_id}
+				onDelete={() => onDelete()}
 				loading={isLoadingRepoDetails}
 				disabled={isLoadingRepoDetails}
 			/>

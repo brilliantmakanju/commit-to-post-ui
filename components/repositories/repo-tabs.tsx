@@ -34,7 +34,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import GroupedPostCard from "../posts/grouped-posts";
-import PostCard from "../posts/post-card";
 import SkeletonPostCard from "../posts/post-skeleton";
 import { SettingsPanel } from "./settings/settings-panel";
 import WebhookTable from "./webhook/webhook-table";
@@ -604,7 +603,7 @@ export function RepoTabs({
 									</TabsTrigger> */}
 
 									{/* Webhooks */}
-									{/* <TabsTrigger
+									<TabsTrigger
 										value="webhooks"
 										disabled={isLoadingPosts}
 										className="group relative flex items-center gap-2 rounded-xl bg-transparent px-4 py-3 text-zinc-400 transition-all duration-300 hover:bg-zinc-800/30 hover:text-zinc-200 data-[state=active]:bg-white data-[state=active]:text-black"
@@ -621,7 +620,7 @@ export function RepoTabs({
 												</span>
 											</div>
 										)}
-									</TabsTrigger> */}
+									</TabsTrigger>
 
 									{/* Settings */}
 									<TabsTrigger
@@ -743,9 +742,9 @@ export function RepoTabs({
 				<PostsGrid posts={filteredAndSortedPosts} />
 			</TabsContent> */}
 
-			{/* <TabsContent value="webhooks" className="space-y-6">
+			<TabsContent value="webhooks" className="space-y-6">
 				<WebhookTable logs={webhookLogs} isLoading={false} />
-			</TabsContent> */}
+			</TabsContent>
 
 			<TabsContent value="settings" className="space-y-6">
 				<SettingsPanel repo_id={repo_id} />

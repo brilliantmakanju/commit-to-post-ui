@@ -14,6 +14,10 @@ const updateRepoStatusSchema = z.object({
 	}),
 });
 
+const deleteRepoSchema = z.object({
+	repoId: z.string().uuid({ message: "Invalid repository ID." }),
+});
+
 /**
  * Update the repository status to either 'connected' or 'paused'.
  */
@@ -56,6 +60,51 @@ export const updateRepoStatus = async ({
 				status === "paused"
 					? "Repository paused successfully."
 					: "Repository resumed and reconnected.",
+		};
+	} catch {
+		return {
+			success: false,
+			message: "Something went wrong. Please try again later.",
+		};
+	}
+};
+
+/**
+ * Delete repository.
+ */
+export const deleteRepo = async ({
+	repoId,
+}: {
+	repoId: string;
+}): Promise<{
+	success: boolean;
+	message: string;
+}> => {
+	// Validate input
+	const validation = deleteRepoSchema.safeParse({ repoId });
+
+	if (!validation.success) {
+		return {
+			success: false,
+			message: validation.error.errors[0]?.message ?? "Invalid input.",
+		};
+	}
+
+	try {
+		const response = await apiClient.delete(
+			`/api/v1/repositories/${repoId}/status/`,
+		);
+
+		if (response.status !== 200) {
+			return {
+				success: false,
+				message: "Unable to delete the repository. Please try again.",
+			};
+		}
+
+		return {
+			success: true,
+			message: "Repository deleted successfully.",
 		};
 	} catch {
 		return {

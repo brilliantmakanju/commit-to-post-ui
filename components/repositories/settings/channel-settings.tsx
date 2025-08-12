@@ -200,7 +200,8 @@ export const RepoChannelSettingsCard = ({
 						{platforms.map(platform => {
 							const connection = socialConnections[platform];
 							const isConnected = connection?.connected || false;
-							const isComingSoon = platform === "twitter";
+							// const isComingSoon = platform === "twitter";
+							const isComingSoon = false;
 							const label = getSocialLabel(platform);
 
 							// LinkedIn-specific checks

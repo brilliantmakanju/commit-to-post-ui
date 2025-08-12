@@ -5,10 +5,8 @@ import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useState } from "react";
 interface WebhookPingLog {
 	id: string;
-	client_ip: string;
 	received_at: string;
 	github_event: string;
-	request_size: number;
 	http_status: number | null;
 	completed_at: string | null;
 	response_body: string | null;
@@ -162,9 +160,9 @@ export default function WebhookTable({
 			</div>
 
 			{/* Table */}
-			<div className="overflow-x-auto">
+			<div className="h-auto overflow-x-auto">
 				{filteredLogs.length === 0 ? (
-					<div className="px-6 py-12 text-center">
+					<div className="flex h-[300px] flex-col items-center justify-center gap-2 px-6 py-12 text-center">
 						<div className="mb-3 text-zinc-600">
 							<Clock className="mx-auto h-8 w-8" />
 						</div>

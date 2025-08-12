@@ -3,9 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { socialConnectLinkedinOauth } from "@/server-actions/core/repo/social-connect";
+import {
+	socialConnectLinkedinOauth,
+	socialConnectTwitterOauth,
+} from "@/server-actions/core/repo/social-connect";
 
-type Provider = "github" | "linkedin" | "twitter";
+type Provider = "linkedin" | "twitter";
 type ConnectionState =
 	| "initializing"
 	| "authenticating"
@@ -33,10 +36,11 @@ interface ProviderConfig {
 }
 
 interface UseOAuthFlowProps {
-	config: ProviderConfig;
 	code: string;
 	state: string;
 	provider: Provider;
+	config: ProviderConfig;
+	enabled?: boolean; // Add enabled flag
 }
 
 interface OAuthResponse {
@@ -47,70 +51,19 @@ interface OAuthResponse {
 	};
 }
 
-// LinkedIn OAuth Response type to match your server action
-interface LinkedInOauthResponse {
-	success: boolean;
-	message?: string;
-	data?: {
-		repo_id: string;
-	};
-}
-
-// Mock server actions for GitHub and Twitter - replace with actual implementations
-const mockGitHubOAuth = async (
-	code: string,
-	state: string,
-): Promise<OAuthResponse> => {
-	await new Promise(resolve =>
-		setTimeout(resolve, 2000 + Math.random() * 3000),
-	);
-	const isSuccess = Math.random() > 0.12;
-
-	return isSuccess
-		? {
-				success: true,
-				data: { repo_id: "github_repo_123456" },
-				message: "GitHub connection successful. Redirecting...",
-			}
-		: {
-				success: false,
-				message: "GitHub authentication failed. Please try again.",
-			};
-};
-
-const mockTwitterOAuth = async (
-	code: string,
-	state: string,
-): Promise<OAuthResponse> => {
-	await new Promise(resolve =>
-		setTimeout(resolve, 2000 + Math.random() * 3000),
-	);
-	const isSuccess = Math.random() > 0.12;
-
-	return isSuccess
-		? {
-				success: true,
-				data: { repo_id: "twitter_repo_123456" },
-				message: "Twitter connection successful. Redirecting...",
-			}
-		: {
-				success: false,
-				message: "Twitter authentication failed. Please try again.",
-			};
-};
-
 export function useOAuthFlow({
-	provider,
-	config,
 	code,
 	state,
+	config,
+	provider,
+	enabled = true, // Default to true for backward compatibility
 }: UseOAuthFlowProps) {
 	const router = useRouter();
 	const [isTyping, setIsTyping] = useState(false);
 	const [currentLine, setCurrentLine] = useState("");
+	const [terminalLines, setTerminalLines] = useState<string[]>([]);
 	const [waitingForBackend, setWaitingForBackend] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | undefined>();
-	const [terminalLines, setTerminalLines] = useState<string[]>([]);
 	const [connectionState, setConnectionState] =
 		useState<ConnectionState>("initializing");
 
@@ -120,6 +73,46 @@ export function useOAuthFlow({
 	const backendCallMadeRef = useRef(false);
 	const typeIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 	const animationTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+	const currentProviderRef = useRef<Provider>(provider);
+
+	// Update current provider ref when provider changes
+	useEffect(() => {
+		currentProviderRef.current = provider;
+	}, [provider]);
+
+	// Reset flow when provider changes or when becoming enabled
+	useEffect(() => {
+		if (
+			currentProviderRef.current !== provider ||
+			(!enabled && hasStartedRef.current)
+		) {
+			console.log(
+				`Provider changed from ${currentProviderRef.current} to ${provider} or enabled changed, resetting flow`,
+			);
+
+			// Reset all state
+			setConnectionState("initializing");
+			setWaitingForBackend(false);
+			setErrorMessage(undefined);
+			setTerminalLines([]);
+			setCurrentLine("");
+			setIsTyping(false);
+
+			// Reset refs
+			hasStartedRef.current = false;
+			backendCallMadeRef.current = false;
+
+			// Clear any pending timeouts
+			if (animationTimeoutRef.current) {
+				clearTimeout(animationTimeoutRef.current);
+				animationTimeoutRef.current = undefined;
+			}
+			if (typeIntervalRef.current) {
+				clearInterval(typeIntervalRef.current);
+				typeIntervalRef.current = undefined;
+			}
+		}
+	}, [provider, enabled]);
 
 	// Cleanup on unmount
 	useEffect(() => {
@@ -175,44 +168,37 @@ export function useOAuthFlow({
 		}
 
 		backendCallMadeRef.current = true;
+		const currentProvider = currentProviderRef.current;
 
 		try {
-			// console.log(
-			// 	`Calling ${provider} OAuth with code: ${code}, state: ${state}`,
-			// );
+			console.log(
+				`Calling ${currentProvider} OAuth with code: ${code}, state: ${state}`,
+			);
 
 			let result: OAuthResponse;
 
-			switch (provider) {
+			switch (currentProvider) {
 				case "linkedin": {
-					// This is the actual LinkedIn OAuth call
 					result = await socialConnectLinkedinOauth(code, state);
 					// console.log("LinkedIn OAuth result:", result);
 					break;
 				}
-				case "github": {
-					// Replace with actual GitHub OAuth function when available
-					result = await mockGitHubOAuth(code, state);
-					// console.log("GitHub OAuth result:", result);
-					break;
-				}
 				case "twitter": {
-					// Replace with actual Twitter OAuth function when available
-					result = await mockTwitterOAuth(code, state);
+					result = await socialConnectTwitterOauth(code, state);
 					// console.log("Twitter OAuth result:", result);
 					break;
 				}
 				default: {
-					throw new Error(`Unsupported provider: ${provider}`);
+					throw new Error(`Unsupported provider: ${currentProvider}`);
 				}
 			}
 
 			return result;
 		} catch (error) {
-			// console.error(`OAuth error for ${provider}:`, error);
+			// console.error(`OAuth error for ${currentProvider}:`, error);
 			throw error;
 		}
-	}, [provider, code, state]);
+	}, [code, state]);
 
 	// Enhanced waiting state
 	const showWaitingState = useCallback(async () => {
@@ -288,12 +274,16 @@ export function useOAuthFlow({
 
 	// Main OAuth flow
 	const runOAuthFlow = useCallback(async () => {
+		// console.log("startting");
 		if (isUnmountedRef.current || hasStartedRef.current) return;
+		// console.log("ednf")
 
 		hasStartedRef.current = true;
+		const currentProvider = currentProviderRef.current;
+		// console.log("modiv")
 
 		try {
-			// console.log(`Starting OAuth flow for ${provider}`);
+			console.log(`Starting OAuth flow for ${currentProvider}`);
 
 			// Start backend call immediately but don't await yet
 			const backendPromise = callServerAction();
@@ -388,15 +378,22 @@ export function useOAuthFlow({
 		callServerAction,
 	]);
 
-	// Start the OAuth flow
+	// Start the OAuth flow - now waits for valid provider and enabled flag
 	useEffect(() => {
-		if (code && state && !hasStartedRef.current) {
+		if (enabled && code && state && provider && !hasStartedRef.current) {
 			// console.log(
-			// 	`OAuth flow triggered for ${provider} with code: ${code}, state: ${state}`,
+			// 	`OAuth flow triggered for ${provider} with code: ${code}, state: ${state}, enabled: ${enabled}`,
 			// );
-			runOAuthFlow();
+			// Small delay to ensure everything is properly set up
+			const startTimeout = setTimeout(() => {
+				if (!hasStartedRef.current && enabled) {
+					runOAuthFlow();
+				}
+			}, 100);
+
+			return () => clearTimeout(startTimeout);
 		}
-	}, [code, state, provider, runOAuthFlow]);
+	}, [code, state, provider, enabled, runOAuthFlow]);
 
 	// Retry function
 	const handleRetry = useCallback(() => {

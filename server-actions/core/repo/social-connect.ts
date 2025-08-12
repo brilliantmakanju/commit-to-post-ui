@@ -20,14 +20,19 @@ const socialIntegrationSchema = z.object({
 
 const disconnectIntegrationSchema = z.object({
 	repo_id: z.string().uuid({ message: "Invalid repository ID." }),
-	platform: z.enum(["slack", "discord", "linkedin"], {
+	platform: z.enum(["slack", "discord", "linkedin", "twitter"], {
 		errorMap: () => ({
-			message: "Platform must be either 'slack' or 'discord'.",
+			message:
+				"Platform must be either 'slack', 'discord', 'linkedin' or 'twitter'.",
 		}),
 	}),
 });
 
 const getConnectLinkedinOauthSchema = z.object({
+	repo_id: z.string().uuid({ message: "Invalid repository ID." }),
+});
+
+const getConnectTwitterOauthSchema = z.object({
 	repo_id: z.string().uuid({ message: "Invalid repository ID." }),
 });
 
@@ -94,7 +99,7 @@ export const socialConnectSlackAndDiscord = async (
 
 export const disconnectSlackAndDiscord = async (
 	repo_id: string,
-	platform: "slack" | "discord" | "linkedin",
+	platform: "slack" | "discord" | "linkedin" | "twitter",
 ): Promise<{
 	success: boolean;
 	message: string;
@@ -196,7 +201,7 @@ export const getConnectLinkedinOauth = async (
 	}
 };
 
-interface LinkedInOauthResponse {
+interface OauthResponse {
 	success: boolean;
 	message?: string;
 	data?: {
@@ -210,7 +215,7 @@ interface LinkedInOauthResponse {
 export const socialConnectLinkedinOauth = async (
 	code: string,
 	state: string,
-): Promise<LinkedInOauthResponse> => {
+): Promise<OauthResponse> => {
 	// Validate inputs
 	// console.log(code, "Code", state, "State");
 	const parsed = socialConnectLinkedinOauthSchema.safeParse({ code, state });
@@ -257,6 +262,113 @@ export const socialConnectLinkedinOauth = async (
 		return {
 			success: false,
 			message,
+		};
+	}
+};
+
+export const socialConnectTwitterOauth = async (
+	code: string,
+	state: string,
+): Promise<OauthResponse> => {
+	// Validate inputs
+	// console.log(code, "Code", state, "State");
+	const parsed = socialConnectLinkedinOauthSchema.safeParse({ code, state });
+	// console.log(parsed, "Parsed");
+
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: "Invalid request. Please refresh the page and try again.",
+		};
+	}
+
+	try {
+		const { code: validatedCode, state: validatedState } = parsed.data;
+
+		const url = `/api/v1/repositories/integrations/twitter/connect/?code=${validatedCode}&state=${validatedState}`;
+
+		const response = await apiClient.post(url, {}, {}, 10000);
+		// console.log(response, "Response");
+
+		if (response.status !== 200 || !response.data?.repo_id) {
+			return {
+				success: false,
+				message:
+					"We couldn’t connect your Twitter account. Please try again or contact support.",
+			};
+		}
+
+		return {
+			success: true,
+			data: {
+				repo_id: response.data.repo_id,
+			},
+			message: "LinkedIn connection successful. Redirecting...",
+		};
+	} catch (error: any) {
+		const fallback =
+			"Something went wrong while connecting to Twitter. Please try again later.";
+
+		// Extract message from backend if available
+		const message =
+			error?.response?.data?.message ?? error?.message ?? fallback;
+
+		return {
+			success: false,
+			message,
+		};
+	}
+};
+
+export const getConnectTwitterOauth = async (
+	repo_id: string,
+): Promise<{
+	message?: string;
+	success: boolean;
+	data?: {
+		authorization_url: string;
+	};
+}> => {
+	const validation = getConnectTwitterOauthSchema.safeParse({ repo_id });
+
+	if (!validation.success) {
+		return {
+			success: false,
+			message: "Invalid repository. Please refresh and try again.",
+		};
+	}
+
+	try {
+		const url = `/api/v1/repositories/integrations/twitter/connect/?repo_id=${repo_id}`;
+		const response = await apiClient.get(url);
+
+		const authUrl = response?.data?.authorization_url;
+
+		if (response.status !== 200 || !authUrl) {
+			return {
+				success: false,
+				message:
+					"We couldn’t start the LinkedIn connection. Please try again or contact support.",
+			};
+		}
+
+		return {
+			success: true,
+			data: {
+				authorization_url: authUrl,
+			},
+			message: "LinkedIn connection initialized. Redirecting...",
+		};
+	} catch (error: any) {
+		const fallbackMessage =
+			"An unexpected error occurred while connecting to LinkedIn.";
+
+		const detailedMessage =
+			error?.response?.data?.message ?? error?.message ?? fallbackMessage;
+
+		return {
+			success: false,
+			message: detailedMessage,
 		};
 	}
 };
