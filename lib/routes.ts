@@ -1,13 +1,15 @@
 export const PUBLIC_ROUTES = ["/inbox"];
 
 export const PROTECTED_SUB_ROUTES = [
-	"/dashboard",
-	"/setup",
-	"/settings",
+	"/auth",
 	"/posts",
+	"/setup",
+	"/success",
+	"/payment",
+	"/settings",
+	"/workspace",
+	"/dashboard",
+	"/start",
 	"/notifications",
 	"/payment-success",
-	"/payment",
-	"/success",
-	"/auth",
 ];
