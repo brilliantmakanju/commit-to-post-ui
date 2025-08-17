@@ -277,7 +277,7 @@ export default function Component() {
 	if (!isProviderReady || !provider) {
 		return (
 			<Suspense>
-				<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+				<section className="relative flex min-h-screen w-full items-center justify-center p-4">
 					<div className="text-center">
 						<RefreshCw className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-400" />
 						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -296,7 +296,7 @@ export default function Component() {
 	if (!code || !state) {
 		return (
 			<Suspense>
-				<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+				<section className="relative flex min-h-screen w-full items-center justify-center p-4">
 					<div className="text-center">
 						<AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-400" />
 						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -314,10 +314,10 @@ export default function Component() {
 
 	return (
 		<Suspense>
-			<section className="relative flex min-h-screen items-center justify-center bg-white p-4 dark:bg-black">
+			<section className="relative flex min-h-screen w-full items-center justify-center p-4">
 				<ProviderBackground provider={provider} />
 
-				<div className="relative z-10 mx-auto w-full max-w-6xl">
+				<div className="relative z-10 w-full">
 					{/* Header */}
 					<div className="mb-8 text-center">
 						<div className="mb-4 flex items-center justify-center gap-3">

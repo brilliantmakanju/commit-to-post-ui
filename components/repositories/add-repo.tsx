@@ -155,6 +155,7 @@ export function AddRepositoryModal({
 				toast.error("Connection failed", {
 					description: "Failed to fetch repos.",
 				});
+				return;
 			}
 			return result.data as GitHubReposResponse;
 		},
@@ -274,77 +275,71 @@ export function AddRepositoryModal({
 		setCurrentStep(currentStep + 1);
 	};
 
+	// eslint-disable-next-line unicorn/consistent-function-scoping
 	const handleWebhookSetup = async () => {
-		try {
-			setWebhookStatus("setting-up");
-			setWebhookProgress(0);
-
-			const repoPayloads = selectedRepo.map(repoId => {
-				const setting = repoSettings[repoId];
-				if (!setting) {
-					throw new Error(`Missing settings for repo ID: ${repoId}`);
-				}
-				return {
-					repo_id: repoId,
-					tone: setting.tone,
-					branch: setting.branch,
-					aiEnabled: setting.aiEnabled,
-				};
-			});
-
-			const response = await connectGithubRepoBatch(repoPayloads);
-
-			if (!response.success) {
-				setWebhookStatus("error");
-				toast.error("Connection failed", {
-					description:
-						response.message || "Some repositories failed to connect.",
-					className: "border-red-500 text-red-900 bg-red-50",
-					duration: 7000,
-					closeButton: true,
-				});
-				return;
-			}
-
-			// Simulate webhook progress
-			await new Promise<void>(resolve => {
-				const interval = setInterval(() => {
-					setWebhookProgress(previous => {
-						const next = previous + 20;
-						if (next >= 100) {
-							clearInterval(interval);
-							setWebhookStatus("success");
-							resolve();
-							return 100;
-						}
-						return next;
-					});
-				}, 500);
-			});
-
-			// Post-success logic
-			toast.success("Repositories connected!", {
-				description: "Webhook configured successfully.",
-				duration: 5000,
-				closeButton: true,
-			});
-
-			onSuccess();
-			onOpenChange(false);
-			setCurrentStep(1);
-			setSelectedRepo([]);
-			setRepoSettings({});
-			setWebhookStatus("idle");
-			setWebhookProgress(0);
-
-			queryClient.invalidateQueries({ queryKey: ["connected_repos"] });
-		} catch (error: any) {
-			setWebhookStatus("error");
-			toast.error(error?.message || "Failed to setup webhooks.", {
-				duration: 7000,
-				closeButton: true,
-			});
-		}
+		// try {
+		// 	setWebhookStatus("setting-up");
+		// 	setWebhookProgress(0);
+		// 	const repoPayloads = selectedRepo.map(repoId => {
+		// 		const setting = repoSettings[repoId];
+		// 		if (!setting) {
+		// 			throw new Error(`Missing settings for repo ID: ${repoId}`);
+		// 		}
+		// 		return {
+		// 			repo_id: repoId,
+		// 			tone: setting.tone,
+		// 			branch: setting.branch,
+		// 			aiEnabled: setting.aiEnabled,
+		// 		};
+		// 	});
+		// 	const response = await connectGithubRepoBatch(repoPayloads);
+		// 	if (!response.success) {
+		// 		setWebhookStatus("error");
+		// 		toast.error("Connection failed", {
+		// 			description:
+		// 				response.message || "Some repositories failed to connect.",
+		// 			className: "border-red-500 text-red-900 bg-red-50",
+		// 			duration: 7000,
+		// 			closeButton: true,
+		// 		});
+		// 		return;
+		// 	}
+		// 	// Simulate webhook progress
+		// 	await new Promise<void>(resolve => {
+		// 		const interval = setInterval(() => {
+		// 			setWebhookProgress(previous => {
+		// 				const next = previous + 20;
+		// 				if (next >= 100) {
+		// 					clearInterval(interval);
+		// 					setWebhookStatus("success");
+		// 					resolve();
+		// 					return 100;
+		// 				}
+		// 				return next;
+		// 			});
+		// 		}, 500);
+		// 	});
+		// 	// Post-success logic
+		// 	toast.success("Repositories connected!", {
+		// 		description: "Webhook configured successfully.",
+		// 		duration: 5000,
+		// 		closeButton: true,
+		// 	});
+		// 	onSuccess();
+		// 	onOpenChange(false);
+		// 	setCurrentStep(1);
+		// 	setSelectedRepo([]);
+		// 	setRepoSettings({});
+		// 	setWebhookStatus("idle");
+		// 	setWebhookProgress(0);
+		// 	queryClient.invalidateQueries({ queryKey: ["connected_repos"] });
+		// } catch (error: any) {
+		// 	setWebhookStatus("error");
+		// 	toast.error(error?.message || "Failed to setup webhooks.", {
+		// 		duration: 7000,
+		// 		closeButton: true,
+		// 	});
+		// }
 	};
 
 	const getRepoStatusBadge = (repo: GitHubRepo) => {
@@ -515,222 +510,209 @@ export function AddRepositoryModal({
 									</div>
 								) : (
 									<>
-										{/* Plan Status and Limits */}
-										<div className="rounded-lg border bg-muted/30 p-4">
-											<div className="flex items-center justify-between">
-												<div className="flex items-center space-x-2">
-													{getPlanIcon(session?.user.plan)}
-													<span className="font-medium capitalize">
-														{session?.user.plan} Plan
+										{/* Plan Status */}
+										{/* Plan & Usage Info */}
+										<div className="flex flex-wrap items-center justify-between rounded border border-gray-200 px-2 py-1 text-xs sm:flex-nowrap">
+											<div className="flex flex-wrap items-center gap-2">
+												{getPlanIcon(session?.user.plan)}
+												<span className="font-medium capitalize text-arch-black">
+													{session?.user.plan} Plan
+												</span>
+												<span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600">
+													Usage: {totalRepositories}/
+													{planLimits.maxRepos === Infinity
+														? "∞"
+														: planLimits.maxRepos}{" "}
+													repos
+												</span>
+												{!shouldShowUpgradePrompt() && remainingSlots > 0 && (
+													<span className="text-[10px] text-gray-500">
+														Slots left: {remainingSlots}/{maxSelectionAllowed}
 													</span>
-													<Badge variant="outline" className="text-xs">
-														{totalRepositories}/
-														{planLimits.maxRepos === Infinity
-															? "∞"
-															: planLimits.maxRepos}{" "}
-														repos
-													</Badge>
-												</div>
-
-												{shouldShowUpgradePrompt() && (
-													<Button
-														variant="outline"
-														size="sm"
-														className="text-xs"
-													>
-														{getPlanUpgradeMessage()?.icon}
-														<span className="ml-1">
-															{getPlanUpgradeMessage()?.buttonText}
-														</span>
-													</Button>
 												)}
 											</div>
 
 											{shouldShowUpgradePrompt() && (
-												<div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
-													<p className="text-sm text-amber-800">
-														<strong>Repository limit reached.</strong>{" "}
-														{getPlanUpgradeMessage()?.description}
-													</p>
-												</div>
-											)}
-
-											{!shouldShowUpgradePrompt() && remainingSlots > 0 && (
-												<p className="mt-2 text-xs text-muted-foreground">
-													You can select up to {maxSelectionAllowed}{" "}
-													repositories to connect.
-													{remainingSlots} slots remaining.
-												</p>
+												<Button
+													variant="outline"
+													size="sm"
+													className="h-6 px-2 text-xs"
+												>
+													{getPlanUpgradeMessage()?.buttonText}
+												</Button>
 											)}
 										</div>
 
-										{/* Available Repositories - Primary Selection */}
-										{availableRepos.map(repo => {
-											const isSelected = selectedRepo.includes(
-												repo.id.toString(),
-											);
-											const shouldDisable =
-												!isSelected &&
-												(selectedRepo.length >= maxSelectionAllowed ||
-													shouldShowUpgradePrompt());
+										{/* Upgrade Info */}
+										{shouldShowUpgradePrompt() && (
+											<p className="mt-0.5 text-[10px] text-gray-600">
+												<strong>Repository limit reached.</strong>{" "}
+												{getPlanUpgradeMessage()?.description}
+											</p>
+										)}
 
-											return (
-												<div
-													key={repo.id}
-													className={cn(
-														"flex items-center space-x-3 rounded-lg border p-4 transition-all",
-														!shouldDisable &&
-															"cursor-pointer hover:bg-muted/50",
-														shouldDisable && "cursor-not-allowed opacity-50",
-													)}
-													onClick={() => {
-														if (!shouldDisable) {
-															handleRepoSelection(repo.id.toString());
-														}
-													}}
-												>
-													<input
-														type="checkbox"
-														checked={isSelected}
-														onChange={() =>
-															handleRepoSelection(repo.id.toString())
-														}
-														disabled={shouldDisable}
-														className="form-checkbox h-4 w-4 text-primary"
-													/>
-
-													<div className="flex-1">
-														<div className="flex items-center space-x-2">
-															<Label className="cursor-pointer font-medium">
-																{repo.name}
-															</Label>
-
-															{repo.private && (
-																<Badge variant="secondary" className="text-xs">
-																	Private
-																</Badge>
-															)}
-															{repo.language && (
-																<Badge variant="outline" className="text-xs">
-																	{repo.language}
-																</Badge>
-															)}
-														</div>
-
-														{repo.description && (
-															<p className="mt-1 text-sm text-muted-foreground">
-																{repo.description}
-															</p>
-														)}
-
-														<div className="mt-2 flex items-center space-x-3 text-xs text-muted-foreground">
-															<span className="flex items-center gap-1">
-																<FaStar className="text-yellow-300" />
-																{repo.stargazers_count}
-															</span>
-															<span>Default: {repo.default_branch}</span>
-															<span>
-																Updated{" "}
-																{new Date(repo.updated_at).toLocaleDateString()}
-															</span>
-														</div>
-													</div>
+										{/* Connected Repositories */}
+										{connectedRepos.length > 0 && (
+											<div className="mt-2">
+												<h3 className="mb-1 text-[11px] font-medium text-arch-black">
+													Connected Repositories ({connectedRepos.length})
+												</h3>
+												<div className="scrollbar-thin scrollbar-thumb-gray-300 flex gap-1 overflow-x-auto">
+													{connectedRepos.map(repo => (
+														<span
+															key={repo.id}
+															className="inline-flex items-center whitespace-nowrap rounded-full border border-gray-300 bg-gray-50 px-2 py-0.5 text-[10px] hover:border-gray-400"
+														>
+															{repo.name}
+														</span>
+													))}
 												</div>
-											);
-										})}
+											</div>
+										)}
+
+										{/* Paused Repositories */}
+										{pausedRepos.length > 0 && (
+											<div className="space-y-4">
+												<h3 className="font-medium text-arch-black">
+													Paused Repositories
+												</h3>
+												<div className="space-y-3">
+													{pausedRepos.map(repo => (
+														<div
+															key={repo.id}
+															onClick={() => {
+																toast.info("Repository Settings", {
+																	description:
+																		"Redirecting to repository settings...",
+																});
+																setTimeout(() => {
+																	globalThis.location.href = `/repositories/${repo.id}/settings`;
+																}, 1000);
+															}}
+															className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+														>
+															<div className="flex items-center space-x-3">
+																<PauseCircle className="h-5 w-5 text-gray-600" />
+																<div className="flex-1">
+																	<div className="mb-1 flex items-center space-x-3">
+																		<h4 className="font-medium text-arch-black">
+																			{repo.name}
+																		</h4>
+																		{getRepoStatusBadge(repo)}
+																	</div>
+																	{repo.description && (
+																		<p className="mb-1 text-sm text-gray-600">
+																			{repo.description}
+																		</p>
+																	)}
+																	<p className="text-xs text-gray-600">
+																		Click to resume tracking this repository
+																	</p>
+																</div>
+															</div>
+														</div>
+													))}
+												</div>
+											</div>
+										)}
+
+										{/* Available Repositories */}
+										{availableRepos.length > 0 && (
+											<div className="space-y-4">
+												<h3 className="font-medium text-arch-black">
+													Available Repositories
+												</h3>
+												<div className="space-y-3">
+													{availableRepos.map(repo => {
+														const isSelected = selectedRepo.includes(
+															repo.id.toString(),
+														);
+														const shouldDisable =
+															!isSelected &&
+															(selectedRepo.length >= maxSelectionAllowed ||
+																shouldShowUpgradePrompt());
+
+														return (
+															<div
+																key={repo.id}
+																className={cn(
+																	"rounded-lg border border-gray-200 p-4 transition-colors",
+																	!shouldDisable &&
+																		"cursor-pointer hover:bg-gray-50",
+																	shouldDisable &&
+																		"cursor-not-allowed opacity-50",
+																	isSelected && "border-arch-black bg-gray-50",
+																)}
+																onClick={() => {
+																	if (!shouldDisable) {
+																		handleRepoSelection(repo.id.toString());
+																	}
+																}}
+															>
+																<div className="flex items-center space-x-4">
+																	<input
+																		type="checkbox"
+																		checked={isSelected}
+																		onChange={() =>
+																			handleRepoSelection(repo.id.toString())
+																		}
+																		disabled={shouldDisable}
+																		className="h-4 w-4 rounded border-gray-300 text-arch-black focus:ring-arch-black"
+																	/>
+																	<div className="flex-1">
+																		<div className="mb-1 flex items-center space-x-3">
+																			<h4 className="font-medium text-arch-black">
+																				{repo.name}
+																			</h4>
+																			{repo.private && (
+																				<span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+																					Private
+																				</span>
+																			)}
+																			{repo.language && (
+																				<span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+																					{repo.language}
+																				</span>
+																			)}
+																		</div>
+																		{repo.description && (
+																			<p className="mb-2 text-sm text-gray-600">
+																				{repo.description}
+																			</p>
+																		)}
+																		<div className="flex items-center space-x-4 text-xs text-gray-600">
+																			<span className="flex items-center gap-1">
+																				<FaStar className="text-gray-400" />
+																				{repo.stargazers_count}
+																			</span>
+																			<span>
+																				Default: {repo.default_branch}
+																			</span>
+																			<span>
+																				Updated{" "}
+																				{new Date(
+																					repo.updated_at,
+																				).toLocaleDateString()}
+																			</span>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														);
+													})}
+												</div>
+											</div>
+										)}
 
 										{/* Selection Summary */}
 										{selectedRepo.length > 0 && (
-											<div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+											<div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
 												<div className="flex items-center justify-between">
-													<span className="text-sm font-medium">
+													<span className="text-sm font-medium text-arch-black">
 														{selectedRepo.length} repository
 														{selectedRepo.length === 1 ? "" : "ies"} selected
 													</span>
-													<Button size="sm">Connect Selected</Button>
 												</div>
-											</div>
-										)}
-
-										{/* Paused Repositories - Reconnection Options */}
-										{pausedRepos.length > 0 && (
-											<div className="space-y-3">
-												<h4 className="text-sm font-medium text-amber-700">
-													Paused Repositories
-												</h4>
-												<p className="text-xs text-muted-foreground">
-													These repositories were previously connected but are
-													currently paused
-												</p>
-												{pausedRepos.map(repo => (
-													<div
-														key={repo.id}
-														onClick={() => {
-															toast.info("Repository Settings", {
-																description:
-																	"Redirecting to repository settings...",
-															});
-															setTimeout(() => {
-																globalThis.location.href = `/repositories/${repo.id}/settings`;
-															}, 1000);
-														}}
-														className="flex cursor-pointer items-center space-x-3 rounded-lg border border-amber-200 bg-amber-50/50 p-4 hover:bg-amber-50"
-													>
-														<div className="flex h-4 w-4 items-center justify-center">
-															<PauseCircle className="h-10 w-10 text-amber-700" />
-														</div>
-														<div className="flex-1">
-															<div className="flex items-center justify-between">
-																<div className="flex items-center space-x-2">
-																	<Label className="cursor-pointer font-medium">
-																		{repo.name}
-																	</Label>
-																	<Badge variant="secondary">Paused</Badge>
-																</div>
-															</div>
-															{repo.description && (
-																<p className="mt-1 text-sm text-muted-foreground">
-																	{repo.description}
-																</p>
-															)}
-															<p className="mt-1 text-xs text-amber-700">
-																Click to resume tracking this repository
-															</p>
-														</div>
-													</div>
-												))}
-											</div>
-										)}
-
-										{/* Connected Repositories - View Only */}
-										{connectedRepos.length > 0 && (
-											<div className="space-y-3">
-												<h4 className="text-sm font-medium text-green-700">
-													Connected Repositories
-												</h4>
-												<p className="text-xs text-muted-foreground">
-													These repositories are already connected and active
-												</p>
-												{connectedRepos.map(repo => (
-													<div
-														key={repo.id}
-														className="flex items-center space-x-3 rounded-lg border border-green-200 bg-green-50/50 p-4 hover:bg-green-50"
-													>
-														<div className="flex h-4 w-4 items-center justify-center">
-															<Check className="h-3 w-3 text-green-600" />
-														</div>
-														<div className="flex-1">
-															<div className="flex items-center justify-between">
-																<div className="flex items-center space-x-2">
-																	<span className="font-medium">
-																		{repo.name}
-																	</span>
-																	{getRepoStatusBadge(repo)}
-																</div>
-															</div>
-														</div>
-													</div>
-												))}
 											</div>
 										)}
 
@@ -738,8 +720,10 @@ export function AddRepositoryModal({
 										{availableRepos.length === 0 &&
 											pausedRepos.length === 0 &&
 											connectedRepos.length === 0 && (
-												<div className="py-8 text-center text-muted-foreground">
-													No repositories found matching your criteria
+												<div className="py-12 text-center">
+													<p className="text-gray-600">
+														No repositories found matching your criteria
+													</p>
 												</div>
 											)}
 									</>

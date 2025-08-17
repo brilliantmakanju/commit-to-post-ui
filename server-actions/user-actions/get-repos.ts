@@ -10,7 +10,12 @@ export const getGitHubRepos = async (): Promise<{
 }> => {
 	try {
 		// Make the API call to fetch GitHub repos
-		const response = await apiClient.get("/api/v1/managements/github/repos/");
+		const response = await apiClient.get(
+			"/api/v1/managements/github/repos/",
+			{},
+			30000,
+			1,
+		);
 
 		if (response.error) {
 			return {

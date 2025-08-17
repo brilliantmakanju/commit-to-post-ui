@@ -14,8 +14,8 @@ import MagicVerifyModal from "./modals/verification-modal";
 type ViewType = "login" | "signup" | "forgot" | "check-email" | "verifying";
 
 const SubAuthModal = () => {
-	const { isOpen, view, closeModal, openModal } = useAuthModalStore();
 	const modalRef = useRef<HTMLDivElement>(null);
+	const { isOpen, view, closeModal, openModal } = useAuthModalStore();
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {

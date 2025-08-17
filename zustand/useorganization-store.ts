@@ -1,5 +1,16 @@
+import { UUID } from "node:crypto";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+export interface OrganizationSocial {
+	id: UUID;
+	name?: string;
+	handle?: string;
+	platform?: string;
+	profile_image_url?: string;
+	// connected_by: string;
+}
 
 export interface Organization {
 	id: string;
@@ -7,6 +18,7 @@ export interface Organization {
 	domains: string;
 	is_owner?: boolean;
 	description?: string;
+	socials?: OrganizationSocial[];
 	github_installation_id?: string;
 	github_installation_status?: string;
 }
@@ -19,18 +31,28 @@ interface OrganizationState {
 }
 
 interface OrganizationActions {
-	clearOrganization: () => void;
-	setOrganization: (organization: Organization) => void; // legacy setter
 	reset: () => void;
+	clearOrganization: () => void;
 	setOrganizations: (orgs: Organization[]) => void;
-	updateOrganizations: (orgs: Organization[]) => void; // New method for updating organizations list
-	removeOrganization: (orgId: string) => Organization | undefined; // New method for removing an organization
 	setFavoriteOrganization: (orgId: string) => void;
 	setCurrentOrganization: (org: Organization) => void;
+	setOrganization: (organization: Organization) => void; // legacy setter
+	updateOrganizations: (orgs: Organization[]) => void; // New method for updating organizations list
+	removeOrganization: (orgId: string) => Organization | undefined; // New method for removing an organization
 	updateInstallationStatus: (
 		orgId: string,
 		status: string,
 		installation_id: string,
+	) => void;
+
+	// Newly added methods for socials
+	removeSocial: (orgId: string, socialId: string) => void;
+	addSocial: (orgId: string, social: OrganizationSocial) => void;
+	updateSocials: (orgId: string, socials: OrganizationSocial[]) => void;
+	updateSocial: (
+		orgId: string,
+		socialId: string,
+		updatedData: Partial<OrganizationSocial>,
 	) => void;
 }
 
@@ -41,10 +63,11 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 				id: "",
 				name: "",
 				domains: "",
+				socials: [],
 				description: "",
 				is_owner: false,
-				github_installation_status: "unknown",
 				github_installation_id: undefined,
+				github_installation_status: "unknown",
 			},
 			organizations: [],
 			currentOrganization: undefined,
@@ -59,6 +82,7 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 					organization: {
 						id: "",
 						name: "",
+						socials: [],
 						domains: "",
 						description: "",
 						is_owner: false,
@@ -103,6 +127,7 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 							id: "",
 							name: "",
 							domains: "",
+							socials: [],
 							description: "",
 							is_owner: false,
 							github_installation_status: "unknown",
@@ -140,6 +165,7 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 								id: "",
 								name: "",
 								domains: "",
+								socials: [],
 								description: "",
 								is_owner: false,
 								github_installation_status: "unknown",
@@ -171,6 +197,7 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 						id: "",
 						name: "",
 						domains: "",
+						socials: [],
 						description: "",
 						is_owner: false,
 						github_installation_status: "unknown",
@@ -179,6 +206,100 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 					currentOrganization: undefined,
 					favoriteOrganizationId: undefined,
 					organizations: [],
+				});
+			},
+
+			updateSocials: (orgId: string, socials: OrganizationSocial[]) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId ? { ...org, socials } : org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
+				});
+			},
+
+			addSocial: (orgId: string, social: OrganizationSocial) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? { ...org, socials: [...(org.socials || []), social] }
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
+				});
+			},
+
+			updateSocial: (
+				orgId: string,
+				socialId: string,
+				updatedData: Partial<OrganizationSocial>,
+			) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? {
+									...org,
+									socials: (org.socials || []).map(s =>
+										s.id === socialId ? { ...s, ...updatedData } : s,
+									),
+								}
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
+				});
+			},
+
+			removeSocial: (orgId: string, socialId: string) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? {
+									...org,
+									socials: (org.socials || []).filter(s => s.id !== socialId),
+								}
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
 				});
 			},
 

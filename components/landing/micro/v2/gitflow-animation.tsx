@@ -42,9 +42,9 @@ export const GitFlowAnimation: React.FC = React.memo(() => {
 	const [currentCommit, setCurrentCommit] = useState("");
 	const [currentBranch, setCurrentBranch] = useState("");
 	const [currentPosts, setCurrentPosts] = useState({
-		linkedin: "",
 		slack: "",
 		discord: "",
+		linkedin: "",
 	});
 
 	// Use refs to store timer IDs for cleanup
