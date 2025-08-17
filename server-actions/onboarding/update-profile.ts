@@ -45,3 +45,42 @@ export const updateProfileSetup = async (data: SetupFormValues) => {
 		throw new Error("An unexpected error occurred while updating profile");
 	}
 };
+
+export const onboardingComplete = async () => {
+	try {
+		const payload = { is_onboarded: true };
+
+		const response = await apiClient.put(
+			"/api/v1/managements/profile/onboarding/complete/",
+			payload,
+			{},
+			10000,
+		);
+
+		if (response.status !== 200) {
+			throw new Error(
+				`Onboarding completion failed with status ${response.status}`,
+			);
+		}
+
+		// Merge server response into existing cookie state
+		const newUserData = { new_user: false, ...response.data };
+		await updateCookie("user_state", newUserData);
+
+		return response.data; // Return clean data instead of full response
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			const errorMessages = error.errors.map(event_ => ({
+				field: event_.path.join("."),
+				message: event_.message,
+			}));
+			throw new Error(`Validation failed: ${JSON.stringify(errorMessages)}`);
+		}
+
+		if (error instanceof Error) {
+			throw new TypeError(`Failed to complete onboarding: ${error.message}`);
+		}
+
+		throw new Error("Unexpected error occurred during onboarding completion");
+	}
+};

@@ -10342,3 +10342,2143 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 // // 		</DialogFooter>
 // // 	</DialogContent>
 // // </Dialog>; -->
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+Action Items:
+1. : Team to complete setup research for aws security hub having the steps to be able setup security hub 
+
+MEMO:
+RE: Exporting AWS Inspector Findings: from the team discussion sir, goign with AWS Security Hub Console (Manual Export) is the best option we have now due
+aws security hub export is the best to go with the other options have a much higher level of effort to setup and configure due to also possibly wirting of scripts which could also make the process longer due to whole writing of scripts and stuff
+
+
+RE: regarding st5aging test data cleanup:
+the test data we have on staging is due to our performance testing that was just conculeded, to clean it up here are the team suggestions
+
+1. deactiveated each EV and EC 
+cons: time consuming since it;s manual  adn wont leave the app ( since the app will be present but just hidden)
+
+2. creatiung a temporary endpoint to deelet test accounts data created on staging ( EC, EV and Vendors) ( ETA: End of today for implementation ) ( ETA: Removal of the test data Monday and removal of the temporary endpoint )
+
+Action Items:
+1. RE: Staging Test Data Cleanup: BE is to Create a temporary endpoint To delete test accounts and related data (EC, EV, and Vendors) from staging. ( ETA: End of today for implmentation) (ETA: Removal of the test data Monday and removal of the temporary endpoint Monday)
+2. PER: treating staging as production: adding stagin check to our security checks every monday, the check will be for one of the DRIs (Bami) to login to the staging enviromnet to check the dashboard, vendor database , ev and ec page to make sure everything is copactic ( ETA: Monday )
+3. PER: Feedback iteration from client: DRIs to make research on how we are going to take on cases where we get user feedback and need to make iterations to the prodcut without taking it up in our current testing envrionemtn due ot it pssobily chaging our pipline ( ETA: Monday)
+4. PER: AWS inspector findings exportted: DRIs to categorize the findings into real vunlerabilities and fake ones , adding it to the coprate sheet account and sharing it with everyone on the coperate and beign to slice and dice it taking them based on the level of piorities. adding a color block at the sheet top to signify what is what red for what needs to be taken on, organge for medium sorthing it under each color block header ( MAB suggesstion )
+(
+ETA: sepration Today
+ETA: categrorizing the findings Monday
+)
+5. PER: Production Task items: this items needed for production setup for nextweek, creating firebase, and adding github protected branches (ETA: Nextweek )
+6. PER: Onboarding of new team member to teh team: DRI to have conversation on how we can possibly bring new memners on in the compnay but on a trial basis 
+them being on calls with the team but not being exposed to any of our codebase at all and just giving them  ETA: TBD
+
+
+
+check 
+
+login to the staging environment tocheck the staging app adn confirm the data present are copacetic 
+
+
+
+
+
+put up  on sheet on copreat account adn share that and begin to slice and dice it
+
+take them based on the categories, adding like a color block or something to help with 
+
+having it on one and then demacating with them based on the difference 
+ETA: sepration toyda
+categorization Monday 
+
+next week the items to take on for production firebase , github protected branches
+
+DRI to have conversation on how we can possibly bring new memners on in the compnay but on a trial basis 
+them being on call not being exposed to any code base at all and just giving them  ETA: TBD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Replace the existing _generate_posts_from_commits method with this updated version:
+
+def _generate_posts_from_commits(self, commits, repo_config):
+    """Generate posts from processed commits - batch processing for better AI generation."""
+    if repo_config.posting_strategy == 'manual':
+        # Queue for manual review
+        logger.info("📋 Queuing commits for manual review")
+        # Implementation for manual review queue
+        return {'message': 'Commits queued for manual review', 'commits_count': len(commits)}
+
+    elif repo_config.posting_strategy == 'immediate':
+        # Generate posts immediately - batch all commits together
+        logger.info(f"🤖 Generating immediate posts from {len(commits)} commits")
+        self._generate_batch_post(commits, repo_config)
+        return {'message': 'Post generated from batch commits', 'commits_count': len(commits)}
+
+    elif repo_config.posting_strategy in ['15min', 'eod', 'scheduled']:
+        # Queue for delayed posting
+        logger.info(f"⏰ Scheduling posts for {repo_config.posting_strategy}")
+        # Implementation for scheduled posting
+        return {'message': f'Posts scheduled for {repo_config.posting_strategy}', 'commits_count': len(commits)}
+
+    return {'message': 'Unknown posting strategy', 'error': True}
+
+def _generate_batch_post(self, commits, repo_config):
+    """Generate a single post from multiple commits - batch processing."""
+    # Extract commit messages from all commits
+    commit_messages = []
+    for commit in commits:
+        message = commit.get('message', '').strip()
+        if message:
+            commit_messages.append(message)
+    
+    if not commit_messages:
+        logger.warning("⚠️ No valid commit messages found in batch")
+        return
+    
+    # Join all commit messages for batch processing
+    batch_commit_content = '\n'.join(commit_messages)
+    
+    try:
+        # Use the existing AI function with batched commits
+        enhanced_generate_post_with_ai(
+            commits=batch_commit_content,
+            repo_config=repo_config,
+            tone=repo_config.default_tone,
+        )
+        logger.info(f"✅ Batch post generated from {len(commit_messages)} commit messages")
+    except Exception as e:
+        logger.error(f"❌ Failed to generate batch post: {e}")
+
+# Also update the _process_push_event method to handle edge cases better:
+
+def _process_push_event(self, payload, repo_config):
+    """Process push events with branch and commit filtering."""
+    branch = payload.get('ref', '').split('/')[-1]
+    logger.debug(f"🌿 Push to branch: {branch}")
+
+    # Check if branch matches tracked branch
+    if branch != repo_config.tracked_branch:
+        logger.info(f"⚠️ Branch mismatch: {branch} != {repo_config.tracked_branch}")
+        return {'message': 'Branch not tracked', 'skipped': True}
+
+    # Check if AI transformation is enabled
+    if not repo_config.ai_transformation_enabled:
+        logger.info("⚠️ AI transformation disabled for this repository")
+        return {'message': 'AI transformation disabled', 'skipped': True}
+
+    # Process commits
+    commits = payload.get('commits', [])
+    if not commits:
+        logger.info("⚠️ No commits in push event")
+        return {'message': 'No commits to process', 'skipped': True}
+
+    # Filter commits that match processing criteria
+    processed_commits = []
+    for commit in commits:
+        commit_message = commit.get('message', '')
+        if commit_message and self._should_process_commit(commit_message, repo_config):
+            processed_commits.append(commit)
+
+    if not processed_commits:
+        logger.info("⚠️ No commits match processing criteria")
+        return {'message': 'No commits match criteria', 'skipped': True}
+
+    # Check for duplicate processing (same commits in quick succession)
+    if self._is_duplicate_batch(processed_commits, repo_config):
+        logger.info("⚠️ Duplicate batch detected, skipping")
+        return {'message': 'Duplicate batch detected', 'skipped': True}
+
+    # Check posting frequency limits
+    if not self._check_posting_frequency(repo_config):
+        logger.warning("⚠️ Posting frequency limit reached")
+        return {'message': 'Posting frequency limit reached', 'skipped': True}
+
+    # Generate posts based on posting strategy (now batched)
+    result = self._generate_posts_from_commits(processed_commits, repo_config)
+
+    return result
+
+# Add this new method to detect duplicate batches:
+
+def _is_duplicate_batch(self, commits, repo_config):
+    """Check if this batch of commits was recently processed to avoid duplicates."""
+    if not commits:
+        return False
+    
+    # Create a simple hash of commit messages to identify duplicate batches
+    commit_messages = [commit.get('message', '') for commit in commits]
+    batch_hash = hash(tuple(sorted(commit_messages)))
+    
+    cache_key = f"batch_processed_{repo_config.repository.id}_{batch_hash}"
+    
+    if cache.get(cache_key):
+        return True
+    
+    # Mark this batch as processed for 5 minutes
+    cache.set(cache_key, True, 300)
+    return False
+
+# Update the _should_process_commit method to handle edge cases:
+
+def _should_process_commit(self, commit_message, repo_config):
+    """Check if commit should be processed based on filters."""
+    if not commit_message or not commit_message.strip():
+        return False
+
+    # Normalize the commit message once
+    commit_message_normalized = commit_message.strip().lower()
+
+    # Skip merge commits (common pattern)
+    if commit_message_normalized.startswith('merge '):
+        logger.debug(f"⚠️ Merge commit ignored: {commit_message[:50]}...")
+        return False
+
+    # Skip revert commits
+    if commit_message_normalized.startswith('revert '):
+        logger.debug(f"⚠️ Revert commit ignored: {commit_message[:50]}...")
+        return False
+
+    # ------------------ 🔕 Ignore Keywords ------------------
+    ignore_keywords = repo_config.ignore_keywords or ""
+    if ignore_keywords:
+        ignore_list = [k.strip().lower() for k in ignore_keywords.split(',') if k.strip()]
+        for keyword in ignore_list:
+            if keyword in commit_message_normalized:
+                logger.debug(f"⚠️ Commit ignored due to keyword '{keyword}': {commit_message[:50]}...")
+                return False
+
+    # ------------------ ✅ Prefix Filtering ------------------
+    prefix_filter = repo_config.commit_prefix_filter or ""
+    if prefix_filter:
+        # Normalize prefixes: strip space and remove trailing colon
+        allowed_prefixes = [p.strip().lower().rstrip(':') for p in prefix_filter.split(',') if p.strip()]
+        # Get the prefix from commit (before the first colon)
+        commit_prefix = commit_message.split(':', 1)[0].strip().lower()
+        if commit_prefix not in allowed_prefixes:
+            logger.debug(f"⚠️ Commit ignored due to prefix filter: {commit_message[:50]}...")
+            return False
+
+    return True
+
+
+
+
+
+
+
+
+
+
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle Twitter OAuth callback
+        Accepts either `callback_url` or (`code` + `state`)
+        """
+        integration_id = request.data.get("integration_id")
+        if not integration_id:
+            return Response({"detail": "integration_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        integration = get_object_or_404(
+            ConnectedIntegration,
+            id=integration_id,
+            connected_by=request.user
+        )
+
+        callback_url = request.data.get("callback_url")
+        code = request.data.get("code")
+        expected_state = request.data.get("state")
+
+        if not callback_url and not code:
+            return Response({"detail": "Either callback_url or code is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        bot = IntegratedTwitterBot(integration)
+        try:
+            tokens = bot.handle_callback_and_save(
+                callback_url=callback_url,
+                expected_state=expected_state,
+                code=code
+            )
+            return Response({"success": True, "tokens": tokens}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
+
+
+
+
+            "use client";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronsUpDown, Loader2, Plus } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { CreateOrganizationModal } from "@/components/organization/create-organization";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
+} from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { debugGroup, debugLog } from "@/hooks/core/repo/use-organization-hook";
+import { useCheckAccess } from "@/hooks/plans/use-billing";
+import {
+	createEncryptedCookie,
+	deleteCookie,
+} from "@/lib/cookies/create-cookies";
+import useLogoutStore from "@/zustand/logout-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
+
+interface TeamSwitcherProps {
+	isLoading: boolean;
+}
+
+export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
+	const { isMobile } = useSidebar();
+	const hasAccess = useCheckAccess();
+	const logoutStore = useLogoutStore();
+	const queryClient = useQueryClient();
+
+	// Local state
+	const [mounted, setMounted] = useState(false);
+	const [createModalOpen, setCreateModalOpen] = useState(false);
+	const [isSwitching, setIsSwitching] = useState(false);
+	const [lastSwitchedOrgId, setLastSwitchedOrgId] = useState<
+		string | undefined
+	>();
+
+	// Store state
+	const { organization, organizations, setOrganization } =
+		useOrganizationStore();
+
+	// Mount effect
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	// Memoized computed values
+	const activeTeam = useMemo(() => {
+		if (!mounted) return organization;
+
+		// If we're currently switching or just switched, prioritize the user's selection
+		if (isSwitching || lastSwitchedOrgId) {
+			const switchedOrg =
+				organizations.find(org => org.id === lastSwitchedOrgId) || organization;
+			if (switchedOrg && switchedOrg.id === lastSwitchedOrgId) {
+				return switchedOrg;
+			}
+		}
+
+		// If still loading initial data, show current organization if available
+		if (isLoading && organization && organization.name !== "") {
+			return organization;
+		}
+
+		// If we have a stored organization and it exists in the list, use it
+		if (organization && organization.name !== "") {
+			const foundOrg = organizations.find(org => org.id === organization.id);
+			return foundOrg || organization;
+		}
+
+		// Otherwise, use the first available organization
+		return organizations.length > 0 ? organizations[0] : undefined;
+	}, [
+		mounted,
+		isLoading,
+		organization,
+		organizations,
+		isSwitching,
+		lastSwitchedOrgId,
+	]);
+
+	const inactiveTeams = useMemo(() => {
+		if (!activeTeam || organizations.length <= 1) return [];
+		return organizations.filter(team => team.id !== activeTeam.id);
+	}, [organizations, activeTeam]);
+
+	const componentState = useMemo(() => {
+		if (!mounted) return "mounting";
+		if (logoutStore.logout) return "logging-out";
+		if (isLoading && !activeTeam) return "loading";
+		if (isLoading && activeTeam) return "loading-with-org";
+		if (!isLoading && organizations.length === 0 && !organization)
+			return "no-orgs";
+		return "ready";
+	}, [
+		mounted,
+		logoutStore.logout,
+		isLoading,
+		activeTeam,
+		organizations.length,
+		organization,
+	]);
+
+	// Background refresh function - non-blocking
+	const backgroundRefresh = useCallback(async () => {
+		debugGroup("BACKGROUND_REFRESH", () => {
+			debugLog("BACKGROUND", "Starting background refresh of cached queries");
+
+			const keys = [
+				"posts",
+				"gitRepos",
+				"repo_details",
+				"notifications",
+				"connected_repos",
+				"top_repo_metrics",
+				"dashboard_metrics",
+				"repo_webhook_ping",
+				"repo_super_details",
+				"retrieving_webhooks",
+				"recent_notifications",
+				"dashboard_heatmap_data",
+				"upcoming_posts_metrics",
+				"dashboard_channel_data",
+				"organization-ownership",
+				"upcoming_posts_metrics",
+				"dashboard_webhook_errors",
+				"retrieving_social_status",
+				"retrieving_billing_portal",
+				"unread_notification_counts",
+			];
+
+			// Fire and forget - don't await
+			Promise.allSettled(
+				keys.map(key => {
+					debugLog("BACKGROUND", `Fetching query: ${key}`);
+					return queryClient
+						.fetchQuery({ queryKey: [key] })
+						.then(() => {
+							debugLog("BACKGROUND", `✅ Successfully refreshed: ${key}`);
+							return queryClient.invalidateQueries({ queryKey: [key] });
+						})
+						.catch(error => {
+							debugLog("BACKGROUND", `❌ Failed to refresh: ${key}`, error);
+						});
+				}),
+			).then(results => {
+				const successful = results.filter(r => r.status === "fulfilled").length;
+				const failed = results.filter(r => r.status === "rejected").length;
+				debugLog(
+					"BACKGROUND",
+					`Background refresh completed: ${successful} successful, ${failed} failed`,
+				);
+			});
+		});
+	}, [queryClient]);
+
+	// Team switching handler with proper error handling and loading states
+	const handleTeamChange = useCallback(
+		async (team: (typeof organizations)[0]) => {
+			if (isSwitching || !team) return;
+
+			try {
+				setIsSwitching(true);
+				setLastSwitchedOrgId(team.id);
+
+				// Update cookies first to ensure persistence
+				await deleteCookie("organization");
+				await createEncryptedCookie("organization", {
+					id: team.id,
+					name: team.name,
+					domain: team.domains[0],
+					is_owner: team.is_owner,
+					description: team.description,
+					github_installation_id: team.github_installation_id,
+					github_installation_status: team.github_installation_status,
+				});
+
+				// Then update store
+				setOrganization(team);
+				backgroundRefresh();
+
+				// Clear the switching flag after a brief delay to prevent race conditions
+				setTimeout(() => {
+					setLastSwitchedOrgId(undefined);
+				}, 1000);
+			} catch {
+				// Revert on error
+				setLastSwitchedOrgId(undefined);
+				// You might want to show a toast notification here
+			} finally {
+				setIsSwitching(false);
+			}
+		},
+		[backgroundRefresh, isSwitching, setOrganization],
+	);
+
+	// Render loading skeleton with consistent avatar size
+	const renderSkeleton = useCallback(
+		(showOrgInfo = false) => (
+			<SidebarMenu>
+				<SidebarMenuItem>
+					<DropdownMenu>
+						<DropdownMenuTrigger disabled asChild>
+							<SidebarMenuButton
+								size="lg"
+								disabled
+								className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-auto p-3"
+							>
+								{showOrgInfo && activeTeam ? (
+									<div className="flex w-full items-center justify-between">
+										<div className="flex items-center space-x-3">
+											<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-semibold">
+												{activeTeam.name[0].toUpperCase()}
+											</div>
+											<div className="flex flex-col items-start">
+												<span className="truncate font-bold text-base leading-none">
+													{activeTeam.name}
+												</span>
+												<span className="truncate text-xs text-muted-foreground mt-1">
+													Active Organization
+												</span>
+											</div>
+										</div>
+									</div>
+								) : (
+									<div className="flex w-full items-center justify-between">
+										<div className="flex items-center space-x-3">
+											<Skeleton className="h-8 w-8 rounded-lg" />
+											<div className="flex flex-col gap-2">
+												<Skeleton className="h-4 w-28" />
+												<Skeleton className="h-3 w-20" />
+											</div>
+										</div>
+									</div>
+								)}
+							</SidebarMenuButton>
+						</DropdownMenuTrigger>
+					</DropdownMenu>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		),
+		[activeTeam],
+	);
+
+	// Handle different component states
+	switch (componentState) {
+		case "mounting":
+		case "logging-out":
+		case "loading": {
+			return renderSkeleton();
+		}
+
+		case "loading-with-org": {
+			return renderSkeleton(true);
+		}
+
+		case "no-orgs": {
+			return (
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<div className="p-4 text-center">
+							<div className="text-sm text-red-500 font-medium">
+								No organization found
+							</div>
+						</div>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			);
+		}
+
+		case "ready": {
+			break;
+		}
+
+		default: {
+			return renderSkeleton();
+		}
+	}
+
+	if (!activeTeam) {
+		return renderSkeleton();
+	}
+
+	const isDropdownDisabled = isSwitching || organizations.length <= 1;
+	const showChevron = organizations.length > 1 && !isSwitching;
+
+	return (
+		<SidebarMenu>
+			<SidebarMenuItem>
+				<DropdownMenu>
+					<DropdownMenuTrigger disabled={isDropdownDisabled} asChild>
+						<SidebarMenuButton
+							size="lg"
+							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-auto p-4 hover:bg-sidebar-accent/50 transition-colors"
+						>
+							<div className="flex w-full items-center justify-between">
+								<div className="flex items-center space-x-4">
+									<div className="relative">
+										<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+								{activeTeam.name[0].toUpperCase()}
+							</div>
+										{organizations.length > 1 && (
+											<div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-background"></div>
+										)}
+									</div>
+									<div className="flex flex-col items-start min-w-0 flex-1">
+										<span className="truncate font-bold text-base leading-tight">
+											{activeTeam.name}
+										</span>
+										<div className="flex items-center mt-1">
+											<span className="truncate text-xs text-muted-foreground">
+												{organizations.length === 1 
+													? "Personal workspace" 
+													: `Active • ${organizations.length} total`
+												}
+											</span>
+										</div>
+									</div>
+								</div>
+								<div className="flex items-center ml-2">
+									{isSwitching ? (
+										<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+									) : showChevron ? (
+										<ChevronsUpDown className="h-5 w-5 text-muted-foreground" />
+									) : null}
+								</div>
+							</div>
+						</SidebarMenuButton>
+					</DropdownMenuTrigger>
+
+					<DropdownMenuContent
+						align="start"
+						sideOffset={4}
+						side={isMobile ? "bottom" : "right"}
+						className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-xl shadow-lg"
+					>
+						<DropdownMenuLabel className="text-xs text-muted-foreground px-3 py-2">
+							{organizations.length === 1 ? "Your Workspace" : "Switch Organization"}
+						</DropdownMenuLabel>
+
+						{/* Show current org if only one organization */}
+						{organizations.length === 1 && (
+							<DropdownMenuItem
+								className="gap-3 p-3 rounded-lg mx-2 mb-1"
+								onClick={() => handleTeamChange(activeTeam)}
+								disabled={isSwitching}
+							>
+								<div className="flex size-8 items-center justify-center rounded-full border-2 border-sidebar-primary bg-sidebar-primary text-sidebar-primary-foreground font-semibold">
+									{activeTeam.name[0].toUpperCase()}
+								</div>
+								<div className="flex flex-col">
+									<span className="font-medium">{activeTeam.name}</span>
+									<span className="text-xs text-muted-foreground">Current workspace</span>
+								</div>
+								<DropdownMenuShortcut className="ml-auto">⌘1</DropdownMenuShortcut>
+							</DropdownMenuItem>
+						)}
+
+						{/* Show other organizations if multiple */}
+						{inactiveTeams.map((team, index) => (
+							<DropdownMenuItem
+								key={team.id}
+								onClick={() => handleTeamChange(team)}
+								className="gap-3 p-3 rounded-lg mx-2 mb-1 hover:bg-sidebar-accent"
+								disabled={isSwitching}
+							>
+								<div className="flex size-8 items-center justify-center rounded-full border bg-muted font-semibold">
+									{team.name[0].toUpperCase()}
+								</div>
+								<div className="flex flex-col flex-1 min-w-0">
+									<span className="font-medium truncate">{team.name}</span>
+									<span className="text-xs text-muted-foreground">Switch to this org</span>
+								</div>
+								<DropdownMenuShortcut>⌘{index + 2}</DropdownMenuShortcut>
+							</DropdownMenuItem>
+						))}
+
+						<DropdownMenuSeparator className="my-2" />
+
+						<DropdownMenuItem
+							onClick={() => setCreateModalOpen(true)}
+							className="gap-3 p-3 rounded-lg mx-2 mb-2 bg-muted/30 hover:bg-muted/50"
+							disabled={isSwitching}
+						>
+							<div className="flex size-8 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground bg-background">
+								<Plus className="size-4 text-muted-foreground" />
+							</div>
+							<div className="flex flex-col">
+								<span className="font-medium text-muted-foreground">
+									{hasAccess ? "Create Organization" : "Upgrade Plan"}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									{hasAccess ? "Add new workspace" : "Unlock team features"}
+								</span>
+							</div>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</SidebarMenuItem>
+
+			<CreateOrganizationModal
+				open={createModalOpen}
+				onOpenChange={setCreateModalOpen}
+			/>
+		</SidebarMenu>
+	);
+}
+
+
+http://localhost:3000/auth/callback?provider=twitter&code=AQQgq1261cGj6Fpl6P7okVySV1vds_zoqvbgKWUEqZ4Eq7xWmvszMoYbgg0DwWH4D6GGy_0fByQB0SfDRtotpqQ7-mjGavJguWTlKPbvX0t0etXdACWXe2M3TSGpBG0s2HW-aONWL26NagVhaqIlb1P85NNVEhWZQj6n0q3YPDzbi8TgG0WNQgqC_uL3JKDsraWWITWK59fVo3fKLyI&state=gAAAAABoc4lBnstZuikR6vGBBuI7n2rc6zd7qjLBIbLZCJE7eOA_rn_o17nVRSmWEEXrQx2z6r4nNqwSTQSxNtGghEC20C9PePp5oWgyUdX3hVeQJNV7Dk9fEVlHo5sN6OD0oe4JIJo2
+
+https://localhost:3000/auth/callback?provider=twitter&state=gAAAAABomlMAoeBTspAATg1arc7dsgiusJBgi3TkkqyIGqa6WHkpygphMuNn-RrwP00osfANUBfZcF19GfOiU-JkY1UqDTloBUu7QeNVRVJDsdNtg5KM5Sophmxnpa70Zodbf_df-w0h&code=NWhveURRcVdDSi1rQ2piai1VSTgxYXpoaUVPd0t2R0VPUDk2ckszVTBOTGdrOjE3NTQ5NDQyNjYzODY6MTowOmFjOjE
+
+
+
+
+
+
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GitHubWebhookView(View):
+    """
+    Enhanced GitHub webhook handler with repository-based processing.
+    Handles all webhook events with comprehensive logging and error handling.
+    """
+
+    # GitHub webhook IP ranges (updated as of 2024)
+    GITHUB_IP_RANGES = [
+        "192.30.252.0/22",
+        "185.199.108.0/22",
+        "140.82.112.0/20",
+        "143.55.64.0/20",
+        "2a0a:a440::/29",
+        "2606:50c0::/32"
+    ]
+
+    # Supported GitHub events
+    SUPPORTED_EVENTS = ['push', 'pull_request', ]
+
+    # Maximum commits to process in a single batch (to avoid AI token limits)
+    MAX_COMMITS_PER_BATCH = 10
+    
+    # Maximum time window for batching commits (in seconds)
+    BATCH_TIME_WINDOW = 300  # 5 minutes
+
+    def post(self, request):
+        """Main webhook handler with comprehensive error handling and logging."""
+        webhook_log = None
+        start_time = timezone.now()
+
+        try:
+            payload = json.loads(request.body)
+
+            # 1️⃣ Get installation ID
+            installation_id = payload.get("installation", {}).get("id")
+            if not installation_id:
+                return self._log_and_respond(None, "Missing installation ID", 400)
+
+            # 2️⃣ Find the organization associated with the installation ID
+            try:
+                organization = Organization.objects.get(github_installation_id=installation_id)
+            except Organization.DoesNotExist:
+                return self._log_and_respond(None, "No organization found for installation", 404)
+
+            # 3️⃣ Check if GitHub connection is active
+            if organization.github_connection_status != "active":
+                return self._log_and_respond(None, "GitHub connection is currently inactive", 403)
+
+            # 4️⃣ Tenant schema switch for the rest of the processing
+            with tenant_context(organization):
+
+                # 5️⃣ Initial webhook log creation
+                webhook_log = self._create_initial_log(request)
+                repository = self._get_repository_from_payload(payload, organization)
+                webhook_log.organization = organization
+                webhook_log.repository = repository
+                webhook_log.save()
+
+                # 6️⃣ Security validations
+                if not self._validate_request_security(request):
+                    return self._log_and_respond(webhook_log, 'Security validation failed', 403)
+
+                # 7️⃣ Rate limiting
+                if not self._check_rate_limits(organization):
+                    return self._log_and_respond(webhook_log, 'Rate limit exceeded', 429)
+
+                # 8️⃣ Validate repo/org, permissions
+                repo = repository
+                owner = self._get_organization_owner(repo.organization)
+                if not owner:
+                    return self._log_and_respond(webhook_log, 'Organization owner not found', 403)
+
+                if not self._check_post_limits(owner):
+                    return self._log_and_respond(webhook_log, 'Post limit reached for free plan', 403)
+
+                # 9️⃣ Event & config check
+                github_event = request.headers.get('X-GitHub-Event', '')
+                repo_config = self._get_repository_config(repo)
+
+                if not repo_config or repo_config.status != 'connected':
+                    return self._log_and_respond(webhook_log, 'Repository not configured or disconnected', 400)
+
+                if not repo_config.channels_to_post:
+                    return self._log_and_respond(webhook_log, 'No Social connected.', 400)
+
+                # 🔟 Process event
+                result = self._process_github_event(github_event, payload, repo_config)
+
+                # ✅ Success logging
+                webhook_log.status = 'success'
+                webhook_log.http_status = 200
+                webhook_log.response_body = json.dumps(result)
+
+                processing_time = (timezone.now() - start_time).total_seconds()
+                webhook_log.processing_time_ms = int(processing_time * 1000)
+                webhook_log.save()
+
+                logger.info(f"✅ Webhook processed successfully for repo {repo.name} in {processing_time:.2f}s")
+                return JsonResponse(result, status=200)
+
+        except Exception as exc:
+            return self._handle_exception(exc, webhook_log)
+
+    def _create_initial_log(self, request):
+        """Create initial webhook log entry."""
+        try:
+            raw_payload = request.body.decode('utf-8') if request.body else '{}'
+            payload = json.loads(raw_payload)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            payload = {"error": "Invalid JSON payload"}
+
+        try:
+            ip = self._get_client_ip(request)
+            ipaddress.ip_address(ip)  # validate
+        except Exception:
+            ip = None
+
+        return WebhookDeliveryLog.objects.create(
+            http_status=0,
+            payload=payload,
+            status='processing',
+            github_event=request.headers.get('X-GitHub-Event', ''),
+        )
+    
+    def _get_repository_from_payload(self, payload, organization):
+        """Fetch the Repository instance using GitHub repo ID from the payload."""
+        try:
+            github_repo_id = str(payload.get("repository", {}).get("id"))
+            if not github_repo_id:
+                return None
+
+            return Repository.objects.get(
+                organization=organization,
+                github_repo_id=github_repo_id
+            )
+        except Repository.DoesNotExist:
+            logger.warning("❌ Repository not found for webhook payload")
+            return None
+
+    def _validate_request_security(self, request):
+        """Comprehensive security validation."""
+        logger.debug("🔐 Starting security validation...")
+
+        # 1. Verify public secret if provided
+        public_secret = request.GET.get('secret_key', '')
+        if public_secret and not self._verify_secret(public_secret, settings.WEBHOOK_PUBLIC_KEY):
+            logger.error("🚫 Public secret verification failed")
+            return False
+
+        # 2. Validate GitHub IP source
+        if not self._validate_github_ip(request):
+            logger.error("🚫 Invalid IP source - not from GitHub")
+            return False
+
+        # 3. Validate GitHub signature
+        if not self._validate_github_signature(request, settings.WEBHO0K_PRIVATE_KEY):
+            logger.error("🚫 GitHub signature validation failed")
+            return False
+
+        logger.debug("✅ Security validation passed")
+        return True
+
+    def _validate_github_ip(self, request):
+        """Validate request comes from GitHub IP ranges."""
+        client_ip = self._get_client_ip(request)
+        if not client_ip:
+            return False
+
+        try:
+            client_ip_obj = ipaddress.ip_address(client_ip)
+            for ip_range in self.GITHUB_IP_RANGES:
+                network = ipaddress.ip_network(ip_range, strict=False)
+                if client_ip_obj in network:
+                    logger.debug(f"✅ Client IP {client_ip} validated in range {ip_range}")
+                    return True
+
+            logger.warning(f"⚠️ Client IP {client_ip} not in GitHub ranges")
+            return False
+
+        except ValueError as e:
+            logger.error(f"❌ Invalid IP address {client_ip}: {e}")
+            return False
+
+    def _validate_github_signature(self, request, private_secret):
+        """Validate GitHub webhook signature."""
+        signature = request.META.get('HTTP_X_HUB_SIGNATURE_256', '')
+
+        if not signature:
+            logger.error("❌ No GitHub signature provided")
+            return False
+
+        expected_signature = self._compute_signature(request.body, private_secret)
+
+        if not hmac.compare_digest(signature, expected_signature):
+            logger.error("❌ GitHub signature mismatch")
+            return False
+
+        logger.debug("✅ GitHub signature validated")
+        return True
+
+    def _check_rate_limits(self, organization):
+        """Check rate limits for organization calls."""
+        cache_key = f"organization_rate_limit_{organization.id}"
+        current_count = cache.get(cache_key, 0)
+
+        # Allow 100 webhook calls per hour per webhook
+        max_calls_per_hour = getattr(settings, 'WEBHOOK_RATE_LIMIT', 100)
+
+        if current_count >= max_calls_per_hour:
+            logger.warning(f"⚠️ Rate limit exceeded for organization {organization.id}")
+            return False
+
+        # Increment counter
+        cache.set(cache_key, current_count + 1, 3600)  # 1 hour
+        return True
+
+    def _get_organization_owner(self, organization):
+        """Get organization owner with caching."""
+        cache_key = f"org_owner_{organization.id}"
+        owner = cache.get(cache_key)
+
+        if not owner:
+            try:
+                owner = UserOrganizationRole.objects.select_related('user').get(
+                    organization=organization,
+                    role='owner'
+                ).user
+                cache.set(cache_key, owner, 300)  # 5 minutes
+                logger.debug(f"👤 Organization owner found: {owner.email}")
+            except UserOrganizationRole.DoesNotExist:
+                logger.error("❌ Organization owner not found")
+                return None
+
+        return owner
+
+    def _check_post_limits(self, owner):
+        """Check if user has reached post limits."""
+        if has_pro_access(owner):
+            return True
+
+        # Get all orgs where this user is the owner
+        user_org_ids = Organization.objects.filter(owner=owner).values_list("id", flat=True)
+
+        # Count published posts across all orgs owned by this user
+        published_posts_count = Post.objects.filter(
+            is_deleted=False,
+            is_inactive=False,
+            status=Post.Status.PUBLISHED,
+            organization_id__in=user_org_ids,
+        ).count()
+
+        max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+
+        if published_posts_count >= max_posts:
+            logger.warning(f"🚫 Post limit reached: {published_posts_count}/{max_posts}")
+            return False
+
+        logger.debug(f"📝 Posts count: {published_posts_count}/{max_posts}")
+        return True
+
+    def _get_repository_config(self, repo):
+        """Get repository configuration with caching."""
+        cache_key = f"repo_config_{repo.id}"
+        config = cache.get(cache_key)
+
+        if not config:
+            try:
+                config = RepositoryConfig.objects.get(repository=repo)
+                cache.set(cache_key, config, 300)  # 5 minutes
+            except RepositoryConfig.DoesNotExist:
+                logger.error(f"❌ No configuration found for repo {repo.name}")
+                return None
+
+        return config
+
+    def _process_github_event(self, github_event, payload, repo_config):
+        """Process different GitHub events based on repository configuration."""
+        logger.info(f"📢 Processing GitHub event: {github_event}")
+
+        if github_event not in self.SUPPORTED_EVENTS:
+            logger.info(f"⚠️ Unsupported event type: {github_event}")
+            return {'message': f'Event {github_event} not supported', 'skipped': True}
+
+        # Event-specific processing
+        if github_event == 'push':
+            return self._process_push_event(payload, repo_config)
+        elif github_event == 'pull_request':
+            return self._process_pull_request_event(payload, repo_config)
+        elif github_event == 'release':
+            return self._process_release_event(payload, repo_config)
+        elif github_event in ['create', 'delete']:
+            return self._process_branch_event(github_event, payload, repo_config)
+
+        return {'message': f'Event {github_event} processed', 'action': 'none'}
+
+    def _process_push_event(self, payload, repo_config):
+        """Process push events with branch and commit filtering."""
+        branch = payload.get('ref', '').split('/')[-1]
+        logger.debug(f"🌿 Push to branch: {branch}")
+
+        # Check if branch matches tracked branch
+        if branch != repo_config.tracked_branch:
+            logger.info(f"⚠️ Branch mismatch: {branch} != {repo_config.tracked_branch}")
+            return {'message': 'Branch not tracked', 'skipped': True}
+
+        # Check if AI transformation is enabled
+        if not repo_config.ai_transformation_enabled:
+            logger.info("⚠️ AI transformation disabled for this repository")
+            return {'message': 'AI transformation disabled', 'skipped': True}
+
+        # Process commits
+        commits = payload.get('commits', [])
+        if not commits:
+            logger.info("⚠️ No commits in push event")
+            return {'message': 'No commits to process', 'skipped': True}
+
+        # Enhanced commit filtering and validation
+        filtered_commits = self._filter_and_validate_commits(commits, payload, repo_config)
+        
+        if not filtered_commits:
+            logger.info("⚠️ No commits match processing criteria after filtering")
+            return {'message': 'No commits match criteria', 'skipped': True}
+
+        # Check posting frequency limits
+        if not self._check_posting_frequency(repo_config):
+            logger.warning("⚠️ Posting frequency limit reached")
+            return {'message': 'Posting frequency limit reached', 'skipped': True}
+
+        # Generate posts based on posting strategy with batched commits
+        result = self._generate_posts_from_commits_batch(filtered_commits, repo_config, payload)
+
+        return result
+
+    def _filter_and_validate_commits(self, commits, payload, repo_config):
+        """Enhanced commit filtering with additional validation."""
+        filtered_commits = []
+        
+        # Get additional context from payload
+        pusher = payload.get('pusher', {})
+        is_force_push = payload.get('forced', False)
+        head_commit = payload.get('head_commit', {})
+        
+        logger.debug(f"🔍 Filtering {len(commits)} commits...")
+        
+        for commit in commits:
+            commit_sha = commit.get('id', '')
+            commit_message = commit.get('message', '')
+            commit_author = commit.get('author', {})
+            commit_timestamp = commit.get('timestamp', '')
+            
+            # Basic validation
+            if not commit_message:
+                logger.debug(f"⚠️ Skipping commit with missing message or SHA: {commit_sha[:8]}")
+                continue
+            
+            # Check if this is a merge commit (has multiple parents)
+            # if self._is_merge_commit(commit):
+            #     if not repo_config.process_merge_commits:
+            #         logger.debug(f"⚠️ Skipping merge commit: {commit_sha[:8]}")
+            #         continue
+            #     else:
+            #         logger.debug(f"✅ Processing merge commit: {commit_sha[:8]}")
+            
+            # Check for revert commits
+            # if self._is_revert_commit(commit_message):
+            #     if not repo_config.process_revert_commits:
+            #         logger.debug(f"⚠️ Skipping revert commit: {commit_sha[:8]}")
+            #         continue
+            
+            # Check commit age (skip very old commits in case of history rewrite)
+            if self._is_commit_too_old(commit_timestamp):
+                logger.debug(f"⚠️ Skipping old commit: {commit_sha[:8]}")
+                continue
+            
+            # Apply existing filters
+            if self._should_process_commit(commit_message, repo_config):
+                # Add additional metadata to commit for AI processing
+                # enhanced_commit = {
+                #     **commit,
+                #     'is_head_commit': commit_sha == head_commit.get('id'),
+                #     'is_force_push': is_force_push,
+                #     'pusher_name': pusher.get('name', ''),
+                #     'files_changed': len(commit.get('added', [])) + len(commit.get('modified', [])) + len(commit.get('removed', [])),
+                #     'lines_added': 0,  # GitHub doesn't provide this in webhook, but we can track it
+                #     'lines_removed': 0,
+                # }
+                filtered_commits.append(commit)
+                logger.debug(f"✅ Commit accepted: {commit_message[:50]}...")
+            else:
+                logger.debug(f"⚠️ Commit filtered out: {commit_message[:50]}...")
+        
+        logger.info(f"📊 Filtered commits: {len(filtered_commits)}/{len(commits)} accepted")
+        return filtered_commits
+
+    def _is_merge_commit(self, commit):
+        """Check if commit is a merge commit."""
+        parents = commit.get('parents', [])
+        return len(parents) > 1
+
+    def _is_revert_commit(self, commit_message):
+        """Check if commit is a revert commit."""
+        message_lower = commit_message.lower().strip()
+        revert_patterns = ['revert ', 'reverts ', 'this reverts commit']
+        return any(pattern in message_lower for pattern in revert_patterns)
+
+    def _is_commit_too_old(self, commit_timestamp, max_age_hours=24):
+        """Check if commit is too old to process."""
+        if not commit_timestamp:
+            return False
+        
+        try:
+            from datetime import datetime
+            import dateutil.parser
+            
+            commit_time = dateutil.parser.parse(commit_timestamp)
+            now = timezone.now()
+            age_hours = (now - commit_time).total_seconds() / 3600
+            
+            return age_hours > max_age_hours
+        except Exception as e:
+            logger.debug(f"⚠️ Could not parse commit timestamp: {e}")
+            return False
+
+    def _process_pull_request_event(self, payload, repo_config):
+        """Process pull request events."""
+        action = payload.get('action', '')
+        pr = payload.get('pull_request', {})
+
+        logger.debug(f"🔄 Pull request {action}: {pr.get('title', '')}")
+
+        # Only process certain PR actions
+        if action not in ['opened', 'closed', 'merged']:
+            return {'message': f'PR action {action} not processed', 'skipped': True}
+
+        # Check if PR posting is enabled (you might add this to repo config)
+        # For now, we'll skip PR processing
+        return {'message': 'PR processing not implemented', 'skipped': True}
+
+    def _process_release_event(self, payload, repo_config):
+        """Process release events."""
+        action = payload.get('action', '')
+        release = payload.get('release', {})
+
+        logger.debug(f"🚀 Release {action}: {release.get('tag_name', '')}")
+
+        if action == 'published':
+            # Process release for posting
+            return {'message': 'Release processing not implemented', 'skipped': True}
+
+        return {'message': f'Release action {action} not processed', 'skipped': True}
+
+    def _process_branch_event(self, event_type, payload, repo_config):
+        """Process branch creation/deletion events."""
+        ref = payload.get('ref', '')
+        ref_type = payload.get('ref_type', '')
+
+        logger.debug(f"🌳 Branch {event_type}: {ref} ({ref_type})")
+
+        return {'message': f'Branch {event_type} not processed', 'skipped': True}
+
+    def _should_process_commit(self, commit_message, repo_config):
+        """Check if commit should be processed based on filters."""
+        if not commit_message:
+            return False
+
+        # Normalize the commit message once
+        commit_message_normalized = commit_message.strip().lower()
+
+        # ------------------ 🔕 Ignore Keywords ------------------
+        ignore_keywords = repo_config.ignore_keywords or ""
+        if ignore_keywords:
+            ignore_list = [k.strip().lower() for k in ignore_keywords.split(',')]
+            for keyword in ignore_list:
+                if keyword in commit_message_normalized:
+                    logger.debug(f"⚠️ Commit ignored due to keyword: {commit_message[:50]}...")
+                    return False
+
+        # ------------------ ✅ Prefix Filtering ------------------
+        prefix_filter = repo_config.commit_prefix_filter or ""
+        if prefix_filter:
+            allowed_prefixes = [p.strip().lower().rstrip(':') for p in prefix_filter.split(',')]
+            commit_prefix = commit_message.split(':', 1)[0].strip().lower()
+            if commit_prefix not in allowed_prefixes:
+                logger.debug(f"⚠️ Commit ignored due to prefix filter: {commit_message[:50]}...")
+                return False
+
+        return True
+
+    def _check_posting_frequency(self, repo_config):
+        """Check if posting frequency limit has been reached."""
+        if repo_config.post_frequency_limit <= 0:
+            return True  # No limit
+
+        # Check posts in last 24 hours for this repo
+        yesterday = timezone.now() - timedelta(days=1)
+        recent_posts = Post.objects.filter(
+            repository_config=repo_config,
+            created_at__gte=yesterday
+        ).count()
+
+        if recent_posts >= repo_config.post_frequency_limit:
+            logger.warning(f"⚠️ Posting frequency limit reached: {recent_posts}/{repo_config.post_frequency_limit}")
+            return False
+
+        return True
+
+    def _generate_posts_from_commits_batch(self, commits, repo_config, payload):
+        """Generate posts from batched commits with enhanced context."""
+        if not commits:
+            return {'message': 'No commits to process', 'skipped': True}
+
+        # Create batches if we have too many commits
+        commit_batches = self._create_commit_batches(commits)
+        
+        # Extract additional context from payload
+        repository_info = payload.get('repository', {})
+        # pusher_info = payload.get('pusher', {})
+        
+        results = []
+        
+        for batch_index, commit_batch in enumerate(commit_batches):
+            logger.info(f"📦 Processing batch {batch_index + 1}/{len(commit_batches)} with {len(commit_batch)} commits")
+            
+            try:
+                batch_result = self._process_commit_batch(
+                    commit_batch, 
+                    repo_config, 
+                    repository_info,
+                    batch_index
+                )
+                results.append(batch_result)
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to process batch {batch_index + 1}: {e}")
+                results.append({
+                    'batch_index': batch_index,
+                    'status': 'error',
+                    'error': str(e),
+                    'commits_count': len(commit_batch)
+                })
+
+        # Aggregate results
+        total_commits = len(commits)
+        successful_batches = len([r for r in results if r.get('status') == 'success'])
+        
+        return {
+            'message': f'Processed {total_commits} commits in {len(commit_batches)} batches',
+            'total_commits': total_commits,
+            'total_batches': len(commit_batches),
+            'successful_batches': successful_batches,
+            'results': results,
+            'strategy': repo_config.posting_strategy
+        }
+
+    def _create_commit_batches(self, commits):
+        """Create batches of commits for processing."""
+        if len(commits) <= self.MAX_COMMITS_PER_BATCH:
+            return [commits]
+        
+        batches = []
+        for i in range(0, len(commits), self.MAX_COMMITS_PER_BATCH):
+            batch = commits[i:i + self.MAX_COMMITS_PER_BATCH]
+            batches.append(batch)
+            
+        logger.info(f"📊 Created {len(batches)} batches from {len(commits)} commits")
+        return batches
+
+    def _process_commit_batch(self, commits, repo_config, repository_info, pusher_info, batch_index):
+        """Process a batch of commits together."""
+        
+        # Prepare batch context for AI
+        batch_context = {
+            # 'repository_name': repository_info.get('name', ''),
+            # 'repository_description': repository_info.get('description', ''),
+            # 'repository_language': repository_info.get('language', ''),
+            # 'pusher_name': pusher_info.get('name', ''),
+            # 'batch_index': batch_index,
+            # 'commits_count': len(commits),
+            'commit_messages': [commit.get('message', '') for commit in commits],
+            # 'commit_authors': list(set([commit.get('author', {}).get('name', '') for commit in commits])),
+            # 'total_files_changed': sum([commit.get('files_changed', 0) for commit in commits]),
+            # 'has_merge_commits': any([self._is_merge_commit(commit) for commit in commits]),
+            # 'commit_shas': [commit.get('id', '')[:8] for commit in commits],  # Short SHAs
+        }
+
+        if repo_config.posting_strategy == 'manual':
+            logger.info("📋 Queuing commit batch for manual review")
+            return self._queue_for_manual_review(commits, batch_context, repo_config)
+
+        elif repo_config.posting_strategy == 'immediate':
+            logger.info("🤖 Generating immediate post from commit batch")
+            return self._generate_immediate_batch_post(commits, batch_context, repo_config)
+
+        elif repo_config.posting_strategy in ['15min', 'eod', 'scheduled']:
+            logger.info(f"⏰ Scheduling batch post for {repo_config.posting_strategy}")
+            return self._schedule_batch_post(commits, batch_context, repo_config)
+
+        return {
+            'status': 'error',
+            'message': 'Unknown posting strategy',
+            'batch_index': batch_index,
+            'commits_count': len(commits)
+        }
+
+    def _queue_for_manual_review(self, commits, batch_context, repo_config):
+        """Queue commits for manual review."""
+        # Implementation for manual review queue
+        # You might want to create a PendingPost model or similar
+        return {
+            'status': 'queued',
+            'message': 'Commits queued for manual review',
+            'batch_index': batch_context['batch_index'],
+            'commits_count': len(commits),
+            'context': batch_context
+        }
+
+    def _generate_immediate_batch_post(self, commits, batch_context, repo_config):
+        """Generate post immediately from commit batch."""
+        try:
+            # Prepare the commit data for AI processing
+            commits_summary = self._prepare_commits_for_ai(commits, batch_context)
+            
+            # Call the enhanced AI function with batched commits
+            post_result = enhanced_generate_post_with_ai(
+                commits=commits_summary,
+                repo_config=repo_config,
+                tone=repo_config.default_tone,
+                batch_context=batch_context  # Pass additional context
+            )
+            
+            logger.info(f"✅ Batch post generated successfully with {len(commits)} commits")
+            
+            return {
+                'status': 'success',
+                'message': f'Post generated from {len(commits)} commits',
+                'batch_index': batch_context['batch_index'],
+                'commits_count': len(commits),
+                'post_id': getattr(post_result, 'id', None),
+                'context': batch_context
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to generate batch post: {e}")
+            return {
+                'status': 'error',
+                'message': f'Failed to generate post: {str(e)}',
+                'batch_index': batch_context['batch_index'],
+                'commits_count': len(commits)
+            }
+
+    def _schedule_batch_post(self, commits, batch_context, repo_config):
+        """Schedule batch post for later processing."""
+        # Implementation for scheduled posting
+        # You might want to use Celery or similar for this
+        return {
+            'status': 'scheduled',
+            'message': f'Batch post scheduled for {repo_config.posting_strategy}',
+            'batch_index': batch_context['batch_index'],
+            'commits_count': len(commits),
+            'context': batch_context
+        }
+
+    def _prepare_commits_for_ai(self, commits, batch_context):
+        """Prepare commits data in a format suitable for AI processing."""
+        # Create a structured summary of all commits
+        commits_data = {
+            'batch_summary': {
+                'total_commits': len(commits),
+                'repository': batch_context['repository_name'],
+                'authors': batch_context['commit_authors'],
+                'files_changed': batch_context['total_files_changed'],
+            },
+            'commits': []
+        }
+        
+        for commit in commits:
+            commit_data = {
+                'message': commit.get('message', ''),
+                'author': commit.get('author', {}).get('name', ''),
+                'sha': commit.get('id', '')[:8],
+                'timestamp': commit.get('timestamp', ''),
+                'files_changed': commit.get('files_changed', 0),
+                'is_head_commit': commit.get('is_head_commit', False),
+                'added_files': commit.get('added', []),
+                'modified_files': commit.get('modified', []),
+                'removed_files': commit.get('removed', []),
+            }
+            commits_data['commits'].append(commit_data)
+        
+        return commits_data
+
+    def _get_client_ip(self, request):
+        """Get client IP address from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+    def _verify_secret(self, provided_secret, stored_secret):
+        """Verify secret key using constant-time comparison."""
+        return hmac.compare_digest(provided_secret, stored_secret)
+
+    def _compute_signature(self, payload, private_key):
+        """Compute HMAC-SHA256 signature."""
+        secret = private_key.encode('utf-8')
+        return 'sha256=' + hmac.new(secret, payload, hashlib.sha256).hexdigest()
+
+    def _log_and_respond(self, webhook_log, message, status_code):
+        """Log error and return JSON response."""
+        if webhook_log:
+            webhook_log.status = 'failed'
+            webhook_log.http_status = status_code
+            webhook_log.response_body = message
+            webhook_log.save()
+
+        logger.error(f"❌ {message}")
+        return JsonResponse({'error': message}, status=status_code)
+
+    def _handle_exception(self, exc, webhook_log):
+        """Handle exceptions with proper logging and error reporting."""
+        error_msg = str(exc)
+        logger.exception(f"❌ Webhook processing error: {error_msg}")
+
+        # Update webhook -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+        # --- VALIDATION LOGIC ---
+# Check if the request is coming from GitHub and is authenticated.
+
+# Code for validating GitHub signature and IP
+
+# --- FETCH WEBHOOK OBJECT ---
+# Retrieve the appropriate webhook instance for the organization.
+
+# --- PROCESS EVENT DATA ---
+# Parse and handle the payload from GitHub's webhook.
+
+# --- RESPONSE HANDLING ---
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GitHubWebhookView(View):
+    """
+    Enhanced GitHub webhook handler with repository-based processing.
+    Handles all webhook events with comprehensive logging and error handling.
+    """
+
+    # GitHub webhook IP ranges (updated as of 2024)
+    GITHUB_IP_RANGES = [
+        "192.30.252.0/22",
+        "185.199.108.0/22",
+        "140.82.112.0/20",
+        "143.55.64.0/20",
+        "2a0a:a440::/29",
+        "2606:50c0::/32"
+    ]
+
+    # Supported GitHub events
+    # SUPPORTED_EVENTS = ['push', 'pull_request', 'release', 'create', 'delete']
+    SUPPORTED_EVENTS = ['push', 'pull_request', ]
+
+    def post(self, request):
+        """Main webhook handler with comprehensive error handling and logging."""
+        webhook_log = None
+        start_time = timezone.now()
+
+        try:
+            payload = json.loads(request.body)
+
+            # 1️⃣ Get installation ID
+            installation_id = payload.get("installation", {}).get("id")
+            if not installation_id:
+                return self._log_and_respond(None, "Missing installation ID", 400)
+
+            # 2️⃣ Find the organization associated with the installation ID
+            try:
+                organization = Organization.objects.get(github_installation_id=installation_id)
+            except Organization.DoesNotExist:
+                return self._log_and_respond(None, "No organization found for installation", 404)
+
+            # 3️⃣ Check if GitHub connection is active
+            if organization.github_connection_status != "active":
+                return self._log_and_respond(None, "GitHub connection is currently inactive", 403)
+
+            # 4️⃣ Tenant schema switch for the rest of the processing
+            with tenant_context(organization):
+
+                # 5️⃣ Initial webhook log creation
+                webhook_log = self._create_initial_log(request)
+                repository = self._get_repository_from_payload(payload, organization)
+                webhook_log.organization = organization
+                webhook_log.repository = repository
+                webhook_log.save()
+
+                # 6️⃣ Security validations
+                if not self._validate_request_security(request):
+                    return self._log_and_respond(webhook_log, 'Security validation failed', 403)
+
+                # 7️⃣ Rate limiting
+                if not self._check_rate_limits(organization):
+                    return self._log_and_respond(webhook_log, 'Rate limit exceeded', 429)
+
+                # 8️⃣ Validate repo/org, permissions
+                repo = repository
+                owner = self._get_organization_owner(repo.organization)
+                if not owner:
+                    return self._log_and_respond(webhook_log, 'Organization owner not found', 403)
+
+                if not self._check_post_limits(owner):
+                    return self._log_and_respond(webhook_log, 'Post limit reached for free plan', 403)
+
+                # 9️⃣ Event & config check
+                github_event = request.headers.get('X-GitHub-Event', '')
+                repo_config = self._get_repository_config(repo)
+
+                if not repo_config or repo_config.status != 'connected':
+                    return self._log_and_respond(webhook_log, 'Repository not configured or disconnected', 400)
+
+                if not repo_config.channels_to_post:
+                    return self._log_and_respond(webhook_log, 'No Social connected.', 400)
+
+                # 🔟 Process event
+                result = self._process_github_event(github_event, payload, repo_config)
+
+                # ✅ Success logging
+                webhook_log.status = 'success'
+                webhook_log.http_status = 200
+                webhook_log.response_body = json.dumps(result)
+
+                processing_time = (timezone.now() - start_time).total_seconds()
+                webhook_log.processing_time_ms = int(processing_time * 1000)
+                webhook_log.save()
+
+                logger.info(f"✅ Webhook processed successfully for repo {repo.name} in {processing_time:.2f}s")
+                return JsonResponse(result, status=200)
+
+        except Exception as exc:
+            return self._handle_exception(exc, webhook_log)
+
+    def _create_initial_log(self, request):
+        """Create initial webhook log entry."""
+        try:
+            raw_payload = request.body.decode('utf-8') if request.body else '{}'
+            payload = json.loads(raw_payload)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            payload = {"error": "Invalid JSON payload"}
+
+        try:
+            ip = self._get_client_ip(request)
+            ipaddress.ip_address(ip)  # validate
+        except Exception:
+            ip = None
+
+        return WebhookDeliveryLog.objects.create(
+            http_status=0,
+            payload=payload,
+            status='processing',
+            github_event=request.headers.get('X-GitHub-Event', ''),
+        )
+    
+    def _get_repository_from_payload(self, payload, organization):
+        """Fetch the Repository instance using GitHub repo ID from the payload."""
+        try:
+            github_repo_id = str(payload.get("repository", {}).get("id"))
+            if not github_repo_id:
+                return None
+
+            return Repository.objects.get(
+                organization=organization,
+                github_repo_id=github_repo_id
+            )
+        except Repository.DoesNotExist:
+            logger.warning("❌ Repository not found for webhook payload")
+            return None
+
+    def _validate_request_security(self, request):
+        """Comprehensive security validation."""
+        logger.debug("🔐 Starting security validation...")
+
+        # 1. Verify public secret if provided
+        public_secret = request.GET.get('secret_key', '')
+        if public_secret and not self._verify_secret(public_secret, settings.WEBHOOK_PUBLIC_KEY):
+            logger.error("🚫 Public secret verification failed")
+            return False
+
+        # 2. Validate GitHub IP source
+        if not self._validate_github_ip(request):
+            logger.error("🚫 Invalid IP source - not from GitHub")
+            return False
+
+        # 3. Validate GitHub signature
+        if not self._validate_github_signature(request, settings.WEBHO0K_PRIVATE_KEY):
+            logger.error("🚫 GitHub signature validation failed")
+            return False
+
+        logger.debug("✅ Security validation passed")
+        return True
+
+    def _validate_github_ip(self, request):
+        """Validate request comes from GitHub IP ranges."""
+        client_ip = self._get_client_ip(request)
+        if not client_ip:
+            return False
+
+        try:
+            client_ip_obj = ipaddress.ip_address(client_ip)
+            for ip_range in self.GITHUB_IP_RANGES:
+                network = ipaddress.ip_network(ip_range, strict=False)
+                if client_ip_obj in network:
+                    logger.debug(f"✅ Client IP {client_ip} validated in range {ip_range}")
+                    return True
+
+            logger.warning(f"⚠️ Client IP {client_ip} not in GitHub ranges")
+            return False
+
+        except ValueError as e:
+            logger.error(f"❌ Invalid IP address {client_ip}: {e}")
+            return False
+
+    def _validate_github_signature(self, request, private_secret):
+        """Validate GitHub webhook signature."""
+        signature = request.META.get('HTTP_X_HUB_SIGNATURE_256', '')
+
+        if not signature:
+            logger.error("❌ No GitHub signature provided")
+            return False
+
+        expected_signature = self._compute_signature(request.body, private_secret)
+
+        if not hmac.compare_digest(signature, expected_signature):
+            logger.error("❌ GitHub signature mismatch")
+            return False
+
+        logger.debug("✅ GitHub signature validated")
+        return True
+
+    def _check_rate_limits(self, organization):
+        """Check rate limits for organization calls."""
+        cache_key = f"organization_rate_limit_{organization.id}"
+        current_count = cache.get(cache_key, 0)
+
+        # Allow 100 webhook calls per hour per webhook
+        max_calls_per_hour = getattr(settings, 'WEBHOOK_RATE_LIMIT', 100)
+
+        if current_count >= max_calls_per_hour:
+            logger.warning(f"⚠️ Rate limit exceeded for organization {organization.id}")
+            return False
+
+        # Increment counter
+        cache.set(cache_key, current_count + 1, 3600)  # 1 hour
+        return True
+
+    def _get_organization_owner(self, organization):
+        """Get organization owner with caching."""
+        cache_key = f"org_owner_{organization.id}"
+        owner = cache.get(cache_key)
+
+        if not owner:
+            try:
+                owner = UserOrganizationRole.objects.select_related('user').get(
+                    organization=organization,
+                    role='owner'
+                ).user
+                cache.set(cache_key, owner, 300)  # 5 minutes
+                logger.debug(f"👤 Organization owner found: {owner.email}")
+            except UserOrganizationRole.DoesNotExist:
+                logger.error("❌ Organization owner not found")
+                return None
+
+        return owner
+
+    def _check_post_limits(self, owner):
+        """Check if user has reached post limits."""
+        if has_pro_access(owner):
+            return True
+
+        # Get all orgs where this user is the owner
+        user_org_ids = Organization.objects.filter(owner=owner).values_list("id", flat=True)
+
+        # Count published posts across all orgs owned by this user
+        published_posts_count = Post.objects.filter(
+            is_deleted=False,
+            is_inactive=False,
+            status=Post.Status.PUBLISHED,
+            organization_id__in=user_org_ids,
+        ).count()
+
+        max_posts = getattr(settings, 'FREE_PLAN_POST_LIMIT', 5)
+
+        if published_posts_count >= max_posts:
+            logger.warning(f"🚫 Post limit reached: {published_posts_count}/{max_posts}")
+            return False
+
+        logger.debug(f"📝 Posts count: {published_posts_count}/{max_posts}")
+        return True
+
+    def _get_repository_config(self, repo):
+        """Get repository configuration with caching."""
+        cache_key = f"repo_config_{repo.id}"
+        config = cache.get(cache_key)
+
+        if not config:
+            try:
+                config = RepositoryConfig.objects.get(repository=repo)
+                cache.set(cache_key, config, 300)  # 5 minutes
+            except RepositoryConfig.DoesNotExist:
+                logger.error(f"❌ No configuration found for repo {repo.name}")
+                return None
+
+        return config
+
+    def _process_github_event(self, github_event, payload, repo_config):
+        """Process different GitHub events based on repository configuration."""
+        logger.info(f"📢 Processing GitHub event: {github_event}")
+
+        if github_event not in self.SUPPORTED_EVENTS:
+            logger.info(f"⚠️ Unsupported event type: {github_event}")
+            return {'message': f'Event {github_event} not supported', 'skipped': True}
+
+        # Event-specific processing
+        if github_event == 'push':
+            return self._process_push_event(payload, repo_config)
+        elif github_event == 'pull_request':
+            return self._process_pull_request_event(payload, repo_config)
+        elif github_event == 'release':
+            return self._process_release_event(payload, repo_config)
+        elif github_event in ['create', 'delete']:
+            return self._process_branch_event(github_event, payload, repo_config)
+
+        return {'message': f'Event {github_event} processed', 'action': 'none'}
+
+    def _process_push_event(self, payload, repo_config):
+        """Process push events with branch and commit filtering."""
+        branch = payload.get('ref', '').split('/')[-1]
+        logger.debug(f"🌿 Push to branch: {branch}")
+
+        # Check if branch matches tracked branch
+        if branch != repo_config.tracked_branch:
+            logger.info(f"⚠️ Branch mismatch: {branch} != {repo_config.tracked_branch}")
+            return {'message': 'Branch not tracked', 'skipped': True}
+
+        # Check if AI transformation is enabled
+        if not repo_config.ai_transformation_enabled:
+            logger.info("⚠️ AI transformation disabled for this repository")
+            return {'message': 'AI transformation disabled', 'skipped': True}
+
+        # Process commits
+        commits = payload.get('commits', [])
+        if not commits:
+            logger.info("⚠️ No commits in push event")
+            return {'message': 'No commits to process', 'skipped': True}
+
+        processed_commits = []
+        for commit in commits:
+            commit_message = commit.get('message', '')
+            if self._should_process_commit(commit_message, repo_config):
+                processed_commits.append(commit)
+
+        if not processed_commits:
+            logger.info("⚠️ No commits match processing criteria")
+            return {'message': 'No commits match criteria', 'skipped': True}
+
+        # Check posting frequency limits
+        if not self._check_posting_frequency(repo_config):
+            logger.warning("⚠️ Posting frequency limit reached")
+            return {'message': 'Posting frequency limit reached', 'skipped': True}
+
+        # Generate posts based on posting strategy
+        result = self._generate_posts_from_commits(processed_commits, repo_config)
+
+        return result
+
+    def _process_pull_request_event(self, payload, repo_config):
+        """Process pull request events."""
+        action = payload.get('action', '')
+        pr = payload.get('pull_request', {})
+
+        logger.debug(f"🔄 Pull request {action}: {pr.get('title', '')}")
+
+        # Only process certain PR actions
+        if action not in ['opened', 'closed', 'merged']:
+            return {'message': f'PR action {action} not processed', 'skipped': True}
+
+        # Check if PR posting is enabled (you might add this to repo config)
+        # For now, we'll skip PR processing
+        return {'message': 'PR processing not implemented', 'skipped': True}
+
+    def _process_release_event(self, payload, repo_config):
+        """Process release events."""
+        action = payload.get('action', '')
+        release = payload.get('release', {})
+
+        logger.debug(f"🚀 Release {action}: {release.get('tag_name', '')}")
+
+        if action == 'published':
+            # Process release for posting
+            return {'message': 'Release processing not implemented', 'skipped': True}
+
+        return {'message': f'Release action {action} not processed', 'skipped': True}
+
+    def _process_branch_event(self, event_type, payload, repo_config):
+        """Process branch creation/deletion events."""
+        ref = payload.get('ref', '')
+        ref_type = payload.get('ref_type', '')
+
+        logger.debug(f"🌳 Branch {event_type}: {ref} ({ref_type})")
+
+        return {'message': f'Branch {event_type} not processed', 'skipped': True}
+
+    def _should_process_commit(self, commit_message, repo_config):
+        """Check if commit should be processed based on filters."""
+        if not commit_message:
+            return False
+
+        # Normalize the commit message once
+        commit_message_normalized = commit_message.strip().lower()
+
+        # ------------------ 🔕 Ignore Keywords ------------------
+        ignore_keywords = repo_config.ignore_keywords or ""
+        if ignore_keywords:
+            ignore_list = [k.strip().lower() for k in ignore_keywords.split(',')]
+            # Optional: Match only full words (more strict), or keep it fuzzy
+            for keyword in ignore_list:
+                if keyword in commit_message_normalized:
+                    logger.debug(f"⚠️ Commit ignored due to keyword: {commit_message[:50]}...")
+                    return False
+
+        # ------------------ ✅ Prefix Filtering ------------------
+        prefix_filter = repo_config.commit_prefix_filter or ""
+        if prefix_filter:
+            # Normalize prefixes: strip space and remove trailing colon
+            allowed_prefixes = [p.strip().lower().rstrip(':') for p in prefix_filter.split(',')]
+            # Get the prefix from commit (before the first colon)
+            commit_prefix = commit_message.split(':', 1)[0].strip().lower()
+            if commit_prefix not in allowed_prefixes:
+                logger.debug(f"⚠️ Commit ignored due to prefix filter: {commit_message[:50]}...")
+                return False
+
+        return True
+
+    def _check_posting_frequency(self, repo_config):
+        """Check if posting frequency limit has been reached."""
+        if repo_config.post_frequency_limit <= 0:
+            return True  # No limit
+
+        # Check posts in last 24 hours for this repo
+        yesterday = timezone.now() - timedelta(days=1)
+        recent_posts = Post.objects.filter(
+            repository_config=repo_config,
+            created_at__gte=yesterday
+        ).count()
+
+        if recent_posts >= repo_config.post_frequency_limit:
+            logger.warning(f"⚠️ Posting frequency limit reached: {recent_posts}/{repo_config.post_frequency_limit}")
+            return False
+
+        return True
+
+    def _generate_posts_from_commits(self, commits, repo_config):
+        """Generate posts from processed commits."""
+        if repo_config.posting_strategy == 'manual':
+            # Queue for manual review
+            logger.info("📋 Queuing commits for manual review")
+            # Implementation for manual review queue
+            return {'message': 'Commits queued for manual review', 'commits_count': len(commits)}
+
+        elif repo_config.posting_strategy == 'immediate':
+            # Generate posts immediately
+            logger.info("🤖 Generating immediate posts")
+            for commit in commits:
+                self._generate_single_post(commit, repo_config)
+            return {'message': 'Posts generated immediately', 'commits_count': len(commits)}
+
+        elif repo_config.posting_strategy in ['15min', 'eod', 'scheduled']:
+            # Queue for delayed posting
+            logger.info(f"⏰ Scheduling posts for {repo_config.posting_strategy}")
+            # Implementation for scheduled posting
+            return {'message': f'Posts scheduled for {repo_config.posting_strategy}', 'commits_count': len(commits)}
+
+        return {'message': 'Unknown posting strategy', 'error': True}
+
+    def _generate_single_post(self, commit, repo_config):
+        """Generate a single post from commit."""
+        commit_message = commit.get('message', '')
+
+        try:
+            # Use the existing generate_post_with_ai function
+            # generate_post_with_ai(
+            #     commit_message,
+            #     tone=repo_config.default_tone,
+            #     secret_key=webhook.private_secret,
+            #     repo_config=repo_config,
+            # )
+            enhanced_generate_post_with_ai(
+                commits=commit_message,
+                repo_config=repo_config,
+                tone=repo_config.default_tone,
+            )
+            logger.info(f"✅ Post generated for commit: {commit_message[:50]}...")
+        except Exception as e:
+            logger.error(f"❌ Failed to generate post for commit: {e}")
+
+    def _get_client_ip(self, request):
+        """Get client IP address from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+    def _verify_secret(self, provided_secret, stored_secret):
+        """Verify secret key using constant-time comparison."""
+        return hmac.compare_digest(provided_secret, stored_secret)
+
+    def _compute_signature(self, payload, private_key):
+        """Compute HMAC-SHA256 signature."""
+        secret = private_key.encode('utf-8')
+        return 'sha256=' + hmac.new(secret, payload, hashlib.sha256).hexdigest()
+
+    def _log_and_respond(self, webhook_log, message, status_code):
+        """Log error and return JSON response."""
+        if webhook_log:
+            webhook_log.status = 'failed'
+            webhook_log.http_status = status_code
+            webhook_log.response_body = message
+            webhook_log.save()
+
+        logger.error(f"❌ {message}")
+        return JsonResponse({'error': message}, status=status_code)
+
+    def _handle_exception(self, exc, webhook_log):
+        """Handle exceptions with proper logging and error reporting."""
+        error_msg = str(exc)
+        logger.exception(f"❌ Webhook processing error: {error_msg}")
+
+        # Update webhook log
+        if webhook_log:
+            webhook_log.status = 'failed'
+            webhook_log.http_status = 500
+            webhook_log.response_body = f"Internal error: {error_msg}"
+            webhook_log.save()
+
+        # Send error email to admin
+        self._send_error_email(error_msg, webhook_log)
+
+        # Return generic error response
+        return JsonResponse({
+            'error': 'An error occurred while processing the webhook.'
+        }, status=500)
+
+    def _send_error_email(self, error_msg, webhook_log=None):
+        """Send error notification email."""
+        try:
+            subject = "GitHub Webhook Processing Error"
+
+            context = {
+                'error': error_msg,
+                'timestamp': timezone.now(),
+                'webhook_id': webhook_log.webhook.id if webhook_log and webhook_log.webhook else 'Unknown',
+                'repository': webhook_log.webhook.tracked_repo.name if webhook_log and webhook_log.webhook else 'Unknown'
+            }
+
+            message = f"""
+            A webhook processing error occurred:
+
+            Error: {error_msg}
+            Time: {context['timestamp']}
+            Webhook ID: {context['webhook_id']}
+            Repository: {context['repository']}
+
+            Please check the logs for more details.
+            """
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DJANGO_PRODUCT_OWNER_EMAIL],
+                fail_silently=True
+            )
+        except Exception as e:
+            logger.error(f"Failed to send error email: {e}")
+
+
+
+
+
+
+
+
+
+
+
+hey xup, so currently our webhook works fine and everything but currently their is an issue where when user pushes the a commit but the psuh contain like multiple commits messages it currently just take easch commits as one by one and then process it and stuff we need to get the commits that match the requirments and stuff and take it together and send to our ai to generate the post from it here is our existing code ( we only need you to fix this use cases and also check for other possible use cases we might have ignored or possible cases we have not thought about yet only add what's need do not go on adding stuff or information that we do not use nor process, avoid  doing anything outside our existing processing like we only use the commit messages so for also the bactch process we are mainly just mainly just read our code see what we use and what is and make sure not to add things not needed like revert, commit shas and other stuff that could or will bloat our integrations and all): -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+payload = json.loads(request.body)
+
+        # 1️⃣ Get installation ID
+        installation_id = payload.get("installation", {}).get("id")
+        if not installation_id:
+            return self._log_and_respond(None, "Missing installation ID", 400)
+
+        # 2️⃣ Find the organization associated with the installation ID
+        try:
+            organization = Organization.objects.get(github_installation_id=installation_id)
+        except Organization.DoesNotExist:
+            return self._log_and_respond(None, "No organization found for installation", 404)
+
+        # 3️⃣ Check if GitHub connection is active
+        if organization.github_connection_status != "active":
+            return self._log_and_respond(None, "GitHub connection is currently inactive", 403)
+
+        # 4️⃣ Tenant schema switch for the rest of the processing
+        with tenant_context(organization):
+
+            # 5️⃣ Initial webhook log creation
+            webhook_log = self._create_initial_log(request)
+            webhook = self._get_webhook_from_request(request)
+
+            if not webhook:
+                return self._log_and_respond(webhook_log, 'Webhook not found', 404)
+
+            webhook_log.webhook = webhook
+            webhook_log.save()
+
+            # 6️⃣ Security validations
+            if not self._validate_request_security(request, webhook):
+                return self._log_and_respond(webhook_log, 'Security validation failed', 403)
+
+            # 7️⃣ Rate limiting
+            if not self._check_rate_limits(webhook):
+                return self._log_and_respond(webhook_log, 'Rate limit exceeded', 429)
+
+            # 8️⃣ Validate repo/org, permissions
+            repo = webhook.tracked_repo
+            owner = self._get_organization_owner(repo.organization)
+            if not owner:
+                return self._log_and_respond(webhook_log, 'Organization owner not found', 403)
+
+            if not self._check_post_limits(owner):
+                return self._log_and_respond(webhook_log, 'Post limit reached for free plan', 403)
+
+            # 9️⃣ Event & config check
+            github_event = request.headers.get('X-GitHub-Event', '')
+            repo_config = self._get_repository_config(repo)
+
+            if not repo_config or repo_config.status != 'connected':
+                return self._log_and_respond(webhook_log, 'Repository not configured or disconnected', 400)
+
+            if not repo_config.channels_to_post:
+                return self._log_and_respond(webhook_log, 'No Social connected.', 400)
+
+            # 🔟 Process event
+            result = self._process_github_event(github_event, payload, webhook, repo_config)
+
+            # ✅ Success logging
+            processing_time = (timezone.now() - start_time).total_seconds()
+            webhook_log.status = 'success'
+            webhook_log.http_status = 200
+            webhook_log.response_body = json.dumps(result)
+            webhook_log.processing_time_ms = int(processing_time * 1000)
+            webhook_log.save()
+
+            logger.info(f"✅ Webhook processed successfully for repo {repo.name} in {processing_time:.2f}s")
+            return JsonResponse(result, status=200)
+
+    except Exception as exc:
+        return self._handle_exception(exc, webhook_log)
+
+
+
+ -->

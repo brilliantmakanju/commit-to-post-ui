@@ -8,7 +8,6 @@ import { ChannelDistribution } from "@/components/dashboard/v2/platform-chart";
 import { RepoCards } from "@/components/dashboard/v2/repo-cards";
 import { StatCards } from "@/components/dashboard/v2/stats-cards";
 import { UpcomingPosts } from "@/components/dashboard/v2/upcoming-posts";
-import { WebhookErrors } from "@/components/dashboard/v2/webhook-errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Popover,

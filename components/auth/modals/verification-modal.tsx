@@ -54,7 +54,7 @@ export default function MagicVerifyModal() {
 				} else {
 					setVerificationState("success");
 					setTimeout(() => {
-						globalThis.window.location.replace("/dashboard");
+						globalThis.window.location.replace("/workspace");
 					}, 2000);
 				}
 			} catch (error) {
