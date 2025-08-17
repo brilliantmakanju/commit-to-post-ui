@@ -3,10 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
+import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import {
+	OauthResponse,
 	socialConnectLinkedinOauth,
 	socialConnectTwitterOauth,
 } from "@/server-actions/core/repo/social-connect";
+import { getOrganizations } from "@/server-actions/organizations/get-organizations";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 type Provider = "linkedin" | "twitter";
 type ConnectionState =
@@ -43,13 +49,7 @@ interface UseOAuthFlowProps {
 	enabled?: boolean; // Add enabled flag
 }
 
-interface OAuthResponse {
-	success: boolean;
-	message?: string;
-	data?: {
-		repo_id: string;
-	};
-}
+type OauthData = NonNullable<OauthResponse["data"]>;
 
 export function useOAuthFlow({
 	code,
@@ -71,9 +71,10 @@ export function useOAuthFlow({
 	const hasStartedRef = useRef(false);
 	const isUnmountedRef = useRef(false);
 	const backendCallMadeRef = useRef(false);
+	const currentProviderRef = useRef<Provider>(provider);
+	const { organization, updateSocials } = useOrganizationStore();
 	const typeIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 	const animationTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-	const currentProviderRef = useRef<Provider>(provider);
 
 	// Update current provider ref when provider changes
 	useEffect(() => {
@@ -162,7 +163,7 @@ export function useOAuthFlow({
 	}, []);
 
 	// Server action call - now properly typed and handles each provider
-	const callServerAction = useCallback(async (): Promise<OAuthResponse> => {
+	const callServerAction = useCallback(async (): Promise<OauthResponse> => {
 		if (backendCallMadeRef.current) {
 			throw new Error("Backend call already made");
 		}
@@ -175,7 +176,7 @@ export function useOAuthFlow({
 				`Calling ${currentProvider} OAuth with code: ${code}, state: ${state}`,
 			);
 
-			let result: OAuthResponse;
+			let result: OauthResponse;
 
 			switch (currentProvider) {
 				case "linkedin": {
@@ -229,16 +230,15 @@ export function useOAuthFlow({
 			typeMessage("⚠ Connection is taking longer than expected");
 		}
 	}, [typeMessage]);
-
 	// Handle successful authentication
 	const handleSuccess = useCallback(
-		async (repoId: string) => {
+		async (result: OauthData) => {
 			if (isUnmountedRef.current) return;
 
 			setConnectionState("success");
 			setWaitingForBackend(false);
 
-			// Show success messages
+			// Show success messages sequentially
 			for (const message of config.messages.success) {
 				if (isUnmountedRef.current) return;
 
@@ -249,14 +249,42 @@ export function useOAuthFlow({
 				});
 			}
 
+			try {
+				// Fetch the latest organization data including all socials
+				const { success, organizations, message } = await getOrganizations({
+					org_id: organization.id,
+				});
+
+				if (!success || !organizations || organizations.length === 0) {
+					console.error("Failed to fetch updated socials:", message);
+				} else {
+					// Update the socials in the store with the full, current list
+
+					const updatedSocials = organizations[0].socials ?? [];
+
+					// Re-init limits & flags
+					initializeFeatureFlags();
+					initializeFeatureLimits();
+					updateSocials(organization.id, updatedSocials);
+				}
+			} catch (error) {
+				console.error("Failed to fetch updated socials", error);
+			}
+
 			// Redirect after showing success messages
 			animationTimeoutRef.current = setTimeout(() => {
 				if (!isUnmountedRef.current) {
-					router.push(`/repositories/${repoId}`);
+					router.push(`${result.redirect_uri}`);
 				}
 			}, 1000);
 		},
-		[config.messages.success, typeMessage, router],
+		[
+			config.messages.success,
+			typeMessage,
+			organization.id,
+			updateSocials,
+			router,
+		],
 	);
 
 	// Handle authentication error
@@ -347,8 +375,8 @@ export function useOAuthFlow({
 
 				// console.log("OAuth flow result:", result);
 
-				if (result.success && result.data?.repo_id) {
-					await handleSuccess(result.data.repo_id);
+				if (result.success) {
+					await handleSuccess(result.data as OauthData);
 				} else {
 					handleError(result.message || "Authentication failed");
 				}

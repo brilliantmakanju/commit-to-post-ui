@@ -6,11 +6,21 @@ import { z } from "zod";
 import { apiClient } from "@/lib/utils/api-client";
 
 // Array of individual repo configs
+
+const socialSchema = z.object({
+	name: z.string(),
+	handle: z.string(),
+	id: z.string().uuid(),
+	profile_image_url: z.string(),
+	platform: z.enum(["linkedin", "x-twitter", "slack", "discord"]),
+});
+
 const repoSchema = z.object({
-	repo_id: z.string(),
-	branch: z.string(),
 	tone: z.string(),
+	branch: z.string(),
+	repo_id: z.string(),
 	aiEnabled: z.boolean(),
+	socials: z.array(socialSchema),
 });
 
 const githubRepoConnectBatchSchema = z.array(repoSchema);

@@ -140,7 +140,9 @@ import {
 } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { getOrganizations } from "@/server-actions/organizations/get-organizations";
-import useOrganizationStore from "@/zustand/useorganization-store";
+import useOrganizationStore, {
+	OrganizationSocial,
+} from "@/zustand/useorganization-store";
 
 // Debug utility - can be disabled in production
 const DEBUG = process.env.NODE_ENV === "development";
@@ -304,6 +306,7 @@ export const useFetchOrganizations = () => {
 						createEncryptedCookie("organization", {
 							id: fallbackOrg.id,
 							name: fallbackOrg.name,
+							socials: fallbackOrg.socials,
 							domain: fallbackOrg.domains[0],
 							is_owner: fallbackOrg.is_owner,
 							description: fallbackOrg.description,
@@ -327,6 +330,7 @@ export const useFetchOrganizations = () => {
 						domains: cookieOrg.domain as string,
 						is_owner: cookieOrg.is_owner as boolean,
 						description: cookieOrg.description as string,
+						socials: cookieOrg.socials as OrganizationSocial[],
 						github_installation_id: cookieOrg.github_installation_id as string,
 						github_installation_status:
 							cookieOrg.github_installation_status as string,
@@ -343,6 +347,7 @@ export const useFetchOrganizations = () => {
 					createEncryptedCookie("organization", {
 						id: currentOrganization.id,
 						name: currentOrganization.name,
+						socials: currentOrganization.socials,
 						domain: currentOrganization.domains[0],
 						is_owner: currentOrganization.is_owner,
 						description: currentOrganization.description,
@@ -363,6 +368,7 @@ export const useFetchOrganizations = () => {
 					createEncryptedCookie("organization", {
 						id: currentOrganization.id,
 						name: currentOrganization.name,
+						socials: currentOrganization.socials,
 						domain: currentOrganization.domains[0],
 						is_owner: currentOrganization.is_owner,
 						description: currentOrganization.description,
@@ -442,6 +448,7 @@ export const useFetchOrganizations = () => {
 						domains: cookieOrg.domain as string,
 						is_owner: cookieOrg.is_owner as boolean,
 						description: cookieOrg.description as string,
+						socials: cookieOrg.socials as OrganizationSocial[],
 						github_installation_id: cookieOrg.github_installation_id as string,
 						github_installation_status:
 							cookieOrg.github_installation_status as string,

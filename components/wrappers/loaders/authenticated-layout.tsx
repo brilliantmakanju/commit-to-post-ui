@@ -52,10 +52,19 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const logoutStore = useLogoutStore();
 	const { data: session, status } = useSession();
 	const organizationStore = useOrganizationStore();
+	const [onboardingChecked, setOnboardingChecked] = useState(false);
 
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
 	const [cookieValidated, setCookieValidated] = useState(false);
+
+	// Organization fetching
+	const {
+		hasCurrentOrg,
+		isError: orgError,
+		shouldShowContent,
+		isLoading: isOrgLoading,
+	} = useFetchOrganizations();
 
 	// Session management with auto-logout
 	const { isSessionValid, SessionUI } = useSessionManager({
@@ -106,13 +115,35 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		};
 	}, [isClient, logoutStore, organizationStore, router, userStore]);
 
-	// Organization fetching
-	const {
-		hasCurrentOrg,
-		isError: orgError,
-		shouldShowContent,
-		isLoading: isOrgLoading,
-	} = useFetchOrganizations();
+	// --- New user onboarding guard (client-side) ---
+	useEffect(() => {
+		const checkNewUser = async () => {
+			try {
+				const sessionData = await getDecryptedCookie("user_state");
+				const isNewUser = sessionData?.new_user || false;
+
+				if (isNewUser) {
+					// 🚀 Use hard navigation to prevent dashboard flash
+					globalThis.window.location.replace("/start");
+					return;
+				}
+			} catch {
+				console.error("Failed to check new user cookie");
+			} finally {
+				// ✅ Only unlock rendering once decision is made
+				setOnboardingChecked(true);
+			}
+		};
+
+		if (isClient && cookieValidated && session?.user) {
+			checkNewUser();
+		}
+	}, [isClient, cookieValidated, session]);
+
+	// 🔒 Block rendering until onboarding check is done
+	if (!onboardingChecked) {
+		return <LoadingScreen message="Checking your account..." />;
+	}
 
 	// Comprehensive loading state logic
 	const isSessionLoading = status === "loading";
@@ -144,7 +175,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		if (isSessionLoading) {
 			loadingMessage = "Authenticating...";
 		} else if (isOrganizationLoading) {
-			loadingMessage = "Setting up your organization...";
+			loadingMessage = "Setting up your organizations...";
 		} else if (isInitializing) {
 			loadingMessage = "Initializing...";
 		}
@@ -179,7 +210,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					</div>
 					<h2 className="text-xl font-semibold text-white">Setup Error</h2>
 					<p className="max-w-md text-gray-400">
-						There was an issue setting up your organization. Please refresh the
+						There was an issue setting up your organizations. Please refresh the
 						page or contact support.
 					</p>
 					<button
