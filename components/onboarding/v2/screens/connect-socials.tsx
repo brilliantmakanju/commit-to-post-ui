@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import {
 	FaChevronDown,
@@ -100,9 +101,10 @@ const getInitials = (name: string): string =>
 		.slice(0, 2);
 
 const ConnectedAccountBadge: React.FC<{
+	isSettingsPage: boolean;
 	account: ConnectedAccount;
 	onRemove: (accountId: string) => Promise<void> | void;
-}> = ({ account, onRemove }) => {
+}> = ({ account, onRemove, isSettingsPage }) => {
 	const [imgError, setImgError] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -120,26 +122,38 @@ const ConnectedAccountBadge: React.FC<{
 		}
 	};
 
+	const containerClass = isSettingsPage
+		? "inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 py-[4px] px-2 text-zinc-100 transition-colors hover:border-zinc-600/70"
+		: "inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 py-[4px] px-2 text-gray-700 transition-colors hover:border-gray-400";
+
+	const fallbackClass = isSettingsPage
+		? "flex h-[25px] w-[25px] items-center justify-center rounded-full border border-zinc-700/50 bg-zinc-700 text-xs font-medium text-zinc-100"
+		: "flex h-[25px] w-[25px] items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-medium text-gray-700";
+
+	const removeButtonClass = isSettingsPage
+		? "p-1 text-zinc-400 transition-colors hover:text-zinc-100 disabled:opacity-50"
+		: "p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:opacity-50";
+
 	return (
-		<div className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 py-[1px] pl-1 pr-2 transition-colors hover:border-gray-400">
+		<div className={containerClass}>
 			{shouldShowFallback ? (
-				<div className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300 bg-white">
-					<span className="text-sm font-medium text-gray-700">
-						{getInitials(account.name)}
-					</span>
-				</div>
+				<div className={fallbackClass}>{getInitials(account.name)}</div>
 			) : (
 				<Image
 					width={30}
 					height={30}
 					alt={account.name}
-					src={account.profile_image_url}
+					src={account.profile_image_url!}
 					onError={() => setImgError(true)}
-					className="rounded-full border border-gray-300 bg-white"
+					className={`rounded-full border ${
+						isSettingsPage
+							? "border-zinc-700/50 bg-zinc-800/30"
+							: "border-gray-300 bg-white"
+					}`}
 				/>
 			)}
 
-			<span className="text-sm">
+			<span>
 				{account.handle && !["null", "undefined"].includes(account.handle)
 					? account.handle
 					: account.name}
@@ -149,7 +163,7 @@ const ConnectedAccountBadge: React.FC<{
 				disabled={isLoading}
 				onClick={handleRemove}
 				aria-label={`Remove ${account.name}`}
-				className="p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:opacity-50"
+				className={removeButtonClass}
 			>
 				{isLoading ? (
 					<FaSpinner className="h-4 w-4 animate-spin" />
@@ -166,27 +180,67 @@ const SocialAccountItem: React.FC<{
 	onConnect: (platformId: string) => void;
 	onRemoveAccount: (accountId: string) => void;
 }> = ({ account, onRemoveAccount, onConnect }) => {
+	const pathname = usePathname();
 	const { organization } = useOrganizationStore();
+	const socialCount = (organization?.socials ?? []).length;
 	const [isCollapsed, setIsCollapsed] = React.useState(true);
 
-	const socialCount = (organization?.socials ?? []).length;
+	// Check if we're on /settings or /settings?something
+	const isSettingsPage =
+		pathname === "/settings" || pathname.startsWith("/settings?");
 
-	const getIcon = (iconName: string) => {
+	const cardClass = isSettingsPage
+		? "overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40"
+		: "overflow-hidden rounded-2xl border border-gray-200";
+
+	const innerClass = isSettingsPage
+		? "border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40 text-zinc-100 px-6 py-5"
+		: "border-b border-gray-200 bg-gray-50 px-6 py-5";
+
+	const titleClass = isSettingsPage
+		? "text-md font-semibold text-zinc-100"
+		: "text-md font-semibold text-gray-900";
+
+	const descClass = isSettingsPage
+		? "text-sm text-zinc-400"
+		: "text-sm text-gray-600";
+
+	const wrapperClass = isSettingsPage
+		? "flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800/50"
+		: "flex h-12 w-12 items-center justify-center rounded-xl border border-gray-300 bg-white";
+
+	const buttonClasses = isSettingsPage
+		? "flex items-center space-x-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-200 bg-zinc-800/60 text-zinc-100 hover:bg-zinc-700"
+		: "flex items-center space-x-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200";
+
+	const badgeClasses = isSettingsPage
+		? "rounded-full bg-zinc-800/60 px-2 py-1 text-xs text-zinc-300"
+		: "rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700";
+
+	const buttonConnectClasses = isSettingsPage
+		? "border border-zinc-700/50 bg-zinc-800/30 text-zinc-100 px-6 py-2 hover:bg-zinc-700/40 hover:border-zinc-600/70"
+		: "border border-gray-300 bg-white text-gray-700 px-6 py-2 hover:border-gray-900 hover:text-gray-900";
+
+	const getIcon = (iconName: string, isSettingsPage: boolean) => {
+		const baseClass = isSettingsPage
+			? "h-6 w-6 text-zinc-100"
+			: "h-6 w-6 text-gray-600";
+
 		switch (iconName) {
 			case "x-twitter": {
-				return <XIcon className="h-6 w-6 text-gray-600" />;
+				return <XIcon className={baseClass} />;
 			}
 			case "linkedin": {
-				return <FaLinkedinIn className="h-6 w-6 text-gray-600" />;
+				return <FaLinkedinIn className={baseClass} />;
 			}
 			case "slack": {
-				return <FaSlack className="h-6 w-6 text-gray-600" />;
+				return <FaSlack className={baseClass} />;
 			}
 			case "discord": {
-				return <FaDiscord className="h-6 w-6 text-gray-600" />;
+				return <FaDiscord className={baseClass} />;
 			}
 			default: {
-				return <FaLinkedinIn className="h-6 w-6 text-gray-600" />;
+				return <FaLinkedinIn className={baseClass} />;
 			}
 		}
 	};
@@ -199,18 +253,16 @@ const SocialAccountItem: React.FC<{
 	});
 
 	return (
-		<div className="overflow-hidden rounded-2xl border border-gray-200">
-			<div className="border-b border-gray-200 bg-gray-50 px-6 py-5">
+		<div className={cardClass}>
+			<div className={innerClass}>
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-300 bg-white">
-							{getIcon(account.icon)}
+						<div className={wrapperClass}>
+							{getIcon(account.icon, isSettingsPage)}
 						</div>
 						<div>
-							<h3 className="text-md font-semibold text-gray-900">
-								{account.name}
-							</h3>
-							<p className="text-sm text-gray-600">{account.description}</p>
+							<h3 className={titleClass}>{account.name}</h3>
+							<p className={descClass}>{account.description}</p>
 						</div>
 					</div>
 					<FeatureLimitWrapper
@@ -223,12 +275,8 @@ const SocialAccountItem: React.FC<{
 								currentUsage={socialCount}
 								position="bottom"
 							>
-								<div className="inline-block cursor-pointer">
-									<Button
-										disabled
-										variant="outline"
-										className="pointer-events-none border-gray-300 bg-white px-6 text-gray-700 hover:border-gray-900 hover:text-gray-900"
-									>
+								<div className="inline-block cursor-not-allowed">
+									<Button disabled className={buttonConnectClasses}>
 										Connect
 									</Button>
 								</div>
@@ -242,9 +290,8 @@ const SocialAccountItem: React.FC<{
 							position="bottom"
 						>
 							<Button
-								variant="outline"
 								onClick={() => onConnect(account.id)}
-								className="border-gray-300 bg-white px-6 text-gray-700 hover:border-gray-900 hover:text-gray-900"
+								className={buttonConnectClasses}
 							>
 								Connect
 							</Button>
@@ -257,29 +304,30 @@ const SocialAccountItem: React.FC<{
 				<div className="px-6 py-3">
 					<div className="flex items-center justify-between">
 						<Button
-							variant="ghost"
 							onClick={() => setIsCollapsed(p => !p)}
-							className="flex items-center space-x-3 text-base text-gray-600 hover:text-arch-black"
+							className={buttonClasses}
 						>
 							{isCollapsed ? (
 								<FaChevronUp size={14} />
 							) : (
 								<FaChevronDown size={14} />
 							)}
-							Connected Accounts
+							<span>Connected Accounts</span>
 						</Button>
-						<span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500">
+
+						<span className={badgeClasses}>
 							{account.connectedAccounts.length} account
 							{account.connectedAccounts.length > 1 && "s"}
 						</span>
 					</div>
 
 					{!isCollapsed && (
-						<div className="mt-2 flex flex-wrap gap-2">
+						<div className="mt-5 flex flex-wrap gap-2">
 							{account.connectedAccounts.map(accumulator => (
 								<ConnectedAccountBadge
 									key={accumulator.id}
 									account={accumulator}
+									isSettingsPage={isSettingsPage}
 									onRemove={id => onRemoveAccount(id)}
 								/>
 							))}
@@ -288,7 +336,13 @@ const SocialAccountItem: React.FC<{
 				</div>
 			) : (
 				<div className="px-6 py-5 text-center">
-					<p className="text-sm text-gray-500">No accounts connected yet</p>
+					<p
+						className={
+							isSettingsPage ? "text-sm text-zinc-500" : "text-sm text-gray-400"
+						}
+					>
+						No accounts connected yet
+					</p>
 				</div>
 			)}
 		</div>

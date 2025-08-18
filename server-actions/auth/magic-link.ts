@@ -62,11 +62,11 @@ export const verifyAndLogin = async (data: any) => {
 
 	try {
 		await signIn("credentials", {
+			token,
 			email: "",
 			password: "",
-			magicLink: true,
-			token,
 			redirect: false,
+			magicLink: true,
 		});
 	} catch (error) {
 		if (error instanceof AuthError) {

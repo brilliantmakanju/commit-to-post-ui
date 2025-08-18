@@ -19,10 +19,6 @@ const ProfileSettings = dynamic(
 	() => import("@/components/settings/profile-settings"),
 	{ ssr: false },
 );
-const SocialConnectCallback = dynamic(
-	() => import("./general-settings/connection-organization"),
-	{ ssr: false },
-);
 
 const tabTitles = {
 	general: "Organization Settings",
@@ -35,12 +31,7 @@ export function SettingsTabs() {
 	const { organization } = useOrganizationStore();
 	const isOwner = organization.is_owner;
 
-	const [socialCode, setSocialCode] = useState("");
 	const [activeTab, setActiveTab] = useState("general");
-	const [codeConnecting, setCodeConnecting] = useState(false);
-	const [socialType, setSocialType] = useState<
-		"github" | "linkedin" | "twitter" | "slack" | "discord"
-	>("linkedin");
 
 	useEffect(() => {
 		const rawParams = globalThis.location.search;
@@ -48,14 +39,7 @@ export function SettingsTabs() {
 		// Fix the malformed query string
 		const fixedSearch = rawParams.replace("/&", "&"); // turns ?github=true/&code=... into ?github=true&code=...
 		const fixedParams = new URLSearchParams(fixedSearch);
-		const code = fixedParams.get("installation_id");
 		const tab = fixedParams.get("tab");
-
-		if (code) {
-			setSocialCode(code);
-			setSocialType("github");
-			setCodeConnecting(true);
-		}
 
 		if (isOwner) {
 			setActiveTab(tab && tab in tabTitles ? tab : "general");
@@ -130,15 +114,6 @@ export function SettingsTabs() {
 					<BillingSettings />
 				</TabsContent>
 			</Tabs>
-
-			{codeConnecting && (
-				<SocialConnectCallback
-					type={socialType}
-					code={socialCode}
-					connecting={codeConnecting}
-					closeModal={setCodeConnecting}
-				/>
-			)}
 		</div>
 	);
 }

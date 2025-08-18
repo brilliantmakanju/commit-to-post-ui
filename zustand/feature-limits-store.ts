@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const FEATURE_CATEGORIES = [
+	"workspaces",
 	"repositories",
 	"social_integrations",
 ] as const;

@@ -7,44 +7,83 @@ import {
 	MobileNavMenu,
 	MobileNavToggle,
 	Navbar,
-	NavbarButton,
 	NavbarLogo,
 	NavBody,
-	NavItems,
 	// eslint-disable-next-line import/no-unresolved
 } from "@/components/ui/resizable-navbar";
+import { useLimitUI } from "@/hooks/use-limit-ui";
+import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
+import FeatureLimitWrapper from "../feature-flag/feature-limit-wrapper";
+import LimitTooltip from "../feature-flag/limit-tooltip";
 import { CreateOrganizationModal } from "../organization/create-organization";
 import { Button } from "../ui/button";
 
 const WorkspaceTopNav = () => {
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const { organizations } = useOrganizationStore();
 	const [createModalOpen, setCreateModalOpen] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-	// Determine what to show in the auth area
-	const renderAuthContent = () => {
+	const orgCount = organizations.length;
+
+	// use workspaces limit, not social accounts
+	const workspaceLimitUI = useLimitUI({
+		warningThreshold: 80,
+		currentCount: orgCount,
+		limitType: "workspaces",
+		limitId: FEATURE_LIMITS.WORKSPACES,
+	});
+
+	const renderWorkspaceAction = () => {
 		return (
-			<NavbarButton
-				variant="secondary"
-				className="w-full bg-transparent hover:bg-transparent"
+			<FeatureLimitWrapper
+				limitId={FEATURE_LIMITS.WORKSPACES}
+				currentCount={orgCount}
+				fallback={
+					<LimitTooltip
+						maxLimit={workspaceLimitUI.limit}
+						currentUsage={orgCount}
+						limitType="workspaces"
+						position="bottom"
+					>
+						<div className="w-full bg-transparent hover:bg-transparent">
+							<button disabled className="w-full">
+								Create a new workspace
+							</button>
+						</div>
+					</LimitTooltip>
+				}
 			>
-				<Button
-					variant="default"
-					className="w-full"
-					onClick={() => setCreateModalOpen(true)}
+				<LimitTooltip
+					maxLimit={workspaceLimitUI.limit}
+					currentUsage={orgCount}
+					limitType="workspaces"
+					position="bottom"
 				>
-					Create a new workspace
-				</Button>
-			</NavbarButton>
+					<div className="w-full bg-transparent hover:bg-transparent">
+						<Button
+							variant="default"
+							className="w-full"
+							onClick={() => setCreateModalOpen(true)}
+						>
+							Create a new workspace
+						</Button>
+					</div>
+				</LimitTooltip>
+			</FeatureLimitWrapper>
 		);
 	};
+
 	return (
 		<>
 			<Navbar>
 				{/* Desktop Navigation */}
 				<NavBody>
 					<NavbarLogo />
-					<div className="flex items-center gap-4">{renderAuthContent()}</div>
+					<div className="flex items-center gap-4">
+						{renderWorkspaceAction()}
+					</div>
 				</NavBody>
 
 				{/* Mobile Navigation */}
@@ -62,7 +101,7 @@ const WorkspaceTopNav = () => {
 						onClose={() => setIsMobileMenuOpen(false)}
 					>
 						<div className="flex w-full flex-col gap-4">
-							{renderAuthContent()}
+							{renderWorkspaceAction()}
 						</div>
 					</MobileNavMenu>
 				</MobileNav>

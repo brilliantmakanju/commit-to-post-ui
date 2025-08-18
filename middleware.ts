@@ -9,8 +9,8 @@ export default auth(async request => {
 	const { nextUrl } = request;
 
 	// --- Cookies ---
-	const cookieOrg = await getDecryptedCookie("organization");
-	const hasOrgFromCookie = !!cookieOrg?.domain;
+	// const cookieOrg = await getDecryptedCookie("organization");
+	// const hasOrgFromCookie = !!cookieOrg?.domain;
 
 	const sessionData = await getDecryptedCookie("user_state");
 	const isNewUser = sessionData?.new_user || false;
@@ -29,7 +29,7 @@ export default auth(async request => {
 		nextUrl.pathname.startsWith(route),
 	);
 
-	const isWorkspaceRoute = nextUrl.pathname.startsWith("/workspace");
+	// const isWorkspaceRoute = nextUrl.pathname.startsWith("/workspace");
 
 	// --- Expired/invalid session ---
 	if (isLoggedIn && !hasValidSession) {
@@ -39,9 +39,9 @@ export default auth(async request => {
 	}
 
 	// --- No organization: send to workspace (skip if already on workspace) ---
-	if (isLoggedIn && hasValidSession && !hasOrgFromCookie && !isWorkspaceRoute) {
-		return Response.redirect(new URL("/workspace", request.url));
-	}
+	// if (isLoggedIn && hasValidSession && !hasOrgFromCookie && !isWorkspaceRoute) {
+	// 	return Response.redirect(new URL("/workspace", request.url));
+	// }
 
 	// --- Block non-new users from onboarding ---
 	if (

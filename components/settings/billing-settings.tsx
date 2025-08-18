@@ -23,6 +23,9 @@ import { Separator } from "@/components/ui/separator";
 import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
 // eslint-disable-next-line import/no-unresolved
 import { useBillingPortal } from "@/hooks/settings/use-billing";
+import { useLimitUI } from "@/hooks/use-limit-ui";
+import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 import { pricingData } from "../landing/pricing/data";
 
@@ -42,8 +45,8 @@ interface CurrentPlan {
 }
 
 interface UsageStats {
-	postsUsed: number;
-	postsLimit: number;
+	activeWorkspace: number;
+	workspaceLimit: number;
 	repositoriesUsed: number;
 	repositoriesLimit: number;
 }
@@ -83,9 +86,11 @@ const classifyFeature = (featureName: string): FeatureCategory => {
 export default function BillingSettings() {
 	const router = useRouter();
 	const { data: session } = useSession();
+	const { organizations } = useOrganizationStore();
 	const { totalRepositories } = useRetrieveConnectedRepos();
 
 	const user = session?.user;
+	const orgCount = organizations.length;
 	const { data: billingUrl } = useBillingPortal();
 
 	if (!user) {
@@ -133,12 +138,26 @@ export default function BillingSettings() {
 		),
 	};
 
+	const workspaceLimitUI = useLimitUI({
+		warningThreshold: 80,
+		currentCount: orgCount,
+		limitType: "workspaces",
+		limitId: FEATURE_LIMITS.WORKSPACES,
+	});
+
+	const repoLimitUI = useLimitUI({
+		warningThreshold: 80,
+		limitType: "repositories",
+		currentCount: totalRepositories,
+		limitId: FEATURE_LIMITS.REPOSITORIES,
+	});
+
 	// Usage stats - this would come from your API
 	const usageStats: UsageStats = {
-		postsUsed: 47,
-		postsLimit: 100,
-		repositoriesLimit: 5,
+		activeWorkspace: orgCount,
+		repositoriesLimit: repoLimitUI.limit,
 		repositoriesUsed: totalRepositories,
+		workspaceLimit: workspaceLimitUI.limit,
 	};
 
 	// Get available upgrade/downgrade options
@@ -193,28 +212,20 @@ export default function BillingSettings() {
 
 	// Helper function to get usage limits from plan features
 	const getUsageLimits = () => {
+		const limits = {
+			workspaces: { used: orgCount, limit: workspaceLimitUI.limit },
+			repositories: { used: totalRepositories, limit: repoLimitUI.limit },
+		};
+
 		switch (currentPlan.planType) {
-			case "free": {
-				return {
-					posts: { used: usageStats.postsUsed, limit: 4 },
-					repositories: { used: usageStats.repositoriesUsed, limit: 1 },
-				};
-			}
-			case "pro": {
-				return {
-					posts: { used: usageStats.postsUsed, limit: 100 },
-					repositories: { used: usageStats.repositoriesUsed, limit: 5 },
-				};
-			}
+			case "free":
+			case "pro":
 			case "studio": {
-				return {
-					posts: { used: usageStats.postsUsed, limit: "Unlimited" },
-					repositories: {
-						used: usageStats.repositoriesUsed,
-						limit: "Unlimited",
-					},
-				};
+				return limits;
 			}
+			default: {
+				return;
+			} // or handle unknown plan types gracefully
 		}
 	};
 
@@ -356,27 +367,29 @@ export default function BillingSettings() {
 									</div>
 
 									<div className="space-y-4">
-										{/* Posts Usage */}
+										{/* Workspace Usage */}
 										<div>
 											<div className="mb-2 flex items-center justify-between">
-												<span className="text-sm text-zinc-400">Posts</span>
+												<span className="text-sm text-zinc-400">
+													Workspaces
+												</span>
 												<span className="text-sm font-medium text-zinc-200">
-													{limits.posts.used}/
-													{typeof limits.posts.limit === "number"
-														? limits.posts.limit
-														: "∞"}
+													{orgCount}/{workspaceLimitUI.limit}
 												</span>
 											</div>
-											{typeof limits.posts.limit === "number" && (
-												<div className="h-1.5 w-full rounded-full bg-zinc-700/50">
-													<div
-														className="h-1.5 rounded-full bg-zinc-300 transition-all duration-300"
-														style={{
-															width: `${Math.min((limits.posts.used / limits.posts.limit) * 100, 100)}%`,
-														}}
-													></div>
-												</div>
-											)}
+											{/* {typeof limits?.workspaces?.limit === "number" && (
+											)} */}
+											<div className="h-1.5 w-full rounded-full bg-zinc-700/50">
+												<div
+													className="h-1.5 rounded-full bg-zinc-300 transition-all duration-300"
+													style={{
+														width: `${Math.min(
+															(orgCount / workspaceLimitUI.limit) * 100,
+															100,
+														)}%`,
+													}}
+												></div>
+											</div>
 										</div>
 
 										{/* Repositories Usage */}
@@ -386,22 +399,19 @@ export default function BillingSettings() {
 													Repositories
 												</span>
 												<span className="text-sm font-medium text-zinc-200">
-													{limits.repositories.used}/
-													{typeof limits.repositories.limit === "number"
-														? limits.repositories.limit
-														: "∞"}
+													{totalRepositories}/{repoLimitUI.limit}
 												</span>
 											</div>
-											{typeof limits.repositories.limit === "number" && (
-												<div className="h-1.5 w-full rounded-full bg-zinc-700/50">
-													<div
-														className="h-1.5 rounded-full bg-zinc-300 transition-all duration-300"
-														style={{
-															width: `${Math.min((limits.repositories.used / limits.repositories.limit) * 100, 100)}%`,
-														}}
-													></div>
-												</div>
-											)}
+											{/* {typeof limits?.repositories.limit === "number" && (
+											)} */}
+											<div className="h-1.5 w-full rounded-full bg-zinc-700/50">
+												<div
+													className="h-1.5 rounded-full bg-zinc-300 transition-all duration-300"
+													style={{
+														width: `${Math.min((totalRepositories / repoLimitUI.limit) * 100, 100)}%`,
+													}}
+												></div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -454,23 +464,21 @@ export default function BillingSettings() {
 								)}
 
 								{/* Unlimited Plan Badge for Studio */}
-								{currentPlan.planType === "studio" &&
-									typeof limits.posts.limit !== "number" &&
-									typeof limits.repositories.limit !== "number" && (
-										<div className="flex flex-1 items-center justify-center">
-											<div className="py-4 text-center">
-												<div className="mx-auto mb-3 w-fit rounded-full bg-zinc-700/50 p-3">
-													<Check className="h-5 w-5 text-zinc-300" />
-												</div>
-												<p className="text-sm font-medium text-zinc-200">
-													Unlimited Access
-												</p>
-												<p className="mt-1 text-xs text-zinc-400">
-													No usage restrictions
-												</p>
+								{currentPlan.planType === "studio" && (
+									<div className="flex flex-1 items-center justify-center">
+										<div className="py-4 text-center">
+											<div className="mx-auto mb-3 w-fit rounded-full bg-zinc-700/50 p-3">
+												<Check className="h-5 w-5 text-zinc-300" />
 											</div>
+											<p className="text-sm font-medium text-zinc-200">
+												Unlimited Access
+											</p>
+											<p className="mt-1 text-xs text-zinc-400">
+												No usage restrictions
+											</p>
 										</div>
-									)}
+									</div>
+								)}
 							</div>
 						</div>
 					</div>

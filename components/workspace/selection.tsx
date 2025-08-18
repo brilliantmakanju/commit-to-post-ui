@@ -1,14 +1,10 @@
 "use client";
-import { useQueryClient } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import React, { useCallback, useMemo, useState } from "react";
 
 // eslint-disable-next-line import/no-unresolved
 import {
-	debugGroup,
-	debugLog,
 	useFetchOrganizations,
 	// eslint-disable-next-line import/no-unresolved
 } from "@/hooks/core/repo/use-organization-hook";
@@ -44,8 +40,6 @@ const getWorkspaceInitials = (name: string) => {
 
 const WorkspaceSelection = () => {
 	const router = useRouter();
-	const { data } = useSession();
-	const queryClient = useQueryClient();
 	const { isLoading } = useFetchOrganizations();
 	const [showAll, setShowAll] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -105,59 +99,6 @@ const WorkspaceSelection = () => {
 		setSearchQuery("");
 	};
 
-	// Background refresh function - non-blocking
-	const backgroundRefresh = useCallback(async () => {
-		debugGroup("BACKGROUND_REFRESH", () => {
-			debugLog("BACKGROUND", "Starting background refresh of cached queries");
-
-			const keys = [
-				"posts",
-				"gitRepos",
-				"repo_details",
-				"notifications",
-				"connected_repos",
-				"top_repo_metrics",
-				"dashboard_metrics",
-				"repo_webhook_ping",
-				"repo_super_details",
-				"retrieving_webhooks",
-				"recent_notifications",
-				"dashboard_heatmap_data",
-				"upcoming_posts_metrics",
-				"dashboard_channel_data",
-				"organization-ownership",
-				"upcoming_posts_metrics",
-				"dashboard_webhook_errors",
-				"retrieving_social_status",
-				"retrieving_billing_portal",
-				"unread_notification_counts",
-			];
-
-			// Fire and forget - don't await
-			Promise.allSettled(
-				keys.map(key => {
-					debugLog("BACKGROUND", `Fetching query: ${key}`);
-					return queryClient
-						.fetchQuery({ queryKey: [key] })
-						.then(() => {
-							debugLog("BACKGROUND", `✅ Successfully refreshed: ${key}`);
-							return queryClient.invalidateQueries({ queryKey: [key] });
-						})
-						.catch(error => {
-							debugLog("BACKGROUND", `❌ Failed to refresh: ${key}`, error);
-						});
-				}),
-			).then(results => {
-				const successful = results.filter(r => r.status === "fulfilled").length;
-				const failed = results.filter(r => r.status === "rejected").length;
-				debugLog(
-					"BACKGROUND",
-					`Background refresh completed: ${successful} successful, ${failed} failed`,
-				);
-			});
-		});
-	}, [queryClient]);
-
 	// Team switching handler with proper error handling and loading states
 	const handleTeamChange = useCallback(
 		async (team: (typeof organizations)[0]) => {
@@ -172,8 +113,9 @@ const WorkspaceSelection = () => {
 				await createEncryptedCookie("organization", {
 					id: team.id,
 					name: team.name,
-					domain: team.domains[0],
+					socials: team.socials,
 					is_owner: team.is_owner,
+					domain: team.domains[0],
 					description: team.description,
 					github_installation_id: team.github_installation_id,
 					github_installation_status: team.github_installation_status,
@@ -181,7 +123,6 @@ const WorkspaceSelection = () => {
 
 				// Then update store
 				setOrganization(team);
-				backgroundRefresh();
 
 				const sessionData = await getDecryptedCookie("user_state");
 				const isNewUser = sessionData?.new_user || false;
@@ -204,7 +145,7 @@ const WorkspaceSelection = () => {
 				setIsSwitching(false);
 			}
 		},
-		[backgroundRefresh, isSwitching, router, setOrganization],
+		[isSwitching, router, setOrganization],
 	);
 
 	// Show skeleton loader when loading
@@ -212,27 +153,21 @@ const WorkspaceSelection = () => {
 		return <WorkspaceSkeletonLoader />;
 	}
 
-	const totalResults = sortedAndFilteredOrganizations.length;
 	const hasResults = sortedAndFilteredOrganizations.length > 0;
+	const totalResults = sortedAndFilteredOrganizations.length;
 	const isSearchActive = searchQuery.trim().length > 0;
 	const shouldShowSearch = organizations.length > 3;
 
 	return (
 		<div className="w-full">
-			<div className="mb-8">
-				<Span className="text-lg font-medium text-arch-black">
-					Workspaces for {data?.user.email}
-				</Span>
-			</div>
-
 			{/* Search Input - Only show if more than 3 workspaces */}
 			{shouldShowSearch && (
 				<div className="mb-6">
 					<div className="relative">
 						<Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
 						<Input
-							placeholder="Search workspaces..."
 							value={searchQuery}
+							placeholder="Search workspaces..."
 							onChange={event_ => setSearchQuery(event_.target.value)}
 							className="border-2 border-gray-300 bg-transparent py-3 pl-12 pr-12 text-arch-dark transition-colors focus:border-arch-black focus:ring-0"
 						/>
