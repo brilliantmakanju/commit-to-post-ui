@@ -70,6 +70,35 @@ export function OAuthModalV2({
 	const config = platformConfig[platform];
 	const PlatformIcon = config?.icon;
 
+	// Check if we're on /settings or /settings?something
+	const isSettingsPage = path === "/settings" || path.startsWith("/settings?");
+
+	// Reusable theme classes
+	const containerClass = isSettingsPage
+		? "flex max-h-[80vh] flex-col border border-zinc-700/60 bg-zinc-900 px-0 shadow-xl sm:max-w-md"
+		: "flex max-h-[80vh] flex-col border border-gray-300 bg-white px-0 shadow-lg sm:max-w-md";
+
+	const sectionBorder = isSettingsPage
+		? "border-zinc-700/60"
+		: "border-gray-300";
+
+	const textPrimary = isSettingsPage ? "text-zinc-100" : "text-arch-black";
+	const textSecondary = isSettingsPage ? "text-zinc-400" : "text-gray-600";
+
+	const iconContainer = isSettingsPage
+		? "flex h-16 w-16 items-center justify-center rounded border border-zinc-700/60 bg-zinc-800/50"
+		: "flex h-16 w-16 items-center justify-center rounded border border-gray-300 bg-white";
+
+	const stepBox = isSettingsPage
+		? "space-y-3 rounded border border-zinc-700/60 bg-zinc-800/30 p-4"
+		: "space-y-3 rounded border border-gray-300 bg-white p-4";
+
+	const stepCircle = isSettingsPage
+		? "flex h-5 w-5 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 text-xs font-medium text-zinc-300"
+		: "flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-medium text-gray-600";
+
+	const progressBg = isSettingsPage ? "bg-zinc-700/30" : "bg-gray-200";
+	const progressBar = isSettingsPage ? "bg-zinc-100" : "bg-arch-black";
 	const initiateOAuth = useCallback(async () => {
 		setIsLoading(true);
 		setCurrentStep("initializing");
@@ -127,22 +156,9 @@ export function OAuthModalV2({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="flex max-h-[80vh] flex-col border border-gray-600 bg-arch-white px-0 shadow-lg sm:max-w-md">
-				{/* Header */}
-				<div className="hidden flex-shrink-0 border-b border-gray-600 px-6 py-4">
-					<DialogHeader>
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded border border-gray-600 bg-arch-white p-1">
-									<PlatformIcon className="h-5 w-5 text-gray-600" />
-								</div>
-								<h2 className="text-xl font-normal text-arch-black"></h2>
-							</div>
-						</div>
-					</DialogHeader>
-				</div>
+			<DialogContent className={containerClass}>
+				{/* Hidden title for accessibility */}
 				<DialogTitle className="hidden">Connect {config.name}</DialogTitle>
-				<div className="absolute right-[15px] top-[14px] z-[1] h-5 w-5 bg-white"></div>
 
 				{/* Content */}
 				<div className="flex flex-1 flex-col overflow-hidden">
@@ -150,25 +166,31 @@ export function OAuthModalV2({
 						{/* Status */}
 						<div className="text-center">
 							<div className="mb-4 flex justify-center">
-								<div className="flex h-16 w-16 items-center justify-center rounded border border-gray-600 bg-arch-white">
+								<div className={iconContainer}>
 									{isLoading ? (
-										<Loader2 className="h-8 w-8 animate-spin text-arch-black" />
+										<Loader2 className="h-8 w-8 animate-spin text-primary" />
 									) : currentStep === "complete" ? (
-										<ExternalLink className="h-8 w-8 text-arch-black" />
+										<ExternalLink className="h-8 w-8 text-primary" />
 									) : (
-										<PlatformIcon className="h-8 w-8 text-arch-black" />
+										<PlatformIcon
+											className={`h-8 w-8 ${
+												isSettingsPage ? "text-zinc-100" : "text-arch-black"
+											}`}
+										/>
 									)}
 								</div>
 							</div>
-							<h3 className="text-lg font-normal text-arch-black">
+							<h3 className={`text-lg font-normal ${textPrimary}`}>
 								{getStatusText()}
 							</h3>
 						</div>
 
 						{/* Instructions */}
 						{currentStep === "initializing" && (
-							<div className="space-y-3 rounded border border-gray-600 bg-arch-white p-4">
-								<h4 className="text-sm font-medium uppercase tracking-wide text-gray-600">
+							<div className={stepBox}>
+								<h4
+									className={`text-sm font-medium uppercase tracking-wide ${textSecondary}`}
+								>
 									What happens next
 								</h4>
 								<div className="space-y-2">
@@ -178,10 +200,8 @@ export function OAuthModalV2({
 										"Return here to complete setup",
 									].map((text, index) => (
 										<div key={index} className="flex items-center gap-3">
-											<div className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-600 bg-arch-white text-xs font-medium text-gray-600">
-												{index + 1}
-											</div>
-											<span className="text-sm text-arch-black">{text}</span>
+											<div className={stepCircle}>{index + 1}</div>
+											<span className={`text-sm ${textPrimary}`}>{text}</span>
 										</div>
 									))}
 								</div>
@@ -191,18 +211,22 @@ export function OAuthModalV2({
 						{/* Loading Progress */}
 						{isLoading && (
 							<div className="space-y-2">
-								<div className="flex items-center justify-between text-xs text-gray-600">
+								<div
+									className={`flex items-center justify-between text-xs ${textSecondary}`}
+								>
 									<span>Connecting...</span>
 								</div>
-								<div className="h-1 rounded-full bg-gray-600/20">
-									<div className="h-1 animate-pulse rounded-full bg-arch-black"></div>
+								<div className={`h-1 rounded-full ${progressBg}`}>
+									<div
+										className={`h-1 animate-pulse rounded-full ${progressBar}`}
+									/>
 								</div>
 							</div>
 						)}
 					</div>
 
 					{/* Footer */}
-					<div className="flex-shrink-0 border-t border-gray-600 px-6 pt-4">
+					<div className={`flex-shrink-0 border-t ${sectionBorder} px-6 pt-4`}>
 						<div className="flex justify-end gap-3">
 							<Button
 								type="button"
@@ -211,23 +235,24 @@ export function OAuthModalV2({
 								disabled={isLoading}
 								className="flex items-center space-x-2 text-base text-gray-600 hover:text-arch-black disabled:cursor-not-allowed disabled:opacity-50"
 							>
-								{currentStep === "complete" ? "Done" : "Cancel"}
+								{" "}
+								{currentStep === "complete" ? "Done" : "Cancel"}{" "}
 							</Button>
 							{currentStep === "initializing" && (
 								<Button
 									onClick={initiateOAuth}
 									disabled={isLoading}
 									className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-									// className="flex items-center gap-2 rounded border border-arch-black bg-arch-black px-6 py-2 text-sm text-arch-white hover:border-arch-black hover:bg-arch-white hover:text-arch-black disabled:opacity-50"
 								>
+									{" "}
 									{isLoading ? (
 										<Loader2 className="h-4 w-4 animate-spin" />
 									) : (
 										<></>
-									)}
-									Connect
+									)}{" "}
+									Connect{" "}
 								</Button>
-							)}
+							)}{" "}
 						</div>
 					</div>
 				</div>
