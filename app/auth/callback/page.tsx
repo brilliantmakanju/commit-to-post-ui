@@ -1,40 +1,18 @@
 "use client";
 
-import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import type React from "react";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaTimes, FaTwitter } from "react-icons/fa";
+import { MdCheckCircle, MdError, MdRefresh } from "react-icons/md";
 
-// eslint-disable-next-line import/no-unresolved
-import { ProviderBackground } from "@/components/social_callbacks/provider-background";
-// eslint-disable-next-line import/no-unresolved
-import { TerminalContent } from "@/components/social_callbacks/terminal-content";
-// eslint-disable-next-line import/no-unresolved
-import { TerminalHeader } from "@/components/social_callbacks/terminal-header";
-// eslint-disable-next-line import/no-unresolved
-import { Badge } from "@/components/ui/badge";
-// eslint-disable-next-line import/no-unresolved
-import { Button } from "@/components/ui/button";
-// eslint-disable-next-line import/no-unresolved
-import { Card } from "@/components/ui/card";
-// eslint-disable-next-line import/no-unresolved
-import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 // eslint-disable-next-line import/no-unresolved
 import { useOAuthFlow } from "@/hooks/use-oauth-flow";
 
-type Provider = "linkedin" | "twitter";
-
+type Provider = "linkedin" | "twitter" | "github";
 interface ProviderConfig {
 	name: string;
 	icon: React.ReactNode;
-	terminalTheme: {
-		error: string;
-		primary: string;
-		success: string;
-		secondary: string;
-		background: string;
-	};
 	messages: {
 		success: string[];
 		processing: string[];
@@ -43,98 +21,112 @@ interface ProviderConfig {
 	};
 }
 
+const XIcon: React.FC<{ className?: string }> = ({ className }) => (
+	<svg viewBox="0 0 24 24" className={className} fill="currentColor">
+		<path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153ZM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644Z" />
+	</svg>
+);
+
 const PROVIDER_CONFIGS: Record<Provider, ProviderConfig> = {
 	linkedin: {
 		name: "LinkedIn",
-		icon: <FaLinkedin className="h-5 w-5" />,
-		terminalTheme: {
-			error: "text-red-400",
-			success: "text-blue-200",
-			primary: "text-blue-300",
-			secondary: "text-gray-300",
-			background: "bg-slate-900",
-		},
+		icon: <FaLinkedin className="h-6 w-6" />,
 		messages: {
-			initializing: [
-				"→ Kicking off LinkedIn OAuth process...",
-				"→ Loading your professional identity...",
-				"→ Mapping LinkedIn post capabilities...",
-				// "[INFO] Preparing to sync posts from commits...",
-			],
+			initializing: ["Connecting to LinkedIn..."],
 			authenticating: [
-				"→ Authenticating via LinkedIn API...",
-				"→ Validating publishing permissions...",
-				"→ Linking your profile to repo...",
-				// "→ Setting tone and hashtag strategy...",
-				// "[INFO] Calibrating for technical + career-friendly output...",
+				"Verifying LinkedIn permissions...",
+				"Finalizing secure connection...",
 			],
-			processing: [
-				"→ Connecting commit activity to your feed...",
-				// "→ Formatting posts for professional tone...",
-				// "→ Embedding commit logs into readable content...",
-				"[INFO] Your posts will auto-publish as you build...",
-			],
-			success: [
-				"✓ LinkedIn connected successfully",
-				"✓ Posting capabilities enabled",
-				"[SUCCESS] You're ready to grow your dev brand while you ship.",
-			],
+			processing: ["Setting up LinkedIn connection..."],
+			success: ["LinkedIn account connected!"],
 		},
 	},
 
 	twitter: {
 		name: "Twitter",
-		icon: <FaTwitter className="h-5 w-5" />,
-		terminalTheme: {
-			error: "text-red-400",
-			primary: "text-cyan-300",
-			success: "text-cyan-200",
-			background: "bg-gray-900",
-			secondary: "text-gray-300",
-		},
+		icon: <XIcon className="h-6 w-6" />,
 		messages: {
-			initializing: [
-				"→ Initializing Twitter OAuth handshake...",
-				// "→ Pulling account metadata...",
-				"→ Setting up tweet automation...",
-				// "[INFO] Preparing content templates from your commit logs...",
-			],
+			initializing: ["Connecting to Twitter..."],
 			authenticating: [
-				"→ Authenticating via Twitter API...",
-				"→ Verifying post permissions...",
-				"→ Linking Twitter to active repos...",
-				// "[INFO] Establishing commit → thread connection...",
-				"[INFO] Ready to build your developer audience...",
+				"Verifying Twitter permissions...",
+				"Finalizing secure connection...",
 			],
-			processing: [
-				// "→ Mapping commit history to tweet format...",
-				// "→ Optimizing threads for engagement...",
-				"→ Scheduling auto-post logic...",
-				// "[INFO] Hashtag and emoji preferences applied...",
-				"[INFO] You're now tweeting while you ship...",
-			],
-			success: [
-				"✓ Twitter connection successful",
-				"✓ Tweets now linked to repo commits",
-				"[SUCCESS] Welcome to auto-tweet mode — devlog style.",
-			],
+			processing: ["Setting up Twitter connection..."],
+			success: ["Twitter account connected!"],
+		},
+	},
+
+	github: {
+		name: "GitHub",
+		icon: <FaGithub className="h-6 w-6" />,
+		messages: {
+			initializing: ["Connecting to GitHub..."],
+			authenticating: ["Verifying GitHub app installation..."],
+			processing: ["Setting up GitHub connection..."],
+			success: ["GitHub connected!"],
 		},
 	},
 };
 
+// Animated Provider Icon
+const LoadingProviderIcon = ({ icon }: { icon: React.ReactNode }) => (
+	<div className="relative">
+		<div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gray-100">
+			<div
+				className="animate-spin text-black"
+				style={{ animationDuration: "2s" }}
+			>
+				{icon}
+			</div>
+		</div>
+		<div className="absolute -inset-1 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+	</div>
+);
+
+// Missing Parameters Component
+const MissingParams = ({ provider }: { provider?: Provider }) => (
+	<div className="rounded-3xl border border-gray-100 bg-gray-50 p-16">
+		<div className="space-y-8 text-center">
+			<div className="flex justify-center">
+				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+					<MdError className="h-8 w-8 text-black" />
+				</div>
+			</div>
+
+			<div className="space-y-4">
+				<h2 className="text-2xl font-bold text-black">
+					Connection Setup Issue
+				</h2>
+				<p className="text-lg leading-relaxed text-gray-600">
+					Missing required parameters for {provider || "unknown"} connection.
+					This usually happens when:
+				</p>
+				<div className="mx-auto max-w-md space-y-2 text-left text-gray-600">
+					<p>• The connection was interrupted</p>
+					<p>• Required permissions weren&apos;t granted</p>
+					<p>• The connection link expired</p>
+				</div>
+				<p className="text-sm text-gray-500">
+					Please go back and try connecting again
+				</p>
+			</div>
+		</div>
+	</div>
+);
+
 export default function Component() {
 	const searchParams = useSearchParams();
-	const [showCursor, setShowCursor] = useState(true);
-	const [provider, setProvider] = useState<Provider | undefined>();
+	const [progress, setProgress] = useState(0);
 	const [isProviderReady, setIsProviderReady] = useState(false);
-	const [isInitializing, setIsInitializing] = useState(true);
+	const [provider, setProvider] = useState<Provider | undefined>();
 
 	// Memoize search params to prevent unnecessary re-renders
-	const { code, state, providerParam } = useMemo(
+	const { code, state, providerParam, installationId } = useMemo(
 		() => ({
 			code: searchParams.get("code"),
 			state: searchParams.get("state"),
 			providerParam: searchParams.get("provider"),
+			installationId: searchParams.get("installation_id"),
 		}),
 		[searchParams],
 	);
@@ -142,8 +134,7 @@ export default function Component() {
 	// Detect provider from URL with initialization delay
 	useEffect(() => {
 		const initializeProvider = async () => {
-			// Show loading screen for a bit to ensure everything is set up
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise(resolve => setTimeout(resolve, 800));
 
 			if (providerParam) {
 				const lowerParameter = providerParam.toLowerCase();
@@ -153,247 +144,241 @@ export default function Component() {
 					detectedProvider = "linkedin";
 				} else if (lowerParameter.includes("twitter")) {
 					detectedProvider = "twitter";
+				} else if (lowerParameter.includes("github")) {
+					detectedProvider = "github";
 				} else {
-					// Default fallback if provider is not recognized
 					detectedProvider = "linkedin";
 				}
 
-				console.log(
-					`Provider detected: ${detectedProvider} from param: ${providerParam}`,
-				);
 				setProvider(detectedProvider);
 			} else {
-				// If no provider param, default to linkedin
-				console.log("No provider param found, defaulting to linkedin");
 				setProvider("linkedin");
 			}
 
-			// Small delay to ensure state is updated
-			await new Promise(resolve => setTimeout(resolve, 200));
+			await new Promise(resolve => setTimeout(resolve, 150));
 			setIsProviderReady(true);
-			setIsInitializing(false);
 		};
 
 		initializeProvider();
 	}, [providerParam]);
 
-	// Memoize config to prevent unnecessary re-renders - use fallback for initial render
+	// Memoize config to prevent unnecessary re-renders
 	const config = useMemo(() => {
 		return provider ? PROVIDER_CONFIGS[provider] : PROVIDER_CONFIGS.linkedin;
 	}, [provider]);
 
-	// OAuth flow hook - always call but conditionally enable
-	const {
-		isTyping,
-		currentLine,
-		handleRetry,
-		errorMessage,
-		terminalLines,
-		connectionState,
-		waitingForBackend,
-	} = useOAuthFlow({
+	// Check if we have the required parameters for the detected provider
+	const hasRequiredParams = useMemo(() => {
+		if (!provider) return false;
+
+		return provider === "github" ? !!installationId : !!(code && state);
+	}, [provider, code, state, installationId]);
+
+	// OAuth flow hook
+	const { handleRetry, errorMessage, connectionState } = useOAuthFlow({
 		config: config,
 		code: code || "",
 		state: state || "",
 		provider: provider || "linkedin",
-		enabled: isProviderReady && provider !== null,
+		installationId: installationId || "",
+		enabled: isProviderReady && provider !== null && hasRequiredParams,
 	});
 
-	// Cursor animation with cleanup
+	// Simulate progress for visual feedback
 	useEffect(() => {
-		const cursorInterval = setInterval(() => {
-			setShowCursor(previous => !previous);
-		}, 500);
-		return () => clearInterval(cursorInterval);
-	}, []);
+		if (
+			connectionState === "initializing" ||
+			connectionState === "authenticating" ||
+			connectionState === "processing"
+		) {
+			const interval = setInterval(() => {
+				setProgress(previous => {
+					if (previous >= 95) return previous;
+					return previous + Math.random() * 8 + 3;
+				});
+			}, 650);
+			return () => clearInterval(interval);
+		} else if (connectionState === "success") {
+			setProgress(100);
+		}
+	}, [connectionState]);
 
-	// Memoize status icon to prevent unnecessary re-renders
-	const statusIcon = useMemo(() => {
+	const getConnectionContent = () => {
+		if (!provider || !isProviderReady) return;
+
 		switch (connectionState) {
 			case "initializing":
 			case "authenticating":
 			case "processing": {
-				return <RefreshCw className="h-4 w-4 animate-spin" />;
+				return (
+					<div className="w-full space-y-8 text-center">
+						<div className="flex justify-center">
+							<LoadingProviderIcon icon={config.icon} />
+						</div>
+
+						<div className="space-y-4">
+							<h2 className="text-2xl font-bold text-black">
+								Connecting to {config.name}
+							</h2>
+							<p className="text-lg text-gray-600">
+								{connectionState === "initializing" &&
+									"Starting secure connection..."}
+								{connectionState === "authenticating" &&
+									"Verifying account permissions..."}
+								{connectionState === "processing" &&
+									"Finalizing connection setup..."}
+							</p>
+							<p className="text-sm text-gray-500">
+								Once connected, you&apos;ll be able to choose which repositories
+								to link for posting.
+							</p>
+						</div>
+
+						<div className="mx-auto max-w-md space-y-3">
+							<div className="flex justify-between text-sm text-gray-600">
+								<span>Setup Progress</span>
+								<span>{Math.round(progress)}%</span>
+							</div>
+							<div className="h-2 overflow-hidden rounded-full bg-gray-100">
+								<div
+									className="h-full bg-black transition-all duration-500 ease-out"
+									style={{ width: `${progress}%` }}
+								/>
+							</div>
+						</div>
+					</div>
+				);
 			}
+
 			case "success": {
-				return <CheckCircle className="h-4 w-4 text-green-400" />;
+				return (
+					<div className="w-full space-y-8 text-center">
+						<div className="flex justify-center">
+							<div className="flex h-16 w-16 items-center justify-center rounded-full bg-black">
+								<MdCheckCircle className="h-8 w-8 text-white" />
+							</div>
+						</div>
+
+						<div className="space-y-4">
+							<h2 className="text-2xl font-bold text-black">
+								{config.name} Connected!
+							</h2>
+							<p className="text-lg text-gray-600">
+								Your {config.name} account is now securely linked.
+							</p>
+							<p className="text-sm text-gray-500">
+								Next step: connect specific repositories to start sharing
+								updates.
+							</p>
+						</div>
+					</div>
+				);
 			}
-			case "error":
-			case "timeout": {
-				return <AlertCircle className="h-4 w-4 text-red-400" />;
+
+			case "error": {
+				return (
+					<div className="w-full space-y-8 text-center">
+						<div className="flex justify-center">
+							<div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+								<MdError className="h-8 w-8 text-black" />
+							</div>
+						</div>
+
+						<div className="space-y-4">
+							<h2 className="text-2xl font-bold text-black">
+								Connection Failed
+							</h2>
+							<p className="text-lg text-gray-600">
+								We couldn&apos;t complete the connection to {config.name}.
+							</p>
+							{errorMessage && (
+								<div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-gray-50 p-4">
+									<p className="text-sm leading-relaxed text-gray-700">
+										{errorMessage.includes("Permission")
+											? "Please ensure you granted the required permissions when authorizing your account."
+											: errorMessage.includes("timeout") ||
+												  errorMessage.includes("busy")
+												? "The provider is experiencing delays. Please try again shortly."
+												: "This may be due to a network issue or temporary provider downtime."}
+									</p>
+								</div>
+							)}
+						</div>
+
+						<div className="flex justify-center gap-4">
+							<button
+								onClick={handleRetry}
+								className="rounded-lg bg-black px-8 py-3 font-medium text-white transition-colors hover:bg-gray-800"
+							>
+								Try Again
+							</button>
+						</div>
+					</div>
+				);
 			}
+
 			default: {
 				return;
 			}
 		}
-	}, [connectionState]);
-
-	// Memoize status text to prevent unnecessary re-renders
-	const statusText = useMemo(() => {
-		switch (connectionState) {
-			case "initializing": {
-				return "Starting secure handshake...";
-			}
-			case "authenticating": {
-				return "Authenticating with provider...";
-			}
-			case "processing": {
-				return "Wiring up your commit-to-post pipeline...";
-			}
-			case "success": {
-				return "All set — integration complete!";
-			}
-			case "error": {
-				return errorMessage || "Something broke — try again?";
-			}
-			case "timeout": {
-				return "Still working... might take a bit longer.";
-			}
-			default: {
-				return "Initializing...";
-			}
-		}
-	}, [connectionState, errorMessage]);
-
-	// Memoize description text to prevent unnecessary re-renders
-	const descriptionText = useMemo(() => {
-		switch (connectionState) {
-			case "success": {
-				return `✓ ${config.name} is connected. Every commit you push will now auto-generate social-ready posts — hands off, you're live.`;
-			}
-			case "timeout": {
-				return "This is taking longer than expected — sometimes the provider stalls. Sit tight, we're still wiring things up.";
-			}
-			case "error": {
-				return `Connection failed. ${errorMessage || "Please try again or contact support if the issue persists."}`;
-			}
-			default: {
-				return `Connecting to ${config.name}... Once we're done, your commit messages will start flowing directly into shareable posts.`;
-			}
-		}
-	}, [connectionState, config.name, errorMessage]);
+	};
 
 	// Don't render anything until provider is determined
 	if (!isProviderReady || !provider) {
 		return (
 			<Suspense>
-				<section className="relative flex min-h-screen w-full items-center justify-center p-4">
+				<div className="flex min-h-screen w-full items-center justify-center bg-white p-8">
 					<div className="text-center">
-						<RefreshCw className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-400" />
-						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
-							Initializing OAuth Flow
+						<MdRefresh className="mx-auto mb-4 h-12 w-12 animate-spin text-black" />
+						<h1 className="mb-2 text-2xl font-bold text-black">
+							Setting Up Connection
 						</h1>
-						<p className="text-gray-600 dark:text-gray-400">
-							Detecting provider and setting up authentication...
+						<p className="text-gray-600">
+							Preparing your automated posting setup...
 						</p>
 					</div>
-				</section>
+				</div>
 			</Suspense>
 		);
 	}
 
-	// Show error if missing required params
-	if (!code || !state) {
+	// Show error if missing required params for the specific provider
+	if (!hasRequiredParams) {
+		console.log(`Missing required params for ${provider}:`, {
+			code,
+			state,
+			installationId,
+		});
 		return (
 			<Suspense>
-				<section className="relative flex min-h-screen w-full items-center justify-center p-4">
-					<div className="text-center">
-						<AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-400" />
-						<h1 className="mb-2 font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">
-							Invalid OAuth Request
-						</h1>
-						<p className="text-gray-600 dark:text-gray-400">
-							Missing required authentication parameters. Please try the OAuth
-							flow again.
-						</p>
+				<div className="flex min-h-screen w-full items-center justify-center bg-white p-8">
+					<div className="w-full max-w-2xl">
+						<MissingParams provider={provider} />
 					</div>
-				</section>
+				</div>
 			</Suspense>
 		);
 	}
 
 	return (
 		<Suspense>
-			<section className="relative flex min-h-screen w-full items-center justify-center p-4">
-				<ProviderBackground provider={provider} />
-
-				<div className="relative z-10 w-full">
-					{/* Header */}
-					<div className="mb-8 text-center">
-						<div className="mb-4 flex items-center justify-center gap-3">
-							<AnimatedAIIcon color={"#1f2937"} size={36} />
-							<h1 className="font-mono text-3xl font-bold text-gray-900 dark:text-gray-100">
-								Push to Post
-							</h1>
-							<Badge
-								variant="outline"
-								className={`${config.terminalTheme.primary} border-current bg-transparent`}
-							>
-								<span className="mr-2">{config.icon}</span>
-								{config.name}
-							</Badge>
-						</div>
-						<div className="mb-3 flex items-center justify-center gap-2">
-							{statusIcon}
-							<p className="font-mono text-sm text-gray-600 dark:text-gray-400">
-								{statusText}
-							</p>
-						</div>
-						<p className="mx-auto max-w-2xl text-sm leading-relaxed text-gray-500 dark:text-gray-500">
-							{descriptionText}
-						</p>
-					</div>
-
-					<div className="flex w-full items-start justify-center">
-						{/* Terminal Window */}
-						<div className="lg:col-span-2">
-							<Card
-								className={`${config.terminalTheme.background} border-gray-700 shadow-2xl dark:border-gray-800`}
-							>
-								<TerminalHeader
-									provider={provider}
-									connectionState={connectionState}
-									waitingForBackend={waitingForBackend}
-								/>
-								<TerminalContent
-									provider={provider}
-									isTyping={isTyping}
-									showCursor={showCursor}
-									currentLine={currentLine}
-									providerIcon={config.icon}
-									terminalLines={terminalLines}
-									connectionState={connectionState}
-									terminalTheme={config.terminalTheme}
-								/>
-							</Card>
-						</div>
-					</div>
-
-					{/* Action Buttons */}
-					<div className="mt-8 flex justify-center gap-4">
-						{(connectionState === "error" || connectionState === "timeout") && (
-							<Button
-								onClick={handleRetry}
-								variant="outline"
-								className="border-gray-300 bg-transparent font-mono hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-							>
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Retry Integration
-							</Button>
-						)}
+			<div className="flex min-h-screen w-full items-center justify-center bg-white p-8">
+				<div className="w-full max-w-2xl">
+					<div className="rounded-3xl border border-gray-100 bg-gray-50 p-16">
+						{getConnectionContent()}
 					</div>
 
 					{/* Footer */}
-					<div className="mt-12 text-center">
-						<p className="font-mono text-xs text-gray-400">
-							OAuth secured • Automated posting enabled • Made for developers
+					<div className="mt-12 text-center text-sm text-gray-400">
+						<p>
+							Secure OAuth • Automated social posting • Built for developers
 						</p>
-						<p className="mt-1 font-mono text-xs text-gray-500">
-							Code. Commit. Share. Automatically.
+						<p className="mt-1">
+							Ship code, share progress, grow your dev brand
 						</p>
 					</div>
 				</div>
-			</section>
+			</div>
 		</Suspense>
 	);
 }

@@ -1,18 +1,22 @@
 /* eslint-disable import/no-unresolved */
 "use client";
-import { Check, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FaBitbucket, FaGithub, FaGitlab } from "react-icons/fa";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { createEncryptedCookie } from "@/lib/cookies/create-cookies";
+import { disconnectGithub } from "@/server-actions/user-actions/disconnect-github";
 import { reconnectGithub } from "@/server-actions/user-actions/reconnect-github";
 import useOrganizationStore from "@/zustand/useorganization-store";
 
 const ConnectGithub = () => {
 	const router = useRouter();
+	const path = usePathname();
 	const [isLoading, setIsLoading] = useState(false);
+	const [isDisconnecting, setIsDisconnecting] = useState(false);
 	const { organization, updateInstallationStatus } = useOrganizationStore();
 
 	const githubConnected = useOrganizationStore(
@@ -30,10 +34,16 @@ const ConnectGithub = () => {
 					updateInstallationStatus(organization.id, "active", organization.id);
 					toast.success(response.message);
 				} else {
+					await createEncryptedCookie("redirect_url", {
+						path: path,
+					});
 					router.push("https://github.com/apps/push-to-post/installations/new");
 					toast.error(response.message);
 				}
 			} else if (organization.github_installation_status === "unknown") {
+				await createEncryptedCookie("redirect_url", {
+					path: path,
+				});
 				router.push("https://github.com/apps/push-to-post/installations/new");
 			} else {
 			}
@@ -41,6 +51,27 @@ const ConnectGithub = () => {
 		} catch {
 			toast.error("Failed to initiate GitHub connection.");
 			setIsLoading(false);
+		}
+	};
+
+	const disConnectGitHub = async () => {
+		setIsDisconnecting(true);
+		try {
+			const response = await disconnectGithub();
+			if (response.success) {
+				updateInstallationStatus(
+					organization.id,
+					"disconnected",
+					organization.id,
+				);
+				toast.success(response.message);
+			} else {
+				toast.error(response.message);
+			}
+		} catch {
+			toast.error("Failed to disconnect GitHub account. Try again later.");
+		} finally {
+			setIsDisconnecting(false);
 		}
 	};
 
@@ -61,38 +92,40 @@ const ConnectGithub = () => {
 							</div>
 						</div>
 						<div className="flex items-center gap-3">
-							{githubConnected ? (
-								<div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1">
-									<Check className="h-4 w-4 text-green-600" />
-									<span className="text-sm font-medium text-green-700">
-										Connected
-									</span>
-								</div>
-							) : (
-								<Button
-									onClick={handleConnectGitHub}
-									disabled={isLoading || githubConnected}
-									className={`px-6 ${
-										githubConnected
-											? "cursor-not-allowed bg-gray-100 text-gray-400 hover:bg-gray-100"
+							<Button
+								onClick={() => {
+									if (githubConnected) {
+										disConnectGitHub();
+									} else {
+										handleConnectGitHub();
+									}
+								}}
+								disabled={isLoading || isDisconnecting}
+								className={`px-6 ${
+									isLoading || isDisconnecting
+										? "cursor-not-allowed bg-gray-100 text-gray-400 hover:bg-gray-100"
+										: githubConnected
+											? "bg-red-100 text-red-600 hover:bg-red-200"
 											: "bg-arch-black text-white hover:bg-arch-dark"
-									}`}
-								>
-									{isLoading ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Connecting...
-										</>
-									) : githubConnected ? (
-										"Connected"
-									) : (
-										<>
-											<FaGithub className="mr-2 h-4 w-4" />
-											Connect
-										</>
-									)}
-								</Button>
-							)}
+								}`}
+							>
+								{isLoading || isDisconnecting ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										{githubConnected ? "Disconnecting..." : "Connecting..."}
+									</>
+								) : githubConnected ? (
+									<>
+										<ExternalLink className="mr-2 h-4 w-4" />
+										Disconnect
+									</>
+								) : (
+									<>
+										<FaGithub className="mr-2 h-4 w-4" />
+										Connect
+									</>
+								)}
+							</Button>
 						</div>
 					</div>
 				</div>

@@ -220,13 +220,17 @@ interface ExistingConnection {
 export interface OauthResponse {
 	success: boolean;
 	message?: string;
+	// GitHub special case: top-level installation_id
+	installation_id?: string;
 	data?: {
-		repo_id?: string; // old format
+		url?: string;
 		action?: string;
 		redirect_uri?: string;
 		integration_id?: string;
 		organization_id?: string;
+		installation_id?: string; // ← add this line
 		profile?: LinkedInProfile;
+		repo_id?: string;
 		existing_connection?: ExistingConnection;
 	};
 }
