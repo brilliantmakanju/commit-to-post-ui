@@ -31,8 +31,7 @@ function RepositoryCardSkeleton({ isGrid }: { isGrid: boolean }) {
 }
 
 export default function RepositoriesPage() {
-	const { repositories, totalRepositories, isLoadingRepos } =
-		useRetrieveConnectedRepos();
+	const { repositories, isLoadingRepos } = useRetrieveConnectedRepos();
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
