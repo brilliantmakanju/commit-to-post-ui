@@ -219,7 +219,7 @@ const SocialAccountItem: React.FC<{
 
 	const buttonConnectClasses = isSettingsPage
 		? "border border-zinc-700/50 bg-zinc-800/30 text-zinc-100 px-6 py-2 hover:bg-zinc-700/40 hover:border-zinc-600/70"
-		: "border border-gray-300 bg-white text-gray-700 px-6 py-2 hover:border-gray-900 hover:text-gray-900";
+		: "border border-gray-300 bg-white text-gray-700 px-6 py-2 hover:border-gray-900 hover:bg-zinc-200 hover:text-gray-900";
 
 	const getIcon = (iconName: string, isSettingsPage: boolean) => {
 		const baseClass = isSettingsPage
