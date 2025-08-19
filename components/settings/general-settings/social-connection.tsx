@@ -105,8 +105,8 @@ export function SocialConnectionSettings() {
 							disabled={isConnecting || isDisconnecting}
 							className={
 								githubConnected
-									? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 backdrop-blur-sm hover:bg-emerald-500/20"
-									: "bg-zinc-100 font-medium text-zinc-900 hover:bg-zinc-200"
+									? "bg-red-100 text-red-600 hover:bg-red-200"
+									: "border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
 							}
 						>
 							{isConnecting || isDisconnecting ? (
@@ -115,24 +115,10 @@ export function SocialConnectionSettings() {
 									{isConnecting ? "Connecting..." : "Disconnecting..."}
 								</span>
 							) : githubConnected ? (
-								<span className="flex items-center gap-2">
-									<ExternalLink className="h-4 w-4" />
-									Disconnect
-								</span>
+								<span className="flex items-center gap-2">Disconnect</span>
 							) : (
 								<>
-									{organization.github_installation_status ===
-									"disconnected" ? (
-										<span className="flex items-center gap-2">
-											<FaGithub className="h-4 w-4" />
-											Re-Connect
-										</span>
-									) : (
-										<span className="flex items-center gap-2">
-											<FaGithub className="h-4 w-4" />
-											Connect
-										</span>
-									)}
+									<span className="flex items-center gap-2">Connect</span>
 								</>
 							)}
 						</Button>

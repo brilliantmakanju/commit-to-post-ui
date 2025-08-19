@@ -106,23 +106,19 @@ const ConnectGithub = () => {
 										? "cursor-not-allowed bg-gray-100 text-gray-400 hover:bg-gray-100"
 										: githubConnected
 											? "bg-red-100 text-red-600 hover:bg-red-200"
-											: "bg-arch-black text-white hover:bg-arch-dark"
+											: "border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
 								}`}
 							>
 								{isLoading || isDisconnecting ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									<span className="flex items-center gap-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
 										{githubConnected ? "Disconnecting..." : "Connecting..."}
-									</>
+									</span>
 								) : githubConnected ? (
-									<>
-										<ExternalLink className="mr-2 h-4 w-4" />
-										Disconnect
-									</>
+									<span className="flex items-center gap-2">Disconnect</span>
 								) : (
 									<>
-										<FaGithub className="mr-2 h-4 w-4" />
-										Connect
+										<span className="flex items-center gap-2">Connect</span>
 									</>
 								)}
 							</Button>
