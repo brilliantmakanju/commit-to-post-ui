@@ -10,16 +10,8 @@ import {
 	setHours,
 	setMinutes,
 } from "date-fns";
-import {
-	Calendar as CalendarIcon,
-	CalendarClock,
-	Edit,
-	Loader2,
-	MoreHorizontal,
-	MoreVertical,
-	Trash2,
-} from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { CalendarClock, Loader2 } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
 	FaCalendarAlt,
@@ -28,7 +20,6 @@ import {
 	FaLinkedin,
 	FaSlack,
 	FaTrash,
-	FaTwitter,
 } from "react-icons/fa";
 import { toast } from "sonner";
 
@@ -51,16 +42,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { deletePost } from "@/server-actions/core/delete-post";
 import { updatePost } from "@/server-actions/core/edit-post";
@@ -88,6 +72,12 @@ const getStatusIndicatorColor = (status: PostStatus) => {
 	}
 };
 
+const XIcon: React.FC<{ className?: string }> = ({ className }) => (
+	<svg viewBox="0 0 24 24" className={className} fill="currentColor">
+		<path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153ZM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644Z" />
+	</svg>
+);
+
 const getBadgeStyles = (status: PostStatus) => {
 	switch (status) {
 		case "published": {
@@ -112,7 +102,7 @@ const getChannelIcon = (channel: string) => {
 			return <FaLinkedin className={`${iconClass} text-blue-300`} />;
 		}
 		case "twitter": {
-			return <FaTwitter className={`${iconClass} text-sky-300`} />;
+			return <XIcon className={`${iconClass} text-sky-300`} />;
 		}
 		case "slack": {
 			return <FaSlack className={`${iconClass} text-purple-300`} />;
@@ -130,6 +120,32 @@ const getStatusLabel = (status: PostStatus) => {
 	return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
+const getLayoutConfig = (count: number) => {
+	if (count <= 3) {
+		// 1-3 posts: display side by side
+		return {
+			showOverlay: false,
+			visiblePosts: count,
+			gridClass: count === 3 ? "grid-cols-3" : `grid-cols-${count}`,
+		};
+	} else if (count === 4) {
+		// 4 posts: 2x2 grid
+		return {
+			visiblePosts: 4,
+			showOverlay: false,
+			gridClass: "grid-cols-2 grid-rows-2",
+		};
+	} else {
+		// 5+ posts: 2x2 grid with overlay
+		return {
+			visiblePosts: 4,
+			showOverlay: true,
+			remainingCount: count - 4,
+			gridClass: "grid-cols-2 grid-rows-2",
+		};
+	}
+};
+
 const itemClasses = (count: number, index: number) => {
 	if (count === 3) {
 		if (index === 0) return "col-span-2";
@@ -142,9 +158,9 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const params = useParams();
 	const queryClient = useQueryClient();
 	const [isLoading, setIsLoading] = useState(false);
-	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
-	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
 	const [editedContent, setEditedContent] = useState("");
+	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
+	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
 	const [reschedulingPosts, setReschedulingPosts] = useState<PostItem[]>([]);
 	const [newScheduleDate, setNewScheduleDate] = useState<Date | undefined>(
 		new Date(),
@@ -158,6 +174,8 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	>();
 
 	const [isPageLoading, setIsPageLoading] = useState(true);
+	const layoutConfig = getLayoutConfig(group.posts.length);
+	const postsToShow = group.posts.slice(0, layoutConfig.visiblePosts);
 
 	const markLoaded = useCallback(() => {
 		// Delay just to ensure rendering complete (optional but useful)
@@ -328,8 +346,13 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 				)}
 
 				<CardContent className="flex h-[227px] w-full items-center justify-center p-1.5">
-					<div className="flex h-full w-full gap-1.5">
-						{group.posts.map((post, index) => {
+					<div
+						className={cn(
+							"relative grid h-full w-full gap-1.5",
+							layoutConfig.gridClass,
+						)}
+					>
+						{postsToShow.map((post, index) => {
 							const channel = post.planned_channels[0];
 							return (
 								<div
@@ -357,6 +380,17 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 								</div>
 							);
 						})}
+						{layoutConfig.showOverlay && (
+							<div
+								onClick={() => setIsDialogOpen(true)}
+								className="absolute left-1/2 top-1/2 z-20 flex h-16 w-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-black/80 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-black/90"
+							>
+								<div className="text-lg font-bold text-white">
+									+{layoutConfig.remainingCount}
+								</div>
+								<div className="text-xs text-zinc-300">Show More</div>
+							</div>
+						)}
 					</div>
 				</CardContent>
 			</Card>
@@ -426,7 +460,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 								{isLoading ? (
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								) : (
-									<Trash2 className="mr-2 h-4 w-4" />
+									<FaTrash className="mr-2 h-4 w-4" />
 								)}
 								Delete ({selectedPosts.size})
 							</Button>
