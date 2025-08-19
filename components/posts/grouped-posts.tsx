@@ -102,7 +102,7 @@ const getChannelIcon = (channel: string) => {
 			return <FaLinkedin className={`${iconClass} text-blue-300`} />;
 		}
 		case "twitter": {
-			return <XIcon className={`${iconClass}`} />;
+			return <XIcon className={`${iconClass} text-arch-white`} />;
 		}
 		case "slack": {
 			return <FaSlack className={`${iconClass} text-purple-300`} />;
