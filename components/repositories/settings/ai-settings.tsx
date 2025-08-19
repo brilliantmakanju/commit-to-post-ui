@@ -2,6 +2,7 @@
 
 /* eslint-disable import/no-unresolved */
 import { Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
+import useRetrieveTones from "@/hooks/core/repo/get-tones";
+// import { Switch } from "@/components/ui/switch";
 
 interface AISettings {
 	ai_tone: string;
@@ -30,10 +32,13 @@ interface RepoAISettingsCardProps {
 
 export const RepoAISettingsCard = ({
 	settings,
-	loading = true,
 	onChange,
+	loading = true,
 }: RepoAISettingsCardProps) => {
-	if (loading) {
+	const { data } = useSession();
+	const { tones, isTonesLoading } = useRetrieveTones();
+
+	if (loading || isTonesLoading) {
 		return (
 			<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
 				<CardHeader>
@@ -80,30 +85,28 @@ export const RepoAISettingsCard = ({
 				{settings.ai_enabled && (
 					<div className="space-y-2">
 						<Label className="text-sm font-medium text-zinc-100">
-							AI Tone Preset
+							Tone Preset
 						</Label>
 						<Select
 							value={settings.ai_tone}
+							disabled={
+								data?.user.plan !== "studio" && data?.user.plan !== "pro"
+							}
 							onValueChange={value => onChange("ai_tone", value)}
 						>
 							<SelectTrigger className="border-zinc-700 bg-zinc-800 text-zinc-100">
 								<SelectValue placeholder="Select tone" />
 							</SelectTrigger>
 							<SelectContent className="border-zinc-700 bg-zinc-900 text-zinc-100">
-								<SelectItem value="chill">Chill</SelectItem>
-								<SelectItem value="casual">Casual</SelectItem>
-								<SelectItem value="technical">Technical</SelectItem>
-								<SelectItem value="educational">Educational</SelectItem>
-								<SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-								<SelectItem value="professional">Professional</SelectItem>
+								{tones.map(tone => (
+									<SelectItem key={tone.value} value={tone.value}>
+										{tone.label}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
-						<p className="text-xs text-zinc-400">
-							Default tone for AI-generated posts
-						</p>
 					</div>
 				)}
-
 				{/* Tracked Branch */}
 				<div className="space-y-2">
 					<Label className="text-sm font-medium text-zinc-100">
