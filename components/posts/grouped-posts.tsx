@@ -96,13 +96,13 @@ const getBadgeStyles = (status: PostStatus) => {
 };
 
 const getChannelIcon = (channel: string) => {
-	const iconClass = "h-5 w-5 transition-all duration-200";
+	const iconClass = "h-6 w-6 transition-all duration-200";
 	switch (channel) {
 		case "linkedin": {
 			return <FaLinkedin className={`${iconClass} text-blue-300`} />;
 		}
 		case "twitter": {
-			return <XIcon className={`${iconClass} text-sky-300`} />;
+			return <XIcon className={`${iconClass}`} />;
 		}
 		case "slack": {
 			return <FaSlack className={`${iconClass} text-purple-300`} />;
@@ -145,15 +145,6 @@ const getLayoutConfig = (count: number) => {
 		};
 	}
 };
-
-const itemClasses = (count: number, index: number) => {
-	if (count === 3) {
-		if (index === 0) return "col-span-2";
-		return "col-span-1";
-	}
-	return "";
-};
-
 export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const params = useParams();
 	const queryClient = useQueryClient();
