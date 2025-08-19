@@ -345,7 +345,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 					</div>
 				)}
 
-				<CardContent className="flex h-[227px] w-full items-center justify-center p-1.5">
+				<CardContent className="flex h-[280px] w-full items-center justify-center p-1.5">
 					<div
 						className={cn(
 							"relative grid h-full w-full gap-1.5",
@@ -359,7 +359,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 									key={post.id}
 									className={cn(
 										"flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
-										itemClasses(group.posts.length, index),
 									)}
 									onClick={() => {
 										if (!isPageLoading) {
