@@ -27,7 +27,7 @@ const WorkSpaceSelection = () => {
 
 	return (
 		<div className="min-h-full w-full px-4 py-5 sm:px-8 lg:px-20">
-			<div className="mb-16">
+			<div className="mb-[2rem]">
 				<Heading className="mb-4 text-5xl font-light text-arch-black lg:text-6xl">
 					😶‍🌫️ Welcome back
 				</Heading>

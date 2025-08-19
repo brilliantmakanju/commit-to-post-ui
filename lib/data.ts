@@ -55,9 +55,10 @@ export type UpcomingPost = {
 };
 
 export const channelDistributionData = [
-	{ platform: "LinkedIn", posts: 45, fill: "hsl(var(--chart-1))" },
 	{ platform: "Slack", posts: 30, fill: "hsl(var(--chart-2))" },
+	{ platform: "Twitter", posts: 25, fill: "hsl(var(--chart-4))" },
 	{ platform: "Discord", posts: 25, fill: "hsl(var(--chart-3))" },
+	{ platform: "LinkedIn", posts: 45, fill: "hsl(var(--chart-1))" },
 ];
 
 export const channelDistributionConfig = {
@@ -72,6 +73,9 @@ export const channelDistributionConfig = {
 	},
 	Discord: {
 		label: "Discord",
+	},
+	Twitter: {
+		label: "Twitter",
 	},
 } satisfies ChartConfig;
 

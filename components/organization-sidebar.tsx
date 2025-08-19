@@ -23,12 +23,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { debugGroup, debugLog } from "@/hooks/core/repo/use-organization-hook";
 import { useCheckAccess } from "@/hooks/plans/use-billing";
+import { useLimitUI } from "@/hooks/use-limit-ui";
+import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import {
 	createEncryptedCookie,
 	deleteCookie,
 } from "@/lib/cookies/create-cookies";
 import useLogoutStore from "@/zustand/logout-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
+
+import FeatureLimitWrapper from "./feature-flag/feature-limit-wrapper";
+import LimitTooltip from "./feature-flag/limit-tooltip";
 
 interface TeamSwitcherProps {
 	isLoading: boolean;
@@ -51,6 +56,16 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 	// Store state
 	const { organization, organizations, setOrganization } =
 		useOrganizationStore();
+
+	const orgCount = organizations.length;
+
+	// use workspaces limit, not social accounts
+	const workspaceLimitUI = useLimitUI({
+		warningThreshold: 80,
+		currentCount: orgCount,
+		limitType: "workspaces",
+		limitId: FEATURE_LIMITS.WORKSPACES,
+	});
 
 	// Mount effect
 	useEffect(() => {
@@ -399,23 +414,62 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 
 						<DropdownMenuSeparator className="my-2" />
 
-						<DropdownMenuItem
-							onClick={() => setCreateModalOpen(true)}
-							className="mx-2 mb-2 gap-3 rounded-lg bg-muted/30 p-3 hover:bg-muted/50"
-							disabled={isSwitching}
+						<FeatureLimitWrapper
+							limitId={FEATURE_LIMITS.WORKSPACES}
+							currentCount={orgCount}
+							fallback={
+								<LimitTooltip
+									maxLimit={workspaceLimitUI.limit}
+									currentUsage={orgCount}
+									limitType="workspaces"
+									position="bottom"
+								>
+									<div className="inline-block cursor-pointer">
+										<DropdownMenuItem
+											className="mx-2 mb-2 gap-3 rounded-lg bg-muted/30 p-3 hover:bg-muted/50"
+											disabled
+										>
+											<div className="flex size-6 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground bg-background">
+												<Plus className="size-4 text-muted-foreground" />
+											</div>
+											<div className="flex flex-col">
+												<span className="font-medium text-muted-foreground">
+													Create Organization
+												</span>
+												<span className="text-xs text-muted-foreground">
+													Add new workspace
+												</span>
+											</div>
+										</DropdownMenuItem>
+									</div>
+								</LimitTooltip>
+							}
 						>
-							<div className="flex size-6 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground bg-background">
-								<Plus className="size-4 text-muted-foreground" />
-							</div>
-							<div className="flex flex-col">
-								<span className="font-medium text-muted-foreground">
-									{hasAccess ? "Create Organization" : "Upgrade Plan"}
-								</span>
-								<span className="text-xs text-muted-foreground">
-									{hasAccess ? "Add new workspace" : "Unlock team features"}
-								</span>
-							</div>
-						</DropdownMenuItem>
+							<LimitTooltip
+								maxLimit={workspaceLimitUI.limit}
+								currentUsage={orgCount}
+								limitType="workspaces"
+								position="bottom"
+							>
+								<DropdownMenuItem
+									disabled={isSwitching}
+									onClick={() => setCreateModalOpen(true)}
+									className="mx-2 mb-2 cursor-pointer gap-3 rounded-lg bg-muted/30 p-3 hover:bg-muted/50"
+								>
+									<div className="flex size-6 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground bg-background">
+										<Plus className="size-4 text-muted-foreground" />
+									</div>
+									<div className="flex flex-col">
+										<span className="font-medium text-muted-foreground">
+											Create Organization
+										</span>
+										<span className="text-xs text-muted-foreground">
+											Add new workspace
+										</span>
+									</div>
+								</DropdownMenuItem>
+							</LimitTooltip>
+						</FeatureLimitWrapper>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

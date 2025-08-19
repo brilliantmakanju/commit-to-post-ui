@@ -2,26 +2,21 @@
 
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
-import {
-	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import useDashboardMetrics from "@/hooks/core/charts";
 import { channelDistributionConfig } from "@/lib/data";
 
 // Optimized monochromatic color palette with better contrast
 const CHART_COLORS = {
-	linkedin: "#f9fafb", // lightest
 	slack: "#e5e7eb",
+	discord: "#4b5563",
 	twitter: "#d1d5db",
 	facebook: "#9ca3af",
-	instagram: "#6b7280",
-	discord: "#4b5563",
-	telegram: "#374151", // darkest
 	whatsapp: "#f3f4f6",
+	instagram: "#6b7280",
+	telegram: "#374151", // darkest
+	linkedin: "#f9fafb", // lightest
 } as const;
 
 // Custom tooltip component for better visibility
@@ -99,10 +94,6 @@ export function ChannelDistribution() {
 								<Cell key={entry.platform} fill={entry.fill} />
 							))}
 						</Pie>
-						{/* <ChartLegend
-							content={<ChartLegendContent nameKey="platform" />}
-							className="flex-wrap gap-2 *:basis-1/4 *:justify-center"
-						/> */}
 					</PieChart>
 				</ChartContainer>
 			</div>

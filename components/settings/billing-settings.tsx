@@ -360,9 +360,7 @@ export default function BillingSettings() {
 											<h3 className="text-base font-medium text-zinc-100">
 												Usage Stats
 											</h3>
-											<p className="text-xs text-zinc-400">
-												Current month usage
-											</p>
+											<p className="text-xs text-zinc-400">Current usage</p>
 										</div>
 									</div>
 

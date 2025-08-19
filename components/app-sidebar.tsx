@@ -1,12 +1,6 @@
 "use client";
 
-import {
-	Bell,
-	CreditCard,
-	FolderGit2,
-	LayoutDashboard,
-	Settings,
-} from "lucide-react";
+import { Bell, FolderGit2, LayoutDashboard, Settings } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -18,7 +12,6 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-import useOrganizationStore from "@/zustand/useorganization-store";
 
 import { TeamSwitcher } from "./organization-sidebar";
 

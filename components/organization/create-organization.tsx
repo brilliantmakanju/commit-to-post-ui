@@ -23,12 +23,10 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useCheckAccess } from "@/hooks/plans/use-billing";
 import {
 	OrganizationFormValues,
 	organizationSchema,
 } from "@/resolvers/organizations/organization-schema";
-import { subscriptionsCreation } from "@/server-actions/auth/subscribe";
 import { createOrganization } from "@/server-actions/organizations/create-organization";
 
 import { Span } from "../general/micro/typography";
@@ -40,18 +38,12 @@ interface CreateOrganizationModalProps {
 	onOpenChange: (open: boolean) => void;
 }
 
-const subscribePlan = async () => {
-	const response = await subscriptionsCreation();
-	globalThis.window.open(response.data?.checkout_url);
-};
-
 export function CreateOrganizationModal({
 	open,
 	onOpenChange,
 	onSuccess,
 }: CreateOrganizationModalProps) {
 	const queryClient = useQueryClient();
-	const hasAccess = useCheckAccess();
 
 	const form = useForm<OrganizationFormValues>({
 		resolver: zodResolver(organizationSchema),
@@ -94,141 +86,96 @@ export function CreateOrganizationModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			{hasAccess ? (
-				<DialogContent className="border-2 border-gray-200 bg-white p-0 shadow-lg sm:max-w-lg">
-					<div className="border-b-2 border-gray-200 px-8 py-6">
-						<DialogHeader className="space-y-2">
-							<DialogTitle className="text-2xl font-light text-arch-black">
-								Create Workspace
-							</DialogTitle>
-							<DialogDescription className="text-base text-gray-600">
-								Set up a new workspace for your projects
-							</DialogDescription>
-						</DialogHeader>
-					</div>
+			<DialogContent className="border-2 border-gray-200 bg-white p-0 shadow-lg sm:max-w-lg">
+				<div className="border-b-2 border-gray-200 px-8 py-6">
+					<DialogHeader className="space-y-2">
+						<DialogTitle className="text-2xl font-light text-arch-black">
+							Create Workspace
+						</DialogTitle>
+						<DialogDescription className="text-base text-gray-600">
+							Set up a new workspace for your projects
+						</DialogDescription>
+					</DialogHeader>
+				</div>
 
-					<div className="px-8 py-6">
-						<Form {...form}>
-							<form
-								onSubmit={form.handleSubmit(onSubmit)}
-								className="space-y-8"
-							>
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem className="space-y-3">
-											<FormLabel className="text-base font-medium text-arch-black">
-												Workspace Name
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Enter workspace name"
-													{...field}
-													disabled={isSubmitting}
-													className="border-2 border-gray-300 bg-transparent px-4 py-3 text-arch-dark transition-colors"
-												/>
-											</FormControl>
-											<FormMessage className="text-sm text-red-500" />
-										</FormItem>
+				<div className="px-8 py-6">
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem className="space-y-3">
+										<FormLabel className="text-base font-medium text-arch-black">
+											Workspace Name
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="Enter workspace name"
+												{...field}
+												disabled={isSubmitting}
+												className="border-2 border-gray-300 bg-transparent px-4 py-3 text-arch-dark transition-colors"
+											/>
+										</FormControl>
+										<FormMessage className="text-sm text-red-500" />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem className="space-y-3">
+										<FormLabel className="text-base font-medium text-arch-black">
+											Description
+											<Span className="pl-1 text-[11px] text-gray-600">
+												(Optnional)
+											</Span>
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												rows={4}
+												{...field}
+												disabled={isSubmitting}
+												placeholder="Describe what this workspace will be used for"
+												className="resize-none border-2 border-gray-300 bg-transparent px-4 py-3 text-arch-dark transition-colors"
+											/>
+										</FormControl>
+										<FormMessage className="text-sm text-red-500" />
+									</FormItem>
+								)}
+							/>
+
+							<div className="flex justify-end space-x-4 pt-4">
+								<Button
+									type="button"
+									variant="ghost"
+									disabled={isSubmitting}
+									onClick={() => onOpenChange(false)}
+									className="px-6 py-2 text-arch-dark"
+								>
+									Cancel
+								</Button>
+								<Button
+									type="submit"
+									disabled={isSubmitting}
+									className="border-2 border-arch-black bg-arch-black px-8 py-2 text-white transition-colors disabled:opacity-50"
+								>
+									{isSubmitting ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Creating...
+										</>
+									) : (
+										"Create Workspace"
 									)}
-								/>
-
-								<FormField
-									control={form.control}
-									name="description"
-									render={({ field }) => (
-										<FormItem className="space-y-3">
-											<FormLabel className="text-base font-medium text-arch-black">
-												Description
-												<Span className="pl-1 text-[11px] text-gray-600">
-													(Optnional)
-												</Span>
-											</FormLabel>
-											<FormControl>
-												<Textarea
-													rows={4}
-													{...field}
-													disabled={isSubmitting}
-													placeholder="Describe what this workspace will be used for"
-													className="resize-none border-2 border-gray-300 bg-transparent px-4 py-3 text-arch-dark transition-colors"
-												/>
-											</FormControl>
-											<FormMessage className="text-sm text-red-500" />
-										</FormItem>
-									)}
-								/>
-
-								<div className="flex justify-end space-x-4 pt-4">
-									<Button
-										type="button"
-										variant="ghost"
-										disabled={isSubmitting}
-										onClick={() => onOpenChange(false)}
-										className="px-6 py-2 text-arch-dark"
-									>
-										Cancel
-									</Button>
-									<Button
-										type="submit"
-										disabled={isSubmitting}
-										className="border-2 border-arch-black bg-arch-black px-8 py-2 text-white transition-colors disabled:opacity-50"
-									>
-										{isSubmitting ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Creating...
-											</>
-										) : (
-											"Create Workspace"
-										)}
-									</Button>
-								</div>
-							</form>
-						</Form>
-					</div>
-				</DialogContent>
-			) : (
-				<DialogContent className="border-2 border-gray-200 bg-white p-0 shadow-lg sm:max-w-md">
-					<div className="border-b-2 border-gray-200 px-8 py-6">
-						<DialogHeader className="space-y-2">
-							<DialogTitle className="text-2xl font-light text-arch-black">
-								Upgrade Required
-							</DialogTitle>
-							<DialogDescription className="text-base text-gray-600">
-								Unlock workspace creation with our premium plan
-							</DialogDescription>
-						</DialogHeader>
-					</div>
-
-					<div className="px-8 py-6">
-						<div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-6">
-							<p className="text-center text-base text-gray-600">
-								Create and manage more workspaces and access advanced features
-								with our premium plan.
-							</p>
-						</div>
-
-						<div className="flex justify-end space-x-4">
-							<Button
-								variant="ghost"
-								onClick={() => onOpenChange(false)}
-								className="px-6 py-2 text-arch-dark hover:text-arch-black"
-							>
-								Maybe Later
-							</Button>
-							<Button
-								onClick={() => {
-									subscribePlan();
-								}}
-								className="border-2 border-arch-black bg-arch-black px-8 py-2 text-white transition-colors hover:bg-transparent hover:text-arch-black"
-							>
-								Upgrade Now
-							</Button>
-						</div>
-					</div>
-				</DialogContent>
-			)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</div>
+			</DialogContent>
 		</Dialog>
 	);
 }
