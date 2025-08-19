@@ -323,7 +323,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		<>
 			<Card
 				className={cn(
-					"group relative flex aspect-square h-[227px] w-full flex-col overflow-hidden rounded-xl border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
+					"group relative flex aspect-square h-[280px] w-full flex-col overflow-hidden rounded-xl border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/70 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-black/20",
 					{
 						"pointer-events-none opacity-50 grayscale": isPageLoading, // disables interaction + gives visual cue
 					},
