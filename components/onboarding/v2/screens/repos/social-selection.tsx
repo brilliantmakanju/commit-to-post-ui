@@ -208,7 +208,7 @@ const ConnectRepoSocialOnboarding = ({
 
 	const [socials, setSocials] = useState<Social[]>(socialsFromOrg);
 
-	// Keep socials in sync if existingSocials changes
+	// Keep socials in sync if existingSocialschanges
 	useEffect(() => {
 		setSocials(socialsFromOrg);
 	}, [socialsFromOrg]);
