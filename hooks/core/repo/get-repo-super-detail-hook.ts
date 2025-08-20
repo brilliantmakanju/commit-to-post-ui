@@ -10,9 +10,9 @@ const useRepoSuperDetails = (repoId: string) => {
 	});
 
 	return {
-		repoDetails: data?.data,
-		isLoadingRepoDetails: isLoading,
 		isFetchingRepoDetails: isFetching,
+		isLoadingRepoDetails: isLoading,
+		repoDetails: data?.data,
 		isError,
 		error,
 		refetchRepoDetails: refetch,

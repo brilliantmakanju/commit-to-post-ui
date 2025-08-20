@@ -20,8 +20,7 @@ import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-} from "@/components/ui/tooltip"; // Assuming you’re using shadcn or similar
-// eslint-disable-next-line import/no-unresolved
+} from "@/components/ui/tooltip";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
 import { deleteRepo } from "@/server-actions/core/repo/repo-status";
 import { updateRepoSettings } from "@/server-actions/user-actions/repo/edit-repo";
@@ -32,7 +31,6 @@ import { RepoCommitFiltersCard } from "./commit-filters";
 import { RepoDangerZoneCard } from "./danger-zone";
 import { RepoGeneralSettingsCard } from "./general-settings";
 import { RepoPostingSettingsCard } from "./posting-settings";
-// import { RepoWebhookHealthCard } from "./webhook-health";
 
 interface SettingsPanelProps {
 	repo_id: UUID;
@@ -58,8 +56,15 @@ const getSocialLabel = (platform: string) => {
 	}
 };
 
-const getSocialIcon = (platform: string, connected: unknown | boolean) => {
-	const iconClass = `h-4 w-4 ${connected ? "text-green-600" : "text-gray-400"}`;
+const getSocialIcon = (
+	platform: string,
+	connected: boolean,
+	expired?: boolean,
+) => {
+	const iconClass = `h-4 w-4 ${
+		expired ? "text-red-400" : connected ? "text-green-600" : "text-gray-400"
+	}`;
+
 	switch (platform) {
 		case "linkedin": {
 			return <FaLinkedinIn className={iconClass} />;
@@ -78,35 +83,6 @@ const getSocialIcon = (platform: string, connected: unknown | boolean) => {
 		}
 	}
 };
-
-const getWebhookStatusIcon = (status: string) => {
-	switch (status) {
-		case "success": {
-			return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-		}
-		case "failed": {
-			return <XCircle className="h-4 w-4 text-red-600" />;
-		}
-		case "inactive": {
-			return <AlertCircle className="h-4 w-4 text-gray-500" />;
-		}
-		default: {
-			return <AlertCircle className="h-4 w-4 text-gray-500" />;
-		}
-	}
-};
-
-type Platform = "linkedin" | "slack" | "discord" | "twitter";
-
-interface SocialConnection {
-	connected: boolean | false;
-	connected_by: string | null;
-	connected_at: string | null;
-	token_expiry?: string | null; // For LinkedIn OAuth expiry tracking
-	details: {
-		webhook_url?: string;
-	} | null;
-}
 
 export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 	const {
@@ -127,10 +103,24 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 		}
 	}, [repository, localSettings, originalSettings]);
 
-	const isDirty =
-		localSettings &&
-		originalSettings &&
-		!isEqual(localSettings, originalSettings);
+	// const isDirty =
+	// 	localSettings &&
+	// 	originalSettings &&
+	// 	!isEqual(localSettings, originalSettings);
+
+	// Custom isDirty calculation that excludes connected_integration_ids
+	const isDirty = (() => {
+		if (!localSettings || !originalSettings) return false;
+
+		// Create copies without connected_integration_ids for comparison
+		const { connected_integration_ids: localIds, ...localWithoutIds } =
+			localSettings;
+		const { connected_integration_ids: originalIds, ...originalWithoutIds } =
+			originalSettings;
+
+		// Only consider it dirty if non-integration settings have changed
+		return !isEqual(localWithoutIds, originalWithoutIds);
+	})();
 
 	const mutation = useMutation({
 		mutationFn: (newSettings: any) => updateRepoSettings(repo_id, newSettings),
@@ -187,8 +177,8 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 				<RepoAISettingsCard
 					loading
 					settings={{
-						ai_enabled: false,
 						ai_tone: "",
+						ai_enabled: false,
 						tracked_branch: "",
 					}}
 					onChange={() => {}}
@@ -203,34 +193,29 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					onChange={() => {}}
 				/>
 
-				{/* <RepoPostingSettingsCard
-					loading
-					settings={{
-						posting_strategy: "",
-						manual_approval: false,
-						preferred_post_time: "",
-					}}
-					onChange={() => {}}
-				/> */}
-
 				<RepoChannelSettingsCard
 					loading
 					repo_id={repo_id}
-					socialConnections={{} as Record<Platform, SocialConnection>}
+					socialConnections={{
+						connected_integrations: {
+							slack: [],
+							twitter: [],
+							discord: [],
+							linkedin: [],
+						},
+						summary: "",
+						total_count: 0,
+					}}
 					localSettings={{
 						default_hashtags: "",
 						hashtag_automation: false,
+						connected_integration_ids: [],
 					}}
 					onChange={() => {}}
 					getSocialIcon={() => ""}
 					getSocialLabel={() => ""}
 				/>
 
-				{/* <RepoWebhookHealthCard
-					loading
-					webhookStatus="inactive"
-					getWebhookStatusIcon={() => ""}
-				/> */}
 				<RepoDangerZoneCard repo_id={repo_id} onDelete={() => {}} loading />
 			</div>
 		);
@@ -341,7 +326,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 				onChange={handleSettingChange}
 			/>
 
-			{/* Channel Settings */}
+			{/* Channel Settings - Updated to use new data structure */}
 			<RepoChannelSettingsCard
 				repo_id={repo_id}
 				getSocialIcon={getSocialIcon}
@@ -351,13 +336,6 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 				getSocialLabel={getSocialLabel}
 				socialConnections={repository.social_connections}
 			/>
-
-			{/* Webhook Health */}
-			{/* <RepoWebhookHealthCard
-				loading={isLoadingRepoDetails}
-				getWebhookStatusIcon={getWebhookStatusIcon}
-				webhookStatus={repository.stats.webhook_status}
-			/> */}
 
 			{/* Danger Zone */}
 			<RepoDangerZoneCard

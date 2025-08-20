@@ -45,6 +45,11 @@ const socialConnectOauthSchema = z.object({
 	state: z.string(),
 });
 
+const disconnectRepoSocialSchema = z.object({
+	repo_id: z.string(),
+	connection_id: z.string(),
+});
+
 export const socialConnectSlackAndDiscord = async (
 	repo_id: string,
 	webhook_url: string,
@@ -142,6 +147,92 @@ export const disconnectSlackAndDiscord = async (
 		};
 	} catch (error: any) {
 		const fallbackMessage = `Unexpected error while disconnecting ${platform}.`;
+		const detailedMessage =
+			error?.response?.data?.message ?? error?.message ?? fallbackMessage;
+
+		return {
+			success: false,
+			message: detailedMessage,
+		};
+	}
+};
+
+export const connectRepoSocial = async (
+	repo_id: string,
+	integration_ids: string[],
+): Promise<{
+	success: boolean;
+	message: string;
+}> => {
+	try {
+		const url = `/api/v1/repositories/${repo_id}/detail/super/`;
+
+		const response = await apiClient.post(url, {
+			integration_ids: integration_ids,
+		});
+
+		if (response.status !== 200) {
+			return {
+				success: false,
+				message: response.message,
+			};
+		}
+
+		return {
+			success: true,
+			message: response.message,
+		};
+	} catch (error: any) {
+		const fallbackMessage = "Unexpected error while disconnecting.";
+		const detailedMessage =
+			error?.response?.data?.message ?? error?.message ?? fallbackMessage;
+
+		return {
+			success: false,
+			message: detailedMessage,
+		};
+	}
+};
+
+export const disconnectRepoSocial = async (
+	repo_id: string,
+	connection_id: string,
+): Promise<{
+	success: boolean;
+	message: string;
+}> => {
+	const validation = disconnectRepoSocialSchema.safeParse({
+		repo_id,
+		connection_id,
+	});
+
+	if (!validation.success) {
+		const errorMessage =
+			validation.error.errors[0]?.message ?? "Invalid input provided.";
+		return {
+			success: false,
+			message: errorMessage,
+		};
+	}
+
+	try {
+		const url = `/api/v1/disconnect/repo/${repo_id}/integration/${connection_id}/`;
+
+		const response = await apiClient.post(url, {});
+
+		if (response.status !== 200) {
+			return {
+				success: false,
+				message: response.data.message,
+			};
+		}
+
+		return {
+			success: true,
+			message: response.data.message,
+		};
+	} catch (error: any) {
+		const fallbackMessage = "Unexpected error while disconnecting.";
 		const detailedMessage =
 			error?.response?.data?.message ?? error?.message ?? fallbackMessage;
 

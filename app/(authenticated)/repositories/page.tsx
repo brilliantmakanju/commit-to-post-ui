@@ -16,16 +16,56 @@ import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
 import { useLimitUI } from "@/hooks/use-limit-ui";
 import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 
+interface SocialIntegration {
+	id: string;
+	connected: boolean;
+	display_name: string;
+	handle?: string;
+	profile_image_url?: string;
+	profile_url?: string;
+	connected_by: string;
+	connected_at: string;
+	details?: any;
+	token_expiry?: string;
+	is_token_expired: boolean;
+}
+
+interface SocialConnections {
+	connected_integrations: {
+		twitter?: SocialIntegration[];
+		linkedin?: SocialIntegration[];
+		slack?: SocialIntegration[];
+		discord?: SocialIntegration[];
+	};
+	summary: string;
+	total_count: number;
+}
+
+interface RepositorySettings {
+	ai_enabled: boolean;
+	tracked_branch: string;
+	ai_tone: string;
+	auto_publish: boolean;
+	manual_approval: boolean;
+	connected_integration_ids: string[];
+}
+
+interface RepositoryStats {
+	pending_posts: number;
+	webhook_status: string;
+	last_synced: string;
+}
+
 interface Repository {
 	id: string;
 	name: string;
-	tone: string;
-	created_at: string;
-	description: string;
-	ai_enabled: boolean;
-	tracked_branch: string;
-	channels_to_post: string[];
+	full_name: string;
+	description?: string;
 	status: "connected" | "paused" | "disconnected";
+	connected_by: string;
+	social_connections: SocialConnections;
+	settings: RepositorySettings;
+	stats: RepositoryStats;
 }
 
 function RepositoryCardSkeleton({ isGrid }: { isGrid: boolean }) {

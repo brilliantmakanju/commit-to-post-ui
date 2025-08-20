@@ -31,28 +31,15 @@ interface RepoHeaderProps {
 	onTogglePause: () => void;
 }
 
-const statusMap = {
-	success: {
-		icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-		label: "Webhook working fine",
-	},
-	failed: {
-		icon: <XCircle className="h-4 w-4 text-red-500" />,
-		label: "Webhook has errors",
-	},
-	pending: {
-		icon: <Loader2 className="h-4 w-4 animate-spin text-yellow-400" />,
-		label: "Webhook hasn't been triggered yet",
-	},
-	missing: {
-		icon: <AlertTriangle className="h-4 w-4 text-orange-500" />,
-		label: "Webhook not set up",
-	},
-} satisfies Record<string, { icon: JSX.Element; label: string }>;
+const XIcon: React.FC<{ className?: string }> = ({ className }) => (
+	<svg viewBox="0 0 24 24" className={className} fill="currentColor">
+		<path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153ZM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644Z" />
+	</svg>
+);
 
 const socialIcons = {
 	slack: FaSlack,
-	twitter: FaTwitter,
+	twitter: XIcon,
 	discord: FaDiscord,
 	linkedin: FaLinkedin,
 };
@@ -75,6 +62,33 @@ export function RepoHeader({ repo_id, onTogglePause }: RepoHeaderProps) {
 		}
 	};
 
+	// Helper function to get social connection status
+	const getSocialConnectionStatus = () => {
+		if (!repository?.social_connections?.connected_integrations) {
+			return {};
+		}
+
+		const connections = repository.social_connections.connected_integrations;
+		const status: Record<string, boolean> = {
+			twitter: false,
+			linkedin: false,
+			slack: false,
+			discord: false,
+		};
+
+		// Check each platform for connected integrations
+		Object.entries(connections).forEach(([platform, integrations]) => {
+			if (Array.isArray(integrations) && integrations.length > 0) {
+				// Check if any integration is connected
+				status[platform] = integrations.some(
+					integration => integration.connected,
+				);
+			}
+		});
+
+		return status;
+	};
+
 	if (isLoadingRepoDetails) {
 		return <RepoHeaderSkeleton />;
 	}
@@ -83,18 +97,12 @@ export function RepoHeader({ repo_id, onTogglePause }: RepoHeaderProps) {
 		return (
 			<div className="flex flex-col items-center justify-center gap-3 py-10 text-center text-red-400">
 				<AlertTriangle className="h-6 w-6" />
-				<h2 className="text-base font-semibold">
-					Repo does not exists Failed to load repository
-				</h2>
+				<h2 className="text-base font-semibold">Failed to load repository</h2>
 			</div>
 		);
 	}
 
-	const webhookStatus = repository.last_webhook.status as
-		| "success"
-		| "failed"
-		| "pending"
-		| "missing";
+	const socialConnectionStatus = getSocialConnectionStatus();
 
 	return (
 		<header className="border-b border-zinc-800 pb-8">
@@ -122,7 +130,7 @@ export function RepoHeader({ repo_id, onTogglePause }: RepoHeaderProps) {
 						<div className="flex items-center gap-6">
 							{/* Social Connections */}
 							<div className="flex items-center gap-3">
-								{Object.entries(repository.social_connections).map(
+								{Object.entries(socialConnectionStatus).map(
 									([platform, connected]) => {
 										const Icon =
 											socialIcons[platform as keyof typeof socialIcons];
