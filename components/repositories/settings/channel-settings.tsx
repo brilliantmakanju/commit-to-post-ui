@@ -303,7 +303,7 @@ export const RepoChannelSettingsCard = ({
 
 	// ------------------
 	// Main UI
-	// ------------------
+	// ----------- -------
 	return (
 		<>
 			<ConnectRepoSocialOnboarding
