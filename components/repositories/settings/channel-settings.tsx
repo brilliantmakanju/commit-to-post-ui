@@ -92,7 +92,7 @@ export const RepoChannelSettingsCard = ({
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 	const [isConnecting, setIsConnecting] = useState<boolean>(false);
 	const [socials, setSocials] = useState<SocialConnectionItem[]>([]);
-	const [removingIndex, setRemovingIndex] = useState<number | undefined>();
+	const [removingIndex, setRemovingIndex] = useState<boolean>(false);
 	const [openSocialConnect, setOpenSocialConnect] = useState<boolean>(false);
 
 	// Modal close
@@ -232,7 +232,7 @@ export const RepoChannelSettingsCard = ({
 		if (!socialToRemove) return;
 
 		// Start loading for this specific index
-		setRemovingIndex(index);
+		setRemovingIndex(true);
 
 		try {
 			// Call backend to disconnect the social
@@ -265,7 +265,7 @@ export const RepoChannelSettingsCard = ({
 			toast.error("Failed to disconnect social connection");
 		} finally {
 			// Stop loading
-			setRemovingIndex(undefined);
+			setRemovingIndex(false);
 		}
 	};
 
@@ -366,7 +366,7 @@ export const RepoChannelSettingsCard = ({
 					<SocialConnectionList
 						socials={socials}
 						loading={isConnecting}
-						removingIndex={removingIndex}
+						removingLoader={removingIndex}
 						onRemoveSocial={handleRemoveSocial}
 						connectedIntegrationIds={localSettings.connected_integration_ids}
 					/>

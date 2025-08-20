@@ -42,7 +42,7 @@ const getIcon = (iconName: string, isRepoPage: boolean = false) => {
 interface SocialConnectionProps {
 	socials: any[];
 	onRemoveSocial: (index: number) => void;
-	removingIndex?: number; // Optional loading state for specific social being removed
+	removingLoader?: boolean; // Optional loading state for specific social being removed
 	loading?: boolean; // Optional loading state for the entire component
 	connectedIntegrationIds?: string[]; // Add this to know which are actually connected
 }
@@ -50,7 +50,7 @@ interface SocialConnectionProps {
 export const SocialConnection: React.FC<SocialConnectionProps> = ({
 	socials,
 	onRemoveSocial,
-	removingIndex,
+	removingLoader,
 	loading = false,
 	connectedIntegrationIds, // No default value - undefined means backwards compatibility
 }) => {
@@ -136,7 +136,7 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 					) : (
 						<div className="flex w-full flex-wrap gap-3">
 							{socials.map((social, index) => {
-								const isRemoving = removingIndex === index;
+								const isRemoving = removingLoader;
 								const isConnected = isActuallyConnected(social.id);
 
 								const socialItem = (
@@ -222,7 +222,7 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 				) : (
 					<div className="flex w-full flex-wrap gap-2">
 						{socials.map((social, index) => {
-							const isRemoving = removingIndex === index;
+							const isRemoving = removingLoader;
 							const isConnected = isActuallyConnected(social.id);
 
 							const socialItem = (
