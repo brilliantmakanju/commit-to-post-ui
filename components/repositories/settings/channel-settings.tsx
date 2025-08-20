@@ -12,6 +12,7 @@ import ConnectRepoSocialOnboarding from "@/components/onboarding/v2/screens/repo
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import useRepoDetails from "@/hooks/core/repo/get-repo-detail-hook";
 import {
 	connectRepoSocial,
 	disconnectRepoSocial,
@@ -25,23 +26,23 @@ interface ConnectedIntegration {
 	connected: boolean;
 	display_name: string;
 	handle: string | null;
-	profile_image_url: string | null;
-	profile_url: string | null;
 	connected_by: string;
 	connected_at: string;
+	profile_url: string | null;
+	profile_image_url: string | null;
 	details: {
 		webhook_url?: string;
 	} | null;
-	token_expiry: string | null;
 	is_token_expired: boolean;
+	token_expiry: string | null;
 }
 
 interface SocialConnections {
 	connected_integrations: {
-		twitter: ConnectedIntegration[];
-		linkedin: ConnectedIntegration[];
 		slack: ConnectedIntegration[];
+		twitter: ConnectedIntegration[];
 		discord: ConnectedIntegration[];
+		linkedin: ConnectedIntegration[];
 	};
 	summary: string;
 	total_count: number;
@@ -86,6 +87,8 @@ export const RepoChannelSettingsCard = ({
 }: RepoChannelSettingsCardProps) => {
 	const queryClient = useQueryClient();
 
+	const { repoDetails: repository, isLoadingRepoDetails } =
+		useRepoDetails(repo_id);
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 	const [isConnecting, setIsConnecting] = useState<boolean>(false);
 	const [socials, setSocials] = useState<SocialConnectionItem[]>([]);
@@ -224,7 +227,6 @@ export const RepoChannelSettingsCard = ({
 	};
 
 	// Remove a social from list
-	// Remove a social from list
 	const handleRemoveSocial = async (index: number) => {
 		const socialToRemove = socials[index];
 		if (!socialToRemove) return;
@@ -266,6 +268,7 @@ export const RepoChannelSettingsCard = ({
 			setRemovingIndex(undefined);
 		}
 	};
+
 	// Check if there are unsaved changes
 	const hasUnsavedChanges = () => {
 		const currentSelectedIds = socials.filter(s => s.selected).map(s => s.id);
@@ -280,7 +283,7 @@ export const RepoChannelSettingsCard = ({
 	// ------------------
 	// Loading Skeleton
 	// ------------------
-	if (loading) {
+	if (loading || isLoadingRepoDetails) {
 		return (
 			<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
 				<CardHeader>
@@ -306,7 +309,7 @@ export const RepoChannelSettingsCard = ({
 			<ConnectRepoSocialOnboarding
 				repo={{
 					id: repo_id,
-					name: "name",
+					name: repository.name,
 				}}
 				open={openSocialConnect}
 				existingSocials={socials}
