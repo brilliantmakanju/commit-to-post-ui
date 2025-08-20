@@ -564,7 +564,7 @@ export const disconnectIntegration = async (
 
 	try {
 		const url = `/api/v1/integrations/disconnect/${connection_id}/`;
-		const response = await apiClient.delete(url);
+		const response = await apiClient.delete(url, {}, 10000);
 
 		if (response.status !== 200) {
 			return {

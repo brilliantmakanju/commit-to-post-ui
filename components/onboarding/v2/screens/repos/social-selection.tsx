@@ -190,21 +190,23 @@ const ConnectRepoSocialOnboarding = ({
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedFilters, setSelectedFilters] = useState<string[]>(["all"]);
 
+	// Create a Set of existing social IDs for faster lookup
+	const existingSocialIds = useMemo(() => {
+		return new Set(existingSocials.map(social => social.id));
+	}, [existingSocials]);
+
 	// Normalize organization.socials into Social[]
 	const socialsFromOrg = useMemo<Social[]>(() => {
 		return (organization?.socials ?? []).map((s: any) => ({
 			id: s.id,
-			name: String(s.name),
-			handle: String(s.handle),
-			profile_image_url: String(s.profile_image_url),
+			name: String(s.name || ""),
+			handle: String(s.handle || ""),
+			profile_image_url: String(s.profile_image_url || ""),
 			platform: normalizePlatform(s.platform),
-			selected: existingSocials.some(
-				existing =>
-					isSamePlatform(existing.platform, s.platform) &&
-					existing.name === s.name,
-			),
+			// Use ID-based lookup for more precise selection state
+			selected: existingSocialIds.has(s.id),
 		}));
-	}, [organization?.socials, existingSocials]);
+	}, [organization?.socials, existingSocialIds]);
 
 	const [socials, setSocials] = useState<Social[]>(socialsFromOrg);
 
@@ -245,7 +247,7 @@ const ConnectRepoSocialOnboarding = ({
 		p => p.key === "all" || availablePlatformKeys.has(p.key as any),
 	);
 
-	// Toggle social selection
+	// Fixed toggle social selection - only toggle the specific social by ID
 	const toggleSocial = (id: string) => {
 		setSocials(previous => {
 			const updated = previous.map(s =>

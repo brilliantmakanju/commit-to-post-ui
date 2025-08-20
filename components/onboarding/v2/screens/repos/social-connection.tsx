@@ -42,8 +42,8 @@ const getIcon = (iconName: string, isRepoPage: boolean = false) => {
 interface SocialConnectionProps {
 	socials: any[];
 	onRemoveSocial: (index: number) => void;
-	removingLoader?: boolean; // Optional loading state for specific social being removed
 	loading?: boolean; // Optional loading state for the entire component
+	removingLoader?: boolean; // Optional loading state for specific social being removed
 	connectedIntegrationIds?: string[]; // Add this to know which are actually connected
 }
 
