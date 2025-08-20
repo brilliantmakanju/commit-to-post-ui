@@ -113,7 +113,6 @@ const useFeatureFlagsStore = create<FeatureFlagsState & FeatureFlagsActions>()(
 				}),
 
 			setFlags: (flags: Record<string, FeatureFlag>) => {
-				console.log("Setting flags:", flags);
 				set({ flags });
 			},
 
@@ -127,26 +126,16 @@ const useFeatureFlagsStore = create<FeatureFlagsState & FeatureFlagsActions>()(
 				const state = get();
 				const flag = state.flags[flagId];
 
-				console.log(`Checking flag: ${flagId}`, {
-					flag,
-					userPlan,
-					isAuthenticated,
-					flagsCount: Object.keys(state.flags).length,
-				});
-
 				if (!flag) {
-					console.log(`Flag ${flagId} not found`);
 					return false;
 				}
-				
+
 				if (!flag.enabled) {
-					console.log(`Flag ${flagId} is disabled`);
 					return false;
 				}
 
 				// Check authentication requirement
 				if (flag.requiresAuth && !isAuthenticated) {
-					console.log(`Flag ${flagId} requires authentication`);
 					return false;
 				}
 
@@ -159,15 +148,11 @@ const useFeatureFlagsStore = create<FeatureFlagsState & FeatureFlagsActions>()(
 						] ?? -1;
 					const requiredPlanLevel = planHierarchy[flag.requiresPlan];
 
-					console.log(`Plan check: userPlan=${userPlan} (level ${userPlanLevel}), required=${flag.requiresPlan} (level ${requiredPlanLevel})`);
-
 					if (userPlanLevel < requiredPlanLevel) {
-						console.log(`Flag ${flagId}: user plan level too low`);
 						return false;
 					}
 				}
 
-				console.log(`Flag ${flagId} is enabled for user`);
 				return true;
 			},
 

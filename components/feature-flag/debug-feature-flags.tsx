@@ -21,7 +21,6 @@ export const DebugFeatureFlags: React.FC = () => {
 	useEffect(() => {
 		// Force initialize if no flags exist
 		if (Object.keys(flags).length === 0) {
-			console.log("No flags found, initializing...");
 			initializeFeatureFlags();
 		}
 	}, [flags]);
@@ -60,7 +59,6 @@ export const DebugFeatureFlags: React.FC = () => {
 
 			<button
 				onClick={() => {
-					console.log("Current flags:", flags);
 					initializeFeatureFlags();
 				}}
 				className="rounded bg-blue-500 px-4 py-2 text-white"

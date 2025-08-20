@@ -142,8 +142,7 @@ export function DeleteOrganization() {
 
 						updateOrganizations(formattedOrgs);
 					}
-				} catch (error) {
-					console.error("Failed to refresh organizations list:", error);
+				} catch {
 					// Continue with local state management if server sync fails
 				}
 
@@ -156,8 +155,7 @@ export function DeleteOrganization() {
 			} else {
 				toast.error(response.message || "Failed to delete organization");
 			}
-		} catch (error) {
-			console.error("Delete organization error:", error);
+		} catch {
 			toast.error("Failed to delete organization");
 		} finally {
 			setIsDeleting(false);

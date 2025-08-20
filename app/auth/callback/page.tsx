@@ -344,11 +344,6 @@ export default function Component() {
 
 	// Show error if missing required params for the specific provider
 	if (!hasRequiredParams) {
-		console.log(`Missing required params for ${provider}:`, {
-			code,
-			state,
-			installationId,
-		});
 		return (
 			<Suspense>
 				<div className="flex min-h-screen w-full items-center justify-center bg-white p-8">
