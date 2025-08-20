@@ -413,7 +413,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 								htmlFor="select-all"
 								className="text-sm font-medium text-zinc-300"
 							>
-								Select All
+								Select Al
 							</label>
 						</div>
 
