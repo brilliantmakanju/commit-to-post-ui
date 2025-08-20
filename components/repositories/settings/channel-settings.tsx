@@ -280,8 +280,6 @@ export const RepoChannelSettingsCard = ({
 		);
 	};
 
-	console.log(localSettings, "Local Settings");
-
 	// ------------------
 	// Loading Skeleton
 	// ------------------
@@ -305,7 +303,7 @@ export const RepoChannelSettingsCard = ({
 
 	// ------------------
 	// Main UI
-	// ----------- -------
+	// ------------------
 	return (
 		<>
 			<ConnectRepoSocialOnboarding
