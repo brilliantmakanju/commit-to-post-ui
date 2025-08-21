@@ -87,6 +87,24 @@ export const useSessionManager = ({
 					localStorage.removeItem("organization-storage");
 					localStorage.removeItem("feature-flags-storage");
 					localStorage.removeItem("feature-limits-storage");
+					// Clear any other potential persisted stores
+					localStorage.removeItem("notification-storage");
+					localStorage.removeItem("use-notification-store");
+					// Clear all keys that might contain auth data
+					const keysToRemove = [];
+					for (let index = 0; index < localStorage.length; index++) {
+						const key = localStorage.key(index);
+						if (
+							key &&
+							(key.includes("auth") ||
+								key.includes("user") ||
+								key.includes("session") ||
+								key.includes("token"))
+						) {
+							keysToRemove.push(key);
+						}
+					}
+					keysToRemove.forEach(key => localStorage.removeItem(key));
 				}
 			} catch {}
 
@@ -101,9 +119,13 @@ export const useSessionManager = ({
 				]);
 			};
 
-			// Clear cookies and sign out, but don't wait forever
+			// 1. First, sign out from NextAuth to clear session
+			await withTimeout(signOut({ redirect: false }));
+
+			// 2. Then clear all cookies
 			await withTimeout(clearCookies());
-			// Proactively delete known Auth.js cookies; server may set these names
+
+			// 3. Proactively delete known Auth.js cookies
 			try {
 				if (typeof document !== "undefined") {
 					const cookieNames = [
@@ -113,14 +135,17 @@ export const useSessionManager = ({
 						"authjs.csrf-token",
 						"authjs.callback-url",
 						"authjs.session-token",
+						"next-auth.csrf-token",
+						"next-auth.callback-url",
+						"next-auth.session-token",
 					];
 					for (const name of cookieNames) {
-						// eslint-disable-next-line unicorn/no-document-cookie
-						document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+						globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+						globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; Domain=${globalThis.location.hostname}; SameSite=Lax`;
+						globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; Domain=.${globalThis.location.hostname}; SameSite=Lax`;
 					}
 				}
 			} catch {}
-			await withTimeout(signOut({ redirect: false }));
 
 			// Redirect
 			globalThis.location.href = "/";
@@ -128,6 +153,13 @@ export const useSessionManager = ({
 			// Force redirect even if logout fails
 			globalThis.location.href = "/";
 		}
+
+		// Force a complete page refresh to clear any cached state
+		setTimeout(() => {
+			if (typeof globalThis !== "undefined") {
+				globalThis.location.reload();
+			}
+		}, 100);
 	}, [clearOrganization, clearUser, setLogout]);
 
 	// Start countdown timer for the modal
