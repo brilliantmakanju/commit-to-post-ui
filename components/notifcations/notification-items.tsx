@@ -3,7 +3,7 @@
 import { UUID } from "node:crypto";
 
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import type { Notification } from "@/types";
@@ -15,6 +15,7 @@ interface NotificationItemProps {
 	notification: Notification;
 	onDelete?: (id: UUID) => void;
 	onMarkAsRead?: (id: UUID) => void;
+	isLoading?: boolean;
 }
 
 const formatDate = (date: string) => {
@@ -26,6 +27,7 @@ export default function NotificationItem({
 	onDelete,
 	notification,
 	onMarkAsRead,
+	isLoading = false,
 }: NotificationItemProps) {
 	const [expanded, setExpanded] = useState(false);
 
@@ -88,23 +90,32 @@ export default function NotificationItem({
 								variant="ghost"
 								size="sm"
 								onClick={() => onMarkAsRead(notification.id)}
+								disabled={isLoading}
 								className="h-7 w-7 p-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
 							>
-								<Check className="h-3 w-3" />
+								{isLoading ? (
+									<Loader2 className="h-3 w-3 animate-spin" />
+								) : (
+									<Check className="h-3 w-3" />
+								)}
 							</Button>
 						)}
 						{/* {onDelete && (
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => onDelete(notification.id)}
-								className="h-7 w-7 p-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-							>
-								<X className="h-3 w-3" />
-							</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => onDelete(notification.id)}
+							className="h-7 w-7 p-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+						>
+							<X className="h-3 w-3" />
+						</Button>
 						)} */}
 					</div>
 				</div>
+				{/* Per-item loading overlay (subtle) */}
+				{isLoading && (
+					<div className="pointer-events-none absolute inset-0 rounded-lg bg-black/20" />
+				)}
 			</CardHeader>
 		</Card>
 	);

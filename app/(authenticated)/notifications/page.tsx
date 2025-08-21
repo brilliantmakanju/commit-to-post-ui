@@ -36,6 +36,11 @@ export default function NotificationsPage() {
 		setNotifications,
 		removeNotification,
 		notifications: localNotifications,
+		setMarking,
+		markingIds,
+		isBulkMarking,
+		setBulkMarking,
+		clearMarking,
 	} = useNotificationStore();
 
 	const {
@@ -62,6 +67,8 @@ export default function NotificationsPage() {
 	]);
 
 	const handleMarkAsRead = async (id: UUID) => {
+		// Show loading for this item
+		setMarking(id, true);
 		// Optimistic update
 		markAsRead(id);
 
@@ -74,9 +81,17 @@ export default function NotificationsPage() {
 			});
 			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
+
+		// Clear loading state for this item regardless of outcome
+		setMarking(id, false);
 	};
 
 	const handleMarkAllAsRead = async () => {
+		// Show bulk loading and per-item loading
+		setBulkMarking(true);
+		localNotifications.forEach(n => setMarking(n.id, true));
+
+		// Optimistic update
 		localNotifications.forEach(n => markAsRead(n.id));
 
 		const response = await readAllNotifications();
@@ -88,6 +103,9 @@ export default function NotificationsPage() {
 			});
 			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
+
+		// Clear bulk and per-item loading
+		clearMarking();
 	};
 
 	if (isNotificationLoading && localNotifications.length === 0) {
@@ -180,6 +198,9 @@ export default function NotificationsPage() {
 							onDelete={handleDelete}
 							notification={notification}
 							onMarkAsRead={handleMarkAsRead}
+							// Pass loading flag based on store states
+							// @ts-ignore - extend props in the component to accept isLoading
+							isLoading={isBulkMarking || markingIds.includes(notification.id)}
 						/>
 					))}
 				</div>
