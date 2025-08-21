@@ -15,7 +15,9 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
+import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+import { logout, signOut } from "@/server-actions/auth/signout";
 import useLogoutStore from "@/zustand/logout-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
@@ -83,15 +85,32 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 		const validateCookie = async () => {
 			try {
-				await getDecryptedCookie("cookie_state");
+				const cookieState = await getDecryptedCookie("cookie_state");
 
 				if (!mounted) return;
+
+				if (!cookieState) {
+					// Force logout if no cookie_state found
+					logoutStore.setLogout(true);
+					organizationStore.clearOrganization();
+					userStore.clearUser();
+					await clearCookies();
+					await signOut({ redirect: false });
+					globalThis.location.href = "/";
+					return;
+				}
 
 				// We rely on useSessionManager + fetch interceptor to handle invalid cookies
 				setCookieValidated(true);
 			} catch {
 				if (mounted) {
-					setCookieValidated(true); // Continue even if cookie check fails
+					// Force logout on cookie validation error
+					logoutStore.setLogout(true);
+					organizationStore.clearOrganization();
+					userStore.clearUser();
+					await clearCookies();
+					await signOut({ redirect: false });
+					globalThis.location.href = "/";
 				}
 			}
 		};

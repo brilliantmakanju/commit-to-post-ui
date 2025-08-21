@@ -2,6 +2,8 @@
 
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { signOut } from "@/server-actions/auth/signout";
+import useFeatureFlagsStore from "@/zustand/feature-flags-store";
+import useFeatureLimitsStore from "@/zustand/feature-limits-store";
 import useLogoutStore from "@/zustand/logout-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
@@ -10,11 +12,19 @@ export const logoutNow = async (): Promise<void> => {
 	const { setLogout } = useLogoutStore.getState();
 	const { clearUser } = useUserStore.getState();
 	const { clearOrganization } = useOrganizationStore.getState();
+	const { clearFlags } = useFeatureFlagsStore.getState();
+	const { clearLimits } = useFeatureLimitsStore.getState();
 
+	// 1. Set logout state FIRST to prevent UI flicker
 	setLogout(true);
+
+	// 2. Clear all stores immediately
 	clearUser();
+	clearFlags();
+	clearLimits();
 	clearOrganization();
 
+	// 3. Clear persisted localStorage keys defensively
 	try {
 		if (typeof localStorage !== "undefined") {
 			localStorage.removeItem("logout-storage");
@@ -43,6 +53,7 @@ export const logoutNow = async (): Promise<void> => {
 		}
 	} catch {}
 
+	// 4. Helper to race an operation with a timeout so we don't hang
 	const withTimeout = async <T>(
 		promise: Promise<T>,
 		ms = 1500,
@@ -54,18 +65,22 @@ export const logoutNow = async (): Promise<void> => {
 	};
 
 	try {
-		// Use provided helpers only, in this order
+		// 5. Execute logout sequence with proper order
 		await withTimeout(clearCookies());
 		await withTimeout(signOut({ redirect: false }));
 		await withTimeout(clearCookies());
-	} finally {
+
+		// 6. Force redirect and refresh
 		globalThis.location.href = "/";
 
-		// Force a complete page refresh to clear any cached state
+		// 7. Force a complete page refresh to clear any cached state
 		setTimeout(() => {
 			if (typeof globalThis !== "undefined") {
 				globalThis.location.reload();
 			}
 		}, 100);
+	} catch {
+		// Force redirect even if logout fails
+		globalThis.location.href = "/";
 	}
 };

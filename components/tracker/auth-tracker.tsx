@@ -6,6 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { signOut } from "@/server-actions/auth/signout";
+import useFeatureFlagsStore from "@/zustand/feature-flags-store";
+import useFeatureLimitsStore from "@/zustand/feature-limits-store";
 import useLogoutStore from "@/zustand/logout-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
@@ -24,6 +26,8 @@ export const useSessionManager = ({
 	const { status } = useSession();
 	const { clearUser } = useUserStore();
 	const { setLogout } = useLogoutStore();
+	const { clearFlags } = useFeatureFlagsStore();
+	const { clearLimits } = useFeatureLimitsStore();
 	const { clearOrganization } = useOrganizationStore();
 
 	// UI state for the warning modal
@@ -74,12 +78,16 @@ export const useSessionManager = ({
 			// Hide modal and clear UI state
 			setShowWarningModal(false);
 
-			// Clear stores
+			// 1. Set logout state FIRST to prevent UI flicker
 			setLogout(true);
+
+			// 2. Clear all stores immediately
 			clearUser();
+			clearFlags();
+			clearLimits();
 			clearOrganization();
 
-			// Clear persisted localStorage keys defensively
+			// 3. Clear persisted localStorage keys defensively
 			try {
 				if (typeof localStorage !== "undefined") {
 					localStorage.removeItem("logout-storage");
@@ -108,7 +116,7 @@ export const useSessionManager = ({
 				}
 			} catch {}
 
-			// Helper to race an operation with a timeout so we don't hang
+			// 4. Helper to race an operation with a timeout so we don't hang
 			const withTimeout = async <T,>(
 				promise: Promise<T>,
 				ms = 1500,
@@ -119,25 +127,25 @@ export const useSessionManager = ({
 				]);
 			};
 
-			// Use provided helpers only, in this order
+			// 5. Execute logout sequence with proper order
 			await withTimeout(clearCookies());
 			await withTimeout(signOut({ redirect: false }));
 			await withTimeout(clearCookies());
 
-			// Redirect
+			// 6. Force redirect and refresh
 			globalThis.location.href = "/";
+
+			// 7. Force a complete page refresh to clear any cached state
+			setTimeout(() => {
+				if (typeof globalThis !== "undefined") {
+					globalThis.location.reload();
+				}
+			}, 100);
 		} catch {
 			// Force redirect even if logout fails
 			globalThis.location.href = "/";
 		}
-
-		// Force a complete page refresh to clear any cached state
-		setTimeout(() => {
-			if (typeof globalThis !== "undefined") {
-				globalThis.location.reload();
-			}
-		}, 100);
-	}, [clearOrganization, clearUser, setLogout]);
+	}, [clearOrganization, clearUser, setLogout, clearFlags, clearLimits]);
 
 	// Start countdown timer for the modal
 	const startCountdown = useCallback(() => {
