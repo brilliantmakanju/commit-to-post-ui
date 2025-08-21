@@ -51,21 +51,24 @@ interface RepositorySettings {
 }
 
 interface RepositoryStats {
-	pending_posts: number;
 	webhook_status: string;
+	pending_posts: number;
 	last_synced: string;
 }
+
+type RepoStatus = "connected" | "paused" | "disconnected";
 
 interface Repository {
 	id: string;
 	name: string;
+	created_at?: any;
 	full_name: string;
+	status: RepoStatus;
 	description?: string;
-	status: "connected" | "paused" | "disconnected";
 	connected_by: string;
-	social_connections: SocialConnections;
-	settings: RepositorySettings;
 	stats: RepositoryStats;
+	settings: RepositorySettings;
+	social_connections: SocialConnections;
 }
 
 function RepositoryCardSkeleton({ isGrid }: { isGrid: boolean }) {
@@ -73,6 +76,12 @@ function RepositoryCardSkeleton({ isGrid }: { isGrid: boolean }) {
 		<div className="h-64 animate-pulse rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4" />
 	);
 }
+
+const statusOrder: Record<RepoStatus, number> = {
+	connected: 0,
+	paused: 1,
+	disconnected: 2,
+};
 
 export default function RepositoriesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +113,8 @@ export default function RepositoriesPage() {
 			);
 		});
 
-		filtered.sort((a: any, b: any) => {
+		filtered.sort((a: Repository, b: Repository) => {
+			const statusDiff = statusOrder[a.status] - statusOrder[b.status];
 			switch (sortBy) {
 				case "name": {
 					return a.name.localeCompare(b.name);
