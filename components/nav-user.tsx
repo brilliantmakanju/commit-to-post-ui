@@ -2,10 +2,9 @@
 
 import { ChevronsUpDown, LogOut, User2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 
+import { useSessionManager } from "@/components/tracker/auth-tracker";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -21,10 +20,7 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
-import { clearCookies } from "@/lib/cookies/create-cookies";
-import { logout, signOut } from "@/server-actions/auth/signout";
 import useLogoutStore from "@/zustand/logout-store";
-import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
 export function NavUser({
@@ -36,7 +32,7 @@ export function NavUser({
 	const { isMobile } = useSidebar();
 	const logoutStore = useLogoutStore();
 	const { data, status } = useSession();
-	const organizationStore = useOrganizationStore();
+	const { logout: performLogout } = useSessionManager();
 
 	// useEffect(() => {
 	// 	if (status === "unauthenticated") {
@@ -73,12 +69,7 @@ export function NavUser({
 					};
 
 	const logoutClient = async () => {
-		organizationStore.clearOrganization();
-		logoutStore.setLogout(true);
-		userStore.clearUser();
-		// logout();
-		await clearCookies();
-		await signOut({ redirect: false });
+		await performLogout();
 	};
 
 	if (status === "loading" || isLoadingAttachment) {

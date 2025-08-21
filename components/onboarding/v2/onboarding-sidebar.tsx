@@ -1,16 +1,11 @@
 /* eslint-disable import/no-unresolved */
-import { useRouter } from "next/navigation";
 import React from "react";
 
 import { Span } from "@/components/general/micro/typography";
 import Logo from "@/components/navigation/top_navigation/logo";
+import { useSessionManager } from "@/components/tracker/auth-tracker";
 import { Button } from "@/components/ui/button";
-import { clearCookies } from "@/lib/cookies/create-cookies";
-import { signOut } from "@/server-actions/auth/signout";
 import { Step } from "@/types/onboarding";
-import useLogoutStore from "@/zustand/logout-store";
-import useOrganizationStore from "@/zustand/useorganization-store";
-import useUserStore from "@/zustand/useuser-store";
 
 import { StepIndicator } from "./step-indicator";
 
@@ -31,19 +26,10 @@ export const OnboardingSidebar: React.FC<OnboardingSidebarProps> = ({
 	canNavigateToStep,
 	showHelpButton = true,
 }) => {
-	const router = useRouter();
-	const userStore = useUserStore();
-	const logoutStore = useLogoutStore();
-	const organizationStore = useOrganizationStore();
+	const { logout: performLogout } = useSessionManager();
 
 	const logoutClient = async () => {
-		logoutStore.setLogout(true);
-		await signOut({ redirect: false });
-		await clearCookies();
-		userStore.clearUser();
-		organizationStore.clearOrganization();
-
-		router.push("/");
+		await performLogout();
 	};
 	return (
 		<aside

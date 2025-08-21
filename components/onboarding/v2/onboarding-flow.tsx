@@ -1,18 +1,13 @@
 /* eslint-disable import/no-unresolved */
 "use client";
-import { useRouter } from "next/navigation";
 import React from "react";
 
 import { Span } from "@/components/general/micro/typography";
 import Logo from "@/components/navigation/top_navigation/logo";
+import { useSessionManager } from "@/components/tracker/auth-tracker";
 import { Button } from "@/components/ui/button";
-import { clearCookies } from "@/lib/cookies/create-cookies";
 import { useOnboarding } from "@/lib/use-onboarding";
-import { signOut } from "@/server-actions/auth/signout";
 import { OnboardingConfig, Step } from "@/types/onboarding";
-import useLogoutStore from "@/zustand/logout-store";
-import useOrganizationStore from "@/zustand/useorganization-store";
-import useUserStore from "@/zustand/useuser-store";
 
 import OnboardingMain from "./onboarding-main";
 import { OnboardingSidebar } from "./onboarding-sidebar";
@@ -31,10 +26,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
 	onStepContent,
 	className = "",
 }) => {
-	const router = useRouter();
-	const userStore = useUserStore();
-	const logoutStore = useLogoutStore();
-	const organizationStore = useOrganizationStore();
+	const { logout: performLogout } = useSessionManager();
 
 	const {
 		totalSteps,
@@ -53,13 +45,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
 		getFirstIncompleteRequiredStep,
 	} = useOnboarding(config.steps);
 	const logoutClient = async () => {
-		organizationStore.clearOrganization();
-		logoutStore.setLogout(true);
-		userStore.clearUser();
-		await clearCookies();
-		await signOut({ redirect: false });
-
-		router.push("/");
+		await performLogout();
 	};
 
 	const handleNextWithComplete = () => {

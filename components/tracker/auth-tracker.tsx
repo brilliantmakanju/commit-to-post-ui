@@ -37,6 +37,7 @@ export const useSessionManager = ({
 	const lastActivityRef = useRef<number>(Date.now());
 	const isLoggingOutRef = useRef<boolean>(false);
 	const warningShownRef = useRef<boolean>(false);
+	const logoutDeadlineRef = useRef<number | undefined>(undefined);
 
 	// Convert minutes to milliseconds
 	const INACTIVITY_TIME = inactivityTimeout * 60 * 1000;
@@ -48,22 +49,6 @@ export const useSessionManager = ({
 		const remainingSeconds = seconds % 60;
 		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 	}, []);
-
-	// Start countdown timer for the modal
-	const startCountdown = useCallback(() => {
-		let remainingSeconds = warningTime * 60;
-		setTimeRemaining(formatTimeRemaining(remainingSeconds));
-
-		countdownTimerRef.current = setInterval(() => {
-			remainingSeconds -= 1;
-			setTimeRemaining(formatTimeRemaining(remainingSeconds));
-
-			if (remainingSeconds <= 0 && countdownTimerRef.current) {
-				clearInterval(countdownTimerRef.current);
-				countdownTimerRef.current = undefined;
-			}
-		}, 1000);
-	}, [warningTime, formatTimeRemaining]);
 
 	// Centralized logout function
 	const performLogout = useCallback(async () => {
@@ -93,9 +78,21 @@ export const useSessionManager = ({
 			setLogout(true);
 			clearUser();
 			clearOrganization();
-			// Clear cookies and sign out
-			await clearCookies();
-			await signOut({ redirect: false });
+
+			// Helper to race an operation with a timeout so we don't hang
+			const withTimeout = async <T,>(
+				promise: Promise<T>,
+				ms = 1500,
+			): Promise<void> => {
+				await Promise.race([
+					promise.then(() => {}).catch(() => {}),
+					new Promise<void>(resolve => setTimeout(resolve, ms)),
+				]);
+			};
+
+			// Clear cookies and sign out, but don't wait forever
+			await withTimeout(clearCookies());
+			await withTimeout(signOut({ redirect: false }));
 
 			// Redirect
 			globalThis.location.href = "/";
@@ -104,6 +101,43 @@ export const useSessionManager = ({
 			globalThis.location.href = "/";
 		}
 	}, [clearOrganization, clearUser, setLogout]);
+
+	// Start countdown timer for the modal
+	const startCountdown = useCallback(() => {
+		// Establish a hard deadline so background throttling doesn't break logout
+		logoutDeadlineRef.current = Date.now() + WARNING_TIME;
+
+		const computeRemainingSeconds = () => {
+			if (!logoutDeadlineRef.current) return warningTime * 60;
+			const msLeft = Math.max(0, logoutDeadlineRef.current - Date.now());
+			return Math.ceil(msLeft / 1000);
+		};
+
+		let remainingSeconds = computeRemainingSeconds();
+		setTimeRemaining(formatTimeRemaining(remainingSeconds));
+
+		// Clear any previous interval
+		if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+
+		countdownTimerRef.current = setInterval(async () => {
+			remainingSeconds = computeRemainingSeconds();
+			setTimeRemaining(formatTimeRemaining(remainingSeconds));
+
+			if (remainingSeconds <= 0 && countdownTimerRef.current) {
+				clearInterval(countdownTimerRef.current);
+				countdownTimerRef.current = undefined;
+				// Enforce logout when countdown finishes
+				await performLogout();
+			}
+		}, 1000);
+	}, [WARNING_TIME, formatTimeRemaining, warningTime, performLogout]);
+
+	// Re-bind startCountdown now that performLogout is declared
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	const startCountdownBound = useCallback(startCountdown, [
+		startCountdown,
+		performLogout,
+	]);
 
 	// Check if session is still valid
 	const validateSession = useCallback(async () => {
@@ -136,6 +170,7 @@ export const useSessionManager = ({
 		warningShownRef.current = false;
 		lastActivityRef.current = Date.now();
 		setShowWarningModal(false);
+		logoutDeadlineRef.current = undefined;
 
 		// Clear countdown timer
 		if (countdownTimerRef.current) {
@@ -160,9 +195,9 @@ export const useSessionManager = ({
 
 		warningShownRef.current = true;
 		setShowWarningModal(true);
-		startCountdown();
+		startCountdownBound();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [warningTime, startCountdown]);
+	}, [warningTime, startCountdownBound]);
 
 	// Start inactivity timer
 	const startInactivityTimer = useCallback(() => {
@@ -181,11 +216,9 @@ export const useSessionManager = ({
 			showLogoutWarning();
 		}, INACTIVITY_TIME - WARNING_TIME);
 
-		// Set logout timer
+		// Set absolute logout timer (always enforce)
 		inactivityTimerRef.current = setTimeout(async () => {
-			if (!warningShownRef.current) {
-				await performLogout();
-			}
+			await performLogout();
 		}, INACTIVITY_TIME);
 	}, [INACTIVITY_TIME, WARNING_TIME, showLogoutWarning, performLogout]);
 
@@ -205,6 +238,7 @@ export const useSessionManager = ({
 			// Hide modal if it's showing and user is active
 			if (showWarningModal) {
 				setShowWarningModal(false);
+				logoutDeadlineRef.current = undefined;
 				if (countdownTimerRef.current) {
 					clearInterval(countdownTimerRef.current);
 					countdownTimerRef.current = undefined;
