@@ -375,7 +375,7 @@ export const RepoChannelSettingsCard = ({
 						connectedIntegrationIds={localSettings.connected_integration_ids}
 					/>
 					{/* Hashtag Automation */}
-					<div className="flex items-center justify-between">
+					<div className="flex w-full items-center justify-between">
 						<div>
 							<Label className="text-sm font-medium text-zinc-100">
 								Hashtag Automation
@@ -396,7 +396,7 @@ export const RepoChannelSettingsCard = ({
 
 					{/* Default Hashtags */}
 					{localSettings.hashtag_automation && (
-						<div className="space-y-2">
+						<div className="w-full space-y-2">
 							<Label className="text-sm font-medium text-zinc-100">
 								Default Hashtags
 							</Label>
