@@ -54,33 +54,10 @@ export const logoutNow = async (): Promise<void> => {
 	};
 
 	try {
-		// 1. First, sign out from NextAuth to clear session
-		await withTimeout(signOut({ redirect: false }));
-
-		// 2. Then clear all cookies
+		// Use provided helpers only, in this order
 		await withTimeout(clearCookies());
-
-		// 3. Proactively delete known Auth.js cookies
-		try {
-			if (typeof document !== "undefined") {
-				const cookieNames = [
-					"__Host-authjs.csrf-token",
-					"__Secure-authjs.callback-url",
-					"__Secure-authjs.session-token",
-					"authjs.csrf-token",
-					"authjs.callback-url",
-					"authjs.session-token",
-					"next-auth.csrf-token",
-					"next-auth.callback-url",
-					"next-auth.session-token",
-				];
-				for (const name of cookieNames) {
-					globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
-					globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; Domain=${globalThis.location.hostname}; SameSite=Lax`;
-					globalThis.window.document.cookie = `${name}=; Path=/; Max-Age=0; Domain=.${globalThis.location.hostname}; SameSite=Lax`;
-				}
-			}
-		} catch {}
+		await withTimeout(signOut({ redirect: false }));
+		await withTimeout(clearCookies());
 	} finally {
 		globalThis.location.href = "/";
 
