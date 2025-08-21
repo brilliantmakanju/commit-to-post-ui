@@ -11,7 +11,11 @@ import { SocialConnection as SocialConnectionList } from "@/components/onboardin
 import ConnectRepoSocialOnboarding from "@/components/onboarding/v2/screens/repos/social-selection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import useRepoDetails from "@/hooks/core/repo/get-repo-detail-hook";
 import {
 	connectRepoSocial,
@@ -362,7 +366,7 @@ export const RepoChannelSettingsCard = ({
 						</div>
 					</CardTitle>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="flex w-full flex-col items-start justify-start gap-3">
 					<SocialConnectionList
 						socials={socials}
 						loading={isConnecting}
@@ -370,177 +374,47 @@ export const RepoChannelSettingsCard = ({
 						onRemoveSocial={handleRemoveSocial}
 						connectedIntegrationIds={localSettings.connected_integration_ids}
 					/>
+					{/* Hashtag Automation */}
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm font-medium text-zinc-100">
+								Hashtag Automation
+							</Label>
+							<p className="mt-1 text-xs text-zinc-400">
+								Automatically add relevant hashtags to posts
+							</p>
+						</div>
+						<Switch
+							checked={localSettings.hashtag_automation}
+							onCheckedChange={checked =>
+								onChange("hashtag_automation", checked)
+							}
+						/>
+					</div>
+
+					<Separator className="bg-zinc-800" />
+
+					{/* Default Hashtags */}
+					{localSettings.hashtag_automation && (
+						<div className="space-y-2">
+							<Label className="text-sm font-medium text-zinc-100">
+								Default Hashtags
+							</Label>
+							<Textarea
+								value={localSettings.default_hashtags}
+								onChange={event_ =>
+									onChange("default_hashtags", event_.target.value)
+								}
+								className="min-h-[80px] border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-400"
+								placeholder="#coding #development #opensource"
+							/>
+							<p className="text-xs text-zinc-400">
+								Default hashtags to include in posts
+							</p>
+						</div>
+					)}
 				</CardContent>
 			</Card>
 		</>
 	);
 };
-
-// <CardContent className="space-y-6">
-// 	{/* LinkedIn Expiry Alert */}
-// 	{socialConnections.linkedin?.connected &&
-// 		(isLinkedInExpired(socialConnections.linkedin) ||
-// 			isLinkedInExpiringSoon(socialConnections.linkedin)) && (
-// 			<Alert className="border-yellow-600 bg-yellow-900/20">
-// 				<AlertTriangle className="h-4 w-4 text-yellow-400" />
-// 				<AlertDescription className="text-yellow-200">
-// 					{isLinkedInExpired(socialConnections.linkedin)
-// 						? "LinkedIn connection expired. Reconnect to resume posting."
-// 						: "LinkedIn connection expires soon. Reconnect to avoid interruption."}
-// 				</AlertDescription>
-// 			</Alert>
-// 		)}
-
-// 	{/* Social Connections */}
-// 	<div className="space-y-4">
-// 		<div className="flex items-center gap-2">
-// 			<Label className="text-sm font-medium text-zinc-300">
-// 				Connected Channels
-// 			</Label>
-// 			<TooltipProvider>
-// 				<Tooltip>
-// 					<TooltipTrigger>
-// 						<Info className="h-4 w-4 text-zinc-400" />
-// 					</TooltipTrigger>
-// 					<TooltipContent className="max-w-xs">
-// 						<p>
-// 							LinkedIn connections last for 60 days. You&lsquo;ll be
-// 							notified to reconnect.
-// 						</p>
-// 					</TooltipContent>
-// 				</Tooltip>
-// 			</TooltipProvider>
-// 		</div>
-
-// 		{platforms.map(platform => {
-// 			const connection = socialConnections[platform];
-// 			const isConnected = connection?.connected || false;
-// 			// const isComingSoon = platform === "twitter";
-// 			const isComingSoon = false;
-// 			const label = getSocialLabel(platform);
-
-// 			// LinkedIn-specific checks
-// 			const isLinkedIn = platform === "linkedin";
-// 			const isExpired = isLinkedIn && isLinkedInExpired(connection);
-// 			const isExpiringSoon =
-// 				isLinkedIn && isLinkedInExpiringSoon(connection);
-
-// 			// Determine status text
-// 			let statusText = "Not connected";
-// 			if (isComingSoon) {
-// 				statusText = "Integration coming soon";
-// 			} else if (isConnected) {
-// 				if (isExpired) {
-// 					statusText = "⚠ Expired - Reconnect needed";
-// 				} else if (isExpiringSoon) {
-// 					statusText = "⚠ Expires soon - Reconnect recommended";
-// 				} else {
-// 					statusText = `Connected by ${connection.connected_by || "Unknown"}`;
-// 				}
-// 			}
-
-// 			return (
-// 				<div
-// 					key={platform}
-// 					className="flex items-center justify-between border-b border-zinc-800 py-2"
-// 				>
-// 					<div className="flex items-center space-x-3">
-// 						{getSocialIcon(platform, isConnected, isExpired)}
-// 						<div>
-// 							<span className="text-sm font-medium text-zinc-100">
-// 								{label}
-// 								{isComingSoon && (
-// 									<span className="ml-2 text-xs font-normal text-yellow-400">
-// 										(Coming Soon)
-// 									</span>
-// 								)}
-// 							</span>
-// 							<p
-// 								className={`text-xs ${
-// 									isExpired
-// 										? "text-red-400"
-// 										: isExpiringSoon
-// 											? "text-yellow-400"
-// 											: "text-zinc-400"
-// 								}`}
-// 							>
-// 								{statusText}
-// 							</p>
-// 						</div>
-// 					</div>
-
-// 					{/* Switch with tooltip for expired LinkedIn */}
-// 					<div className="flex items-center">
-// 						{isExpired ? (
-// 							<TooltipProvider>
-// 								<Tooltip>
-// 									<TooltipTrigger>
-// 										<Switch
-// 											checked={isConnected}
-// 											className="opacity-50"
-// 											onClick={() => handleChannelToggle(platform)}
-// 										/>
-// 									</TooltipTrigger>
-// 									<TooltipContent>
-// 										<p>
-// 											LinkedIn connection expired. Reconnect to resume
-// 											posting.
-// 										</p>
-// 									</TooltipContent>
-// 								</Tooltip>
-// 							</TooltipProvider>
-// 						) : (
-// 							<Switch
-// 								checked={isConnected && !isExpired}
-// 								disabled={isComingSoon}
-// 								onClick={() =>
-// 									!isComingSoon && handleChannelToggle(platform)
-// 								}
-// 							/>
-// 						)}
-// 					</div>
-// 				</div>
-// 			);
-// 		})}
-// 	</div>
-
-// 	<Separator className="bg-zinc-800" />
-
-// 	{/* Hashtag Automation */}
-// 	<div className="flex items-center justify-between">
-// 		<div>
-// 			<Label className="text-sm font-medium text-zinc-100">
-// 				Hashtag Automation
-// 			</Label>
-// 			<p className="mt-1 text-xs text-zinc-400">
-// 				Automatically add relevant hashtags to posts
-// 			</p>
-// 		</div>
-// 		<Switch
-// 			checked={localSettings.hashtag_automation}
-// 			onCheckedChange={checked =>
-// 				onChange("hashtag_automation", checked)
-// 			}
-// 		/>
-// 	</div>
-
-// 	{/* Default Hashtags */}
-// 	{localSettings.hashtag_automation && (
-// 		<div className="space-y-2">
-// 			<Label className="text-sm font-medium text-zinc-100">
-// 				Default Hashtags
-// 			</Label>
-// 			<Textarea
-// 				value={localSettings.default_hashtags}
-// 				onChange={event_ =>
-// 					onChange("default_hashtags", event_.target.value)
-// 				}
-// 				className="min-h-[80px] border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-400"
-// 				placeholder="#coding #development #opensource"
-// 			/>
-// 			<p className="text-xs text-zinc-400">
-// 				Default hashtags to include in posts
-// 			</p>
-// 		</div>
-// 	)}
-// {/* </CardContent> */}
