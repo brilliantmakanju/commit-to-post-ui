@@ -114,20 +114,24 @@ export default function RepositoriesPage() {
 		});
 
 		filtered.sort((a: Repository, b: Repository) => {
+			// Primary sort: status grouping
 			const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+			if (statusDiff !== 0) return statusDiff;
+
+			// Secondary sort: within the same status, apply current sortBy
 			switch (sortBy) {
 				case "name": {
 					return a.name.localeCompare(b.name);
 				}
 				case "latest": {
-					return (
-						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-					);
+					const at = a.created_at ? new Date(a.created_at).getTime() : 0;
+					const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
+					return bt - at;
 				}
 				case "oldest": {
-					return (
-						new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-					);
+					const at = a.created_at ? new Date(a.created_at).getTime() : 0;
+					const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
+					return at - bt;
 				}
 				default: {
 					return 0;
