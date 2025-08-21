@@ -1,7 +1,6 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { FaDiscord, FaLinkedin, FaSlack } from "react-icons/fa";
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,12 +13,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import useRetrieveUpcomingPost from "@/hooks/core/upcoming";
-
-const platformIconMap: Record<string, React.ReactNode> = {
-	Slack: <FaSlack className="h-4 w-4 text-muted-foreground" />,
-	Discord: <FaDiscord className="h-4 w-4 text-muted-foreground" />,
-	LinkedIn: <FaLinkedin className="h-4 w-4 text-muted-foreground" />,
-};
 
 export const UpcomingPosts = () => {
 	const { posts: data, isUpcomingPostsLoading } = useRetrieveUpcomingPost();

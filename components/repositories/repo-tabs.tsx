@@ -296,16 +296,15 @@ export function RepoTabs({
 		}
 	}, [searchParams]);
 
-	// Calculate tab counts - memoized with stable dependencies
+	// Calculate tab counts - counts actual PostItem, not groups
 	const tabCounts = useMemo(() => {
+		const allPosts = posts.flatMap(group => group.posts);
+
 		return {
-			all: posts.length,
-			drafted: posts.filter(group => getGroupStatus(group) === "drafted")
-				.length,
-			published: posts.filter(group => getGroupStatus(group) === "published")
-				.length,
-			scheduled: posts.filter(group => getGroupStatus(group) === "scheduled")
-				.length,
+			all: allPosts.length,
+			drafted: allPosts.filter(post => post.status === "drafted").length,
+			published: allPosts.filter(post => post.status === "published").length,
+			scheduled: allPosts.filter(post => post.status === "scheduled").length,
 		};
 	}, [posts]);
 
@@ -613,13 +612,13 @@ export function RepoTabs({
 											Webhooks
 										</span>
 										<span className="font-medium sm:hidden">Hooks</span>
-										{webhookErrorCount > 0 && (
+										{/* {webhookErrorCount > 0 && (
 											<div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-2">
 												<span className="text-xs font-semibold text-white">
 													{webhookErrorCount}
 												</span>
 											</div>
-										)}
+										)} */}
 									</TabsTrigger>
 
 									{/* Settings */}
