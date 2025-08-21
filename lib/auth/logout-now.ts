@@ -15,6 +15,16 @@ export const logoutNow = async (): Promise<void> => {
 	clearUser();
 	clearOrganization();
 
+	try {
+		if (typeof localStorage !== "undefined") {
+			localStorage.removeItem("logout-storage");
+			localStorage.removeItem("user-storage");
+			localStorage.removeItem("organization-storage");
+			localStorage.removeItem("feature-flags-storage");
+			localStorage.removeItem("feature-limits-storage");
+		}
+	} catch {}
+
 	const withTimeout = async <T>(
 		promise: Promise<T>,
 		ms = 1500,
@@ -27,6 +37,22 @@ export const logoutNow = async (): Promise<void> => {
 
 	try {
 		await withTimeout(clearCookies());
+		try {
+			if (typeof document !== "undefined") {
+				const cookieNames = [
+					"__Host-authjs.csrf-token",
+					"__Secure-authjs.callback-url",
+					"__Secure-authjs.session-token",
+					"authjs.csrf-token",
+					"authjs.callback-url",
+					"authjs.session-token",
+				];
+				for (const name of cookieNames) {
+					// eslint-disable-next-line unicorn/no-document-cookie
+					document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+				}
+			}
+		} catch {}
 		await withTimeout(signOut({ redirect: false }));
 	} finally {
 		globalThis.location.href = "/";

@@ -79,6 +79,17 @@ export const useSessionManager = ({
 			clearUser();
 			clearOrganization();
 
+			// Clear persisted localStorage keys defensively
+			try {
+				if (typeof localStorage !== "undefined") {
+					localStorage.removeItem("logout-storage");
+					localStorage.removeItem("user-storage");
+					localStorage.removeItem("organization-storage");
+					localStorage.removeItem("feature-flags-storage");
+					localStorage.removeItem("feature-limits-storage");
+				}
+			} catch {}
+
 			// Helper to race an operation with a timeout so we don't hang
 			const withTimeout = async <T,>(
 				promise: Promise<T>,
@@ -92,6 +103,23 @@ export const useSessionManager = ({
 
 			// Clear cookies and sign out, but don't wait forever
 			await withTimeout(clearCookies());
+			// Proactively delete known Auth.js cookies; server may set these names
+			try {
+				if (typeof document !== "undefined") {
+					const cookieNames = [
+						"__Host-authjs.csrf-token",
+						"__Secure-authjs.callback-url",
+						"__Secure-authjs.session-token",
+						"authjs.csrf-token",
+						"authjs.callback-url",
+						"authjs.session-token",
+					];
+					for (const name of cookieNames) {
+						// eslint-disable-next-line unicorn/no-document-cookie
+						document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+					}
+				}
+			} catch {}
 			await withTimeout(signOut({ redirect: false }));
 
 			// Redirect
