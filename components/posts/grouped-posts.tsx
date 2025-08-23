@@ -145,15 +145,13 @@ const getLayoutConfig = (count: number) => {
 	}
 };
 
-const normalizePlatform = (platform: string): string => {
-	switch (platform) {
-		case "twitter": {
-			return "x-twitter";
-		}
-		default: {
-			return platform;
-		}
-	}
+const normalizePlatform = (p?: string) => {
+	const v = (p || "").toLowerCase();
+	if (v === "x" || v === "twitter" || v === "x-twitter") return "x";
+	if (v === "linkedin") return "linkedin";
+	if (v === "discord") return "discord";
+	if (v === "slack") return "slack";
+	return;
 };
 
 export default function GroupedPostCard({ group }: GroupedPostCardProps) {
