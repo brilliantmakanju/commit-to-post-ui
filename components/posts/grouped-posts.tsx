@@ -194,14 +194,14 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	// Set socials from repository details when available
 	useEffect(() => {
 		if (
-			repository?.social_connections &&
-			Array.isArray(repository.social_connections)
+			repository?.settings.connected_integration_ids &&
+			Array.isArray(repository.settings.connected_integration_ids)
 		) {
-			setSocials(repository.social_connections);
+			setSocials(repository.settings.connected_integration_ids);
 		} else {
 			setSocials([]); // Ensure socials is always an array
 		}
-	}, [repository?.social_connections]);
+	}, [repository.settings.connected_integration_ids]);
 
 	// Reset selected socials when current post changes
 	useEffect(() => {
