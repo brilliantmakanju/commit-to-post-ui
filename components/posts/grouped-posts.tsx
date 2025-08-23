@@ -11,7 +11,7 @@ import {
 	setHours,
 	setMinutes,
 } from "date-fns";
-import { Edit3, Loader2, Save, Trash2 } from "lucide-react";
+import { Edit3, Loader2, Minus, Plus, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -40,6 +40,10 @@ import { cn } from "@/lib/utils";
 import { deletePost } from "@/server-actions/core/delete-post";
 import { updatePost } from "@/server-actions/core/edit-post";
 import { reschedulePost } from "@/server-actions/core/reschedule-post";
+import {
+	addPostIntegrations,
+	removePostIntegrations,
+} from "@/server-actions/core/social-managment";
 import type { PostGroup, PostItem, PostStatus } from "@/types";
 
 import { ConnectedIntegration } from "../repositories/settings/channel-settings";
@@ -159,19 +163,28 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const queryClient = useQueryClient();
 	const [imgError, setImgError] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [socials, setSocials] = useState<any[]>([]);
 	const [activeTab, setActiveTab] = useState("posted");
 	const [editedContent, setEditedContent] = useState("");
-	const [selectedSocials, setSelectedSocials] = useState(new Set());
-	const [socials, setSocials] = useState<any[]>([]);
 	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
 	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
 	const [reschedulingPosts, setReschedulingPosts] = useState<PostItem[]>([]);
+	const [selectedSocials, setSelectedSocials] = useState<Set<string>>(
+		new Set<string>(),
+	);
 	const [newScheduleDate, setNewScheduleDate] = useState<Date | undefined>(
 		new Date(),
 	);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newScheduleTime, setNewScheduleTime] = useState("12:00");
 	const [currentPost, setCurrentPost] = useState<PostItem | undefined>();
+
+	// New loading states for integrations
+	const [isAddingIntegrations, setIsAddingIntegrations] = useState(false);
+	const [isRemovingIntegrations, setIsRemovingIntegrations] = useState(false);
+	const [removingIntegrationIds, setRemovingIntegrationIds] = useState<
+		Set<string>
+	>(new Set());
 
 	const layoutConfig = getLayoutConfig(group.posts.length);
 	const postsToShow = group.posts.slice(0, layoutConfig.visiblePosts);
@@ -371,19 +384,222 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setCurrentPost(undefined);
 	}, []);
 
-	const handleCancelIntegration = (integrationId: string) => {
+	// Enhanced function to add integrations with loading state
+	const handleSaveIntegration = async () => {
+		if (!currentPost || selectedSocials.size === 0) return;
+
+		const integrationIdsToAdd: string[] = [...selectedSocials];
+		setIsAddingIntegrations(true);
+
+		try {
+			const result = await addPostIntegrations(
+				currentPost.id,
+				integrationIdsToAdd,
+			);
+
+			if (result.success) {
+				const addedIntegrations = result.data?.added_integrations || [];
+
+				// Update currentPost state with new planned integrations
+				const updatedPlannedIntegrations = [
+					...(currentPost.planned_integrations_data || []),
+					...addedIntegrations.map((integration: any) => ({
+						id: integration.id,
+						name: integration.name,
+						handle: integration.handle,
+						platform: integration.platform,
+						profile_image_url: integration.profile_image_url || undefined,
+					})),
+				];
+
+				// Update pending integrations (same as planned in this context)
+				const updatedPendingIntegrations = [
+					...(currentPost.pending_integrations_data || []),
+					...addedIntegrations.map((integration: any) => ({
+						id: integration.id,
+						name: integration.name,
+						handle: integration.handle,
+						platform: integration.platform,
+						profile_image_url: integration.profile_image_url || undefined,
+					})),
+				];
+
+				setCurrentPost({
+					...currentPost,
+					planned_integrations_data: updatedPlannedIntegrations,
+					pending_integrations_data: updatedPendingIntegrations,
+				});
+
+				// Clear selected socials since they've been added
+				setSelectedSocials(new Set<string>());
+				refreshData();
+
+				// Show success toast
+				toast.success(result.message || "Social accounts added successfully!");
+			} else {
+				// Show error toast
+				toast.error(result.message || "Failed to add social accounts");
+			}
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setIsAddingIntegrations(false);
+		}
+	};
+
+	// Enhanced function for removing individual integrations with loading state
+	const handleCancelIntegration = async (integrationId: string) => {
 		if (!currentPost) return;
 
-		// Optimistically update UI
-		const updatedPending = currentPost.pending_integrations_data.filter(
-			integration => integration.id !== integrationId,
+		setRemovingIntegrationIds(
+			previous => new Set([...previous, integrationId]),
 		);
 
-		setCurrentPost({
-			...currentPost,
-			pending_integrations_data: updatedPending,
-		});
+		try {
+			const result = await removePostIntegrations(currentPost.id, [
+				integrationId,
+			]);
+
+			if (result.success) {
+				// Update currentPost state by removing the integration
+				const updatedPlanned = currentPost.planned_integrations_data.filter(
+					integration => integration.id !== integrationId,
+				);
+
+				const updatedPending = currentPost.pending_integrations_data.filter(
+					integration => integration.id !== integrationId,
+				);
+
+				setCurrentPost({
+					...currentPost,
+					planned_integrations_data: updatedPlanned,
+					pending_integrations_data: updatedPending,
+				});
+
+				refreshData();
+				toast.success(result.message || "Social account removed successfully!");
+			} else {
+				toast.error(result.message || "Failed to remove social account");
+			}
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setRemovingIntegrationIds(previous => {
+				const newSet = new Set(previous);
+				newSet.delete(integrationId);
+				return newSet;
+			});
+		}
 	};
+
+	// New function to add all available integrations
+	const handleAddAllIntegrations = async () => {
+		if (!currentPost || availableSocials.length === 0) return;
+
+		const allAvailableIds = availableSocials.map(social => social.id);
+		setIsAddingIntegrations(true);
+
+		try {
+			const result = await addPostIntegrations(currentPost.id, allAvailableIds);
+
+			if (result.success) {
+				const addedIntegrations = result.data?.added_integrations || [];
+
+				// Update currentPost state with new planned integrations
+				const updatedPlannedIntegrations = [
+					...(currentPost.planned_integrations_data || []),
+					...addedIntegrations.map((integration: any) => ({
+						id: integration.id,
+						name: integration.name,
+						handle: integration.handle,
+						platform: integration.platform,
+						profile_image_url: integration.profile_image_url || undefined,
+					})),
+				];
+
+				// Update pending integrations
+				const updatedPendingIntegrations = [
+					...(currentPost.pending_integrations_data || []),
+					...addedIntegrations.map((integration: any) => ({
+						id: integration.id,
+						name: integration.name,
+						handle: integration.handle,
+						platform: integration.platform,
+						profile_image_url: integration.profile_image_url || undefined,
+					})),
+				];
+
+				setCurrentPost({
+					...currentPost,
+					planned_integrations_data: updatedPlannedIntegrations,
+					pending_integrations_data: updatedPendingIntegrations,
+				});
+
+				// Clear selected socials
+				setSelectedSocials(new Set<string>());
+				refreshData();
+
+				toast.success(
+					`Added ${addedIntegrations.length} social accounts successfully!`,
+				);
+			} else {
+				toast.error(result.message || "Failed to add social accounts");
+			}
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setIsAddingIntegrations(false);
+		}
+	};
+
+	// New function to remove all pending integrations
+	const handleCancelAllIntegrations = async () => {
+		if (!currentPost || currentPost.pending_integrations_data.length === 0)
+			return;
+
+		const allPendingIds = currentPost.pending_integrations_data.map(
+			integration => integration.id,
+		);
+		setIsRemovingIntegrations(true);
+
+		try {
+			const result = await removePostIntegrations(
+				currentPost.id,
+				allPendingIds,
+			);
+
+			if (result.success) {
+				// Clear all pending integrations from currentPost state
+				setCurrentPost({
+					...currentPost,
+					planned_integrations_data: [],
+					pending_integrations_data: [],
+				});
+
+				refreshData();
+				toast.success(
+					`Removed ${allPendingIds.length} social accounts successfully!`,
+				);
+			} else {
+				toast.error(result.message || "Failed to remove social accounts");
+			}
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setIsRemovingIntegrations(false);
+		}
+	};
+
+	// New function to select all available socials
+	const handleSelectAllSocials = useCallback(() => {
+		if (selectedSocials.size === availableSocials.length) {
+			// If all are selected, deselect all
+			setSelectedSocials(new Set());
+		} else {
+			// Select all available socials
+			setSelectedSocials(new Set(availableSocials.map(social => social.id)));
+		}
+	}, [selectedSocials.size, availableSocials]);
 
 	return (
 		<>
@@ -615,15 +831,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 											{editedContent || currentPost.content}
 										</p>
 										<div className="mt-3 flex items-center justify-between">
-											<Button
-												size="sm"
-												variant="ghost"
-												onClick={() => startEdit(currentPost)}
-												className="bg-transparent text-zinc-400 hover:bg-transparent hover:text-zinc-100 hover:underline"
-											>
-												<Edit3 className="mr-1 h-3 w-3" />
-												Edit
-											</Button>
 											<div className="flex items-center gap-2">
 												<Button
 													size="sm"
@@ -635,13 +842,24 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 												</Button>
 												<Button
 													size="sm"
-													onClick={handleEditPost}
+													onClick={handleSaveIntegration}
 													disabled={selectedSocials.size === 0}
 													className="border-emerald-600/30 bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 disabled:opacity-50"
 												>
 													<Save className="h-3 w-3" />
 												</Button>
 											</div>
+											{currentPost.status !== "published" && (
+												<Button
+													size="sm"
+													variant="ghost"
+													onClick={() => startEdit(currentPost)}
+													className="bg-transparent text-zinc-400 hover:bg-transparent hover:text-zinc-100 hover:underline"
+												>
+													<Edit3 className="mr-1 h-3 w-3" />
+													Edit
+												</Button>
+											)}
 										</div>
 									</div>
 
@@ -743,6 +961,29 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 														value="pending"
 														className="scrollbar-hide m-0 h-full"
 													>
+														{/* Pending integrations header with Cancel All button */}
+														{currentPost.pending_integrations_data.length >
+															0 && (
+															<div className="mb-4 flex items-center justify-between">
+																<span className="text-sm text-zinc-400">
+																	Pending Integrations
+																</span>
+																<Button
+																	size="sm"
+																	variant="outline"
+																	onClick={handleCancelAllIntegrations}
+																	disabled={isRemovingIntegrations}
+																	className="border-red-800/50 bg-red-900/50 text-red-300 transition-all duration-300 hover:border-red-700/70 hover:bg-red-800/70 hover:text-red-100 disabled:opacity-50"
+																>
+																	{isRemovingIntegrations ? (
+																		<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+																	) : (
+																		<Minus className="mr-1 h-3 w-3" />
+																	)}
+																	Cancel All
+																</Button>
+															</div>
+														)}
 														{currentPost.pending_integrations_data.length ===
 														0 ? (
 															<div className="py-8 text-center text-zinc-500 sm:py-12">
@@ -813,6 +1054,12 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 																								integration.id,
 																							)
 																						}
+																						disabled={
+																							isRemovingIntegrations ||
+																							removingIntegrationIds.has(
+																								integration.id,
+																							)
+																						}
 																						className="rounded-md border border-zinc-700/50 bg-zinc-800/40 px-2 py-1 text-xs text-zinc-400 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400"
 																					>
 																						Cancel
@@ -830,6 +1077,48 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 														value="add"
 														className="scrollbar-hide m-0 h-full flex-1 space-y-4 overflow-y-auto"
 													>
+														{/* Add integrations header with Select All and Add All buttons */}
+														{availableSocials.length > 0 && (
+															<div className="flex items-center justify-between">
+																<div className="flex items-center gap-2">
+																	<Checkbox
+																		id="select-all-socials"
+																		checked={
+																			selectedSocials.size > 0 &&
+																			selectedSocials.size ===
+																				availableSocials.length
+																		}
+																		onCheckedChange={handleSelectAllSocials}
+																		className="border-zinc-600 data-[state=checked]:border-zinc-600 data-[state=checked]:bg-zinc-700"
+																	/>
+																	<Label
+																		htmlFor="select-all-socials"
+																		className="text-sm text-zinc-400"
+																	>
+																		Select All ({selectedSocials.size}/
+																		{availableSocials.length})
+																	</Label>
+																</div>
+																<Button
+																	size="sm"
+																	variant="outline"
+																	onClick={handleAddAllIntegrations}
+																	disabled={
+																		availableSocials.length === 0 ||
+																		isAddingIntegrations ||
+																		isRemovingIntegrations
+																	}
+																	className="border-emerald-600/30 bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 disabled:opacity-50"
+																>
+																	{isAddingIntegrations ? (
+																		<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+																	) : (
+																		<Plus className="mr-1 h-3 w-3" />
+																	)}
+																	Add All
+																</Button>
+															</div>
+														)}
 														{availableSocials.length === 0 ? (
 															<div className="py-8 text-center text-zinc-500 sm:py-12">
 																<div className="text-sm">
