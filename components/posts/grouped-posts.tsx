@@ -147,7 +147,7 @@ const getLayoutConfig = (count: number) => {
 
 const normalizePlatform = (p?: string) => {
 	const v = (p || "").toLowerCase();
-	if (v === "x" || v === "twitter" || v === "x-twitter") return "x";
+	if (v === "x" || v === "twitter" || v === "x-twitter") return "twitter";
 	if (v === "linkedin") return "linkedin";
 	if (v === "discord") return "discord";
 	if (v === "slack") return "slack";
