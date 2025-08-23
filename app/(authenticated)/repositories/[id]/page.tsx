@@ -22,7 +22,6 @@ const ViewRepo = () => {
 
 	// Pagination state
 	const [postsCurrentPage, setPostsCurrentPage] = useState<number>(1);
-
 	const { data, isLoading } = useQuery({
 		queryKey: ["posts", postsCurrentPage],
 		queryFn: async () => {
@@ -30,18 +29,12 @@ const ViewRepo = () => {
 				repo_id: repoId,
 				page_size: postsCurrentPage,
 			});
-			if (!result.success) {
-				throw new Error("Failed to fetch posts");
-			}
+			if (!result.success) throw new Error("Failed to fetch posts");
 			return result.data;
 		},
-		retryOnMount: false,
-		refetchOnMount: false,
-		refetchOnReconnect: false,
-		refetchOnWindowFocus: false,
-		staleTime: 5 * 60 * 1000, // 5 minutes
-		gcTime: 10 * 60 * 1000, // 10 minutes
-		enabled: !!repoId, // Only run query when repoId is available
+		refetchInterval: 10 * 1000, // every 10s
+		refetchIntervalInBackground: true, // even when tab is inactive
+		enabled: !!repoId,
 	});
 
 	const { repoDetails } = useRepoSuperDetails(repoId);
