@@ -35,10 +35,13 @@ const ViewRepo = () => {
 			}
 			return result.data;
 		},
-		retryOnMount: true,
-		refetchOnMount: true,
-		refetchOnReconnect: true,
-		refetchOnWindowFocus: true,
+		retryOnMount: false,
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes
+		enabled: !!repoId, // Only run query when repoId is available
 	});
 
 	const { repoDetails } = useRepoSuperDetails(repoId);

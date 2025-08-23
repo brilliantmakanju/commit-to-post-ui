@@ -52,7 +52,7 @@ interface SocialConnections {
 	total_count: number;
 }
 
-interface SocialConnectionItem {
+export interface SocialConnectionItem {
 	id: UUID;
 	name: string;
 	handle: string;

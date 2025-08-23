@@ -2,9 +2,9 @@
 "use client";
 import Image from "next/image";
 import React, { useMemo } from "react";
-import { BsThreeDots } from "react-icons/bs";
 import { FaHeart, FaSmile, FaThumbsUp } from "react-icons/fa";
 
+import { ConnectedAccount, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,
 } from "@/zustand/useorganization-store";
@@ -717,23 +717,6 @@ export const CardStack: React.FC<CardStackProps> = ({
 		</div>
 	);
 };
-
-interface ConnectedAccount {
-	id: string;
-	name: string;
-	handle: string;
-	platform: string;
-	profile_image_url: string;
-}
-
-// Demo Component
-interface SocialAccount {
-	id: string;
-	name: string;
-	icon: string;
-	description: string;
-	connectedAccounts: ConnectedAccount[];
-}
 
 // normalize org platform strings to our scaffold ids
 const normalizePlatform = (p?: string) => {

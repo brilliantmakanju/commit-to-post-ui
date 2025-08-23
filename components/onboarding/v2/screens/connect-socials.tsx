@@ -23,26 +23,10 @@ import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
 import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import { disconnectIntegration } from "@/server-actions/core/repo/social-connect";
+import { ConnectedAccount, Platform, PostStatus, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,
 } from "@/zustand/useorganization-store";
-
-interface ConnectedAccount {
-	id: string;
-	name: string;
-	handle: string;
-	platform: string;
-	profile_image_url: string;
-}
-
-interface SocialAccount {
-	id: string;
-	name: string;
-	icon: string;
-	description: string;
-	connectedAccounts: ConnectedAccount[];
-}
-type Platform = "linkedin" | "slack" | "discord" | "x";
 
 const XIcon: React.FC<{ className?: string }> = ({ className }) => (
 	<svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -100,11 +84,29 @@ const getInitials = (name: string): string =>
 		.toUpperCase()
 		.slice(0, 2);
 
-const ConnectedAccountBadge: React.FC<{
+const getStatusIndicatorColor = (status: PostStatus) => {
+	switch (status) {
+		case "published": {
+			return "bg-green-500";
+		}
+		case "scheduled": {
+			return "bg-blue-500";
+		}
+		case "drafted": {
+			return "bg-gray-500";
+		}
+		default: {
+			return "bg-gray-500";
+		}
+	}
+};
+
+export const ConnectedAccountBadge: React.FC<{
+	status?: string;
 	isSettingsPage: boolean;
 	account: ConnectedAccount;
 	onRemove: (accountId: string) => Promise<void> | void;
-}> = ({ account, onRemove, isSettingsPage }) => {
+}> = ({ account, onRemove, isSettingsPage, status }) => {
 	const [imgError, setImgError] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -159,18 +161,24 @@ const ConnectedAccountBadge: React.FC<{
 					: account.name}
 			</span>
 
-			<button
-				disabled={isLoading}
-				onClick={handleRemove}
-				aria-label={`Remove ${account.name}`}
-				className={removeButtonClass}
-			>
-				{isLoading ? (
-					<FaSpinner className="h-4 w-4 animate-spin" />
-				) : (
-					<FaTimes className="h-4 w-4" />
-				)}
-			</button>
+			{status === "" ? (
+				<button
+					disabled={isLoading}
+					onClick={handleRemove}
+					className={removeButtonClass}
+					aria-label={`Remove ${account.name}`}
+				>
+					{isLoading ? (
+						<FaSpinner className="h-4 w-4 animate-spin" />
+					) : (
+						<FaTimes className="h-4 w-4" />
+					)}
+				</button>
+			) : (
+				<span
+					className={`h-1.5 w-1.5 rounded-full ${getStatusIndicatorColor("published")}`}
+				/>
+			)}
 		</div>
 	);
 };

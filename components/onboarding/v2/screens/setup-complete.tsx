@@ -1,30 +1,12 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 import React, { useMemo } from "react";
-import { FaCheck } from "react-icons/fa";
-type Platform = "linkedin" | "slack" | "discord" | "twitter";
 
 import { CardStack } from "@/components/landing/micro/v2/v3/social-card";
+import { ConnectedAccount, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,
 } from "@/zustand/useorganization-store";
-
-interface ConnectedAccount {
-	id: string;
-	name: string;
-	handle: string;
-	platform: string;
-	profile_image_url: string;
-}
-
-// Demo Component
-interface SocialAccount {
-	id: string;
-	name: string;
-	icon: string;
-	description: string;
-	connectedAccounts: ConnectedAccount[];
-}
 
 // normalize org platform strings to our scaffold ids
 const normalizePlatform = (p?: string) => {
@@ -95,19 +77,19 @@ const SetupCompleteScreen = () => {
 	}, [organization?.socials]);
 
 	// Only keep valid platforms that actually have connected accounts
-	const connectedPlatforms = useMemo<Platform[]>(() => {
-		const validPlatforms = new Set<Platform>([
-			"linkedin",
-			"twitter",
-			"slack",
-			"discord",
-		]);
+	// const connectedPlatforms = useMemo<Platform[]>(() => {
+	// 	const validPlatforms = new Set<Platform>([
+	// 		"linkedin",
+	// 		"twitter",
+	// 		"slack",
+	// 		"discord",
+	// 	]);
 
-		return accounts
-			.filter(accumulator => accumulator.connectedAccounts.length > 0)
-			.map(accumulator => accumulator.id)
-			.filter((id): id is Platform => validPlatforms.has(id as Platform));
-	}, [accounts]);
+	// 	return accounts
+	// 		.filter(accumulator => accumulator.connectedAccounts.length > 0)
+	// 		.map(accumulator => accumulator.id)
+	// 		.filter((id): id is Platform => validPlatforms.has(id as Platform));
+	// }, [accounts]);
 
 	return (
 		<div className="flex min-h-[250px] w-full items-center justify-center bg-white px-4">
