@@ -830,26 +830,27 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 										<p className="scrollbar-hide max-h-32 overflow-y-auto rounded-lg border-zinc-800/30 bg-zinc-800/30 p-6 leading-relaxed text-zinc-300 backdrop-blur-sm">
 											{editedContent || currentPost.content}
 										</p>
-										<div className="mt-3 flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<Button
-													size="sm"
-													variant="outline"
-													onClick={() => startReschedule([currentPost])}
-													className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-100 disabled:opacity-50"
-												>
-													<FaCalendarAlt className="h-3 w-3" />
-												</Button>
-												<Button
-													size="sm"
-													onClick={handleSaveIntegration}
-													disabled={selectedSocials.size === 0}
-													className="border-emerald-600/30 bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 disabled:opacity-50"
-												>
-													<Save className="h-3 w-3" />
-												</Button>
-											</div>
-											{currentPost.status !== "published" && (
+
+										{currentPost.status !== "published" && (
+											<div className="mt-3 flex items-center justify-between">
+												<div className="flex items-center gap-2">
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() => startReschedule([currentPost])}
+														className="border-zinc-700/50 bg-zinc-800/50 text-zinc-300 transition-all duration-300 hover:border-zinc-600/70 hover:bg-zinc-700/70 hover:text-zinc-100 disabled:opacity-50"
+													>
+														<FaCalendarAlt className="h-3 w-3" />
+													</Button>
+													<Button
+														size="sm"
+														onClick={handleSaveIntegration}
+														disabled={selectedSocials.size === 0}
+														className="border-emerald-600/30 bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 disabled:opacity-50"
+													>
+														<Save className="h-3 w-3" />
+													</Button>
+												</div>
 												<Button
 													size="sm"
 													variant="ghost"
@@ -859,12 +860,12 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 													<Edit3 className="mr-1 h-3 w-3" />
 													Edit
 												</Button>
-											)}
-										</div>
+											</div>
+										)}
 									</div>
 
 									{/* Platform Integrations */}
-									<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+									<div className="mt-1 flex min-h-0 flex-1 flex-col overflow-hidden">
 										<Tabs
 											value={activeTab}
 											onValueChange={setActiveTab}
