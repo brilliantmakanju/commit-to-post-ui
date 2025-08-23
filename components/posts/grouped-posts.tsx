@@ -15,13 +15,7 @@ import { Edit3, Loader2, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-	FaCalendarAlt,
-	FaDiscord,
-	FaLinkedin,
-	FaSlack,
-	FaTimes,
-} from "react-icons/fa";
+import { FaCalendarAlt, FaDiscord, FaLinkedin, FaSlack } from "react-icons/fa";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +42,7 @@ import { updatePost } from "@/server-actions/core/edit-post";
 import { reschedulePost } from "@/server-actions/core/reschedule-post";
 import type { PostGroup, PostItem, PostStatus } from "@/types";
 
-import { SocialConnectionItem } from "../repositories/settings/channel-settings";
+import { ConnectedIntegration } from "../repositories/settings/channel-settings";
 
 interface GroupedPostCardProps {
 	group: PostGroup;
@@ -170,7 +164,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const [activeTab, setActiveTab] = useState("posted");
 	const [editedContent, setEditedContent] = useState("");
 	const [selectedSocials, setSelectedSocials] = useState(new Set());
-	const [socials, setSocials] = useState<SocialConnectionItem[]>([]);
+	const [socials, setSocials] = useState<any[]>([]);
 	const [editingPost, setEditingPost] = useState<PostItem | undefined>();
 	const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
 	const [reschedulingPosts, setReschedulingPosts] = useState<PostItem[]>([]);
@@ -194,22 +188,45 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	// Set socials from repository details when available
 	useEffect(() => {
 		if (
-			repository?.settings.connected_integration_ids &&
-			Array.isArray(repository.settings.connected_integration_ids)
+			repository?.settings?.connected_integration_ids &&
+			Array.isArray(repository.settings.connected_integration_ids) &&
+			repository?.social_connections?.connected_integrations
 		) {
-			setSocials(repository.settings.connected_integration_ids);
+			const connectedIds = repository.settings.connected_integration_ids;
+			const allIntegrations = repository.social_connections
+				.connected_integrations as ConnectedIntegration;
+
+			// Flatten the integrations into one array
+			const flatIntegrations: ConnectedIntegration[] = Object.entries(
+				allIntegrations,
+			).flatMap(([platform, integrations]) =>
+				(integrations as ConnectedIntegration[]).map(integration => ({
+					...integration,
+					platform, // inject platform key (linkedin, twitter, etc.)
+				})),
+			);
+
+			// Only keep integrations whose IDs are in connected_integration_ids
+			const hydrated = flatIntegrations.filter(integration =>
+				connectedIds.includes(integration.id),
+			);
+
+			setSocials(hydrated);
 		} else {
-			setSocials([]); // Ensure socials is always an array
+			setSocials([]);
 		}
-	}, [repository.settings.connected_integration_ids]);
+	}, [
+		repository,
+		repository.settings.connected_integration_ids,
+		repository.social_connections,
+	]);
 
 	// Reset selected socials when current post changes
 	useEffect(() => {
 		setSelectedSocials(new Set());
 	}, [currentPost?.id]);
 
-	const availableSocials = useMemo(() => {
-		// Ensure socials is an array and currentPost exists
+	const availableSocials = useMemo<ConnectedIntegration[]>(() => {
 		if (
 			!currentPost?.platform ||
 			!Array.isArray(socials) ||
@@ -218,33 +235,28 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 			return [];
 		}
 
-		const normalized = normalizePlatform(currentPost.platform);
-		const platformSocials = socials.filter(
-			social => social.platform === normalized,
+		// Normalize and restrict to same platform
+		const normalizedPlatform = normalizePlatform(currentPost.platform);
+
+		// Socials that match currentPost's platform
+		const samePlatformSocials = socials.filter(
+			social => social.platform === normalizedPlatform,
 		);
 
-		// Get all integration IDs that are already used in this post
+		// Collect IDs of integrations already tied to this post
 		const usedIntegrationIds = new Set([
-			...currentPost.posted_integrations_data.map(
-				integration => integration.id,
-			),
-			...currentPost.planned_integrations_data.map(
-				integration => integration.id,
-			),
-			...currentPost.pending_integrations_data.map(
-				integration => integration.id,
-			),
+			...(currentPost.posted_integrations_data || []).map(index => index.id),
+			...(currentPost.planned_integrations_data || []).map(index => index.id),
+			...(currentPost.pending_integrations_data || []).map(index => index.id),
 		]);
 
-		// Filter out socials that are already used
-		return platformSocials.filter(social => !usedIntegrationIds.has(social.id));
-	}, [
-		socials,
-		currentPost?.platform,
-		currentPost?.posted_integrations_data,
-		currentPost?.planned_integrations_data,
-		currentPost?.pending_integrations_data,
-	]);
+		// Filter: only keep socials of the same platform that are not already used
+		const available = samePlatformSocials.filter(
+			social => !usedIntegrationIds.has(social.id),
+		);
+
+		return available;
+	}, [currentPost, socials]);
 
 	const startReschedule = (posts: PostItem[]) => {
 		const postsToReschedule = posts.filter(p => p.status !== "published");
@@ -297,22 +309,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 			toast.success(`${selectedPosts.size} posts deleted successfully.`);
 		} catch {
 			toast.error("Failed to delete posts.");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const handleDeleteSingle = async (postId: string) => {
-		setIsLoading(true);
-		try {
-			await deletePost(params.id as UUID, postId);
-			refreshData();
-			toast.success("Post deleted successfully.");
-			const newSelected = new Set(selectedPosts);
-			newSelected.delete(postId);
-			setSelectedPosts(newSelected);
-		} catch {
-			toast.error("Failed to delete post.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -376,6 +372,20 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setIsDialogOpen(false);
 		setCurrentPost(undefined);
 	}, []);
+
+	const handleCancelIntegration = (integrationId: string) => {
+		if (!currentPost) return;
+
+		// Optimistically update UI
+		const updatedPending = currentPost.pending_integrations_data.filter(
+			integration => integration.id !== integrationId,
+		);
+
+		setCurrentPost({
+			...currentPost,
+			pending_integrations_data: updatedPending,
+		});
+	};
 
 	return (
 		<>
@@ -799,10 +809,14 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 
 																				{/* Right side: status + cancel */}
 																				<div className="flex items-center gap-2">
-																					<Badge className="flex-shrink-0 border-yellow-500/30 bg-yellow-500/20 text-yellow-300">
-																						Pending
-																					</Badge>
-																					<Button className="rounded-md border border-zinc-700/50 bg-zinc-800/40 px-2 py-1 text-xs text-zinc-400 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400">
+																					<Button
+																						onClick={() =>
+																							handleCancelIntegration(
+																								integration.id,
+																							)
+																						}
+																						className="rounded-md border border-zinc-700/50 bg-zinc-800/40 px-2 py-1 text-xs text-zinc-400 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400"
+																					>
 																						Cancel
 																					</Button>
 																				</div>
@@ -829,44 +843,74 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 																</div>
 															</div>
 														) : (
-															availableSocials.map(social => (
-																<div
-																	key={social.id}
-																	className="flex cursor-pointer items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 hover:bg-zinc-800/40 sm:p-4"
-																	onClick={() => {
-																		const newSelected = new Set(
-																			selectedSocials,
-																		);
-																		if (newSelected.has(social.id)) {
-																			newSelected.delete(social.id);
-																		} else {
-																			newSelected.add(social.id);
-																		}
-																		setSelectedSocials(newSelected);
-																	}}
-																>
-																	<div className="flex min-w-0 flex-1 items-center gap-3">
-																		<Checkbox
-																			checked={selectedSocials.has(social.id)}
-																			className="flex-shrink-0 border-zinc-600 data-[state=checked]:bg-zinc-700"
-																		/>
-																		<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-900 sm:h-8 sm:w-8 sm:text-sm">
-																			{social.name.charAt(0)}
-																		</div>
-																		<div className="min-w-0 flex-1">
-																			<div className="truncate text-sm font-medium text-zinc-100">
-																				{social.name}
+															availableSocials.map((social: any) => {
+																const shouldShowFallback =
+																	imgError ||
+																	!social.profile_image_url ||
+																	["null", "undefined"].includes(
+																		social.profile_image_url,
+																	);
+																return (
+																	<div
+																		key={social.id}
+																		className="flex cursor-pointer items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 hover:bg-zinc-800/40 sm:p-4"
+																		onClick={() => {
+																			const newSelected = new Set(
+																				selectedSocials,
+																			);
+																			if (newSelected.has(social.id)) {
+																				newSelected.delete(social.id);
+																			} else {
+																				newSelected.add(social.id);
+																			}
+																			setSelectedSocials(newSelected);
+																		}}
+																	>
+																		<div className="flex min-w-0 flex-1 items-center gap-3">
+																			<Checkbox
+																				checked={selectedSocials.has(social.id)}
+																				className="flex-shrink-0 border-zinc-600 data-[state=checked]:bg-zinc-700"
+																			/>
+																			{shouldShowFallback ? (
+																				<div
+																					className={
+																						"flex h-[25px] w-[25px] items-center justify-center rounded-full border border-zinc-700/50 bg-zinc-700 text-xs font-medium text-zinc-100"
+																					}
+																				>
+																					{social.display_name
+																						.split(" ")
+																						.map((word: any) => word[0])
+																						.join("")
+																						.toUpperCase()
+																						.slice(0, 2)}
+																				</div>
+																			) : (
+																				<Image
+																					width={30}
+																					height={30}
+																					alt={social.display_name}
+																					src={social.profile_image_url!}
+																					onError={() => setImgError(true)}
+																					className={
+																						'bg-zinc-800/30" rounded-full border border-zinc-700/50'
+																					}
+																				/>
+																			)}
+																			<div className="min-w-0 flex-1">
+																				<div className="truncate text-sm font-medium text-zinc-100">
+																					{social.display_name}
+																				</div>
+																				<div className="truncate text-xs text-zinc-400">
+																					{social.handle}
+																				</div>
 																			</div>
-																			<div className="truncate text-xs text-zinc-400">
-																				{social.handle}
-																			</div>
 																		</div>
+																		<span className="flex-shrink-0 text-xs capitalize text-zinc-500">
+																			{social.platform}
+																		</span>
 																	</div>
-																	<span className="flex-shrink-0 text-xs capitalize text-zinc-500">
-																		{social.platform}
-																	</span>
-																</div>
-															))
+																);
+															})
 														)}
 													</TabsContent>
 												</div>

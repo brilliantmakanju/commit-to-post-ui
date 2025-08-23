@@ -25,7 +25,7 @@ import {
 // Updated Types to match new API response
 type Platform = "linkedin" | "slack" | "discord" | "twitter";
 
-interface ConnectedIntegration {
+export interface ConnectedIntegration {
 	id: string;
 	connected: boolean;
 	display_name: string;
