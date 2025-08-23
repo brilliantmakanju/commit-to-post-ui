@@ -84,29 +84,11 @@ const getInitials = (name: string): string =>
 		.toUpperCase()
 		.slice(0, 2);
 
-const getStatusIndicatorColor = (status: PostStatus) => {
-	switch (status) {
-		case "published": {
-			return "bg-green-500";
-		}
-		case "scheduled": {
-			return "bg-blue-500";
-		}
-		case "drafted": {
-			return "bg-gray-500";
-		}
-		default: {
-			return "bg-gray-500";
-		}
-	}
-};
-
 export const ConnectedAccountBadge: React.FC<{
-	status?: string;
 	isSettingsPage: boolean;
 	account: ConnectedAccount;
 	onRemove: (accountId: string) => Promise<void> | void;
-}> = ({ account, onRemove, isSettingsPage, status }) => {
+}> = ({ account, onRemove, isSettingsPage }) => {
 	const [imgError, setImgError] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -161,24 +143,18 @@ export const ConnectedAccountBadge: React.FC<{
 					: account.name}
 			</span>
 
-			{status === "" ? (
-				<button
-					disabled={isLoading}
-					onClick={handleRemove}
-					className={removeButtonClass}
-					aria-label={`Remove ${account.name}`}
-				>
-					{isLoading ? (
-						<FaSpinner className="h-4 w-4 animate-spin" />
-					) : (
-						<FaTimes className="h-4 w-4" />
-					)}
-				</button>
-			) : (
-				<span
-					className={`h-1.5 w-1.5 rounded-full ${getStatusIndicatorColor("published")}`}
-				/>
-			)}
+			<button
+				disabled={isLoading}
+				onClick={handleRemove}
+				className={removeButtonClass}
+				aria-label={`Remove ${account.name}`}
+			>
+				{isLoading ? (
+					<FaSpinner className="h-4 w-4 animate-spin" />
+				) : (
+					<FaTimes className="h-4 w-4" />
+				)}
+			</button>
 		</div>
 	);
 };

@@ -3,8 +3,16 @@
 import { UUID } from "node:crypto";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { format, parseISO, setHours, setMinutes } from "date-fns";
+import {
+	format,
+	formatDistanceToNow,
+	isFuture,
+	parseISO,
+	setHours,
+	setMinutes,
+} from "date-fns";
 import { Edit3, Loader2, Save, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -154,16 +162,10 @@ const normalizePlatform = (platform: string): string => {
 	}
 };
 
-type Integration = {
-	id: string;
-	display_name: string;
-	handle?: string;
-	profile_image_url?: string;
-};
-
 export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 	const params = useParams();
 	const queryClient = useQueryClient();
+	const [imgError, setImgError] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [activeTab, setActiveTab] = useState("posted");
 	const [editedContent, setEditedContent] = useState("");
@@ -493,14 +495,18 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 						{/* Left Panel - Posts Grid */}
 						<div className="flex min-h-0 w-full flex-shrink-0 flex-col lg:w-80 xl:lg:w-96">
 							<div className="scrollbar-hide flex-1 overflow-y-auto">
-								<div className="scrollbar-hide grid grid-cols-1 gap-2 overflow-y-auto pb-4">
+								<div className="scrollbar-hide grid grid-cols-1 gap-2 overflow-y-auto px-2 py-4">
 									{group.posts.map(post => (
 										<div
 											key={post.id}
 											className={`relative cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${
 												selectedPosts.has(post.id)
-													? "border-none bg-zinc-800/60"
-													: "border-zinc-800/50 bg-zinc-900/30 hover:border-zinc-700/50 hover:bg-zinc-800/40"
+													? "border-zinc-600 bg-zinc-800/60"
+													: "border-zinc-800/50 bg-zinc-800/20 hover:border-zinc-600 hover:bg-zinc-700/30"
+											} ${
+												currentPost?.id === post.id
+													? "border-zinc-500 bg-zinc-900/80 ring-2 ring-blue-500/50"
+													: ""
 											}`}
 											onClick={() => {
 												setCurrentPost(post);
@@ -517,7 +523,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 													/>
 													{getPlatformIcon(post.platform)}
 												</div>
-												{/* <Badge
+												<Badge
 													variant="outline"
 													className={cn(
 														"text-xs font-semibold",
@@ -525,14 +531,19 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 													)}
 												>
 													{getStatusLabel(post.status)}
-												</Badge> */}
+												</Badge>
 											</div>
 
 											<p className="line-clamp-2 pr-6 text-xs leading-relaxed text-zinc-400">
 												{post.content}
 											</p>
-
-											<div className="mt-2 text-[10px] text-zinc-500">
+											<div
+												className={`mt-2 text-[10px] transition-all duration-200 ${
+													currentPost?.id === post.id
+														? "font-medium text-zinc-300"
+														: "text-zinc-500"
+												}`}
+											>
 												{post.created_at &&
 													format(
 														parseISO(post.created_at),
@@ -552,7 +563,34 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 									{/* Content Editor */}
 									<div className="mb-4 flex-shrink-0 lg:mb-6">
 										<div className="mb-3 flex items-center justify-between">
-											<div className="flex w-full items-center justify-end gap-2">
+											<span className="text-xs text-zinc-500">
+												{currentPost.created_at &&
+													(() => {
+														const createdAt = parseISO(currentPost.created_at);
+
+														if (currentPost.status === "published") {
+															return `${formatDistanceToNow(createdAt, { addSuffix: true })}`;
+															// → "30 minutes ago"
+														}
+
+														if (
+															currentPost.status === "scheduled" &&
+															currentPost.scheduled_publish_time
+														) {
+															const scheduledAt = parseISO(
+																currentPost.scheduled_publish_time,
+															);
+															return isFuture(scheduledAt)
+																? `in ${formatDistanceToNow(scheduledAt)}`
+																: `${formatDistanceToNow(scheduledAt, { addSuffix: true })}`;
+															// → "in 2 days" or "3 hours ago" if already passed
+														}
+
+														// fallback (drafts etc.)
+														return format(createdAt, "MMM d, yyyy 'at' h:mm a");
+													})()}
+											</span>
+											<div className="flex items-center justify-end gap-2">
 												<Badge
 													variant="outline"
 													className={cn(
@@ -562,10 +600,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 												>
 													{getStatusLabel(currentPost.status)}
 												</Badge>
-												<span className="text-xs text-zinc-500">
-													{currentPost.created_at &&
-														format(parseISO(currentPost.created_at), "MMM d")}
-												</span>
 											</div>
 										</div>
 
@@ -610,7 +644,14 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 											onValueChange={setActiveTab}
 											className="flex h-full flex-col"
 										>
-											<TabsList className="grid w-full flex-shrink-0 grid-cols-4 rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-1">
+											<TabsList
+												className={`grid w-full flex-shrink-0 rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-1 ${
+													currentPost.status === "published"
+														? "grid-cols-1"
+														: "grid-cols-3"
+												}`}
+											>
+												{/* Always show Posted */}
 												<TabsTrigger
 													value="posted"
 													className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
@@ -621,32 +662,29 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 														({currentPost.posted_integrations_data.length})
 													</span>
 												</TabsTrigger>
-												<TabsTrigger
-													value="planned"
-													className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
-												>
-													<span className="hidden sm:inline">Planned</span>
-													<span className="sm:hidden">Plan</span>
-													<span className="ml-1">
-														({currentPost.planned_integrations_data.length})
-													</span>
-												</TabsTrigger>
-												<TabsTrigger
-													value="pending"
-													className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
-												>
-													<span className="hidden sm:inline">Pending</span>
-													<span className="sm:hidden">Pend</span>
-													<span className="ml-1">
-														({currentPost.pending_integrations_data.length})
-													</span>
-												</TabsTrigger>
-												<TabsTrigger
-													value="add"
-													className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
-												>
-													Add
-												</TabsTrigger>
+
+												{/* Only show if NOT published */}
+												{currentPost.status !== "published" && (
+													<>
+														<TabsTrigger
+															value="pending"
+															className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
+														>
+															<span className="hidden sm:inline">Pending</span>
+															<span className="sm:hidden">Pend</span>
+															<span className="ml-1">
+																({currentPost.pending_integrations_data.length})
+															</span>
+														</TabsTrigger>
+
+														<TabsTrigger
+															value="add"
+															className="text-[10px] text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-900 sm:text-xs"
+														>
+															Add
+														</TabsTrigger>
+													</>
+												)}
 											</TabsList>
 
 											<div className="mt-4 flex-1 overflow-hidden">
@@ -694,54 +732,6 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 													</TabsContent>
 
 													<TabsContent
-														value="planned"
-														className="scrollbar-hide m-0 h-full space-y-3"
-													>
-														{currentPost.planned_integrations_data.length ===
-														0 ? (
-															<div className="py-8 text-center text-zinc-500 sm:py-12">
-																<div className="text-sm">
-																	No planned integrations
-																</div>
-															</div>
-														) : (
-															<div className="space-y-3">
-																{currentPost.planned_integrations_data.map(
-																	integration => (
-																		<div
-																			key={integration.id}
-																			className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 sm:p-4"
-																		>
-																			<div className="flex min-w-0 flex-1 items-center gap-3">
-																				<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-900 sm:h-8 sm:w-8 sm:text-sm">
-																					{integration.name.charAt(0)}
-																				</div>
-																				<div className="min-w-0 flex-1">
-																					<div className="truncate text-sm font-medium text-zinc-100">
-																						{integration.name}
-																					</div>
-																					<div className="truncate text-xs text-zinc-400">
-																						{integration.handle}
-																					</div>
-																				</div>
-																			</div>
-																			<div className="flex flex-shrink-0 items-center gap-2">
-																				<Button
-																					variant="outline"
-																					size="sm"
-																					className="border-zinc-600 bg-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-																				>
-																					<FaTimes className="h-3 w-3" />
-																				</Button>
-																			</div>
-																		</div>
-																	),
-																)}
-															</div>
-														)}
-													</TabsContent>
-
-													<TabsContent
 														value="pending"
 														className="scrollbar-hide m-0 h-full"
 													>
@@ -755,29 +745,70 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 														) : (
 															<div className="space-y-3">
 																{currentPost.pending_integrations_data.map(
-																	integration => (
-																		<div
-																			key={integration.id}
-																			className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 sm:p-4"
-																		>
-																			<div className="flex min-w-0 flex-1 items-center gap-3">
-																				<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-900 sm:h-8 sm:w-8 sm:text-sm">
-																					{integration.name.charAt(0)}
+																	integration => {
+																		const shouldShowFallback =
+																			imgError ||
+																			!integration.profile_image_url ||
+																			["null", "undefined"].includes(
+																				integration.profile_image_url,
+																			);
+																		return (
+																			<div
+																				key={integration.id}
+																				className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 sm:p-4"
+																			>
+																				{/* Left side: icon + name + handle */}
+																				<div className="flex min-w-0 flex-1 items-center gap-3">
+																					{shouldShowFallback ? (
+																						<div
+																							className={
+																								"flex h-[25px] w-[25px] items-center justify-center rounded-full border border-zinc-700/50 bg-zinc-700 text-xs font-medium text-zinc-100"
+																							}
+																						>
+																							{integration.name
+																								.split(" ")
+																								.map(word => word[0])
+																								.join("")
+																								.toUpperCase()
+																								.slice(0, 2)}
+																						</div>
+																					) : (
+																						<Image
+																							width={30}
+																							height={30}
+																							alt={integration.name}
+																							src={
+																								integration.profile_image_url!
+																							}
+																							onError={() => setImgError(true)}
+																							className={
+																								'bg-zinc-800/30" rounded-full border border-zinc-700/50'
+																							}
+																						/>
+																					)}
+
+																					<div className="min-w-0 flex-1">
+																						<div className="truncate text-sm font-medium text-zinc-100">
+																							{integration.name}
+																						</div>
+																						<div className="truncate text-xs text-zinc-400">
+																							{integration.handle}
+																						</div>
+																					</div>
 																				</div>
-																				<div className="min-w-0 flex-1">
-																					<div className="truncate text-sm font-medium text-zinc-100">
-																						{integration.name}
-																					</div>
-																					<div className="truncate text-xs text-zinc-400">
-																						{integration.handle}
-																					</div>
+
+																				{/* Right side: status + cancel */}
+																				<div className="flex items-center gap-2">
+																					<Badge className="flex-shrink-0 border-yellow-500/30 bg-yellow-500/20 text-yellow-300">
+																						Pending
+																					</Badge>
+																					<Button className="rounded-md border border-zinc-700/50 bg-zinc-800/40 px-2 py-1 text-xs text-zinc-400 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400">
+																						Cancel
+																					</Button>
 																				</div>
 																			</div>
-																			<Badge className="flex-shrink-0 border-yellow-500/30 bg-yellow-500/20 text-yellow-300">
-																				Pending
-																			</Badge>
-																		</div>
-																	),
+																		);
+																	},
 																)}
 															</div>
 														)}
