@@ -74,12 +74,9 @@ export default function NotificationsPage() {
 
 		const response = await readNotifications({ id });
 		if (response.success) {
-			queryClient.invalidateQueries({ queryKey: ["notifications"] });
-			queryClient.fetchQuery({ queryKey: ["notifications"] });
 			queryClient.invalidateQueries({
 				queryKey: ["unread_notification_counts"],
 			});
-			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
 
 		// Clear loading state for this item regardless of outcome
@@ -96,12 +93,9 @@ export default function NotificationsPage() {
 
 		const response = await readAllNotifications();
 		if (response.success) {
-			queryClient.invalidateQueries({ queryKey: ["notifications"] });
-			queryClient.fetchQuery({ queryKey: ["notifications"] });
 			queryClient.invalidateQueries({
 				queryKey: ["unread_notification_counts"],
 			});
-			queryClient.fetchQuery({ queryKey: ["unread_notification_counts"] });
 		}
 
 		// Clear bulk and per-item loading

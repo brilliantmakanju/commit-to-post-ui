@@ -115,22 +115,10 @@ export const useSessionManager = ({
 					keysToRemove.forEach(key => localStorage.removeItem(key));
 				}
 			} catch {}
-
-			// 4. Helper to race an operation with a timeout so we don't hang
-			const withTimeout = async <T,>(
-				promise: Promise<T>,
-				ms = 1500,
-			): Promise<void> => {
-				await Promise.race([
-					promise.then(() => {}).catch(() => {}),
-					new Promise<void>(resolve => setTimeout(resolve, ms)),
-				]);
-			};
-
 			// 5. Execute logout sequence with proper order
-			await withTimeout(clearCookies());
-			await withTimeout(signOut({ redirect: false }));
-			await withTimeout(clearCookies());
+			await clearCookies();
+			await signOut({ redirect: true });
+			await clearCookies();
 
 			// 6. Force redirect and refresh
 			globalThis.location.href = "/";
