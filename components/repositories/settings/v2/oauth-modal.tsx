@@ -1,25 +1,22 @@
 /* eslint-disable import/no-unresolved */
 "use client";
-
-import { UUID } from "node:crypto";
-
-import { ExternalLink, Loader2, X } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 import { FaDiscord, FaLinkedin, FaSlack } from "react-icons/fa";
 import { toast } from "sonner";
 
+import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
+import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useLimitUI } from "@/hooks/use-limit-ui";
+import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import {
 	getConnectLinkedinOauth,
 	getConnectTwitterOauth,
 } from "@/server-actions/core/repo/social-connect";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 type Platform = "linkedin" | "slack" | "discord" | "x";
 
@@ -64,11 +61,20 @@ export function OAuthModalV2({
 	platform,
 }: OAuthModalProps) {
 	const path = usePathname();
+	const { organization } = useOrganizationStore();
 	const [isLoading, setIsLoading] = useState(false);
+	const socialCount = (organization?.socials ?? []).length;
 	const [currentStep, setCurrentStep] = useState<OAuthStep>("initializing");
 
 	const config = platformConfig[platform];
 	const PlatformIcon = config?.icon;
+
+	const socialLimitUI = useLimitUI({
+		warningThreshold: 80,
+		currentCount: socialCount,
+		limitType: "social_integrations",
+		limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
+	});
 
 	// Check if we're on /settings or /settings?something
 	const isSettingsPage = path === "/settings" || path.startsWith("/settings?");
@@ -238,21 +244,58 @@ export function OAuthModalV2({
 								{" "}
 								{currentStep === "complete" ? "Done" : "Cancel"}{" "}
 							</Button>
-							{currentStep === "initializing" && (
-								<Button
-									onClick={initiateOAuth}
-									disabled={isLoading}
-									className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+							<FeatureLimitWrapper
+								limitId={FEATURE_LIMITS.SOCIAL_ACCOUNTS}
+								currentCount={socialCount}
+								fallback={
+									<LimitTooltip
+										limitType="social_integrations"
+										maxLimit={socialLimitUI.limit}
+										currentUsage={socialCount}
+										position="bottom"
+									>
+										<div className="inline-block cursor-not-allowed">
+											{currentStep === "initializing" && (
+												<Button
+													disabled
+													className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+												>
+													{" "}
+													{isLoading ? (
+														<Loader2 className="h-4 w-4 animate-spin" />
+													) : (
+														<></>
+													)}{" "}
+													Connect{" "}
+												</Button>
+											)}
+										</div>
+									</LimitTooltip>
+								}
+							>
+								<LimitTooltip
+									limitType="social_integrations"
+									maxLimit={socialLimitUI.limit}
+									currentUsage={socialCount}
+									position="bottom"
 								>
-									{" "}
-									{isLoading ? (
-										<Loader2 className="h-4 w-4 animate-spin" />
-									) : (
-										<></>
-									)}{" "}
-									Connect{" "}
-								</Button>
-							)}{" "}
+									{currentStep === "initializing" && (
+										<Button
+											onClick={initiateOAuth}
+											disabled={isLoading}
+											className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											{" "}
+											{isLoading ? (
+												<Loader2 className="h-4 w-4 animate-spin" />
+											) : (
+												<></>
+											)}{" "}
+											Connect{" "}
+										</Button>
+									)}
+								</LimitTooltip>
+							</FeatureLimitWrapper>{" "}
 						</div>
 					</div>
 				</div>

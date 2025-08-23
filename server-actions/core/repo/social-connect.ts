@@ -6,12 +6,6 @@ import { z } from "zod";
 import { apiClient } from "@/lib/utils/api-client";
 
 const socialIntegrationSchema = z.object({
-	repo_id: z.string().uuid({ message: "Invalid repository ID." }),
-	platform: z.enum(["slack", "discord"], {
-		errorMap: () => ({
-			message: "Platform must be either 'slack' or 'discord'.",
-		}),
-	}),
 	webhook_url: z
 		.string()
 		.url({ message: "Webhook URL must be a valid URL." })
@@ -50,18 +44,14 @@ const disconnectRepoSocialSchema = z.object({
 	connection_id: z.string(),
 });
 
-export const socialConnectSlackAndDiscord = async (
-	repo_id: string,
+export const socialConnectDiscord = async (
 	webhook_url: string,
-	platform: "slack" | "discord",
 ): Promise<{
 	success: boolean;
 	message: string;
 	data?: any;
 }> => {
 	const validation = socialIntegrationSchema.safeParse({
-		repo_id,
-		platform,
 		webhook_url,
 	});
 
@@ -75,27 +65,26 @@ export const socialConnectSlackAndDiscord = async (
 	}
 
 	try {
-		const url = `/api/v1/repositories/${repo_id}/integrations/connect/`;
+		const url = "/api/v1/integration/discord/connect/";
 
 		const response = await apiClient.post(url, {
-			platform,
-			webhook_url,
+			webhook_url, // ✅ only thing required
 		});
 
-		if (response.status !== 200) {
+		if (![200, 201].includes(response.status)) {
 			return {
 				success: false,
-				message: `Failed to connect ${platform}.`,
+				message: "Failed to connect Discord.",
 			};
 		}
 
 		return {
 			success: true,
 			data: response.data,
-			message: `${platform.charAt(0).toUpperCase() + platform.slice(1)} integration successful.`,
+			message: response.data.message,
 		};
 	} catch (error: any) {
-		const fallbackMessage = `Unexpected error while connecting to ${platform}.`;
+		const fallbackMessage = "Unexpected error while connecting to Discord.";
 		const detailedMessage =
 			error?.response?.data?.message ?? error?.message ?? fallbackMessage;
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { UUID } from "node:crypto";
+
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useMemo, useState } from "react";
@@ -17,13 +19,14 @@ import { toast } from "sonner";
 import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
 import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { OAuthModalV2 } from "@/components/repositories/settings/v2/oauth-modal";
+import { WebhookModal } from "@/components/repositories/settings/webhook-modal";
 import { Button } from "@/components/ui/button";
 import { useLimitUI } from "@/hooks/use-limit-ui";
 import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
 import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import { disconnectIntegration } from "@/server-actions/core/repo/social-connect";
-import { ConnectedAccount, Platform, PostStatus, SocialAccount } from "@/types";
+import { ConnectedAccount, Platform, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,
 } from "@/zustand/useorganization-store";
@@ -50,13 +53,13 @@ const socialAccounts: SocialAccount[] = [
 		description: "Professional networking platform",
 		connectedAccounts: [],
 	},
-	{
-		id: "slack",
-		icon: "slack",
-		name: "Slack",
-		description: "Team communication workspace",
-		connectedAccounts: [],
-	},
+	// {
+	// 	id: "slack",
+	// 	icon: "slack",
+	// 	name: "Slack",
+	// 	description: "Team communication workspace",
+	// 	connectedAccounts: [],
+	// },
 	{
 		id: "discord",
 		icon: "discord",
@@ -72,7 +75,7 @@ const normalizePlatform = (p?: string) => {
 	if (v === "x" || v === "twitter" || v === "x-twitter") return "x";
 	if (v === "linkedin") return "linkedin";
 	if (v === "discord") return "discord";
-	if (v === "slack") return "slack";
+	// if (v === "slack") return "slack";
 	return;
 };
 
@@ -336,6 +339,7 @@ const SocialAccountItem: React.FC<{
 const SocialConnectionInterface: React.FC = () => {
 	const { organization, removeSocial } = useOrganizationStore();
 	const [platformModal, setPlatformModal] = useState<Platform | undefined>();
+	const [webhookModal, setWebhookModal] = useState<"discord" | undefined>();
 
 	// Build UI accounts from organization.socials
 	// Build the list by grouping org socials into the scaffold
@@ -365,7 +369,11 @@ const SocialConnectionInterface: React.FC = () => {
 
 	const handleConnect = (platformId: string) => {
 		if (!organization) return;
-		setPlatformModal(platformId as Platform);
+		if (platformId === "discord") {
+			setWebhookModal(platformId as "discord");
+		} else {
+			setPlatformModal(platformId as Platform);
+		}
 	};
 
 	const handleRemoveAccount = async (accountId: string) => {
@@ -400,6 +408,14 @@ const SocialConnectionInterface: React.FC = () => {
 	};
 	return (
 		<div className="space-y-4">
+			{webhookModal === "discord" && (
+				<WebhookModal
+					isOpen={!!webhookModal}
+					org_id={organization.id as UUID}
+					onClose={() => setWebhookModal(undefined)}
+					platform={webhookModal as "discord"}
+				/>
+			)}{" "}
 			{platformModal && (
 				<OAuthModalV2
 					isOpen={!!platformModal}
