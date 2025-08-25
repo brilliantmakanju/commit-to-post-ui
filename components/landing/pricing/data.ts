@@ -85,15 +85,11 @@ export const pricingData: PricingData = {
 			name: "Pro",
 			badge: "Made for Builders",
 			price: {
-				monthly: 9.99,
-				annual: 89.52,
-				// previous: {
-				// 	monthly: 14.99,
-				// 	annual: 11.99,
-				// },
+				monthly: 5.99, // reduced by $2
+				annual: 64.68, // 10% discount for yearly billing
 				productIds: {
-					monthly: "pri_01jvd4rxjryqv6ey0hxhksgba3",
-					annual: "pri_01jvd4rxjryqv6ey0hxhksgba3",
+					monthly: "pri_01jvjty2hpznp9yag1reeax2my",
+					annual: "pri_01jvjtzj91vpyndb4qc6xwk5mm",
 				},
 			},
 			features: [
@@ -103,25 +99,21 @@ export const pricingData: PricingData = {
 				{ name: "Post up to 100 times monthly", available: true },
 				{ name: "Link up to 5 GitHub repositories", available: true },
 				{ name: "Pick from multiple writing voices", available: true },
-				{ name: "Connect LinkedIn Slack and Discord", available: true },
+				{ name: "Connect LinkedIn, Twitter, and Discord", available: true },
+				{ name: "Schedule posts across connected accounts", available: true },
 			],
 			buttonText: "Unlock Full Power",
-			// buttonVariant: "success",
 			popular: true,
 		},
 		{
 			name: "Studio",
 			badge: "Built for Teams",
 			price: {
-				monthly: 24.99,
-				annual: 233.52,
-				// previous: {
-				// 	monthly: 49.99,
-				// 	annual: 139.99,
-				// },
+				monthly: 22.99, // reduced by $2
+				annual: 246.6, // 10% discount for yearly billing
 				productIds: {
-					monthly: "studio_plan_monthly",
-					annual: "studio_plan_annual",
+					monthly: "pri_01k3g4fz3xq6awekczekqkz4kp",
+					annual: "pri_01k3g5xeyeq74vgdb6pgkd9e0k",
 				},
 			},
 			features: [
@@ -129,10 +121,12 @@ export const pricingData: PricingData = {
 				{ name: "Generate unlimited content", available: true },
 				{ name: "Team management (early access)", available: true },
 				{ name: "Full access to every writing style", available: true },
-				{ name: "Organize and manage multiple brands", available: true },
+				{
+					name: "Organize and manage multiple workspaces",
+					available: true,
+				},
 				{ name: "Connect unlimited GitHub repositories", available: true },
 			],
-
 			buttonText: "Apply for Studio Access",
 			popular: false,
 		},

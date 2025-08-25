@@ -124,9 +124,11 @@ export function OAuthModalV2({
 
 			if (result?.success && result?.data?.authorization_url) {
 				setCurrentStep("redirecting");
-
 				setTimeout(() => {
-					window.open(result?.data?.authorization_url);
+					// Redirect the current page
+					globalThis.location.href = `${result?.data?.authorization_url}`;
+
+					// Optional: update your UI step after redirect
 					setCurrentStep("complete");
 				}, 800);
 			} else {
