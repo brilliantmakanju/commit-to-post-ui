@@ -96,7 +96,6 @@ export const syncUserData = (userData: any) => {
 	};
 };
 
-
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const router = useRouter();
 	const userStore = useUserStore();
