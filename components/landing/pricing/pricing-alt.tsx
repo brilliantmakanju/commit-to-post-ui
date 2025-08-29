@@ -66,31 +66,31 @@ const Pricing = () => {
 		return -1;
 	});
 
-	useEffect(() => {
-		const timers = new Map<string, number>();
+	// useEffect(() => {
+	// 	const timers = new Map<string, number>();
 
-		plans.forEach(plan => {
-			if (plan.lifetime?.endsIn) {
-				setTimeLeft(previous => ({
-					...previous,
-					[plan.name]: plan.lifetime!.endsIn * 60 * 60,
-				}));
+	// 	plans.forEach(plan => {
+	// 		if (plan.lifetime?.endsIn) {
+	// 			setTimeLeft(previous => ({
+	// 				...previous,
+	// 				[plan.name]: plan.lifetime!.endsIn * 60 * 60,
+	// 			}));
 
-				const timerId = globalThis.setInterval(() => {
-					setTimeLeft(previous => ({
-						...previous,
-						[plan.name]: Math.max(0, (previous[plan.name] || 0) - 1),
-					}));
-				}, 1000);
+	// 			const timerId = globalThis.setInterval(() => {
+	// 				setTimeLeft(previous => ({
+	// 					...previous,
+	// 					[plan.name]: Math.max(0, (previous[plan.name] || 0) - 1),
+	// 				}));
+	// 			}, 1000);
 
-				timers.set(plan.name, timerId as unknown as number);
-			}
-		});
+	// 			timers.set(plan.name, timerId as unknown as number);
+	// 		}
+	// 	});
 
-		return () => {
-			timers.forEach(timerId => clearInterval(timerId));
-		};
-	}, [plans]);
+	// 	return () => {
+	// 		timers.forEach(timerId => clearInterval(timerId));
+	// 	};
+	// }, [plans]);
 
 	async function activatePlan({
 		plan,
@@ -260,7 +260,7 @@ const Pricing = () => {
 									</div>
 								)} */}
 
-								{plan.price.previous && plan.price.previous[interval] && (
+								{/* {plan.price.previous && plan.price.previous[interval] && (
 									<span className="mt-1 block text-sm text-zinc-700 dark:text-zinc-300">
 										Save{" "}
 										{calculateDiscount(
@@ -271,7 +271,7 @@ const Pricing = () => {
 										)}
 										%
 									</span>
-								)}
+								)} */}
 
 								<Button
 									onClick={() =>
