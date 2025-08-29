@@ -29,7 +29,7 @@ import { PaymentCreation } from "../../server-actions/auth/subscribe";
 
 // Define the form schema using Zod
 const formSchema = z.object({
-	plan: z.enum(["free", "pro", "lifetime"]),
+	plan: z.enum(["basic", "pro", "lifetime"]),
 	period: z.enum(["monthly", "annual"]),
 	trancantRef: z.string().min(1, "Transaction reference is required"),
 	additionalNote: z.string().optional(),
@@ -240,22 +240,22 @@ export function PaymentForm() {
 						<RadioGroup
 							defaultValue={selectedPlan}
 							onValueChange={value =>
-								setValue("plan", value as "free" | "pro" | "lifetime")
+								setValue("plan", value as "basic" | "pro" | "lifetime")
 							}
 							className="grid grid-cols-3 gap-4"
 						>
 							<Label
-								htmlFor="plan-free"
+								htmlFor="plan-basic"
 								className={`flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${
-									selectedPlan === "free" ? "border-primary" : ""
+									selectedPlan === "basic" ? "border-primary" : ""
 								}`}
 							>
 								<RadioGroupItem
-									value="free"
-									id="plan-free"
+									value="basic"
+									id="plan-basic"
 									className="sr-only"
 								/>
-								<span className="text-lg font-medium">Free</span>
+								<span className="text-lg font-medium">Basic</span>
 								<span className="text-sm text-muted-foreground">$0/mo</span>
 							</Label>
 							<Label

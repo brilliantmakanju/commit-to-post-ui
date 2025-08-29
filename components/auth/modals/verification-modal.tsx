@@ -3,7 +3,7 @@
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
 	Card,
@@ -12,6 +12,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useUserStore from "@/zustand/useuser-store";
@@ -19,17 +20,33 @@ import useUserStore from "@/zustand/useuser-store";
 import { VerificationAnimation } from "./verification-sub-modal";
 
 export default function MagicVerifyModal() {
+	const hasSyncedRef = useRef(false);
 	const searchParams = useSearchParams();
+	const { data: session, status } = useSession();
+	const { setUser, hasHydratedUser } = useUserStore();
+
 	const [verificationState, setVerificationState] = useState<
 		"verifying" | "success" | "error"
 	>("verifying");
-	const { data } = useSession();
-	const userStore = useUserStore();
 	const [errorMessage, setErrorMessage] = useState<string>(
 		"The magic link is invalid or has expired",
 	);
 	const { closeModal } = useAuthModalStore();
 	const hasSubmittedRef = useRef(false);
+
+	// Memoized sync function to prevent recreations
+	const syncUserStoreData = useCallback(
+		(userData: any) => {
+			if (hasSyncedRef.current) return; // Prevent multiple syncs
+
+			try {
+				const syncedData = syncUserData(userData);
+				setUser(syncedData);
+				hasSyncedRef.current = true;
+			} catch {}
+		},
+		[setUser],
+	);
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
@@ -45,17 +62,17 @@ export default function MagicVerifyModal() {
 					token: token,
 				});
 
-				if (apiRequest?.message === "Invalid credentials.") {
-					setErrorMessage("Invalid credentials, please try again");
-					setVerificationState("error");
-				} else if (apiRequest?.message === "Something went wrong.") {
-					setErrorMessage("Something went wrong. Please try again later.");
-					setVerificationState("error");
-				} else {
+				if (apiRequest?.message === "success") {
 					setVerificationState("success");
 					setTimeout(() => {
 						globalThis.window.location.replace("/workspace");
 					}, 2000);
+				} else if (apiRequest?.message === "Invalid credentials.") {
+					setErrorMessage("Invalid credentials, please try again");
+					setVerificationState("error");
+				} else {
+					setErrorMessage("Something went wrong. Please try again later.");
+					setVerificationState("error");
 				}
 			} catch (error) {
 				setErrorMessage((error as Error).message);
@@ -67,9 +84,23 @@ export default function MagicVerifyModal() {
 		if (!hasSubmittedRef.current) {
 			hasSubmittedRef.current = true;
 			verifyToken(getToken);
-			// closeModal();
+			if (
+				status === "authenticated" &&
+				session?.user &&
+				!hasHydratedUser &&
+				!hasSyncedRef.current
+			) {
+				syncUserStoreData(session.user);
+			}
 		}
-	}, [searchParams, closeModal, data, userStore]);
+	}, [
+		status,
+		closeModal,
+		searchParams,
+		session?.user,
+		hasHydratedUser,
+		syncUserStoreData,
+	]);
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center p-4">

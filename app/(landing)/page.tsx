@@ -1,73 +1,43 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { FaClock, FaCode, FaHandshake, FaRocket } from "react-icons/fa";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useRef } from "react";
 
 import SubAuthPage from "@/components/auth/sub-modal";
 import CtaSection from "@/components/call-to-action";
 import FAQs from "@/components/faqs";
 import VideoPlayer from "@/components/landing/demo";
-import BentoGridFeature from "@/components/landing/feature/bento-grid-features";
 import { FeaturesSectionDemo } from "@/components/landing/feature/v2/features";
 import HeroSection from "@/components/landing/micro/hero-section";
 import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
 import PricingTable from "@/components/landing/pricing";
-import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grids";
+import PlanSelector from "@/components/landing/pricing/v4/payment-selector";
+import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import { cn } from "@/lib/utils";
 import { signOut } from "@/server-actions/auth/signout";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useLogoutStore from "@/zustand/logout-store";
-
-const items = [
-	{
-		title: "Fast Out of the Gate",
-		description:
-			"No bloated tools or complex setups. Just plug in your GitHub repo and start creating visibility instantly.",
-		header: (
-			<div className="h-full w-full rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500" />
-		),
-		className: "md:col-span-2",
-		icon: <FaRocket className="h-4 w-4 text-neutral-500" />,
-	},
-	{
-		title: "Made for Developers",
-		description:
-			"Built with devs in mind. Native GitHub integration, smart commit parsing, and no fluff.",
-		header: (
-			<div className="h-full w-full rounded-xl bg-gradient-to-br from-gray-800 to-gray-600" />
-		),
-		className: "md:col-span-1",
-		icon: <FaCode className="h-4 w-4 text-neutral-500" />,
-	},
-	{
-		title: "Grows With You",
-		description:
-			"Whether you're solo building in public or part of a team, it scales with your workflow.",
-		header: (
-			<div className="h-full w-full rounded-xl bg-gradient-to-br from-green-500 to-lime-400" />
-		),
-		className: "md:col-span-1",
-		icon: <FaHandshake className="h-4 w-4 text-neutral-500" />,
-	},
-	{
-		title: "Always on Time",
-		description:
-			"Auto-posting means your updates go live while you keep shipping. Never miss a beat again.",
-		header: (
-			<div className="h-full w-full rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500" />
-		),
-		className: "md:col-span-2",
-		icon: <FaClock className="h-4 w-4 text-neutral-500" />,
-	},
-];
+import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export default function Home() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const logoutStore = useLogoutStore();
 	const { isOpen, openModal } = useAuthModalStore();
+
+	const hasSyncedRef = useRef(false);
+	const { data: session, status } = useSession();
+	const { setUser, hasHydratedUser } = useUserStore();
+
+	const {
+		isOpen: selector,
+		close,
+		type,
+		currentPlanId,
+		currentInterval,
+	} = usePlanSelectorStore();
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
@@ -95,16 +65,53 @@ export default function Home() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router, searchParams]);
 
+	// Memoized sync function to prevent recreations
+	const syncUserStoreData = useCallback(
+		(userData: any) => {
+			if (hasSyncedRef.current) return; // Prevent multiple syncs
+
+			try {
+				const syncedData = syncUserData(userData);
+				setUser(syncedData);
+				hasSyncedRef.current = true;
+			} catch {}
+		},
+		[setUser],
+	);
+
+	// Single effect to handle user store synchronization
+	useEffect(() => {
+		if (
+			status === "authenticated" &&
+			session?.user &&
+			!hasHydratedUser &&
+			!hasSyncedRef.current
+		) {
+			syncUserStoreData(session.user);
+		}
+	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
+
 	return (
-		<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)]">
-			{isOpen && <SubAuthPage />}
-			<HeroSection />
-			<WorkflowDemo />
-			<FeaturesSectionDemo />
-			<VideoPlayer />
-			<CtaSection />
-			<PricingTable />
-			<FAQs />
-		</div>
+		<>
+			<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)]">
+				{isOpen && <SubAuthPage />}
+				<HeroSection />
+				<WorkflowDemo />
+				<FeaturesSectionDemo />
+				<VideoPlayer />
+				<CtaSection />
+				<PricingTable />
+				<FAQs />
+			</div>
+			<PlanSelector
+				open={selector}
+				type={type || "upgrade"}
+				currentPlanId={currentPlanId || ""}
+				onOpenChange={open => {
+					if (!open) close();
+				}}
+				currentInterval={currentInterval}
+			/>
+		</>
 	);
 }

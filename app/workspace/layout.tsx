@@ -19,11 +19,7 @@ export default function Layout({
 }>) {
 	return (
 		<html lang="en">
-			<body
-				className={
-					"container mx-auto grid grid-cols-1 gap-[34px] bg-[#f4f4f4] antialiased"
-				}
-			>
+			<body className={"] bg-[#f4f4f4] antialiased"}>
 				<Suspense>
 					<WorkspaceTopNav />
 					<main

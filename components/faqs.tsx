@@ -17,7 +17,7 @@ export default function FAQs() {
 		},
 		{
 			q: "Which platforms are supported?",
-			a: "Currently LinkedIn, Slack, and Discord. More like X and custom blogs are on the way.",
+			a: "Currently LinkedIn, Twitter, and Discord. More like custom blogs are on the way.",
 		},
 		{
 			q: "Can I edit the posts?",
@@ -28,8 +28,8 @@ export default function FAQs() {
 			a: "Nope. We clean them up, fix grammar, and turn them into readable, polished updates.",
 		},
 		{
-			q: "Is there a free plan?",
-			a: "Yes. The Free plan includes 5 posts per month. Paid plans unlock higher limits and more control.",
+			q: "Is there a Free plan?",
+			a: "Yes. The Basic plan includes 5 posts per month. Paid plans unlock higher limits and more control.",
 		},
 	];
 

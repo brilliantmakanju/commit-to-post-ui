@@ -28,7 +28,7 @@ export default function PaymentPage() {
 				<div className="grid gap-12 md:grid-cols-2">
 					<BankDetails />
 					<PaymentForm
-						selectedPlan={plan as "free" | "pro" | "lifetime"}
+						selectedPlan={plan as "basic" | "pro" | "lifetime"}
 						billingCycle={cycle as "monthly" | "annual"}
 					/>
 				</div>

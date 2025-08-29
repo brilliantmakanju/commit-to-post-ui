@@ -376,7 +376,7 @@ export default HeroSection;
 // 													className="text-md w-full rounded-full px-7 py-8 text-white hover:bg-gray-800 sm:w-auto"
 // 												>
 // 													<TextAnimate animation="scaleUp" by="word" once>
-// 														Sign Up – It&#39;s Free
+// 														Sign Up – It&#39;s Basic
 // 													</TextAnimate>
 // 												</RainbowButton>
 // 												<span className="mt-3 text-xs text-gray-500">
@@ -398,7 +398,7 @@ export default HeroSection;
 // 													className="text-md w-full rounded-full px-7 py-8 text-white hover:bg-gray-800 sm:w-auto"
 // 												>
 // 													<TextAnimate animation="scaleUp" by="word" once>
-// 														Sign Up – It&#39;s Free
+// 														Sign Up – It&#39;s Basic
 // 													</TextAnimate>
 // 												</RainbowButton>
 // 												<span className="mt-3 text-xs text-gray-500">
@@ -425,7 +425,7 @@ export default HeroSection;
 // 												d="M5 13l4 4L19 7"
 // 											/>
 // 										</svg>
-// 										Free Plan Available
+// 										Basic Plan Available
 // 									</span>
 // 									<span className="flex items-center">
 // 										<svg

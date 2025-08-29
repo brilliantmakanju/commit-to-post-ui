@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Check, Crown, Star, Users } from "lucide-react";
+import { ArrowDown, Check, Crown, RefreshCw, Star, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { type Key, useEffect, useState } from "react";
 
@@ -8,9 +8,11 @@ import { type Key, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 // eslint-disable-next-line import/no-unresolved
 import { Card, CardContent } from "@/components/ui/card";
-import { useCheckAccess } from "@/hooks/plans/use-billing";
 // eslint-disable-next-line import/no-unresolved
 import { cn } from "@/lib/utils";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
+import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
+import useUserStore from "@/zustand/useuser-store";
 
 import { pricingData } from "./pricing/data";
 import PaddleCheckout from "./pricing/v4/paddle-overlay";
@@ -49,10 +51,16 @@ interface Plan {
 	};
 }
 
-type PlanType = "free" | "pro" | "studio";
+type PlanType = "free" | "pro" | "studio" | "basic";
+type BillingInterval = "monthly" | "annual";
 
 const isFreePlan = (planName: string): boolean => {
-	return planName.toLowerCase() === "free";
+	const normalizedName = planName.toLowerCase().trim();
+	return (
+		normalizedName === "free" ||
+		normalizedName === "basic" ||
+		normalizedName === "starter"
+	);
 };
 
 const calculateMonthlyPrice = (annualPrice: number): number => {
@@ -68,28 +76,83 @@ const formatPrice = (price: number): { dollars: string; cents: string } => {
 const getPlanTier = (planName: string): number => {
 	const planMap: Record<string, number> = {
 		free: 0,
+		basic: 0,
+		starter: 0,
 		pro: 1,
 		studio: 2,
 	};
-	return planMap[planName.toLowerCase()] ?? -1;
+	return planMap[planName.toLowerCase().trim()] ?? -1;
 };
 
+const normalizePlanName = (planName: string): string => {
+	const normalized = planName.toLowerCase().trim();
+	// Handle plan name variations
+	if (normalized === "basic" || normalized === "starter") {
+		return "free";
+	}
+	return normalized;
+};
+
+const normalizeBillingInterval = (
+	interval: string | undefined,
+): BillingInterval => {
+	if (!interval) return "monthly";
+	const normalized = interval.toLowerCase().trim();
+	return normalized === "annual" || normalized === "yearly"
+		? "annual"
+		: "monthly";
+};
+
+// Enhanced relationship detection that considers both plan and billing interval
 const getPlanRelationship = (
 	currentPlan: PlanType,
+	currentBillingInterval: BillingInterval,
 	targetPlan: string,
-): "current" | "upgrade" | "downgrade" => {
+	targetBillingInterval: BillingInterval,
+): "current" | "upgrade" | "downgrade" | "switch-interval" => {
 	const currentTier = getPlanTier(currentPlan);
 	const targetTier = getPlanTier(targetPlan);
 
-	if (currentTier === targetTier) return "current";
+	const normalizedCurrentPlan = normalizePlanName(currentPlan);
+	const normalizedTargetPlan = normalizePlanName(targetPlan);
+
+	// Same plan and same billing interval = current
+	if (
+		normalizedCurrentPlan === normalizedTargetPlan &&
+		currentBillingInterval === targetBillingInterval
+	) {
+		return "current";
+	}
+
+	// Same plan but different billing interval = switch interval
+	if (
+		normalizedCurrentPlan === normalizedTargetPlan &&
+		currentBillingInterval !== targetBillingInterval
+	) {
+		return "switch-interval";
+	}
+
+	// Different plans
 	if (currentTier < targetTier) return "upgrade";
-	return "downgrade";
+	if (currentTier > targetTier) return "downgrade";
+
+	return "upgrade"; // fallback
 };
 
 const getButtonTextAndVariant = (
 	plan: Plan,
 	userPlanType: PlanType,
-	relationship: "current" | "upgrade" | "downgrade" | "unauthenticated",
+	userBillingInterval: BillingInterval,
+	currentBillingCycle: BillingInterval,
+	relationship:
+		| "current"
+		| "upgrade"
+		| "downgrade"
+		| "switch-interval"
+		| "unauthenticated",
+	hasActiveSubscription: boolean,
+	hasSubscriptionId: boolean,
+	isAuthenticated: boolean,
 ): {
 	text: string;
 	variant: "default" | "outline" | "destructive";
@@ -98,14 +161,16 @@ const getButtonTextAndVariant = (
 } => {
 	const isFree = isFreePlan(plan.name);
 
+	// If user is not authenticated
+	if (!isAuthenticated) {
+		return {
+			text: plan.buttonText,
+			variant: "default",
+			disabled: false,
+		};
+	}
+
 	switch (relationship) {
-		case "unauthenticated": {
-			return {
-				text: plan.buttonText,
-				variant: "default",
-				disabled: false,
-			};
-		}
 		case "current": {
 			return {
 				text: "Current Plan",
@@ -115,33 +180,75 @@ const getButtonTextAndVariant = (
 			};
 		}
 
+		case "switch-interval": {
+			const intervalText =
+				currentBillingCycle === "annual" ? "Yearly" : "Monthly";
+			return {
+				text: `Switch to ${intervalText}`,
+				variant: "outline",
+				disabled: false,
+				icon: <RefreshCw className="mr-2 h-4 w-4" />,
+			};
+		}
+
 		case "upgrade": {
+			// For free plans, check if user has subscription_id
 			if (isFree) {
+				return hasSubscriptionId
+					? {
+							// User has subscription, treat like downgrade to free
+							text: `Downgrade to ${plan.name}`,
+							variant: "outline",
+							disabled: false,
+							icon: <ArrowDown className="mr-2 h-4 w-4" />,
+						}
+					: {
+							// No subscription, use paddle checkout
+							text: plan.buttonText,
+							variant: "outline",
+							disabled: false,
+						};
+			}
+
+			// If user has subscription ID, show upgrade text
+			if (hasSubscriptionId) {
 				return {
-					text: plan.buttonText,
-					variant: "outline",
-					disabled: true,
+					text: `Upgrade to ${plan.name}`,
+					variant: "default",
+					disabled: false,
+					icon:
+						plan.name === "Studio" ? (
+							<Crown className="mr-2 h-4 w-4" />
+						) : (
+							<Users className="mr-2 h-4 w-4" />
+						),
 				};
 			}
+
+			// Authenticated but no subscription ID - use paddle checkout
 			return {
-				text: `Upgrade to ${plan.name}`,
+				text: plan.buttonText,
 				variant: "default",
 				disabled: false,
-				icon:
-					plan.name === "Studio" ? (
-						<Crown className="mr-2 h-4 w-4" />
-					) : (
-						<Users className="mr-2 h-4 w-4" />
-					),
 			};
 		}
 
 		case "downgrade": {
+			// If user has subscription ID, show downgrade text
+			if (hasSubscriptionId) {
+				return {
+					text: `Downgrade to ${plan.name}`,
+					variant: "outline",
+					disabled: false,
+					icon: <ArrowDown className="mr-2 h-4 w-4" />,
+				};
+			}
+
+			// Authenticated but no subscription ID - use paddle checkout
 			return {
-				text: `Downgrade to ${plan.name}`,
+				text: plan.buttonText,
 				variant: "outline",
 				disabled: false,
-				icon: <ArrowDown className="mr-2 h-4 w-4" />,
 			};
 		}
 
@@ -156,24 +263,46 @@ const getButtonTextAndVariant = (
 };
 
 const getTooltipMessage = (
-	relationship: "current" | "upgrade" | "downgrade",
+	relationship: "current" | "upgrade" | "downgrade" | "switch-interval",
 	planName: string,
+	billingInterval: BillingInterval,
 	isFree: boolean,
+	hasSubscriptionId: boolean,
+	isAuthenticated: boolean,
 ): string => {
+	if (!isAuthenticated) {
+		return `Sign up to get started with ${planName}`;
+	}
+
 	switch (relationship) {
 		case "current": {
-			return `You are currently on the ${planName} plan.`;
+			const intervalText = billingInterval === "annual" ? "yearly" : "monthly";
+			return `You are currently on the ${planName} plan (${intervalText}).`;
+		}
+
+		case "switch-interval": {
+			const intervalText = billingInterval === "annual" ? "yearly" : "monthly";
+			return `Switch to ${intervalText} billing for the same ${planName} plan.`;
 		}
 
 		case "downgrade": {
-			return `Downgrade to ${planName} plan. Your current features will be limited.`;
+			if (hasSubscriptionId) {
+				return `Downgrade to ${planName} plan. Your current features will be limited.`;
+			}
+			return `Switch to ${planName} plan to change your features.`;
 		}
 
 		case "upgrade": {
 			if (isFree) {
+				if (hasSubscriptionId) {
+					return `Downgrade to ${planName} plan. Your subscription will be cancelled.`;
+				}
 				return "Free plan is always available. Sign up to get started!";
 			}
-			return `Upgrade to ${planName} to unlock additional features and capabilities.`;
+			if (hasSubscriptionId) {
+				return `Upgrade to ${planName} to unlock additional features and capabilities.`;
+			}
+			return `Get ${planName} to unlock additional features and capabilities.`;
 		}
 
 		default: {
@@ -183,16 +312,42 @@ const getTooltipMessage = (
 };
 
 export default function PricingSection() {
-	const hasAccess = useCheckAccess();
 	const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
 		"annual",
 	);
-	const { data: session } = useSession();
-	const user = session?.user;
+	const userStore = useUserStore();
+	const { open: openPlanSelector } = usePlanSelectorStore();
+	const { openModal } = useAuthModalStore();
+	const { status } = useSession();
 
-	// Validate all required fields before usage
-	const userPlanType = user?.plan.toLowerCase() as PlanType | undefined;
+	// Normalize and validate user plan type and billing interval
+	const userPlanType = userStore?.plan?.toLowerCase().trim() as
+		| PlanType
+		| undefined;
+
+	const userBillingInterval = normalizeBillingInterval(
+		userStore?.billing_interval,
+	);
+
 	const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
+
+	// Check if user is authenticated
+	const isAuthenticated = Boolean(
+		userStore?.email && status === "authenticated",
+	);
+
+	// Check if user has active subscription (Paddle or Stripe)
+	const hasActiveSubscription = Boolean(
+		userStore?.paddle_subscription_id ||
+			userStore?.stripe_subscription_id ||
+			userStore?.has_active_subscription ||
+			userStore?.subscription_status === "active",
+	);
+
+	// Check if user has subscription ID (either Paddle or Stripe)
+	const hasSubscriptionId = Boolean(
+		userStore?.paddle_subscription_id || userStore?.stripe_subscription_id,
+	);
 
 	// Sort plans to ensure popular plan is in the middle
 	const sortedPlans: Plan[] = [...pricingData.plans].sort((planA, planB) => {
@@ -238,8 +393,71 @@ export default function PricingSection() {
 		return plan.price.productIds[billingCycle];
 	};
 
+	const handlePlanAction = (
+		plan: Plan,
+		relationship: "current" | "upgrade" | "downgrade" | "switch-interval",
+	) => {
+		const isFree = isFreePlan(plan.name);
+
+		if (!isAuthenticated) {
+			openModal("signup");
+		}
+
+		// Don't do anything for current plan
+		if (relationship === "current") {
+			return;
+		}
+
+		// If user has subscription ID, use plan selector for upgrades/downgrades/switches
+		// This now includes free plans when user has subscription_id
+		if (hasSubscriptionId && userStore?.plan && isAuthenticated) {
+			const currentBillingInterval = userBillingInterval;
+
+			switch (relationship) {
+				case "upgrade": {
+					// For free plans with subscription_id, this is actually a downgrade
+					if (isFree) {
+						openPlanSelector(
+							"downgrade",
+							userStore.plan.toLowerCase(),
+							currentBillingInterval,
+						);
+					} else {
+						openPlanSelector(
+							"upgrade",
+							userStore.plan.toLowerCase(),
+							currentBillingInterval,
+						);
+					}
+					break;
+				}
+				case "downgrade": {
+					openPlanSelector(
+						"downgrade",
+						userStore.plan.toLowerCase(),
+						currentBillingInterval,
+					);
+					break;
+				}
+				case "switch-interval": {
+					openPlanSelector(
+						"switch-interval" as any, // Type assertion if needed
+						userStore.plan.toLowerCase(),
+						billingCycle, // Target billing cycle
+					);
+					break;
+				}
+				// No default
+			}
+			return;
+		}
+
+		// For authenticated users without subscription IDs, or unauthenticated users
+		// Use Paddle checkout (handled by PaddleCheckout component)
+	};
+
 	return (
-		<section className="w-full dark:bg-black">
+		<section className="mb-[100px] w-full py-10">
 			<div className="container mx-auto w-full px-2 lg:px-24">
 				{/* Header */}
 				<div className="mb-8 text-center">
@@ -300,24 +518,53 @@ export default function PricingSection() {
 							billingCycle === "annual" && !isFree ? currentPrice : 0;
 						const { dollars, cents } = formatPrice(isFree ? 0 : displayPrice);
 
-						// Determine relationship between user's current plan and this plan
+						// Enhanced relationship detection considering billing interval
 						const relationship = userPlanType
-							? getPlanRelationship(userPlanType, plan.name)
+							? getPlanRelationship(
+									userPlanType,
+									userBillingInterval,
+									plan.name.toLowerCase(),
+									billingCycle,
+								)
 							: "upgrade";
 
 						// Get button configuration based on relationship
 						const buttonConfig = getButtonTextAndVariant(
 							plan,
-							userPlanType || "free",
-							hasAccess ? relationship : "unauthenticated",
+							userPlanType || "basic",
+							userBillingInterval,
+							billingCycle,
+							isAuthenticated ? relationship : "unauthenticated",
+							hasActiveSubscription,
+							hasSubscriptionId,
+							isAuthenticated,
 						);
 
 						// Get tooltip message
 						const tooltipMessage = getTooltipMessage(
 							relationship,
 							plan.name,
+							billingCycle,
 							isFree,
+							hasSubscriptionId,
+							isAuthenticated,
 						);
+
+						// FIXED: Determine if we should use plan selector vs paddle checkout
+						// Now includes free plans when user has subscription_id
+						const shouldUsePlanSelector =
+							isAuthenticated &&
+							hasSubscriptionId &&
+							relationship !== "current";
+
+						// Enhanced current plan badge logic
+						const isCurrentPlanAndInterval =
+							relationship === "current" &&
+							isAuthenticated &&
+							userPlanType &&
+							normalizePlanName(userPlanType) ===
+								normalizePlanName(plan.name) &&
+							userBillingInterval === billingCycle;
 
 						return (
 							<Card
@@ -346,21 +593,27 @@ export default function PricingSection() {
 									)}
 								>
 									{/* Plan Header */}
-									<div className="mb-8">
+									<div className="mb-4">
 										<div className="mb-3 flex items-center gap-3">
 											<h3 className="text-2xl font-medium text-black dark:text-white">
-												{plan.name === "Free" ? "Starter" : plan.name}
+												{plan.name === "Basic" ? "Starter" : plan.name}
 											</h3>
 											{previousPrice && (
 												<span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
 													Save {calculateDiscount(previousPrice, currentPrice)}%
 												</span>
 											)}
-											{relationship === "current" && (
+											{isCurrentPlanAndInterval && (
 												<span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
 													Current
 												</span>
 											)}
+											{relationship === "switch-interval" &&
+												isAuthenticated && (
+													<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+														Switch Billing
+													</span>
+												)}
 										</div>
 										<p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
 											{plan.badge}
@@ -368,7 +621,7 @@ export default function PricingSection() {
 									</div>
 
 									{/* Pricing */}
-									<div className="mb-8">
+									<div className="mb-5">
 										<div className="mb-2 flex items-baseline gap-2">
 											<div className="flex items-baseline">
 												<span className="text-5xl font-light text-black dark:text-white">
@@ -411,88 +664,76 @@ export default function PricingSection() {
 									</div>
 
 									{/* CTA Button */}
-									{isFree && relationship !== "downgrade" ? (
-										<PaddleCheckout
-											locale="en"
-											theme="light"
-											displayMode="overlay"
-											environment={
-												process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
-													| "sandbox"
-													| "production"
-											}
-											productId={productId}
-											tooltipMessage={hasAccess ? tooltipMessage : undefined}
-											forceDisabled={hasAccess ? buttonConfig.disabled : false}
-											disabledReason={
-												hasAccess
-													? relationship === "current"
-														? "current-plan"
-														: undefined
-													: undefined
-											}
+									{shouldUsePlanSelector ? (
+										<Button
+											variant={buttonConfig.variant}
+											className={cn(
+												"mb-8 w-full py-3",
+												buttonConfig.variant === "outline"
+													? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
+													: "",
+											)}
+											disabled={buttonConfig.disabled}
+											onClick={() => handlePlanAction(plan, relationship)}
 										>
-											<Button
-												variant={buttonConfig.variant}
-												className={cn(
-													"mb-8 w-full py-3",
-													buttonConfig.variant === "outline"
-														? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
-														: "",
-												)}
-												disabled={buttonConfig.disabled}
-											>
-												{buttonConfig.icon}
-												{buttonConfig.text}
-											</Button>
-										</PaddleCheckout>
+											{buttonConfig.icon}
+											{buttonConfig.text}
+										</Button>
 									) : (
-										<PaddleCheckout
-											locale="en"
-											theme="light"
-											displayMode="overlay"
-											environment={
-												process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
-													| "sandbox"
-													| "production"
-											}
-											productId={productId}
-											tooltipMessage={hasAccess ? tooltipMessage : undefined}
-											forceDisabled={hasAccess ? buttonConfig.disabled : false}
-											disabledReason={
-												hasAccess
-													? relationship === "current"
-														? "current-plan"
-														: undefined
-													: undefined
-											}
-										>
-											<Button
-												size="sm"
-												key={plan.name}
-												variant={buttonConfig.variant}
-												disabled={buttonConfig.disabled}
-												className={cn(
-													"w-full py-3 font-medium transition-all duration-200",
-													buttonConfig.variant === "default" && isPro
-														? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-														: buttonConfig.variant === "default"
-															? "bg-gray-900 text-white hover:bg-black dark:bg-gray-100 dark:text-black dark:hover:bg-white"
-															: buttonConfig.variant === "outline"
+										<>
+											{isAuthenticated ? (
+												<PaddleCheckout
+													locale="en"
+													theme="light"
+													displayMode="overlay"
+													environment={
+														process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
+															| "sandbox"
+															| "production"
+													}
+													productId={productId}
+													tooltipMessage={tooltipMessage}
+													forceDisabled={buttonConfig.disabled}
+													disabledReason={
+														relationship === "current"
+															? "current-plan"
+															: undefined
+													}
+												>
+													<Button
+														variant={buttonConfig.variant}
+														className={cn(
+															"mb-8 w-full py-3",
+															buttonConfig.variant === "outline"
 																? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
 																: "",
-													relationship === "downgrade" &&
-														"border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900",
-												)}
-											>
-												{buttonConfig.icon}
-												{buttonConfig.text}
-											</Button>
-										</PaddleCheckout>
+														)}
+														disabled={buttonConfig.disabled}
+													>
+														{buttonConfig.icon}
+														{buttonConfig.text}
+													</Button>
+												</PaddleCheckout>
+											) : (
+												<Button
+													variant={buttonConfig.variant}
+													className={cn(
+														"mb-8 w-full py-3",
+														buttonConfig.variant === "outline"
+															? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
+															: "",
+													)}
+													onClick={() => handlePlanAction(plan, relationship)}
+												>
+													{buttonConfig.icon}
+													{buttonConfig.text}
+												</Button>
+											)}
+										</>
 									)}
 
 									{/* Features */}
-									<div className="space-y-4">
+									<div className="-mt-2 space-y-4">
 										{plan.features.map(
 											(feature: string | PlanFeature, featureIndex: Key) => {
 												const featureName =

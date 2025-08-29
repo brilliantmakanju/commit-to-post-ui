@@ -1013,7 +1013,7 @@
 // 								</form>
 // 							) : (
 // 								<Button className="h-auto bg-[#D35400] px-8 py-6 text-lg text-white shadow-lg transition-shadow hover:bg-[#A04000] hover:shadow-xl">
-// 									Get Started for Free
+// 									Get Started for Basic
 // 									<span className="ml-2">→</span>
 // 								</Button>
 // 							)}

@@ -13,7 +13,7 @@ export const refundPolicyData = {
 			title: "1. Available Plans",
 			content: [
 				"Push to Post currently offers the following plans:",
-				"- Starter Plan: Free with limited features. No payment required.",
+				"- Basic Plan: Free with limited features. No payment required.",
 				"- Pro Plan: A paid plan with access to more tools and flexibility.",
 				"- Studio Plan: A paid plan for teams that need advanced features and collaboration tools.",
 				"This refund policy only applies to paid plans (Pro and Studio).",
@@ -60,7 +60,7 @@ export const refundPolicyData = {
 			title: "6. When Refunds Are Not Provided",
 			content: [
 				"Refunds will not be granted in the following situations:",
-				"- You are using the free Starter Plan",
+				"- You are using the basic Plan",
 				"- Your annual plan renewal has already been charged",
 				"- There is evidence of policy violations or abuse of the refund process",
 				"- The refund request is based on preference changes after active use of the platform",

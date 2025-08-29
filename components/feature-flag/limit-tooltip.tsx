@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/tooltip";
 import { limitConfig } from "@/lib/constants/limit-config";
 import { LimitTooltipProps } from "@/types/feature-limits";
+import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
+import useUserStore from "@/zustand/useuser-store";
 
 import { Button } from "../ui/button";
 
@@ -23,10 +25,12 @@ function LimitTooltip({
 	customMessage,
 	position = "top",
 }: LimitTooltipProps) {
+	const useStore = useUserStore();
+	const { open } = usePlanSelectorStore();
+
 	// clamp percentage
 	const rawPercentage = (currentUsage / maxLimit) * 100;
 	const percentage = Math.min(Math.round(rawPercentage), 100);
-
 	const isNearLimit = percentage >= 80 && percentage < 100;
 	const isAtLimit = rawPercentage >= 100;
 	const shouldShow = isNearLimit || isAtLimit;
@@ -90,6 +94,13 @@ function LimitTooltip({
 						{/* Upgrade Button */}
 						<div className="w-full pt-1">
 							<Button
+								onClick={() => {
+									open(
+										"upgrade",
+										useStore.plan.toLowerCase(),
+										useStore.billing_interval as "monthly" | "annual",
+									);
+								}}
 								className={
 									"flex w-full items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 focus:ring-arch-black focus:ring-opacity-20 disabled:cursor-not-allowed disabled:opacity-50"
 								}

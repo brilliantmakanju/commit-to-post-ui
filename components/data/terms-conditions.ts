@@ -68,7 +68,7 @@ export const termsData = {
 		{
 			title: "8. Plans and Features",
 			content: [
-				"We currently offer three subscription options: Starter (Free), Pro, and Studio.",
+				"We currently offer three subscription options: Starter (Basic), Pro, and Studio.",
 				"Each plan includes different features and usage limits. These are clearly shown on our website when you subscribe.",
 				"We may update or adjust pricing and features at any time. If this affects active subscribers, we will notify them in advance.",
 				"We do not offer lifetime access or one-time payment plans.",
