@@ -9,7 +9,7 @@ export interface FeatureFlag {
 	updatedAt: Date;
 	description: string;
 	requiresAuth: boolean;
-	requiresPlan?: "free" | "pro" | "studio";
+	requiresPlan?: "basic" | "pro" | "studio";
 	category: "stats" | "subscription" | "general" | "experimental";
 }
 
@@ -141,7 +141,7 @@ const useFeatureFlagsStore = create<FeatureFlagsState & FeatureFlagsActions>()(
 
 				// Check plan requirement
 				if (flag.requiresPlan && userPlan) {
-					const planHierarchy = { free: 0, pro: 1, studio: 2 };
+					const planHierarchy = { basic: 0, pro: 1, studio: 2 };
 					const userPlanLevel =
 						planHierarchy[
 							userPlan.toLowerCase() as keyof typeof planHierarchy

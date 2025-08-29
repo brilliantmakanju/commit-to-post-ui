@@ -38,7 +38,7 @@ export const hasAdvancedStatsAccess = (
 ): boolean => {
 	if (!isAuthenticated) return false;
 
-	const planHierarchy = { free: 0, pro: 1, studio: 2 };
+	const planHierarchy = { basic: 0, pro: 1, studio: 2 };
 	const userPlanLevel =
 		planHierarchy[userPlan as keyof typeof planHierarchy] ?? -1;
 
@@ -53,7 +53,7 @@ export const hasRealTimeStatsAccess = (
 ): boolean => {
 	if (!isAuthenticated) return false;
 
-	const planHierarchy = { free: 0, pro: 1, studio: 2 };
+	const planHierarchy = { basic: 0, pro: 1, studio: 2 };
 	const userPlanLevel =
 		planHierarchy[userPlan as keyof typeof planHierarchy] ?? -1;
 
@@ -89,7 +89,7 @@ export const requiresUpgrade = (
 
 	if (!flag || !flag.requiresPlan) return false;
 
-	const planHierarchy = { free: 0, pro: 1, studio: 2 };
+	const planHierarchy = { basic: 0, pro: 1, studio: 2 };
 	const userPlanLevel =
 		planHierarchy[userPlan as keyof typeof planHierarchy] ?? -1;
 	const requiredPlanLevel = planHierarchy[flag.requiresPlan];

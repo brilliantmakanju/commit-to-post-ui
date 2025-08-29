@@ -56,30 +56,36 @@ export const requestMagicLink = async (
 
 // Function to verify a magic link
 export const verifyAndLogin = async (data: any) => {
-	// Validate the data using Zod schema
 	const parsedData = magicLinkSchemaToken.parse(data);
-	const { token } = parsedData; // Extract token from parsedData
+	const { token } = parsedData;
 
 	try {
-		await signIn("credentials", {
+		const response = await signIn("credentials", {
 			token,
 			email: "",
 			password: "",
 			redirect: false,
 			magicLink: true,
 		});
+
+		// NextAuth returns an object like { ok: true, error: null } or { error: "CredentialsSignin" }
+		if (response?.error) {
+			if (response.error === "CredentialsSignin") {
+				return { message: "Invalid credentials." };
+			}
+			return { message: "Something went wrong." };
+		}
+
+		// Explicitly return success
+		return { message: "success" };
 	} catch (error) {
 		if (error instanceof AuthError) {
 			switch (error.type) {
 				case "CredentialsSignin": {
-					return {
-						message: "Invalid credentials.",
-					};
+					return { message: "Invalid credentials." };
 				}
 				default: {
-					return {
-						message: "Something went wrong.",
-					};
+					return { message: "Something went wrong." };
 				}
 			}
 		}

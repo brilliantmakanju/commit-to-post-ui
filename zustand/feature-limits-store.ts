@@ -18,7 +18,7 @@ export interface FeatureLimit {
 	requiresAuth: boolean;
 	limits: {
 		pro: number;
-		free: number;
+		basic: number;
 		studio: number;
 	};
 	category: FeatureCategory;
@@ -86,7 +86,7 @@ const useFeatureLimitsStore = create<
 				if (!limit) return 0;
 
 				const planKey = userPlan?.toLowerCase() as keyof typeof limit.limits;
-				return limit.limits[planKey] ?? limit.limits.free;
+				return limit.limits[planKey] ?? limit.limits.basic;
 			},
 
 			canAddMore: (

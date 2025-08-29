@@ -93,7 +93,7 @@ export const authSubscribe = async ({
 	plans,
 	billingCycle,
 }: {
-	plans: "Free" | "Pro" | "Lifetime Deal" | "Custom";
+	plans: "Basic" | "Pro" | "Lifetime Deal" | "Custom";
 	billingCycle?: "monthly" | "annual"; // Optional for Pro, ignored for LTD
 }): Promise<{
 	success: boolean;
@@ -117,7 +117,7 @@ export const authSubscribe = async ({
 
 				break;
 			}
-			case "Free": {
+			case "Basic": {
 				planId = "free_plan_id";
 
 				break;
