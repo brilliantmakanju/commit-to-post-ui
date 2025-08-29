@@ -385,7 +385,7 @@ const WebHookOptions: React.FC = () => {
 					<ul className="list-inside space-y-1">
 						<li className="flex items-start">
 							<span className="mr-2 text-[#4F46E5]">•</span>
-							<span>Free: Can only use the Professional tone</span>
+							<span>Basic: Can only use the Professional tone</span>
 						</li>
 						<li className="flex items-start">
 							<span className="mr-2 text-[#4F46E5]">•</span>

@@ -3,11 +3,18 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { Suspense, useEffect, useState } from "react";
+import React, {
+	Suspense,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
 import { RequestInterceptor } from "@/components/interceptor";
+import PlanSelector from "@/components/landing/pricing/v4/payment-selector";
 import { useSessionManager } from "@/components/tracker/auth-tracker";
 import {
 	SidebarInset,
@@ -19,6 +26,7 @@ import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { logout, signOut } from "@/server-actions/auth/signout";
 import useLogoutStore from "@/zustand/logout-store";
+import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
 import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
@@ -46,14 +54,61 @@ const LoadingScreen = ({ message }: { message?: string }) => (
 	</div>
 );
 
+// Helper function to sync user data with proper date parsing
+const parseDate = (dateString: string | undefined) => {
+	if (!dateString) return;
+	return new Date(dateString);
+};
+
+export const syncUserData = (userData: any) => {
+	return {
+		// Existing fields
+		plan: userData.plan || "basic",
+		subscription_status: userData.subscription_status || "inactive",
+		subscription_end_date: parseDate(userData.subscription_end_date),
+		email: userData.email || "",
+		first_name: userData.first_name || "",
+		last_name: userData.last_name || "",
+		bio: userData.bio || "",
+		github_connected: userData.github_connected || false,
+		google_connected: userData.google_connected || false,
+		stripe_subscription_id: userData.stripe_subscription_id || "",
+		preferences: userData.preferences || {},
+		hasHydratedUser: true,
+
+		// NEW SUBSCRIPTION FIELDS
+		subscription_start_date: parseDate(userData.subscription_start_date),
+		paddle_subscription_id: userData.paddle_subscription_id || undefined,
+		billing_interval: userData.billing_interval || undefined,
+		current_price_id: userData.current_price_id || undefined,
+		pending_plan_change: userData.pending_plan_change || undefined,
+		pending_plan_effective_date: parseDate(
+			userData.pending_plan_effective_date,
+		),
+		payment_grace_period_end: parseDate(userData.payment_grace_period_end),
+		last_successful_payment: parseDate(userData.last_successful_payment),
+		payment_retry_count: userData.payment_retry_count || 0,
+
+		// HELPER FLAGS
+		has_active_subscription: userData.has_active_subscription || false,
+		is_in_grace_period: userData.is_in_grace_period || false,
+		current_billing_type: userData.current_billing_type || undefined,
+	};
+};
+
+
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const router = useRouter();
 	const userStore = useUserStore();
+	const hasSyncedRef = useRef(false);
 	const logoutStore = useLogoutStore();
 	const { data: session, status } = useSession();
 	const organizationStore = useOrganizationStore();
+	const { setUser, hasHydratedUser } = useUserStore();
 	const [onboardingChecked, setOnboardingChecked] = useState(false);
 
+	const { isOpen, close, type, currentPlanId, currentInterval } =
+		usePlanSelectorStore();
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
 	const [cookieValidated, setCookieValidated] = useState(false);
@@ -71,6 +126,20 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		inactivityTimeout: 30, // 30 minutes of inactivity
 		warningTime: 5, // Warn 5 minutes before logout
 	});
+
+	// Memoized sync function to prevent recreations
+	const syncUserStoreData = useCallback(
+		(userData: any) => {
+			if (hasSyncedRef.current) return; // Prevent multiple syncs
+
+			try {
+				const syncedData = syncUserData(userData);
+				setUser(syncedData);
+				hasSyncedRef.current = true;
+			} catch {}
+		},
+		[setUser],
+	);
 
 	// Initialize client state
 	useEffect(() => {
@@ -122,6 +191,18 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			clearTimeout(timeout);
 		};
 	}, [isClient, logoutStore, organizationStore, router, userStore]);
+
+	// Single effect to handle user store synchronization
+	useEffect(() => {
+		if (
+			status === "authenticated" &&
+			session?.user &&
+			!hasHydratedUser &&
+			!hasSyncedRef.current
+		) {
+			syncUserStoreData(session.user);
+		}
+	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
 
 	// --- New user onboarding guard (client-side) ---
 	useEffect(() => {
@@ -255,6 +336,16 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					{/* <MaintenanceCornerBanner /> */}
 				</div>
 			</SidebarProvider>
+
+			<PlanSelector
+				type={type || "upgrade"}
+				open={isOpen}
+				currentPlanId={currentPlanId || ""}
+				onOpenChange={open => {
+					if (!open) close();
+				}}
+				currentInterval={currentInterval}
+			/>
 		</>
 	);
 }

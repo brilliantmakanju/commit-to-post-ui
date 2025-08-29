@@ -24,7 +24,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		id: FEATURE_LIMITS.REPOSITORIES,
 		description: "Maximum number of GitHub repositories you can connect.",
 		limits: {
-			free: 1, // Free: 1 repository
+			basic: 1, // Basic: 1 repository
 			pro: 5, // Pro: 5 repositories
 			studio: 300, // Studio: 300 repositories
 		},
@@ -37,7 +37,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		id: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
 		description: "Maximum number of social media accounts you can integrate.",
 		limits: {
-			free: 1, // Free: 1 social account (LinkedIn only)
+			basic: 1, // Basic: 1 social account (LinkedIn only)
 			pro: 5, // Pro: 5 social accounts
 			studio: 25, // Studio: 20 social accounts
 		},
@@ -50,7 +50,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		id: FEATURE_LIMITS.WORKSPACES,
 		description: "Maximum number of workspaces you can create.",
 		limits: {
-			free: 1, // Free: 1 workspace
+			basic: 1, // Basic: 1 workspace
 			pro: 3, // Pro: 3 workspaces
 			studio: 10, // Studio: 10 workspaces
 		},

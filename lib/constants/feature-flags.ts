@@ -33,7 +33,7 @@ export const DEFAULT_FEATURE_FLAGS: Record<
 		enabled: true,
 		category: "stats",
 		requiresAuth: true,
-		requiresPlan: "free", // Basic stats available for free users
+		requiresPlan: "basic", // Basic stats available for basic users
 		name: "Stats Dashboard",
 		id: FEATURE_FLAGS.STATS_DASHBOARD,
 		description: "Enable the main statistics dashboard for users",
@@ -75,7 +75,7 @@ export const DEFAULT_FEATURE_FLAGS: Record<
 		description: "Enable historical statistics and trends",
 		enabled: true,
 		category: "stats",
-		requiresPlan: "free", // Historical data for all users
+		requiresPlan: "basic", // Historical data for all users
 		requiresAuth: true,
 	},
 

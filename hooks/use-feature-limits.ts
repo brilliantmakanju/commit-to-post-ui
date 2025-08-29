@@ -6,9 +6,11 @@ import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import useFeatureLimitsStore, {
 	FeatureCategory,
 } from "@/zustand/feature-limits-store";
+import useUserStore from "@/zustand/useuser-store";
 
 export const useFeatureLimit = (limitId: string, currentCount: number = 0) => {
 	const { data: session } = useSession();
+	const useStore = useUserStore();
 	const { getLimitForPlan, canAddMore, getRemainingCount, limits, isLoading } =
 		useFeatureLimitsStore();
 
@@ -20,7 +22,7 @@ export const useFeatureLimit = (limitId: string, currentCount: number = 0) => {
 	}, [limits]);
 
 	const isAuthenticated = !!session?.user;
-	const userPlan = session?.user?.plan.toLocaleLowerCase();
+	const userPlan = useStore.plan.toLocaleLowerCase();
 
 	const limit = useMemo(() => {
 		return getLimitForPlan(limitId, userPlan);
