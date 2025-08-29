@@ -36,7 +36,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface PaymentFormProps {
-	selectedPlan: "free" | "pro" | "lifetime";
+	selectedPlan: "basic" | "pro" | "lifetime";
 	billingCycle: "monthly" | "annual";
 }
 
@@ -74,8 +74,8 @@ export function PaymentForm({ selectedPlan, billingCycle }: PaymentFormProps) {
 		let planPrice = "$12/month";
 
 		switch (selectedPlan) {
-			case "free": {
-				planName = "Free Plan";
+			case "basic": {
+				planName = "Basic Plan";
 				planPrice = "$0";
 
 				break;

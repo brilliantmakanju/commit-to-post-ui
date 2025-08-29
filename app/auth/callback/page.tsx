@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import type React from "react";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { FaGithub, FaLinkedin, FaTimes, FaTwitter } from "react-icons/fa";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { MdCheckCircle, MdError, MdRefresh } from "react-icons/md";
 
 // eslint-disable-next-line import/no-unresolved

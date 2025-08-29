@@ -41,7 +41,7 @@ async function proPlanAction({
 	plan,
 	type,
 }: {
-	plan: "Free" | "Pro" | "Lifetime Deal" | "Custom";
+	plan: "Basic" | "Pro" | "Lifetime Deal" | "Custom";
 	type: "monthly" | "annual";
 }) {
 	await deleteCookie("subscribing");
@@ -96,7 +96,7 @@ const Pricing = () => {
 		plan,
 		type,
 	}: {
-		plan: "Free" | "Pro" | "Lifetime Deal" | "Custom";
+		plan: "Basic" | "Pro" | "Lifetime Deal" | "Custom";
 		type: "monthly" | "annual";
 	}) {
 		try {
@@ -277,7 +277,7 @@ const Pricing = () => {
 									onClick={() =>
 										activatePlan({
 											plan: plan.name as
-												| "Free"
+												| "Basic"
 												| "Pro"
 												| "Lifetime Deal"
 												| "Custom",

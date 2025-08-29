@@ -24,7 +24,7 @@ import { WebhookSetup } from "./repos/webhook-setup";
 // Utility function
 const getPlanLimits = (plan: any) => {
 	switch (plan) {
-		case "free": {
+		case "basic": {
 			return { maxRepos: 1, maxSelection: 1 };
 		}
 		case "pro": {
@@ -114,14 +114,6 @@ const ConnectRepoOnboarding = () => {
 	});
 
 	const shouldShowUpgradePrompt = repoLimitUI.isAtLimit;
-
-	// const shouldShowUpgradePrompt = useMemo(() => {
-	// 	const plan = session?.user.plan;
-	// 	return (
-	// 		(plan === "free" && totalRepositories >= 1) ||
-	// 		(plan === "pro" && totalRepositories >= 5)
-	// 	);
-	// }, [session?.user.plan, totalRepositories]);
 
 	const selectedRepoNames = useMemo(() => {
 		return selectedRepo

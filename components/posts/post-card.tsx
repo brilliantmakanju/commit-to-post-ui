@@ -335,7 +335,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, showFullDate = false }) => {
 													</TooltipTrigger>
 													<TooltipContent className="rounded-lg border border-zinc-700/50 bg-zinc-800/95 text-white backdrop-blur-md">
 														<p>
-															Feature not available for free plan, upgrade to
+															Feature not available for basic plan, upgrade to
 															use feature
 														</p>
 													</TooltipContent>

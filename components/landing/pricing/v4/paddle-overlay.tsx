@@ -11,7 +11,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useCheckAccess } from "@/hooks/plans/use-billing";
 import { cn } from "@/lib/utils";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useUserStore from "@/zustand/useuser-store";
@@ -45,8 +44,8 @@ export default function PaddleCheckout({
 	forceDisabled = false,
 	disabledReason,
 }: PaddleCheckoutProps) {
-	const hasAccess = useCheckAccess();
-	const { status, data } = useSession();
+	const { status } = useSession();
+	const useStore = useUserStore();
 	const [loading, setLoading] = useState(false);
 	const [paddle, setPaddle] = useState<Paddle | undefined>();
 	const { openModal } = useAuthModalStore();
@@ -67,13 +66,6 @@ export default function PaddleCheckout({
 				if (disabledReason === "current-plan") {
 					return;
 				}
-
-				// Handle existing subscription check only for upgrades
-				if (hasAccess) {
-					toast.info("You already have an active subscription.");
-					return;
-				}
-
 				setLoading(true);
 
 				try {
@@ -85,12 +77,12 @@ export default function PaddleCheckout({
 							},
 						],
 						customer: {
-							email: data?.user?.email || "",
+							email: useStore.email || "",
 						},
 						settings: {
 							theme: theme,
 							locale: locale,
-							allowLogout: true,
+							allowLogout: false,
 							showAddTaxId: true,
 							variant: "one-page",
 							showAddDiscounts: false,
@@ -99,6 +91,7 @@ export default function PaddleCheckout({
 							allowedPaymentMethods: ["card", "paypal"],
 						},
 					});
+
 					setLoading(false);
 				} catch {
 					toast.error("Failed to open checkout. Please try again.");
@@ -111,12 +104,14 @@ export default function PaddleCheckout({
 		}
 	};
 
-	// Determine if component should be disabled
+	// Fix the disabled logic - this was the main issue
 	const isDisabled =
 		!paddle ||
 		loading ||
 		forceDisabled ||
-		(hasAccess && disabledReason !== "current-plan");
+		disabledReason === "current-plan" ||
+		disabledReason === "has-access" ||
+		disabledReason === "not-initialized";
 
 	// Determine tooltip content and visibility
 	const getTooltipContent = (): string => {
@@ -140,9 +135,6 @@ export default function PaddleCheckout({
 				return "Processing...";
 			}
 			default: {
-				if (hasAccess && disabledReason !== "current-plan") {
-					return "You already have an active subscription.";
-				}
 				if (!paddle) {
 					return "Payment system is initializing...";
 				}
@@ -165,17 +157,19 @@ export default function PaddleCheckout({
 			>
 				<TooltipTrigger
 					asChild
-					className="relative flex w-full items-center justify-center"
+					className="relative mx-4 flex w-full items-center justify-center"
 				>
 					<div
 						onClick={() => {
-							handleCheckout();
 							if (!isDisabled) {
+								handleCheckout();
 							}
 						}}
 						className={cn(
-							"relative mb-8 w-full transition-all duration-200",
-							"cursor-pointer opacity-100 hover:opacity-90 active:scale-95",
+							"relative w-full transition-all duration-200",
+							isDisabled
+								? "cursor-not-allowed opacity-60"
+								: "cursor-pointer opacity-100 hover:opacity-90 active:scale-95",
 						)}
 					>
 						{loading && (
@@ -190,9 +184,8 @@ export default function PaddleCheckout({
 				</TooltipTrigger>
 				{tooltipContent && (
 					<TooltipContent
-						side="bottom"
+						side="top"
 						align="center"
-						sideOffset={0.5}
 						className="max-w-xs border border-gray-200 bg-black text-center text-white dark:border-gray-700 dark:bg-white dark:text-black"
 					>
 						<p className="text-xs">{tooltipContent}</p>
