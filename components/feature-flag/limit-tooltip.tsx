@@ -13,6 +13,7 @@ import {
 import { limitConfig } from "@/lib/constants/limit-config";
 import { LimitTooltipProps } from "@/types/feature-limits";
 import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
+import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
 import { Button } from "../ui/button";
@@ -27,6 +28,69 @@ function LimitTooltip({
 }: LimitTooltipProps) {
 	const useStore = useUserStore();
 	const { open } = usePlanSelectorStore();
+	const { organization } = useOrganizationStore();
+
+	// If org is downgraded → always show tooltip
+	if (organization?.is_downgraded) {
+		return (
+			<TooltipProvider delayDuration={100}>
+				<Tooltip>
+					{/* Wrap children so they look & act disabled */}
+					<TooltipTrigger>
+						<div className="relative w-full">
+							{/* The real child, but visually muted */}
+							<div className="pointer-events-none opacity-50">{children}</div>
+
+							{/* Invisible blocker so child is not clickable */}
+							<div className="absolute inset-0 cursor-not-allowed" />
+						</div>
+					</TooltipTrigger>
+					<TooltipContent
+						side={position}
+						sideOffset={8}
+						collisionPadding={16}
+						className="w-64 rounded border border-gray-600 bg-arch-white shadow-lg"
+					>
+						{/* Header */}
+						<div className="border-b border-gray-600 p-3">
+							<div className="flex items-center gap-2">
+								<div className="flex h-4 w-4 items-center justify-center">
+									<FaExclamationTriangle className="h-3 w-3 text-gray-600" />
+								</div>
+								<span className="text-xs font-medium text-arch-black">
+									Plan Downgraded
+								</span>
+							</div>
+						</div>
+
+						{/* Content */}
+						<div className="space-y-3 p-3">
+							<p className="text-xs text-arch-black">
+								Your organization’s plan has been downgraded. Some features are
+								restricted until you upgrade again.
+							</p>
+
+							{/* Upgrade Button */}
+							<div className="w-full pt-1">
+								<Button
+									onClick={() => {
+										open(
+											"upgrade",
+											useStore.plan.toLowerCase(),
+											useStore.billing_interval as "monthly" | "annual",
+										);
+									}}
+									className="flex w-full items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark"
+								>
+									Upgrade Plan
+								</Button>
+							</div>
+						</div>
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+		);
+	}
 
 	// clamp percentage
 	const rawPercentage = (currentUsage / maxLimit) * 100;
@@ -38,7 +102,6 @@ function LimitTooltip({
 	const config = limitConfig[limitType];
 
 	if (!shouldShow) {
-		// just render children without tooltip if no need
 		return <>{children}</>;
 	}
 

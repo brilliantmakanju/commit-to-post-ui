@@ -7,6 +7,8 @@ import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
+import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { SocialConnection as SocialConnectionList } from "@/components/onboarding/v2/screens/repos/social-connection";
 import ConnectRepoSocialOnboarding from "@/components/onboarding/v2/screens/repos/social-selection";
 import { Button } from "@/components/ui/button";
@@ -17,10 +19,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import useRepoDetails from "@/hooks/core/repo/get-repo-detail-hook";
+import { useLimitUI } from "@/hooks/use-limit-ui";
+import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
+import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
+import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import {
 	connectRepoSocial,
 	disconnectRepoSocial,
 } from "@/server-actions/core/repo/social-connect";
+import useOrganizationStore from "@/zustand/useorganization-store";
 
 // Updated Types to match new API response
 type Platform = "linkedin" | "slack" | "discord" | "twitter";
@@ -90,6 +97,7 @@ export const RepoChannelSettingsCard = ({
 	loading = true,
 }: RepoChannelSettingsCardProps) => {
 	const queryClient = useQueryClient();
+	const { organization } = useOrganizationStore();
 
 	const { repoDetails: repository, isLoadingRepoDetails } =
 		useRepoDetails(repo_id);
@@ -193,6 +201,9 @@ export const RepoChannelSettingsCard = ({
 						selected: selectedIntegrationIds.includes(social.id),
 					})),
 				);
+				// Re-init limits & flags
+				initializeFeatureFlags();
+				initializeFeatureLimits();
 			} else {
 				toast.error(response.message || "Failed to save social connections");
 			}
@@ -230,45 +241,64 @@ export const RepoChannelSettingsCard = ({
 		setIsConnecting(false);
 	};
 
+	const isActuallyConnected = (socialId: string) => {
+		// If connectedIntegrationIds is not provided, assume all socials are connected (backwards compatibility)
+		if (!localSettings.connected_integration_ids) return true;
+		return localSettings.connected_integration_ids.includes(socialId);
+	};
+
 	// Remove a social from list
 	const handleRemoveSocial = async (index: number) => {
 		const socialToRemove = socials[index];
 		if (!socialToRemove) return;
 
-		// Start loading for this specific index
-		setRemovingIndex(true);
+		// If it's not actually connected, just remove it locally
+		if (!isActuallyConnected(socialToRemove.id)) {
+			const updatedSocials = socials.filter(
+				(_, socialIndex) => socialIndex !== index,
+			);
 
+			setSocials(updatedSocials);
+
+			// Also update connected integration IDs
+			const updatedConnectedIds = updatedSocials
+				.filter(social => social.selected)
+				.map(social => social.id);
+
+			onChange("connected_integration_ids", updatedConnectedIds);
+
+			toast.info("Removed unconnected social locally");
+			return;
+		}
+
+		// Otherwise, proceed with full disconnect
+		setRemovingIndex(true);
 		try {
-			// Call backend to disconnect the social
 			const response = await disconnectRepoSocial(repo_id, socialToRemove.id);
 			if (response.success) {
 				queryClient.invalidateQueries({ queryKey: ["repo_details", repo_id] });
 				queryClient.fetchQuery({ queryKey: ["repo_details", repo_id] });
 				toast.success(response.message);
 
-				// Remove from local state - create new array without the removed item
 				const updatedSocials = socials.filter(
 					(_, socialIndex) => socialIndex !== index,
 				);
-
-				// Update the socials state immediately
 				setSocials(updatedSocials);
 
-				// Calculate updated connected integration IDs from the remaining socials
-				// Only include IDs of socials that are still selected after removal
 				const updatedConnectedIds = updatedSocials
 					.filter(social => social.selected)
 					.map(social => social.id);
 
-				// Update parent state with the new connected integration IDs
 				onChange("connected_integration_ids", updatedConnectedIds);
+
+				initializeFeatureFlags();
+				initializeFeatureLimits();
 			} else {
 				toast.error(response.message);
 			}
 		} catch {
 			toast.error("Failed to disconnect social connection");
 		} finally {
-			// Stop loading
 			setRemovingIndex(false);
 		}
 	};
@@ -283,6 +313,20 @@ export const RepoChannelSettingsCard = ({
 			JSON.stringify(savedIds.sort())
 		);
 	};
+
+	const repoSocialsLimit = useLimitUI({
+		warningThreshold: 80,
+		limitType: "repo_socials",
+		currentCount: socials.length,
+		limitId: FEATURE_LIMITS.REPO_SOCIALS,
+	});
+
+	const hashtagLimit = useLimitUI({
+		warningThreshold: 80,
+		limitType: "hashtag_automation",
+		currentCount: 1,
+		limitId: FEATURE_LIMITS.HASHTAG_AUTOMATION,
+	});
 
 	// ------------------
 	// Loading Skeleton
@@ -333,7 +377,11 @@ export const RepoChannelSettingsCard = ({
 						<div className="flex items-center gap-2">
 							<Button
 								onClick={handleSaveSocials}
-								disabled={isSaving || !hasUnsavedChanges()}
+								disabled={
+									organization?.is_downgraded ||
+									isSaving ||
+									!hasUnsavedChanges()
+								}
 								className="border border-green-700/50 bg-green-800/30 px-6 py-2 text-green-100 hover:border-green-600/70 hover:bg-green-700/40 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								<span className="flex items-center gap-2">
@@ -347,25 +395,35 @@ export const RepoChannelSettingsCard = ({
 									)}
 								</span>
 							</Button>
-							<Button
-								onClick={() => setOpenSocialConnect(true)}
-								disabled={isConnecting || isSaving}
-								className="border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40 disabled:cursor-not-allowed disabled:opacity-50"
+							<LimitTooltip
+								position="left"
+								limitType="repo_socials"
+								currentUsage={socials.length}
+								maxLimit={repoSocialsLimit.limit}
 							>
-								<span className="flex items-center gap-2">
-									{isConnecting ? (
-										<>
-											<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
-											Loading...
-										</>
-									) : (
-										"Connect"
-									)}
-								</span>
-							</Button>
+								<Button
+									onClick={() => {
+										setOpenSocialConnect(true);
+									}}
+									disabled={isConnecting || isSaving}
+									className="border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40 disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									<span className="flex items-center gap-2">
+										{isConnecting ? (
+											<>
+												<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
+												Loading...
+											</>
+										) : (
+											"Connect"
+										)}
+									</span>
+								</Button>
+							</LimitTooltip>
 						</div>
 					</CardTitle>
 				</CardHeader>
+
 				<CardContent className="flex w-full flex-col items-start justify-start gap-3">
 					<SocialConnectionList
 						socials={socials}
@@ -374,7 +432,7 @@ export const RepoChannelSettingsCard = ({
 						onRemoveSocial={handleRemoveSocial}
 						connectedIntegrationIds={localSettings.connected_integration_ids}
 					/>
-					{/* Hashtag Automation */}
+
 					<div className="flex w-full items-center justify-between">
 						<div>
 							<Label className="text-sm font-medium text-zinc-100">
@@ -384,34 +442,81 @@ export const RepoChannelSettingsCard = ({
 								Automatically add relevant hashtags to posts
 							</p>
 						</div>
-						<Switch
-							checked={localSettings.hashtag_automation}
-							onCheckedChange={checked =>
-								onChange("hashtag_automation", checked)
+						{/* Hashtag Automation */}
+						<FeatureLimitWrapper
+							limitId={FEATURE_LIMITS.HASHTAG_AUTOMATION}
+							currentCount={1}
+							fallback={
+								<LimitTooltip
+									limitType="hashtag_automation"
+									maxLimit={hashtagLimit.limit}
+									currentUsage={1}
+									position="left"
+								>
+									<div className="flex w-full cursor-not-allowed items-center justify-between opacity-50">
+										<Switch checked={false} />
+									</div>
+								</LimitTooltip>
 							}
-						/>
+						>
+							<Switch
+								checked={localSettings.hashtag_automation}
+								onCheckedChange={checked =>
+									onChange("hashtag_automation", checked)
+								}
+							/>
+						</FeatureLimitWrapper>
 					</div>
-
-					<Separator className="bg-zinc-800" />
 
 					{/* Default Hashtags */}
 					{localSettings.hashtag_automation && (
-						<div className="w-full space-y-2">
-							<Label className="text-sm font-medium text-zinc-100">
-								Default Hashtags
-							</Label>
-							<Textarea
-								value={localSettings.default_hashtags}
-								onChange={event_ =>
-									onChange("default_hashtags", event_.target.value)
-								}
-								className="min-h-[80px] border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-400"
-								placeholder="#coding #development #opensource"
-							/>
-							<p className="text-xs text-zinc-400">
-								Default hashtags to include in posts
-							</p>
-						</div>
+						<>
+							<Separator className="bg-zinc-800" />
+							<div className="flex w-full flex-col space-y-2">
+								<Label className="text-sm font-medium text-zinc-100">
+									Default Hashtags
+								</Label>
+								<FeatureLimitWrapper
+									limitId={FEATURE_LIMITS.HASHTAG_AUTOMATION}
+									currentCount={1}
+									fallback={
+										<LimitTooltip
+											limitType="hashtag_automation"
+											maxLimit={1}
+											currentUsage={0}
+											position="left"
+										>
+											<div className="w-full cursor-not-allowed space-y-2 opacity-50">
+												<Textarea
+													value={localSettings.default_hashtags}
+													className="min-h-[80px] border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-400 disabled:opacity-50"
+													placeholder="#coding #development #opensource"
+												/>
+											</div>
+										</LimitTooltip>
+									}
+								>
+									<LimitTooltip
+										limitType="hashtag_automation"
+										maxLimit={0}
+										currentUsage={0}
+										position="left"
+									>
+										<Textarea
+											value={localSettings.default_hashtags}
+											onChange={event_ =>
+												onChange("default_hashtags", event_.target.value)
+											}
+											className="min-h-[80px] border-zinc-700 bg-zinc-800 text-zinc-100 placeholder-zinc-400"
+											placeholder="#coding #development #opensource"
+										/>
+									</LimitTooltip>
+								</FeatureLimitWrapper>
+								<p className="text-xs text-zinc-400">
+									Default hashtags to include in posts
+								</p>
+							</div>
+						</>
 					)}
 				</CardContent>
 			</Card>

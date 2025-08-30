@@ -16,6 +16,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
 import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import {
@@ -58,6 +59,7 @@ export default function PlanSelector({
 }: PlanSelectorProps) {
 	// Get user data from Zustand store
 	const userStore = useUserStore();
+	const { refetchOrganizations } = useFetchOrganizations();
 
 	const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">(
 		() => {
@@ -276,10 +278,10 @@ export default function PlanSelector({
 
 				initializeFeatureLimits();
 				initializeFeatureFlags();
+				await refetchOrganizations();
 			}
-		} catch (error) {
+		} catch {
 			toast.error("Error changing plan");
-			console.error("Plan change error:", error);
 		} finally {
 			setIsLoading(false);
 		}

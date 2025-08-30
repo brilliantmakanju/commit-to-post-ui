@@ -1,6 +1,12 @@
 "use client";
 
-import { Bell, FolderGit2, LayoutDashboard, Settings } from "lucide-react";
+import {
+	Bell,
+	CreditCard,
+	FolderGit2,
+	LayoutDashboard,
+	Settings,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -19,26 +25,30 @@ const navigationItems = [
 	{
 		title: "Dashboard",
 		url: "/dashboard",
-		icon: LayoutDashboard,
+		icon: LayoutDashboard, // dashboard overview
 	},
 	{
 		title: "Repositories",
 		url: "/repositories",
-		icon: FolderGit2,
+		icon: FolderGit2, // repos / projects
 	},
 	{
 		title: "Notifications",
 		url: "/notifications",
-		icon: Bell,
+		icon: Bell, // notifications
+	},
+	{
+		title: "Billing",
+		url: "/billing",
+		icon: CreditCard, // billing / payments
 	},
 	{
 		title: "Settings",
 		url: "/settings",
-		icon: Settings,
-		items: [],
+		icon: Settings, // account / app settings
+		items: [], // if you want nested sub-settings later
 	},
 ];
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [mounted, setMounted] = useState(false);
 

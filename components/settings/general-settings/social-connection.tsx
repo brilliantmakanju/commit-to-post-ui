@@ -1,10 +1,11 @@
 "use client";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaGithub } from "react-icons/fa";
 import { toast } from "sonner";
 
+import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import SocialConnectionInterface from "@/components/onboarding/v2/screens/connect-socials";
 import { Button } from "@/components/ui/button";
 import { disconnectGithub } from "@/server-actions/user-actions/disconnect-github";
@@ -68,6 +69,10 @@ export function SocialConnectionSettings() {
 		}
 	};
 
+	// Example values you probably already have from props/hooks
+	const socialCount = 1; // number of connected socials
+	const socialLimitUI = { limit: 1 }; // your config, maybe fetched
+
 	return (
 		<div className="w-full overflow-hidden">
 			<div className="mb-6">
@@ -94,34 +99,54 @@ export function SocialConnectionSettings() {
 							</div>
 						</div>
 
-						<Button
-							onClick={() => {
-								if (githubConnected) {
-									disConnectGitHub();
-								} else {
-									authenticateWithGithub();
+						{organization?.is_downgraded ? (
+							<LimitTooltip
+								limitType="social_integrations"
+								maxLimit={socialLimitUI.limit}
+								currentUsage={socialCount}
+								position="bottom"
+							>
+								<div className="inline-block cursor-not-allowed">
+									<Button
+										disabled
+										className={
+											"border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
+										}
+									>
+										Connect
+									</Button>
+								</div>
+							</LimitTooltip>
+						) : (
+							<Button
+								onClick={() => {
+									if (githubConnected) {
+										disConnectGitHub();
+									} else {
+										authenticateWithGithub();
+									}
+								}}
+								disabled={isConnecting || isDisconnecting}
+								className={
+									githubConnected
+										? "bg-red-100 text-red-600 hover:bg-red-200"
+										: "border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
 								}
-							}}
-							disabled={isConnecting || isDisconnecting}
-							className={
-								githubConnected
-									? "bg-red-100 text-red-600 hover:bg-red-200"
-									: "border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
-							}
-						>
-							{isConnecting || isDisconnecting ? (
-								<span className="flex items-center gap-2">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									{isConnecting ? "Connecting..." : "Disconnecting..."}
-								</span>
-							) : githubConnected ? (
-								<span className="flex items-center gap-2">Disconnect</span>
-							) : (
-								<>
-									<span className="flex items-center gap-2">Connect</span>
-								</>
-							)}
-						</Button>
+							>
+								{isConnecting || isDisconnecting ? (
+									<span className="flex items-center gap-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										{isConnecting ? "Connecting..." : "Disconnecting..."}
+									</span>
+								) : githubConnected ? (
+									<span className="flex items-center gap-2">Disconnect</span>
+								) : (
+									<>
+										<span className="flex items-center gap-2">Connect</span>
+									</>
+								)}
+							</Button>
+						)}
 					</div>
 				</div>
 				<div className="w-full space-y-4">

@@ -263,6 +263,12 @@ const WorkspaceSelection = () => {
 																<span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
 																	Owner
 																</span>
+
+																{workspace.is_downgraded ? (
+																	<span className="h-2 w-2 rounded-full bg-orange-500" />
+																) : (
+																	<span className="h-2 w-2 rounded-full bg-green-600" />
+																)}
 															</div>
 															<Span className="mt-2 text-base text-gray-500">
 																{truncateDescription(workspace.description)}
