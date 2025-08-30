@@ -21,6 +21,12 @@ export interface Organization {
 	socials?: OrganizationSocial[];
 	github_installation_id?: string;
 	github_installation_status?: string;
+	// New fields
+	is_downgraded?: boolean;
+	downgraded_at?: string | Date;
+	downgrade_reason?: string;
+	activity_score?: number;
+	last_activity_at?: string | Date;
 }
 
 interface OrganizationState {
@@ -54,6 +60,16 @@ interface OrganizationActions {
 		socialId: string,
 		updatedData: Partial<OrganizationSocial>,
 	) => void;
+
+	// New methods for downgrade management
+	setDowngradeStatus: (
+		orgId: string,
+		isDowngraded: boolean,
+		reason?: string,
+		downgradedAt?: string | Date,
+	) => void;
+	updateActivityScore: (orgId: string, score: number) => void;
+	updateLastActivity: (orgId: string, timestamp: string | Date) => void;
 }
 
 const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
@@ -68,6 +84,12 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 				is_owner: false,
 				github_installation_id: undefined,
 				github_installation_status: "unknown",
+				// New field defaults
+				is_downgraded: false,
+				downgraded_at: undefined,
+				downgrade_reason: undefined,
+				activity_score: 0,
+				last_activity_at: undefined,
 			},
 			organizations: [],
 			currentOrganization: undefined,
@@ -88,6 +110,12 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 						is_owner: false,
 						github_installation_status: "unknown",
 						github_installation_id: undefined,
+						// New field defaults
+						is_downgraded: false,
+						downgraded_at: undefined,
+						downgrade_reason: undefined,
+						activity_score: 0,
+						last_activity_at: undefined,
 					},
 					currentOrganization: undefined,
 					favoriteOrganizationId: undefined,
@@ -132,6 +160,12 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 							is_owner: false,
 							github_installation_status: "unknown",
 							github_installation_id: undefined,
+							// New field defaults
+							is_downgraded: false,
+							downgraded_at: undefined,
+							downgrade_reason: undefined,
+							activity_score: 0,
+							last_activity_at: undefined,
 						},
 						favoriteOrganizationId: undefined,
 					});
@@ -170,6 +204,12 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 								is_owner: false,
 								github_installation_status: "unknown",
 								github_installation_id: undefined,
+								// New field defaults
+								is_downgraded: false,
+								downgraded_at: undefined,
+								downgrade_reason: undefined,
+								activity_score: 0,
+								last_activity_at: undefined,
 							},
 						});
 						return;
@@ -202,6 +242,12 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 						is_owner: false,
 						github_installation_status: "unknown",
 						github_installation_id: undefined,
+						// New field defaults
+						is_downgraded: false,
+						downgraded_at: undefined,
+						downgrade_reason: undefined,
+						activity_score: 0,
+						last_activity_at: undefined,
 					},
 					currentOrganization: undefined,
 					favoriteOrganizationId: undefined,
@@ -324,6 +370,86 @@ const useOrganizationStore = create<OrganizationState & OrganizationActions>()(
 							? updateOrg(state.currentOrganization)
 							: state.currentOrganization,
 					organizations: state.organizations.map(updateOrg),
+				});
+			},
+
+			// New methods for downgrade management
+			setDowngradeStatus: (
+				orgId: string,
+				isDowngraded: boolean,
+				reason?: string,
+				downgradedAt?: string | Date,
+			) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? {
+									...org,
+									is_downgraded: isDowngraded,
+									downgrade_reason: reason,
+									downgraded_at: downgradedAt,
+								}
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
+				});
+			},
+
+			updateActivityScore: (orgId: string, score: number) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? {
+									...org,
+									activity_score: score,
+								}
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
+				});
+			},
+
+			updateLastActivity: (orgId: string, timestamp: string | Date) => {
+				set(state => {
+					const updateOrg = (org: Organization) =>
+						org.id === orgId
+							? {
+									...org,
+									last_activity_at: timestamp,
+								}
+							: org;
+
+					return {
+						organization:
+							state.organization?.id === orgId
+								? updateOrg(state.organization)
+								: state.organization,
+						currentOrganization:
+							state.currentOrganization?.id === orgId
+								? updateOrg(state.currentOrganization)
+								: state.currentOrganization,
+						organizations: state.organizations.map(updateOrg),
+					};
 				});
 			},
 		}),
