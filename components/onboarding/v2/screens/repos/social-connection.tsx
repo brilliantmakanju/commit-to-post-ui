@@ -142,7 +142,7 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 								const socialItem = (
 									<div
 										key={`${social.platform}-${social.name}-${index}`}
-										className={`inline-flex items-center gap-2 rounded-full border py-2 pl-2 pr-3 text-zinc-100 transition-all duration-200 ${
+										className={`relative inline-flex items-center gap-2 rounded-full border py-2 pl-2 pr-3 text-zinc-100 transition-all duration-200 ${
 											isRemoving
 												? "border-zinc-600/30 bg-zinc-700/20 opacity-50"
 												: isConnected
@@ -161,24 +161,20 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 										</span>
 										{/* Status indicator */}
 										{!isConnected && (
-											<span className="rounded-full border border-blue-700/50 bg-blue-800/30 px-2 py-1 text-xs text-blue-300">
-												Pending
-											</span>
+											<span className="absolute -bottom-1 right-3 rounded-full border border-blue-200 bg-blue-200 px-1 py-1" />
 										)}
 										{/* Only show remove button for actually connected accounts */}
-										{isConnected && (
-											<button
-												onClick={() => onRemoveSocial(index)}
-												disabled={isRemoving}
-												className="p-1 text-zinc-400 transition-colors hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												{isRemoving ? (
-													<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
-												) : (
-													<FaTimes className="h-4 w-4" />
-												)}
-											</button>
-										)}
+										<button
+											onClick={() => onRemoveSocial(index)}
+											disabled={isRemoving}
+											className="p-1 text-zinc-400 transition-colors hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											{isRemoving ? (
+												<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+											) : (
+												<FaTimes className="h-4 w-4" />
+											)}
+										</button>
 									</div>
 								);
 
@@ -228,7 +224,7 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 							const socialItem = (
 								<div
 									key={`${social.platform}-${social.name}-${index}`}
-									className={`inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition-colors ${
+									className={`relative inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition-colors ${
 										isRemoving
 											? "border-gray-200 bg-gray-100 opacity-50"
 											: isConnected
@@ -247,24 +243,20 @@ export const SocialConnection: React.FC<SocialConnectionProps> = ({
 									</span>
 									{/* Status indicator */}
 									{!isConnected && (
-										<span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-1 text-xs text-blue-600">
-											Pending
-										</span>
+										<span className="absolute -bottom-1 right-3 rounded-full border border-blue-200 bg-blue-200 px-1 py-1" />
 									)}
 									{/* Only show remove button for actually connected accounts */}
-									{isConnected && (
-										<button
-											onClick={() => onRemoveSocial(index)}
-											disabled={isRemoving}
-											className="p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-										>
-											{isRemoving ? (
-												<div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-											) : (
-												<FaTimes className="h-4 w-4" />
-											)}
-										</button>
-									)}
+									<button
+										onClick={() => onRemoveSocial(index)}
+										disabled={isRemoving}
+										className="p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										{isRemoving ? (
+											<div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+										) : (
+											<FaTimes className="h-4 w-4" />
+										)}
+									</button>
 								</div>
 							);
 
