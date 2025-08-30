@@ -60,7 +60,7 @@ export default function HeroSection() {
 								AI-powered, and developer-friendly.
 							</p>
 
-							<AnimatedGroup
+							{/* <AnimatedGroup
 								variants={{
 									container: {
 										visible: {
@@ -99,7 +99,7 @@ export default function HeroSection() {
 										</div>
 									</div>
 								</form>
-							</AnimatedGroup>
+							</AnimatedGroup> */}
 						</div>
 					</div>
 				</div>
