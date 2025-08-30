@@ -6,25 +6,27 @@ import {
 	FaCheck,
 	FaCrown,
 	FaExclamationTriangle,
+	FaFileAlt,
 	FaFilter,
 	FaGithub,
 	FaHeart,
 	FaLightbulb,
 	FaPlus,
+	FaShare,
 	FaUsers,
 } from "react-icons/fa";
 
-import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
+import useOrganizationStats from "@/hooks/core/stats/use-organization-stats";
 // eslint-disable-next-line import/no-unresolved
 import { useBillingPortal } from "@/hooks/settings/use-billing";
 import { useLimitUI } from "@/hooks/use-limit-ui";
 import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
-import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
 import { pricingData } from "../landing/pricing/data";
 import PlanSelector from "../landing/pricing/v4/payment-selector";
 import { Button } from "../ui/button";
+import BillingHistory from "./billing-history";
 
 interface CurrentPlan {
 	name: string;
@@ -44,6 +46,10 @@ interface UsageStats {
 	activeWorkspace: number;
 	repositoriesUsed: number;
 	repositoriesLimit: number;
+	socialsUsed: number;
+	socialsLimit: number;
+	postsUsed: number;
+	postsLimit: number;
 }
 
 // Extended dummy billing history data
@@ -112,8 +118,6 @@ const dummyBillingHistory = [
 
 export default function BillingSettings() {
 	const useStore = useUserStore();
-	const { organizations } = useOrganizationStore();
-	const { totalRepositories } = useRetrieveConnectedRepos();
 	const [selectedAction, setSelectedAction] = useState<
 		"upgrade" | "downgrade" | "all" | undefined
 	>("upgrade");
@@ -121,12 +125,18 @@ export default function BillingSettings() {
 	const [visibleHistoryItems, setVisibleHistoryItems] = useState(5);
 	const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-	const orgCount = organizations.length;
 	const { data: billingUrl } = useBillingPortal();
+	const { summary, isStatsLoading, isStatsError } = useOrganizationStats();
+
+	// Get stats from the organization stats hook
+	const totalWorkspaces = summary?.total_organizations || 0;
+	const totalRepositories = summary?.total_repos || 0;
+	const totalSocials = summary?.total_socials || 0;
+	const totalPosts = summary?.total_posts || 0;
 
 	const workspaceLimitUI = useLimitUI({
 		warningThreshold: 80,
-		currentCount: orgCount,
+		currentCount: totalWorkspaces,
 		limitType: "workspaces",
 		limitId: FEATURE_LIMITS.WORKSPACES,
 	});
@@ -138,6 +148,25 @@ export default function BillingSettings() {
 		limitId: FEATURE_LIMITS.REPOSITORIES,
 	});
 
+	// Add limits for socials and posts (you'll need to add these to your FEATURE_LIMITS if they don't exist)
+	const socialLimitUI = useLimitUI({
+		warningThreshold: 80,
+		currentCount: totalSocials,
+		limitType: "social_integrations",
+		limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS || {
+			basic: 1,
+			pro: 50,
+			studio: -1,
+		},
+	});
+
+	const postLimitUI = useLimitUI({
+		warningThreshold: 80,
+		limitType: "posts",
+		currentCount: totalPosts,
+		limitId: FEATURE_LIMITS.POSTS || { basic: 100, pro: 1000, studio: -1 },
+	});
+
 	// Validate all required fields before usage
 	const userPlanType = useStore.plan.toLowerCase();
 	const subscriptionStatus = useStore.subscription_status.toLowerCase();
@@ -145,6 +174,41 @@ export default function BillingSettings() {
 	const currentPlanData = pricingData.plans.find(
 		plan => plan.name.toLowerCase() === userPlanType,
 	);
+
+	// Show loading state
+	if (isStatsLoading) {
+		return (
+			<div className="min-h-screen bg-zinc-950 p-4">
+				<div className="mx-auto w-full max-w-none">
+					<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-8 text-zinc-100 backdrop-blur-xl">
+						<div className="text-center">
+							<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300"></div>
+							<p className="text-lg font-medium">
+								Loading billing information...
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Show error state
+	if (isStatsError) {
+		return (
+			<div className="min-h-screen bg-zinc-950 p-4">
+				<div className="mx-auto w-full max-w-none">
+					<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-8 text-zinc-100 backdrop-blur-xl">
+						<div className="text-center">
+							<FaExclamationTriangle className="mx-auto mb-4 h-12 w-12 text-zinc-400" />
+							<p className="text-lg font-medium">Error loading billing data</p>
+							<p className="mt-2 text-sm text-zinc-400">{"Unknown error"}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	if (!currentPlanData) {
 		return (
@@ -178,8 +242,12 @@ export default function BillingSettings() {
 	const usageStats: UsageStats = {
 		repositoriesUsed: totalRepositories,
 		repositoriesLimit: repoLimitUI.limit,
-		activeWorkspace: organizations.length,
+		activeWorkspace: totalWorkspaces,
 		workspaceLimit: workspaceLimitUI.limit,
+		socialsUsed: totalSocials,
+		socialsLimit: socialLimitUI.limit,
+		postsUsed: totalPosts,
+		postsLimit: postLimitUI.limit,
 	};
 
 	// Get status configuration
@@ -250,6 +318,14 @@ export default function BillingSettings() {
 					(usageStats.repositoriesUsed / usageStats.repositoriesLimit) * 100,
 					100,
 				);
+	const socialPercentage =
+		usageStats.socialsLimit === -1
+			? 0
+			: Math.min((usageStats.socialsUsed / usageStats.socialsLimit) * 100, 100);
+	const postPercentage =
+		usageStats.postsLimit === -1
+			? 0
+			: Math.min((usageStats.postsUsed / usageStats.postsLimit) * 100, 100);
 
 	const formatRenewalDate = () => {
 		if (useStore.pending_plan_effective_date) {
@@ -295,7 +371,7 @@ export default function BillingSettings() {
 	const hasMoreHistory = visibleHistoryItems < filteredHistory.length;
 
 	return (
-		<div className="min-h-screen">
+		<div className="min-h-screen p-4 sm:p-6 lg:p-8">
 			<div className="mx-auto w-full max-w-none space-y-6">
 				{/* Header */}
 				<div className="space-y-1">
@@ -307,7 +383,6 @@ export default function BillingSettings() {
 					</p>
 				</div>
 
-				{/* Subscription Overview */}
 				{/* Subscription Overview */}
 				<div className="grid auto-rows-fr gap-4 lg:grid-cols-4">
 					{/* Current Plan */}
@@ -455,24 +530,47 @@ export default function BillingSettings() {
 								)}
 							</div>
 
+							{/* Social Integrations */}
 							<div className="mb-4 w-full">
 								<div className="mb-1.5 flex items-center justify-between">
 									<div className="flex items-center gap-2">
-										<FaGithub className="h-3.5 w-3.5 text-zinc-400" />
-										<span className="text-sm font-medium">Repositories</span>
+										<FaShare className="h-3.5 w-3.5 text-zinc-400" />
+										<span className="text-sm font-medium">Social Accounts</span>
 									</div>
 									<span className="text-xs text-zinc-400">
-										{usageStats.repositoriesUsed} /{" "}
-										{usageStats.repositoriesLimit === -1
+										{usageStats.socialsUsed} /{" "}
+										{usageStats.socialsLimit === -1
 											? "∞"
-											: usageStats.repositoriesLimit}
+											: usageStats.socialsLimit}
 									</span>
 								</div>
-								{usageStats.repositoriesLimit !== -1 && (
+								{usageStats.socialsLimit !== -1 && (
 									<div className="h-1.5 w-full rounded-full bg-zinc-800">
 										<div
-											className="h-1.5 rounded-full bg-zinc-300 transition-all duration-300"
-											style={{ width: `${Math.min(repoPercentage, 100)}%` }}
+											className="h-1.5 rounded-full bg-zinc-200 transition-all duration-300"
+											style={{ width: `${Math.min(socialPercentage, 100)}%` }}
+										></div>
+									</div>
+								)}
+							</div>
+
+							{/* Posts */}
+							<div className="mb-4 w-full">
+								<div className="mb-1.5 flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<FaFileAlt className="h-3.5 w-3.5 text-zinc-400" />
+										<span className="text-sm font-medium">Posts</span>
+									</div>
+									<span className="text-xs text-zinc-400">
+										{usageStats.postsUsed} /{" "}
+										{usageStats.postsLimit === -1 ? "∞" : usageStats.postsLimit}
+									</span>
+								</div>
+								{usageStats.postsLimit !== -1 && (
+									<div className="h-1.5 w-full rounded-full bg-zinc-800">
+										<div
+											className="h-1.5 rounded-full bg-zinc-100 transition-all duration-300"
+											style={{ width: `${Math.min(postPercentage, 100)}%` }}
 										></div>
 									</div>
 								)}
@@ -499,90 +597,7 @@ export default function BillingSettings() {
 				</div>
 
 				{/* Billing History */}
-				<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-5 py-4 text-zinc-100 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
-					<div className="mb-4 flex items-center justify-between">
-						<h3 className="text-lg font-semibold">Billing History</h3>
-						<div className="flex items-center gap-2">
-							<FaFilter className="h-3.5 w-3.5 text-zinc-400" />
-							<select
-								value={historyFilter}
-								onChange={event_ => setHistoryFilter(event_.target.value)}
-								className="rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1 text-sm text-zinc-100 focus:border-zinc-600/70 focus:outline-none"
-							>
-								<option value="all">All</option>
-								<option value="paid">Paid</option>
-								<option value="failed">Failed</option>
-							</select>
-						</div>
-					</div>
-
-					<div className="overflow-x-auto">
-						<table className="w-full">
-							<thead>
-								<tr className="border-b border-zinc-800/50">
-									<th className="px-2 py-2 text-left text-sm font-medium text-zinc-400">
-										Date
-									</th>
-									<th className="px-2 py-2 text-left text-sm font-medium text-zinc-400">
-										Description
-									</th>
-									<th className="px-2 py-2 text-left text-sm font-medium text-zinc-400">
-										Amount
-									</th>
-									<th className="px-2 py-2 text-left text-sm font-medium text-zinc-400">
-										Status
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{filteredHistory
-									.slice(0, visibleHistoryItems)
-									.map((item, index) => (
-										<tr key={index} className="border-b border-zinc-800/30">
-											<td className="px-2 py-2.5 text-sm text-zinc-300">
-												{item.date}
-											</td>
-											<td className="px-2 py-2.5 text-sm text-zinc-300">
-												{item.description}
-											</td>
-											<td className="px-2 py-2.5 text-sm text-zinc-300">
-												{item.amount}
-											</td>
-											<td className="px-2 py-2.5">
-												<span
-													className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-														item.status === "paid"
-															? "border border-zinc-700/50 bg-zinc-800/50 text-zinc-300"
-															: "border border-zinc-700/50 bg-zinc-800/50 text-zinc-400"
-													}`}
-												>
-													{item.status === "paid" ? (
-														<FaCheck className="h-2.5 w-2.5" />
-													) : (
-														<FaExclamationTriangle className="h-2.5 w-2.5" />
-													)}
-													{item.status === "paid" ? "Paid" : "Failed"}
-												</span>
-											</td>
-										</tr>
-									))}
-							</tbody>
-						</table>
-					</div>
-
-					{hasMoreHistory && (
-						<div className="mt-4 text-center">
-							<Button
-								onClick={loadMoreHistory}
-								className="mx-auto flex items-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/30 px-4 py-2 text-sm font-medium text-zinc-100 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/40"
-							>
-								<FaPlus className="h-3 w-3" />
-								Load More ({filteredHistory.length - visibleHistoryItems}{" "}
-								remaining)
-							</Button>
-						</div>
-					)}
-				</div>
+				<BillingHistory />
 
 				{/* Plan Selector Modal */}
 				<PlanSelector

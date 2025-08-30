@@ -43,7 +43,7 @@ export const changeSubscriptionPlan = async (
 				...(data.change_type ? { change_type: data.change_type } : {}),
 			},
 			{},
-			10000,
+			30000,
 		);
 
 		// Unwrap the `data` key returned by Django
