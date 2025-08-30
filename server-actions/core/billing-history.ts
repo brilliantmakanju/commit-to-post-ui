@@ -44,7 +44,6 @@ export const fetchBillingHistory = async ({
 		}
 
 		const queryString = new URLSearchParams(queryParams).toString();
-		console.log(queryString, "Query Strings");
 
 		const response = await apiClient.get(
 			`/api/v1/managements/billing/history/?${queryString}`,
@@ -59,7 +58,6 @@ export const fetchBillingHistory = async ({
 
 		// Expecting { success: boolean, data: { billing_history: [...] } }
 		const data = await response.data;
-		console.log(data, "Data");
 
 		if (!data.success) {
 			throw new Error(
@@ -94,8 +92,6 @@ export const fetchBillingHistoryByUrl = async (url: string) => {
 		const urlObject = new URL(url);
 		const pathAndQuery = `${urlObject.pathname}${urlObject.search}`;
 
-		console.log(`Fetching from URL: ${pathAndQuery}`);
-
 		const response = await apiClient.get(pathAndQuery);
 
 		if (response.status !== 200) {
@@ -105,7 +101,6 @@ export const fetchBillingHistoryByUrl = async (url: string) => {
 		}
 
 		const data = await response.data;
-		console.log(data, "Data from URL");
 
 		if (!data.success) {
 			throw new Error(
