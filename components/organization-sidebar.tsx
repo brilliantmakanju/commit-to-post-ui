@@ -107,7 +107,8 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 	]);
 
 	const inactiveTeams = useMemo(() => {
-		if (!activeTeam || organizations.length <= 1) return [];
+		if (!activeTeam) return [];
+		// Always return other organizations, even if there's only one total
 		return organizations.filter(team => team.id !== activeTeam.id);
 	}, [organizations, activeTeam]);
 
@@ -404,7 +405,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 										<div className="mt-0.5 flex items-center">
 											<span className="truncate text-xs text-muted-foreground">
 												{organizations.length === 1
-													? "Personal workspace"
+													? activityInfo || "Personal workspace"
 													: activityInfo ||
 														`${organizations.length} total workspaces`}
 											</span>
@@ -436,7 +437,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 								: `Switch Organization (${organizations.length})`}
 						</DropdownMenuLabel>
 
-						{/* Current active organization */}
+						{/* Current active organization - Always show, even if it's the only one */}
 						<DropdownMenuItem
 							className="mx-2 mb-1 gap-3 rounded-lg bg-sidebar-accent/30 p-3"
 							disabled
@@ -455,7 +456,9 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 									)}
 								</div>
 								<span className="text-xs text-muted-foreground">
-									Current • {orgStatus.text}
+									{organizations.length === 1
+										? `Current workspace • ${orgStatus.text}`
+										: `Current • ${orgStatus.text}`}
 									{activeTeam.is_downgraded &&
 										activeTeam.downgrade_reason &&
 										` • ${activeTeam.downgrade_reason}`}
@@ -466,7 +469,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							</DropdownMenuShortcut>
 						</DropdownMenuItem>
 
-						{/* Other organizations */}
+						{/* Other organizations - Only show if there are multiple organizations */}
 						{inactiveTeams.length > 0 && (
 							<>
 								<DropdownMenuSeparator className="my-2" />
@@ -516,6 +519,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							</>
 						)}
 
+						{/* Always show separator before create option */}
 						<DropdownMenuSeparator className="my-2" />
 
 						{/* Create organization */}
