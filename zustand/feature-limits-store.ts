@@ -2,8 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const FEATURE_CATEGORIES = [
+	"posts",
+	"ai_tones",
+	"analytics",
 	"workspaces",
+	"repo_socials",
 	"repositories",
+	"hashtag_automation",
 	"social_integrations",
 ] as const;
 
