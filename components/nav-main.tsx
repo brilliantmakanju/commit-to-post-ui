@@ -43,15 +43,16 @@ interface NavMainProps {
 	isLoading?: boolean; // Added prop to accept loading state from parent
 }
 
+const getItemUrl = (item: NavItem) => {
+	return item.url;
+};
 export function NavMain({
 	items,
 	isLoading: parentLoading = false,
 }: NavMainProps) {
 	const { status } = useSession();
-	const hasAccess = useCheckAccess();
 	const logoutStore = useLogoutStore();
 	const sessionLoading = status === "loading";
-	const { data: billingUrl } = useBillingPortal();
 	const { has_unread } = useRetrieveUnreadCount();
 	const userHasLifetimeAccess = useLifetimeAccess();
 	// Combined loading state from both session and parent
@@ -59,15 +60,7 @@ export function NavMain({
 
 	const isDisabled = (item: NavItem) => {
 		if (isLoading) return true;
-		if (item.title === "Billing" && !hasAccess) return true;
 		return false;
-	};
-
-	const getItemUrl = (item: NavItem) => {
-		if (item.title === "Billing" && hasAccess) {
-			return billingUrl ?? item.url;
-		}
-		return item.url;
 	};
 
 	const { toggleSidebar, isMobile } = useSidebar();
