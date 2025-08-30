@@ -114,7 +114,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 	// Organization fetching
 	const {
-		hasCurrentOrg,
 		isError: orgError,
 		shouldShowContent,
 		isLoading: isOrgLoading,
@@ -236,7 +235,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	// Comprehensive loading state logic
 	const isSessionLoading = status === "loading";
 	const isInitializing = !isClient || !cookieValidated;
-	const isOrganizationLoading = isOrgLoading && !hasCurrentOrg;
+	const isOrganizationLoading = isOrgLoading;
 	const shouldLogout = logoutStore.logout;
 
 	// Determine what to show
