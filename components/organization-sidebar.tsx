@@ -45,7 +45,6 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 	const queryClient = useQueryClient();
 
 	// Local state
-	const [mounted, setMounted] = useState(false);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [isSwitching, setIsSwitching] = useState(false);
 	const [lastSwitchedOrgId, setLastSwitchedOrgId] = useState<
@@ -66,14 +65,9 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 		limitId: FEATURE_LIMITS.WORKSPACES,
 	});
 
-	// Mount effect
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
 	// Memoized computed values
 	const activeTeam = useMemo(() => {
-		if (!mounted) return organization;
+		if (!isLoading) return organization;
 
 		// If we're currently switching or just switched, prioritize the user's selection
 		if (isSwitching || lastSwitchedOrgId) {
@@ -97,14 +91,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 
 		// Otherwise, use the first available organization
 		return organizations.length > 0 ? organizations[0] : undefined;
-	}, [
-		mounted,
-		isLoading,
-		organization,
-		organizations,
-		isSwitching,
-		lastSwitchedOrgId,
-	]);
+	}, [isLoading, organization, organizations, isSwitching, lastSwitchedOrgId]);
 
 	const inactiveTeams = useMemo(() => {
 		if (!activeTeam) return [];
@@ -113,7 +100,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 	}, [organizations, activeTeam]);
 
 	const componentState = useMemo(() => {
-		if (!mounted) return "mounting";
+		if (isLoading) return "mounting";
 		if (logoutStore.logout) return "logging-out";
 		if (isLoading && !activeTeam) return "loading";
 		if (isLoading && activeTeam) return "loading-with-org";
@@ -121,7 +108,6 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 			return "no-orgs";
 		return "ready";
 	}, [
-		mounted,
 		logoutStore.logout,
 		isLoading,
 		activeTeam,

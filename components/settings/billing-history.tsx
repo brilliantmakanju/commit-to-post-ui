@@ -51,10 +51,10 @@ const BillingHistory = () => {
 			failed_payments: 0,
 		},
 	});
-	const [error, setError] = useState<string | undefined>();
 	const [loading, setLoading] = useState(true);
 	const [refreshing, setRefreshing] = useState(false);
 	const [loadingMore, setLoadingMore] = useState(false);
+	const [error, setError] = useState<string | undefined>();
 	const [historyFilter, setHistoryFilter] = useState<"all" | "paid" | "failed">(
 		"all",
 	);
@@ -77,10 +77,6 @@ const BillingHistory = () => {
 		append?: boolean;
 	}) => {
 		try {
-			console.log(
-				`Loading billing history: status=${status}, offset=${offset}, limit=${limit}, page=${page}, append=${append}`,
-			);
-
 			const data = await fetchBillingHistory({ status, offset, limit, page });
 
 			setBillingData(previous => {
@@ -111,7 +107,6 @@ const BillingHistory = () => {
 
 			setError(undefined);
 		} catch (error_) {
-			console.error("Error fetching billing history:", error_);
 			setError(error_ instanceof Error ? error_.message : "Unknown error");
 		}
 	};
@@ -124,7 +119,7 @@ const BillingHistory = () => {
 			await loadBillingHistory({
 				status: historyFilter,
 				offset: 0,
-				limit: 10,
+				limit: 50,
 				page: 1, // Add page parameter for initial load
 				append: false,
 			});
@@ -143,7 +138,7 @@ const BillingHistory = () => {
 		await loadBillingHistory({
 			status: newFilter,
 			offset: 0,
-			limit: 10,
+			limit: 50,
 			page: 1, // Start from page 1
 			append: false,
 		});
@@ -162,10 +157,6 @@ const BillingHistory = () => {
 		setLoadingMore(true);
 
 		try {
-			console.log(
-				`Loading more using next URL: ${billingData.pagination.next}`,
-			);
-
 			// Use the next URL directly from the API response
 			const data = await fetchBillingHistoryByUrl(billingData.pagination.next);
 
@@ -191,7 +182,6 @@ const BillingHistory = () => {
 
 			setError(undefined);
 		} catch (error_) {
-			console.error("Error loading more billing history:", error_);
 			setError(error_ instanceof Error ? error_.message : "Unknown error");
 		}
 
@@ -207,7 +197,7 @@ const BillingHistory = () => {
 		await loadBillingHistory({
 			status: historyFilter,
 			offset: 0,
-			limit: 10,
+			limit: 50,
 			page: 1, // Start from page 1
 			append: false,
 		});
@@ -218,7 +208,7 @@ const BillingHistory = () => {
 	// Loading skeleton
 	const LoadingSkeleton = () => (
 		<>
-			{Array.from({ length: 5 }).map((_, index) => (
+			{Array.from({ length: 6 }).map((_, index) => (
 				<TableRow
 					key={index}
 					className="border-zinc-800/30 hover:bg-zinc-800/20"
@@ -266,8 +256,11 @@ const BillingHistory = () => {
 
 	// Empty state
 	const EmptyState = () => (
-		<TableRow>
-			<TableCell colSpan={4} className="px-2 py-8 text-center">
+		<TableRow className="h-full">
+			<TableCell
+				colSpan={4}
+				className="border-zinc-800/30 text-center transition-colors hover:bg-none"
+			>
 				<div className="flex flex-col items-center gap-3">
 					<div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800/50">
 						<FaFilter className="h-5 w-5 text-zinc-500" />
@@ -357,7 +350,7 @@ const BillingHistory = () => {
 
 			{/* Table with shadcn/ui components */}
 			<div className="overflow-x-auto">
-				<Table className="w-full">
+				<Table className="h-[300px] max-h-[300px] w-full">
 					<TableHeader>
 						<TableRow className="border-zinc-800/50 hover:bg-transparent">
 							<TableHead className="h-auto px-2 py-2 text-left text-sm font-medium text-zinc-400">
@@ -374,7 +367,7 @@ const BillingHistory = () => {
 							</TableHead>
 						</TableRow>
 					</TableHeader>
-					<TableBody>
+					<TableBody className="scrollbar-hide h-[400px] max-h-[400px] overflow-hidden overflow-y-auto">
 						{loading ? (
 							<LoadingSkeleton />
 						) : error ? (
