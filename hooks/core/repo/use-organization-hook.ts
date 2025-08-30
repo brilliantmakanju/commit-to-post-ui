@@ -1,135 +1,3 @@
-// import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-// import {
-// 	createEncryptedCookie,
-// 	deleteCookie,
-// } from "@/lib/cookies/create-cookies";
-// import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-// import { getOrganizations } from "@/server-actions/organizations/get-organizations";
-// import useOrganizationStore from "@/zustand/useorganization-store";
-
-// export const useFetchOrganizations = () => {
-// 	const queryClient = useQueryClient();
-
-// 	const setCurrentOrganization =
-// 		useOrganizationStore.getState().setCurrentOrganization;
-// 	const setOrganization = useOrganizationStore.getState().setOrganization;
-// 	const currentOrganization = useOrganizationStore.getState().organization;
-// 	const setOrganizations = useOrganizationStore.getState().setOrganizations;
-// 	const organizationsInStore = useOrganizationStore.getState().organizations;
-
-// 	const query = useQuery({
-// 		queryKey: ["organizations"],
-// 		queryFn: async () => {
-// 			const result = await getOrganizations();
-
-// 			if (!result.success) return [];
-
-// 			const organizations = result.organizations ?? [];
-
-// 			const cookieOrg = await getDecryptedCookie("organization");
-
-// 			const hasOrgFromCookie = !!cookieOrg?.domain;
-// 			const hasOrgFromZustand = !!currentOrganization?.domains;
-
-// 			if (!hasOrgFromCookie && !hasOrgFromZustand) {
-// 				const fallbackOrg = organizations[0];
-// 				if (fallbackOrg) {
-// 					setCurrentOrganization(fallbackOrg);
-// 					setOrganization(fallbackOrg);
-// 					await createEncryptedCookie("organization", {
-// 						id: fallbackOrg.id,
-// 						name: fallbackOrg.name,
-// 						domain: fallbackOrg.domains[0],
-// 						is_owner: fallbackOrg.is_owner,
-// 						description: fallbackOrg.description,
-// 					});
-// 				} else {
-// 				}
-// 			} else if (hasOrgFromCookie && !hasOrgFromZustand) {
-// 				setCurrentOrganization({
-// 					id: cookieOrg.id as string,
-// 					name: cookieOrg.name as string,
-// 					domains: cookieOrg.domain as string,
-// 					is_owner: cookieOrg.is_owner as boolean,
-// 					description: cookieOrg.description as string,
-// 				});
-// 				setOrganization({
-// 					id: cookieOrg.id as string,
-// 					name: cookieOrg.name as string,
-// 					domains: cookieOrg.domain as string,
-// 					is_owner: cookieOrg.is_owner as boolean,
-// 					description: cookieOrg.description as string,
-// 				});
-// 			} else if (!hasOrgFromCookie && hasOrgFromZustand) {
-// 				await deleteCookie("organization");
-// 				await createEncryptedCookie("organization", {
-// 					id: currentOrganization.id,
-// 					name: currentOrganization.name,
-// 					domain: currentOrganization.domains[0],
-// 					is_owner: currentOrganization.is_owner,
-// 					description: currentOrganization.description,
-// 				});
-// 			} else if (
-// 				hasOrgFromCookie &&
-// 				hasOrgFromZustand &&
-// 				cookieOrg.domain !== currentOrganization.domains[0]
-// 			) {
-// 				await deleteCookie("organization");
-// 				await createEncryptedCookie("organization", {
-// 					id: currentOrganization.id,
-// 					name: currentOrganization.name,
-// 					domain: currentOrganization.domains[0],
-// 					is_owner: currentOrganization.is_owner,
-// 					description: currentOrganization.description,
-// 				});
-// 			} else {
-// 			}
-
-// 			// ✅ Sync org list to Zustand regardless
-// 			setOrganizations(organizations);
-
-// 			// ♻️ Background refresh
-// 			const keys = [
-// 				"repo_details",
-// 				"notifications",
-// 				"connected_repos",
-// 				"dashboard_metrics",
-// 				"repo_super_details",
-// 				"retrieving_webhooks",
-// 				"recent_notifications",
-// 				"organization-ownership",
-// 				"upcoming_posts_metrics",
-// 				"retrieving_social_status",
-// 			];
-
-// 			await Promise.allSettled(
-// 				keys.map(key =>
-// 					queryClient
-// 						.fetchQuery({ queryKey: [key] })
-// 						.then(() => queryClient.invalidateQueries({ queryKey: [key] })),
-// 				),
-// 			);
-
-// 			return organizations;
-// 		},
-
-// 		staleTime: Infinity,
-// 		refetchOnMount: true,
-// 		refetchOnReconnect: true,
-// 		refetchOnWindowFocus: true,
-// 	});
-
-// 	const hasOrgInStore = organizationsInStore?.length > 0;
-
-// 	return {
-// 		organizations: hasOrgInStore ? organizationsInStore : (query.data ?? []),
-// 		isFetching: query.isFetching,
-// 		isLoading: hasOrgInStore ? false : query.isLoading,
-// 		isError: query.isError,
-// 	};
-// };
-
 "use client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -141,29 +9,76 @@ import {
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { getOrganizations } from "@/server-actions/organizations/get-organizations";
 import useOrganizationStore, {
+	Organization,
 	OrganizationSocial,
 } from "@/zustand/useorganization-store";
 
 // Debug utility - can be disabled in production
 const DEBUG = process.env.NODE_ENV === "development";
 
-export const debugLog = (category: string, message: string, data?: any) => {
+export const debugLog = (category: string, message: string, data?: unknown) => {
 	if (!DEBUG) return;
 	const timestamp = new Date().toISOString().slice(11, 23);
 	console.log(`🏢 [${timestamp}] [${category}] ${message}`, data || "");
 };
 
-export const debugGroup = (title: string, function_: () => any) => {
-	if (!DEBUG) return function_();
+export const debugGroup = (title: string, functionToExecute: () => unknown) => {
+	if (!DEBUG) return functionToExecute();
 	console.group(`🏢 ${title}`);
 	try {
-		const result = function_();
+		const result = functionToExecute();
 		console.groupEnd();
 		return result;
 	} catch (error) {
 		console.groupEnd();
 		throw error;
 	}
+};
+
+// Sort organizations to prioritize non-downgraded ones
+const sortOrganizationsByDowngradeStatus = (
+	organizations: Organization[],
+): Organization[] => {
+	return [...organizations].sort((organizationA, organizationB) => {
+		// Non-downgraded organizations come first
+		if (!organizationA.is_downgraded && organizationB.is_downgraded) return -1;
+		if (organizationA.is_downgraded && !organizationB.is_downgraded) return 1;
+
+		// If both have same downgrade status, sort by activity score (higher first)
+		const scoreA = organizationA.activity_score ?? 0;
+		const scoreB = organizationB.activity_score ?? 0;
+		if (scoreA !== scoreB) return scoreB - scoreA;
+
+		// Finally sort by name alphabetically
+		return organizationA.name.localeCompare(organizationB.name);
+	});
+};
+
+// Find the best organization to select (non-downgraded with highest activity)
+const findBestOrganizationToSelect = (
+	organizations: Organization[],
+): Organization | undefined => {
+	if (organizations.length === 0) return undefined;
+
+	// First try to find a non-downgraded organization
+	const nonDowngradedOrganizations = organizations.filter(
+		organization => !organization.is_downgraded,
+	);
+	if (nonDowngradedOrganizations.length > 0) {
+		// Sort by activity score and return the best one
+		return nonDowngradedOrganizations.sort((organizationA, organizationB) => {
+			const scoreA = organizationA.activity_score ?? 0;
+			const scoreB = organizationB.activity_score ?? 0;
+			return scoreB - scoreA;
+		})[0];
+	}
+
+	// If all are downgraded, return the one with highest activity score
+	return organizations.sort((organizationA, organizationB) => {
+		const scoreA = organizationA.activity_score ?? 0;
+		const scoreB = organizationB.activity_score ?? 0;
+		return scoreB - scoreA;
+	})[0];
 };
 
 export const useFetchOrganizations = () => {
@@ -175,27 +90,29 @@ export const useFetchOrganizations = () => {
 		setOrganization,
 		setOrganizations,
 		setCurrentOrganization,
+		updateOrganizations,
 		organization: currentOrganization,
 		organizations: organizationsInStore,
 	} = useOrganizationStore();
 
 	// Check if we have organizations in store
-	const hasOrgInStore = useMemo(() => {
-		const hasOrgs = organizationsInStore?.length > 0;
-		debugLog("COMPUTED", "hasOrgInStore", {
-			hasOrgs,
+	const hasOrganizationsInStore = useMemo(() => {
+		const hasOrganizations = organizationsInStore?.length > 0;
+		debugLog("COMPUTED", "hasOrganizationsInStore", {
+			hasOrganizations,
 			count: organizationsInStore?.length || 0,
 		});
-		return hasOrgs;
+		return hasOrganizations;
 	}, [organizationsInStore]);
 
 	// Check if we have a current organization set
-	const hasCurrentOrg = useMemo(() => {
+	const hasCurrentOrganization = useMemo(() => {
 		const hasCurrent = !!currentOrganization?.domains;
-		debugLog("COMPUTED", "hasCurrentOrg", {
+		debugLog("COMPUTED", "hasCurrentOrganization", {
 			hasCurrent,
-			orgId: currentOrganization?.id,
+			organizationId: currentOrganization?.id,
 			domains: currentOrganization?.domains,
+			isDowngraded: currentOrganization?.is_downgraded,
 		});
 		return hasCurrent;
 	}, [currentOrganization]);
@@ -205,7 +122,7 @@ export const useFetchOrganizations = () => {
 		debugGroup("BACKGROUND_REFRESH", () => {
 			debugLog("BACKGROUND", "Starting background refresh of cached queries");
 
-			const keys = [
+			const queryKeys = [
 				"posts",
 				"gitRepos",
 				"repo_details",
@@ -230,7 +147,7 @@ export const useFetchOrganizations = () => {
 
 			// Fire and forget - don't await
 			Promise.allSettled(
-				keys.map(key => {
+				queryKeys.map(key => {
 					debugLog("BACKGROUND", `Fetching query: ${key}`);
 					return queryClient
 						.fetchQuery({ queryKey: [key] })
@@ -243,8 +160,12 @@ export const useFetchOrganizations = () => {
 						});
 				}),
 			).then(results => {
-				const successful = results.filter(r => r.status === "fulfilled").length;
-				const failed = results.filter(r => r.status === "rejected").length;
+				const successful = results.filter(
+					result => result.status === "fulfilled",
+				).length;
+				const failed = results.filter(
+					result => result.status === "rejected",
+				).length;
 				debugLog(
 					"BACKGROUND",
 					`Background refresh completed: ${successful} successful, ${failed} failed`,
@@ -253,140 +174,253 @@ export const useFetchOrganizations = () => {
 		});
 	}, [queryClient]);
 
+	// Force refetch organizations from backend
+	const refetchOrganizations = useCallback(async () => {
+		debugLog("REFETCH", "Force refetching organizations from backend");
+
+		try {
+			await queryClient.invalidateQueries({ queryKey: ["organizations"] });
+			const result = await queryClient.refetchQueries({
+				queryKey: ["organizations"],
+			});
+			debugLog("REFETCH", "✅ Organizations refetched successfully", result);
+			return result;
+		} catch (error) {
+			debugLog("REFETCH", "❌ Failed to refetch organizations", error);
+			throw error;
+		}
+	}, [queryClient]);
+
+	// Create organization cookie data
+	const createOrganizationCookieData = useCallback(
+		(organization: Organization) => {
+			return {
+				id: organization.id,
+				name: organization.name,
+				socials: organization.socials,
+				domain: organization.domains,
+				is_owner: organization.is_owner,
+				description: organization.description,
+				github_installation_id: organization.github_installation_id,
+				github_installation_status: organization.github_installation_status,
+				is_downgraded: organization.is_downgraded,
+				downgraded_at: organization.downgraded_at,
+				downgrade_reason: organization.downgrade_reason,
+				activity_score: organization.activity_score,
+				last_activity_at: organization.last_activity_at,
+			};
+		},
+		[],
+	);
+
 	// Optimized organization synchronization
-	const syncOrganization = useCallback(
-		async (organizations: any[]) => {
-			debugLog("SYNC", "Starting organization sync", {
-				orgsCount: organizations.length,
-				currentOrgInStore: currentOrganization?.id,
+	const synchronizeOrganization = useCallback(
+		async (organizations: Organization[]) => {
+			debugLog("SYNC", "Starting organization synchronization", {
+				organizationsCount: organizations.length,
+				currentOrganizationInStore: currentOrganization?.id,
 			});
 
 			try {
-				const cookieOrg = await getDecryptedCookie("organization");
-				debugLog("SYNC", "Retrieved cookie organization", cookieOrg);
+				const cookieOrganization = await getDecryptedCookie("organization");
+				debugLog("SYNC", "Retrieved cookie organization", cookieOrganization);
 
-				const hasOrgFromCookie = !!cookieOrg?.domain;
-				const hasOrgFromZustand = !!currentOrganization?.domains;
+				const hasOrganizationFromCookie = !!cookieOrganization?.domain;
+				const hasOrganizationFromZustand = !!currentOrganization?.domains;
 
-				debugLog("SYNC", "Sync state analysis", {
-					hasOrgFromCookie,
-					hasOrgFromZustand,
-					cookieDomain: cookieOrg?.domain,
-					zustandDomain: currentOrganization?.domains?.[0],
+				debugLog("SYNC", "Synchronization state analysis", {
+					hasOrganizationFromCookie,
+					hasOrganizationFromZustand,
+					cookieDomain: cookieOrganization?.domain,
+					zustandDomain: currentOrganization?.domains,
+					cookieDowngraded: cookieOrganization?.is_downgraded,
+					zustandDowngraded: currentOrganization?.is_downgraded,
 				});
 
-				// Fast path: if everything is in sync, do nothing
+				// Sort organizations to prioritize non-downgraded ones
+				const sortedOrganizations =
+					sortOrganizationsByDowngradeStatus(organizations);
+
+				// Fast path: if everything is in sync, just update the organizations list
 				if (
-					hasOrgFromCookie &&
-					hasOrgFromZustand &&
-					cookieOrg.domain === currentOrganization.domains?.[0]
+					hasOrganizationFromCookie &&
+					hasOrganizationFromZustand &&
+					cookieOrganization.domain === currentOrganization.domains &&
+					cookieOrganization.is_downgraded === currentOrganization.is_downgraded
 				) {
-					debugLog("SYNC", "✅ Organizations already in sync - skipping");
+					debugLog(
+						"SYNC",
+						"✅ Organizations already in sync - updating list only",
+					);
+					updateOrganizations(sortedOrganizations);
 					setIsInitialized(true);
 					return;
 				}
 
-				// Handle different sync scenarios
-				if (!hasOrgFromCookie && !hasOrgFromZustand) {
-					debugLog("SYNC", "🔄 No org set anywhere - using fallback");
-					const fallbackOrg = organizations[0];
+				// Handle different synchronization scenarios
+				if (!hasOrganizationFromCookie && !hasOrganizationFromZustand) {
+					debugLog(
+						"SYNC",
+						"🔄 No organization set anywhere - using best fallback",
+					);
+					const fallbackOrganization =
+						findBestOrganizationToSelect(sortedOrganizations);
 
-					if (fallbackOrg) {
+					if (fallbackOrganization) {
 						debugLog("SYNC", "Setting fallback organization", {
-							id: fallbackOrg.id,
-							name: fallbackOrg.name,
-							domain: fallbackOrg.domains[0],
+							id: fallbackOrganization.id,
+							name: fallbackOrganization.name,
+							domain: fallbackOrganization.domains,
+							isDowngraded: fallbackOrganization.is_downgraded,
+							activityScore: fallbackOrganization.activity_score,
 						});
 
 						// Set organization in store first
-						setCurrentOrganization(fallbackOrg);
-						setOrganization(fallbackOrg);
+						setCurrentOrganization(fallbackOrganization);
+						setOrganization(fallbackOrganization);
+						updateOrganizations(sortedOrganizations);
 
 						// Create cookie asynchronously
-						createEncryptedCookie("organization", {
-							id: fallbackOrg.id,
-							name: fallbackOrg.name,
-							socials: fallbackOrg.socials,
-							domain: fallbackOrg.domains[0],
-							is_owner: fallbackOrg.is_owner,
-							description: fallbackOrg.description,
-							github_installation_id: fallbackOrg.github_installation_id,
-							github_installation_status:
-								fallbackOrg.github_installation_status,
-						});
+						const cookieData =
+							createOrganizationCookieData(fallbackOrganization);
+						createEncryptedCookie("organization", cookieData);
 
 						debugLog("SYNC", "✅ Created fallback cookie");
 					} else {
 						debugLog("SYNC", "⚠️ No organizations available for fallback");
 					}
-				} else if (hasOrgFromCookie && !hasOrgFromZustand) {
+				} else if (hasOrganizationFromCookie && !hasOrganizationFromZustand) {
 					debugLog(
 						"SYNC",
 						"🔄 Cookie exists but Zustand empty - syncing to Zustand",
 					);
-					const orgData = {
-						id: cookieOrg.id as string,
-						name: cookieOrg.name as string,
-						domains: cookieOrg.domain as string,
-						is_owner: cookieOrg.is_owner as boolean,
-						description: cookieOrg.description as string,
-						socials: cookieOrg.socials as OrganizationSocial[],
-						github_installation_id: cookieOrg.github_installation_id as string,
-						github_installation_status:
-							cookieOrg.github_installation_status as string,
-					};
 
-					debugLog("SYNC", "Syncing cookie to Zustand", orgData);
-					setCurrentOrganization(orgData);
-					setOrganization(orgData);
-				} else if (!hasOrgFromCookie && hasOrgFromZustand) {
+					// Check if the cookie organization still exists and is not downgraded
+					const cookieOrganizationStillValid = sortedOrganizations.find(
+						organization => organization.id === cookieOrganization.id,
+					);
+
+					let organizationToSelect;
+					if (
+						cookieOrganizationStillValid &&
+						!cookieOrganizationStillValid.is_downgraded
+					) {
+						organizationToSelect = cookieOrganizationStillValid;
+						debugLog(
+							"SYNC",
+							"Cookie organization is still valid and not downgraded",
+						);
+					} else {
+						organizationToSelect =
+							findBestOrganizationToSelect(sortedOrganizations);
+						debugLog(
+							"SYNC",
+							"Cookie organization invalid/downgraded, selecting best alternative",
+							{
+								selectedOrganization: organizationToSelect?.id,
+								selectedName: organizationToSelect?.name,
+								isDowngraded: organizationToSelect?.is_downgraded,
+							},
+						);
+					}
+
+					if (organizationToSelect) {
+						setCurrentOrganization(organizationToSelect);
+						setOrganization(organizationToSelect);
+						updateOrganizations(sortedOrganizations);
+
+						// Update cookie if we switched organizations
+						if (organizationToSelect.id !== cookieOrganization.id) {
+							const cookieData =
+								createOrganizationCookieData(organizationToSelect);
+							createEncryptedCookie("organization", cookieData);
+						}
+					}
+				} else if (!hasOrganizationFromCookie && hasOrganizationFromZustand) {
 					debugLog(
 						"SYNC",
 						"🔄 Zustand exists but cookie empty - syncing to cookie",
 					);
-					createEncryptedCookie("organization", {
-						id: currentOrganization.id,
-						name: currentOrganization.name,
-						socials: currentOrganization.socials,
-						domain: currentOrganization.domains[0],
-						is_owner: currentOrganization.is_owner,
-						description: currentOrganization.description,
-						github_installation_id: currentOrganization.github_installation_id,
-						github_installation_status:
-							currentOrganization.github_installation_status,
-					});
-					debugLog("SYNC", "✅ Synced Zustand to cookie");
-				} else if (cookieOrg?.domain !== currentOrganization.domains?.[0]) {
-					debugLog("SYNC", "🔄 Cookie and Zustand out of sync - Zustand wins", {
-						cookieDomain: cookieOrg?.domain,
-						zustandDomain: currentOrganization.domains?.[0],
-					});
 
-					await deleteCookie("organization");
-					debugLog("SYNC", "Deleted old cookie");
+					// Check if current organization is still valid and not downgraded
+					const currentOrganizationStillValid = sortedOrganizations.find(
+						organization => organization.id === currentOrganization.id,
+					);
 
-					createEncryptedCookie("organization", {
-						id: currentOrganization.id,
-						name: currentOrganization.name,
-						socials: currentOrganization.socials,
-						domain: currentOrganization.domains[0],
-						is_owner: currentOrganization.is_owner,
-						description: currentOrganization.description,
-						github_installation_id: currentOrganization.github_installation_id,
-						github_installation_status:
-							currentOrganization.github_installation_status,
-					});
-					debugLog("SYNC", "✅ Updated cookie with Zustand data");
+					let organizationToSelect;
+					if (
+						currentOrganizationStillValid &&
+						!currentOrganizationStillValid.is_downgraded
+					) {
+						organizationToSelect = currentOrganizationStillValid;
+					} else {
+						organizationToSelect =
+							findBestOrganizationToSelect(sortedOrganizations);
+						debugLog(
+							"SYNC",
+							"Current organization invalid/downgraded, selecting best alternative",
+						);
+					}
+
+					if (organizationToSelect) {
+						if (organizationToSelect.id !== currentOrganization.id) {
+							setCurrentOrganization(organizationToSelect);
+							setOrganization(organizationToSelect);
+						}
+						updateOrganizations(sortedOrganizations);
+
+						const cookieData =
+							createOrganizationCookieData(organizationToSelect);
+						createEncryptedCookie("organization", cookieData);
+						debugLog("SYNC", "✅ Synced to cookie");
+					}
+				} else if (
+					cookieOrganization?.domain !== currentOrganization.domains ||
+					cookieOrganization?.is_downgraded !==
+						currentOrganization.is_downgraded
+				) {
+					debugLog(
+						"SYNC",
+						"🔄 Cookie and Zustand out of sync - selecting best organization",
+						{
+							cookieDomain: cookieOrganization?.domain,
+							zustandDomain: currentOrganization.domains,
+							cookieDowngraded: cookieOrganization?.is_downgraded,
+							zustandDowngraded: currentOrganization.is_downgraded,
+						},
+					);
+
+					// Find the best organization to select (prefer non-downgraded)
+					const bestOrganization =
+						findBestOrganizationToSelect(sortedOrganizations);
+
+					if (bestOrganization) {
+						setCurrentOrganization(bestOrganization);
+						setOrganization(bestOrganization);
+						updateOrganizations(sortedOrganizations);
+
+						await deleteCookie("organization");
+						debugLog("SYNC", "Deleted old cookie");
+
+						const cookieData = createOrganizationCookieData(bestOrganization);
+						createEncryptedCookie("organization", cookieData);
+						debugLog("SYNC", "✅ Updated cookie with best organization data");
+					}
 				}
 
 				setIsInitialized(true);
 			} catch (error) {
-				debugLog("SYNC", "❌ Organization sync failed", error);
-				// console.warn("Organization sync failed", error);
+				debugLog("SYNC", "❌ Organization synchronization failed", error);
 				setIsInitialized(true); // Still mark as initialized to prevent infinite loading
 			}
 		},
-		[currentOrganization, setCurrentOrganization, setOrganization],
+		[
+			currentOrganization,
+			setCurrentOrganization,
+			setOrganization,
+			updateOrganizations,
+			createOrganizationCookieData,
+		],
 	);
 
 	const query = useQuery({
@@ -397,7 +431,7 @@ export const useFetchOrganizations = () => {
 			const result = await getOrganizations();
 			debugLog("QUERY", "getOrganizations result", {
 				success: result.success,
-				orgCount: result.organizations?.length || 0,
+				organizationCount: result.organizations?.length || 0,
 			});
 
 			if (!result.success) {
@@ -408,14 +442,16 @@ export const useFetchOrganizations = () => {
 			const organizations = result.organizations ?? [];
 			debugLog("QUERY", "✅ Organizations fetched successfully", {
 				count: organizations.length,
-				orgs: organizations.map(org => ({ id: org.id, name: org.name })),
+				organizations: organizations.map(organization => ({
+					id: organization.id,
+					name: organization.name,
+					isDowngraded: organization.is_downgraded,
+					activityScore: organization.activity_score,
+				})),
 			});
 
-			// Set organizations in store immediately
-			setOrganizations(organizations);
-
-			// Sync current organization (await to ensure completion)
-			await syncOrganization(organizations);
+			// Sort organizations and sync current organization (await to ensure completion)
+			await synchronizeOrganization(organizations);
 
 			// Trigger background refresh (non-blocking)
 			backgroundRefresh();
@@ -427,7 +463,7 @@ export const useFetchOrganizations = () => {
 		refetchOnMount: false,
 		refetchOnReconnect: true,
 		refetchOnWindowFocus: false,
-		enabled: true, // Only enable after cookie is loaded
+		enabled: true,
 		retry: 3,
 		retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
@@ -439,23 +475,41 @@ export const useFetchOrganizations = () => {
 		debugLog("MOUNT", "Loading organization from cookie");
 
 		getDecryptedCookie("organization")
-			.then(cookieOrg => {
-				debugLog("MOUNT", "Cookie organization retrieved", cookieOrg);
-				if (cookieOrg?.domain && !hasCurrentOrg) {
-					const orgData = {
-						id: cookieOrg.id as string,
-						name: cookieOrg.name as string,
-						domains: cookieOrg.domain as string,
-						is_owner: cookieOrg.is_owner as boolean,
-						description: cookieOrg.description as string,
-						socials: cookieOrg.socials as OrganizationSocial[],
-						github_installation_id: cookieOrg.github_installation_id as string,
+			.then(cookieOrganization => {
+				debugLog("MOUNT", "Cookie organization retrieved", cookieOrganization);
+				if (cookieOrganization?.domain && !hasCurrentOrganization) {
+					const organizationData: Organization = {
+						id: cookieOrganization.id as string,
+						name: cookieOrganization.name as string,
+						domains: cookieOrganization.domain as string,
+						is_owner: cookieOrganization.is_owner as boolean,
+						description: cookieOrganization.description as string,
+						socials: cookieOrganization.socials as OrganizationSocial[],
+						github_installation_id:
+							cookieOrganization.github_installation_id as string,
 						github_installation_status:
-							cookieOrg.github_installation_status as string,
+							cookieOrganization.github_installation_status as string,
+						// New fields with proper defaults
+						is_downgraded:
+							(cookieOrganization.is_downgraded as boolean) ?? false,
+						downgraded_at: cookieOrganization.downgraded_at as
+							| string
+							| undefined,
+						downgrade_reason: cookieOrganization.downgrade_reason as
+							| string
+							| undefined,
+						activity_score: (cookieOrganization.activity_score as number) ?? 0,
+						last_activity_at: cookieOrganization.last_activity_at as
+							| string
+							| undefined,
 					};
-					debugLog("MOUNT", "📦 Setting organization from cookie", orgData);
-					setCurrentOrganization(orgData);
-					setOrganization(orgData);
+					debugLog(
+						"MOUNT",
+						"📦 Setting organization from cookie",
+						organizationData,
+					);
+					setCurrentOrganization(organizationData);
+					setOrganization(organizationData);
 				}
 			})
 			.catch(error => {
@@ -464,41 +518,60 @@ export const useFetchOrganizations = () => {
 			.finally(() => {
 				setCookieLoaded(true);
 			});
-	}, [cookieLoaded, hasCurrentOrg, setCurrentOrganization, setOrganization]);
+	}, [
+		cookieLoaded,
+		hasCurrentOrganization,
+		setCurrentOrganization,
+		setOrganization,
+	]);
 
 	// Determine comprehensive loading state
 	const isInitialLoading =
 		!cookieLoaded || query.isLoading || (query.isSuccess && !isInitialized);
 	const shouldShowContent =
-		isInitialized && (hasOrgInStore || hasCurrentOrg || !!query.data);
+		isInitialized &&
+		(hasOrganizationsInStore || hasCurrentOrganization || !!query.data);
+
+	// Get sorted organizations for return
+	const sortedOrganizations = useMemo(() => {
+		const organizationsToSort = hasOrganizationsInStore
+			? organizationsInStore
+			: (query.data ?? []);
+		return sortOrganizationsByDowngradeStatus(organizationsToSort);
+	}, [hasOrganizationsInStore, organizationsInStore, query.data]);
 
 	// Debug final state
 	useEffect(() => {
 		debugLog("FINAL_STATE", "Hook state computed", {
 			isInitialLoading,
 			shouldShowContent,
-			hasCurrentOrg,
+			hasCurrentOrganization,
 			isInitialized,
 			cookieLoaded,
 			queryStatus: query.status,
+			currentOrganizationDowngraded: currentOrganization?.is_downgraded,
+			organizationsCount: sortedOrganizations.length,
 		});
 	}, [
 		isInitialLoading,
 		shouldShowContent,
-		hasCurrentOrg,
+		hasCurrentOrganization,
 		isInitialized,
 		cookieLoaded,
 		query.status,
+		currentOrganization?.is_downgraded,
+		sortedOrganizations.length,
 	]);
 
 	return {
-		organizations: hasOrgInStore ? organizationsInStore : (query.data ?? []),
+		organizations: sortedOrganizations,
 		isFetching: query.isFetching,
 		isLoading: isInitialLoading,
 		isError: query.isError,
 		error: query.error,
 		shouldShowContent,
-		hasCurrentOrg,
+		hasCurrentOrganization,
 		isInitialized,
+		refetchOrganizations, // Expose refetch function
 	};
 };

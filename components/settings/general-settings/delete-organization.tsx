@@ -31,10 +31,13 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import {
 	createEncryptedCookie,
 	deleteCookie,
 } from "@/lib/cookies/create-cookies";
+import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
+import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import {
 	type DeleteOrganizationFormValues,
 	deleteOrganizationSchema,
@@ -55,6 +58,7 @@ export function DeleteOrganization() {
 	} = useOrganizationStore();
 	const [isDeleting, setIsDeleting] = useState(false);
 	const isOnlyOrganization = organizations.length === 1;
+	const { refetchOrganizations } = useFetchOrganizations();
 
 	const form = useForm<DeleteOrganizationFormValues>({
 		resolver: zodResolver(deleteOrganizationSchema),
@@ -148,6 +152,10 @@ export function DeleteOrganization() {
 
 				// Handle organization switching
 				await handleOrganizationSwitch(nextOrg);
+
+				initializeFeatureLimits();
+				initializeFeatureFlags();
+				await refetchOrganizations();
 
 				// Reset form and close dialog
 				form.reset({ organizationName: "" });
