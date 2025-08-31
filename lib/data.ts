@@ -47,11 +47,36 @@ export const repoCardData = [
 ];
 
 export type UpcomingPost = {
-	platform: ["LinkedIn" | "Slack" | "Discord"];
+	id: string;
+	platform: "Twitter" | "Linkedin" | "Discord";
 	status: "Scheduled" | "Draft";
 	content: string;
 	repo: string;
-	date: string;
+	date: string; // original reference date
+	scheduled_publish_time: string;
+	created_at: string;
+	updated_at: string;
+	is_grouped: boolean;
+	is_edited: boolean;
+	priority: boolean;
+	group_id: string | null;
+	integrations: {
+		planned_count: number;
+		posted_count: number;
+		is_fully_posted: boolean;
+		details: {
+			id: string;
+			handle: string;
+			display_name: string;
+			posted: boolean;
+		}[];
+	};
+	media: {
+		has_images: boolean;
+		image_count: number;
+		has_video: boolean;
+		video_url: string | null;
+	};
 };
 
 export const channelDistributionData = [
@@ -124,51 +149,3 @@ export const reminderScenarios = [
 ];
 
 const now = new Date();
-
-export const upcomingPostsData: UpcomingPost[] = [
-	{
-		platform: ["LinkedIn"],
-		status: "Scheduled",
-		content: "Excited to launch our new multi-platform posting feature!",
-		repo: "ghost-devlog",
-		date: addHours(now, 4).toISOString(),
-	},
-	{
-		platform: ["Slack"],
-		status: "Draft",
-		content:
-			"Internal announcement: Q3 roadmap is now available in Confluence.",
-		repo: "internal-docs",
-		date: addDays(now, 2).toISOString(),
-	},
-	{
-		platform: ["Discord"],
-		status: "Scheduled",
-		content: "Community AMA with the dev team this Friday at 3 PM EST.",
-		repo: "community-hub",
-		date: addDays(now, 3).toISOString(),
-	},
-	{
-		platform: ["LinkedIn"],
-		status: "Draft",
-		content:
-			"The future of automated social media management is here. Find out how Push to Post is changing the game for developers.",
-		repo: "marketing-site",
-		date: addDays(now, 7).toISOString(),
-	},
-	{
-		platform: ["Slack"],
-		status: "Scheduled",
-		content: "Reminder: a new batch of user feedback is ready for review.",
-		repo: "customer-feedback",
-		date: addMinutes(now, 15).toISOString(),
-	},
-	{
-		platform: ["LinkedIn"],
-		status: "Scheduled",
-		content:
-			"A deep dive into our new architecture and what it means for performance.",
-		repo: "ghost-devlog",
-		date: subDays(now, 2).toISOString(),
-	},
-];
