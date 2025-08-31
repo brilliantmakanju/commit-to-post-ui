@@ -41,7 +41,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		limits: {
 			basic: 1,
 			pro: 5,
-			studio: -1,
+			studio: 9999,
 		},
 		requiresAuth: true,
 	},
@@ -54,7 +54,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		limits: {
 			basic: 1,
 			pro: 5,
-			studio: -1,
+			studio: 9999,
 		},
 		requiresAuth: true,
 	},
@@ -68,7 +68,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		limits: {
 			basic: 1,
 			pro: 5,
-			studio: -1,
+			studio: 9999,
 		},
 		requiresAuth: true,
 	},
@@ -94,7 +94,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		limits: {
 			basic: 5,
 			pro: 100,
-			studio: -1,
+			studio: 9999,
 		},
 		requiresAuth: true,
 	},
@@ -107,7 +107,7 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		limits: {
 			basic: 1,
 			pro: 4,
-			studio: -1,
+			studio: 30,
 		},
 		requiresAuth: true,
 	},
