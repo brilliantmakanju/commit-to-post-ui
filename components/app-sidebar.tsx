@@ -1,5 +1,4 @@
 "use client";
-
 import {
 	Bell,
 	CreditCard,
@@ -25,64 +24,54 @@ const navigationItems = [
 	{
 		title: "Dashboard",
 		url: "/dashboard",
-		icon: LayoutDashboard, // dashboard overview
+		icon: LayoutDashboard,
 	},
 	{
 		title: "Repositories",
 		url: "/repositories",
-		icon: FolderGit2, // repos / projects
+		icon: FolderGit2,
 	},
 	{
 		title: "Notifications",
 		url: "/notifications",
-		icon: Bell, // notifications
+		icon: Bell,
 	},
 	{
 		title: "Billing",
 		url: "/billing",
-		icon: CreditCard, // billing / payments
+		icon: CreditCard,
 	},
 	{
 		title: "Settings",
 		url: "/settings",
-		icon: Settings, // account / app settings
-		items: [], // if you want nested sub-settings later
+		icon: Settings,
+		items: [],
 	},
 ];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	const [mounted, setMounted] = useState(false);
+	const [isClient, setIsClient] = useState(false);
 
 	useEffect(() => {
-		setMounted(true);
-	}, [mounted]);
+		// Ensure we're on the client side
+		setIsClient(true);
+	}, []);
+
+	// For SSR compatibility, always render something
+	// but use different loading states based on client/server
+	const isLoading = !isClient;
 
 	return (
 		<Sidebar variant="inset" collapsible="icon" {...props}>
-			{mounted ? (
-				<>
-					<SidebarHeader>
-						<TeamSwitcher isLoading={false} />
-					</SidebarHeader>
-					<SidebarContent>
-						<NavMain items={navigationItems} isLoading={false} />
-					</SidebarContent>
-					<SidebarFooter>
-						<NavUser isLoadingAttachment={false} />
-					</SidebarFooter>
-				</>
-			) : (
-				<>
-					<SidebarHeader>
-						<TeamSwitcher isLoading={mounted} />
-					</SidebarHeader>
-					<SidebarContent>
-						<NavMain items={navigationItems} isLoading={mounted} />
-					</SidebarContent>
-					<SidebarFooter>
-						<NavUser isLoadingAttachment={mounted} />
-					</SidebarFooter>
-				</>
-			)}
+			<SidebarHeader>
+				<TeamSwitcher isLoading={isLoading} />
+			</SidebarHeader>
+			<SidebarContent>
+				<NavMain items={navigationItems} isLoading={isLoading} />
+			</SidebarContent>
+			<SidebarFooter>
+				<NavUser isLoadingAttachment={isLoading} />
+			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
 	);

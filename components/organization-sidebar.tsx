@@ -40,24 +40,34 @@ interface TeamSwitcherProps {
 }
 
 export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
-	const { isMobile } = useSidebar();
-	const logoutStore = useLogoutStore();
-	const queryClient = useQueryClient();
-
-	// Local state
+	// Force client-side only rendering to avoid hydration mismatches
+	const [isClient, setIsClient] = useState(false);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [isSwitching, setIsSwitching] = useState(false);
 	const [lastSwitchedOrgId, setLastSwitchedOrgId] = useState<
 		string | undefined
 	>();
 
-	// Store state
+	const { isMobile } = useSidebar();
+	const queryClient = useQueryClient();
+
+	// Store state with fallbacks
 	const { organization, organizations, setOrganization } =
 		useOrganizationStore();
 
-	const orgCount = organizations.length;
+	// Safe fallbacks for organization data - memoized to prevent dependency issues
+	const safeOrganizations = useMemo(() => {
+		return Array.isArray(organizations) ? organizations : [];
+	}, [organizations]);
 
-	// use workspaces limit, not social accounts
+	const orgCount = safeOrganizations.length;
+
+	// Ensure client-side rendering
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	// Workspace limit UI
 	const workspaceLimitUI = useLimitUI({
 		warningThreshold: 80,
 		currentCount: orgCount,
@@ -65,172 +75,47 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 		limitId: FEATURE_LIMITS.WORKSPACES,
 	});
 
-	// Memoized computed values
+	// Determine active team with better fallback logic
 	const activeTeam = useMemo(() => {
-		if (!isLoading) return organization;
-
-		// If we're currently switching or just switched, prioritize the user's selection
-		if (isSwitching || lastSwitchedOrgId) {
-			const switchedOrg =
-				organizations.find(org => org.id === lastSwitchedOrgId) || organization;
-			if (switchedOrg && switchedOrg.id === lastSwitchedOrgId) {
-				return switchedOrg;
-			}
+		// If we're switching, prioritize the switched organization
+		if (isSwitching && lastSwitchedOrgId) {
+			const switchedOrg = safeOrganizations.find(
+				org => org?.id === lastSwitchedOrgId,
+			);
+			if (switchedOrg) return switchedOrg;
 		}
 
-		// If still loading initial data, show current organization if available
-		if (isLoading && organization && organization.name !== "") {
-			return organization;
+		// If we have a current organization, verify it exists in the list
+		if (organization?.id && organization?.name) {
+			const foundOrg = safeOrganizations.find(
+				org => org?.id === organization.id,
+			);
+			if (foundOrg) return foundOrg;
+			// If current org is not in list but is valid, still use it
+			if (organization.name.trim()) return organization;
 		}
 
-		// If we have a stored organization and it exists in the list, use it
-		if (organization && organization.name !== "") {
-			const foundOrg = organizations.find(org => org.id === organization.id);
-			return foundOrg || organization;
+		// Fallback to first organization if available
+		if (safeOrganizations.length > 0 && safeOrganizations[0]?.id) {
+			return safeOrganizations[0];
 		}
 
-		// Otherwise, use the first available organization
-		return organizations.length > 0 ? organizations[0] : undefined;
-	}, [isLoading, organization, organizations, isSwitching, lastSwitchedOrgId]);
+		return;
+	}, [organization, safeOrganizations, isSwitching, lastSwitchedOrgId]);
 
+	// Get inactive teams
 	const inactiveTeams = useMemo(() => {
-		if (!activeTeam) return [];
-		// Always return other organizations, even if there's only one total
-		return organizations.filter(team => team.id !== activeTeam.id);
-	}, [organizations, activeTeam]);
+		if (!activeTeam?.id) return safeOrganizations;
+		return safeOrganizations.filter(
+			team => team?.id && team.id !== activeTeam.id,
+		);
+	}, [safeOrganizations, activeTeam]);
 
-	const componentState = useMemo(() => {
-		if (isLoading) return "mounting";
-		if (logoutStore.logout) return "logging-out";
-		if (isLoading && !activeTeam) return "loading";
-		if (isLoading && activeTeam) return "loading-with-org";
-		if (!isLoading && organizations.length === 0 && !organization)
-			return "no-orgs";
-		return "ready";
-	}, [
-		logoutStore.logout,
-		isLoading,
-		activeTeam,
-		organizations.length,
-		organization,
-	]);
+	// Activity info helper
+	const getActivityInfo = useCallback((org: NonNullable<typeof activeTeam>) => {
+		if (!org?.last_activity_at) return;
 
-	// Background refresh function - non-blocking
-	const backgroundRefresh = useCallback(async () => {
-		debugGroup("BACKGROUND_REFRESH", () => {
-			debugLog("BACKGROUND", "Starting background refresh of cached queries");
-
-			const keys = [
-				"posts",
-				"gitRepos",
-				"repo_details",
-				"notifications",
-				"connected_repos",
-				"top_repo_metrics",
-				"dashboard_metrics",
-				"repo_webhook_ping",
-				"repo_super_details",
-				"retrieving_webhooks",
-				"recent_notifications",
-				"dashboard_heatmap_data",
-				"upcoming_posts_metrics",
-				"dashboard_channel_data",
-				"organization-ownership",
-				"upcoming_posts_metrics",
-				"dashboard_webhook_errors",
-				"retrieving_social_status",
-				"retrieving_billing_portal",
-				"unread_notification_counts",
-			];
-
-			// Fire and forget - don't await
-			Promise.allSettled(
-				keys.map(key => {
-					debugLog("BACKGROUND", `Fetching query: ${key}`);
-					return queryClient
-						.fetchQuery({ queryKey: [key] })
-						.then(() => {
-							debugLog("BACKGROUND", `✅ Successfully refreshed: ${key}`);
-							return queryClient.invalidateQueries({ queryKey: [key] });
-						})
-						.catch(error => {
-							debugLog("BACKGROUND", `❌ Failed to refresh: ${key}`, error);
-						});
-				}),
-			).then(results => {
-				const successful = results.filter(r => r.status === "fulfilled").length;
-				const failed = results.filter(r => r.status === "rejected").length;
-				debugLog(
-					"BACKGROUND",
-					`Background refresh completed: ${successful} successful, ${failed} failed`,
-				);
-			});
-		});
-	}, [queryClient]);
-
-	// Team switching handler with proper error handling and loading states
-	const handleTeamChange = useCallback(
-		async (team: (typeof organizations)[0]) => {
-			if (isSwitching || !team) return;
-
-			try {
-				setIsSwitching(true);
-				setLastSwitchedOrgId(team.id);
-
-				// Update cookies first to ensure persistence
-				await deleteCookie("organization");
-				await createEncryptedCookie("organization", {
-					id: team.id,
-					name: team.name,
-					domain: team.domains[0],
-					is_owner: team.is_owner,
-					description: team.description,
-					github_installation_id: team.github_installation_id,
-					github_installation_status: team.github_installation_status,
-				});
-
-				// Then update store
-				setOrganization(team);
-				backgroundRefresh();
-
-				// Clear the switching flag after a brief delay to prevent race conditions
-				setTimeout(() => {
-					setLastSwitchedOrgId(undefined);
-				}, 1000);
-			} catch {
-				// Revert on error
-				setLastSwitchedOrgId(undefined);
-				// You might want to show a toast notification here
-			} finally {
-				setIsSwitching(false);
-			}
-		},
-		[backgroundRefresh, isSwitching, setOrganization],
-	);
-
-	// Helper function to get organization status
-	const getOrgStatus = useCallback((org: typeof activeTeam) => {
-		if (!org) return { color: "bg-gray-400", text: "Unknown" };
-
-		if (org.is_downgraded) {
-			return { color: "bg-orange-500", text: "Downgraded" };
-		}
-
-		// Check GitHub installation status
-		if (org.github_installation_status === "installed") {
-			return { color: "bg-green-500", text: "Active" };
-		} else if (org.github_installation_status === "pending") {
-			return { color: "bg-yellow-500", text: "Pending" };
-		}
-
-		return { color: "bg-green-500", text: "Active" };
-	}, []);
-
-	// Helper function to format activity info
-	const getActivityInfo = useCallback((org: typeof activeTeam) => {
-		if (!org) return;
-
-		if (org.last_activity_at) {
+		try {
 			const lastActivity = new Date(org.last_activity_at);
 			const now = new Date();
 			const diffInDays = Math.floor(
@@ -243,114 +128,207 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 			if (diffInDays < 30)
 				return `Last active ${Math.floor(diffInDays / 7)} weeks ago`;
 			return `Last active ${Math.floor(diffInDays / 30)} months ago`;
+		} catch {
+			return;
 		}
-
-		return;
 	}, []);
 
-	// Render loading skeleton with consistent avatar size
-	const renderSkeleton = useCallback(
-		(showOrgInfo = false) => (
+	// Organization status helper
+	const getOrgStatus = useCallback((org: NonNullable<typeof activeTeam>) => {
+		if (!org) return { color: "bg-gray-400", text: "Unknown" };
+
+		if (org.is_downgraded) {
+			return { color: "bg-orange-500", text: "Downgraded" };
+		}
+
+		if (org.github_installation_status === "installed") {
+			return { color: "bg-green-500", text: "Active" };
+		} else if (org.github_installation_status === "pending") {
+			return { color: "bg-yellow-500", text: "Pending" };
+		}
+
+		return { color: "bg-green-500", text: "Active" };
+	}, []);
+
+	// Loading skeleton component
+	const LoadingSkeleton = useCallback(
+		() => (
 			<SidebarMenu>
 				<SidebarMenuItem>
-					<DropdownMenu>
-						<DropdownMenuTrigger disabled asChild>
-							<SidebarMenuButton
-								size="lg"
-								disabled
-								className="h-auto p-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-							>
-								{showOrgInfo && activeTeam ? (
-									<div className="flex w-full items-center justify-between">
-										<div className="flex items-center space-x-3">
-											<div className="relative">
-												<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground">
-													{activeTeam.name[0]?.toUpperCase() || "?"}
-												</div>
-												<div
-													className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background ${getOrgStatus(activeTeam).color}`}
-												></div>
-											</div>
-											<div className="flex flex-col items-start">
-												<span className="truncate text-base font-bold leading-none">
-													{activeTeam.name}
-												</span>
-												<span className="mt-1 truncate text-xs text-muted-foreground">
-													Loading...
-												</span>
-											</div>
-										</div>
-									</div>
-								) : (
-									<div className="flex w-full items-center justify-between">
-										<div className="flex items-center space-x-3">
-											<Skeleton className="h-8 w-8 rounded-lg" />
-											<div className="flex flex-col gap-2">
-												<Skeleton className="h-4 w-28" />
-												<Skeleton className="h-3 w-20" />
-											</div>
-										</div>
-									</div>
-								)}
-							</SidebarMenuButton>
-						</DropdownMenuTrigger>
-					</DropdownMenu>
+					<SidebarMenuButton size="lg" disabled className="h-auto p-3">
+						<div className="flex w-full items-center justify-between">
+							<div className="flex items-center space-x-3">
+								<Skeleton className="h-8 w-8 rounded-lg" />
+								<div className="flex flex-col gap-2">
+									<Skeleton className="h-4 w-28" />
+									<Skeleton className="h-3 w-20" />
+								</div>
+							</div>
+						</div>
+					</SidebarMenuButton>
 				</SidebarMenuItem>
 			</SidebarMenu>
 		),
-		[activeTeam, getOrgStatus],
+		[],
 	);
 
-	// Handle different component states
-	switch (componentState) {
-		case "mounting":
-		case "logging-out":
-		case "loading": {
-			return renderSkeleton();
-		}
+	// Background refresh function
+	const backgroundRefresh = useCallback(async () => {
+		if (typeof globalThis === "undefined") return; // Skip on server-side
 
-		case "loading-with-org": {
-			return renderSkeleton(true);
-		}
+		try {
+			debugGroup("BACKGROUND_REFRESH", () => {
+				debugLog("BACKGROUND", "Starting background refresh of cached queries");
 
-		case "no-orgs": {
-			return (
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<div className="p-4 text-center">
-							<div className="flex flex-col items-center space-y-2">
-								<div className="text-sm font-medium text-red-500">
-									No organizations found
-								</div>
-								<button
-									onClick={() => setCreateModalOpen(true)}
-									className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-								>
-									Create your first organization
-								</button>
+				const keys = [
+					"posts",
+					"gitRepos",
+					"repo_details",
+					"notifications",
+					"connected_repos",
+					"top_repo_metrics",
+					"dashboard_metrics",
+					"repo_webhook_ping",
+					"repo_super_details",
+					"retrieving_webhooks",
+					"recent_notifications",
+					"dashboard_heatmap_data",
+					"upcoming_posts_metrics",
+					"dashboard_channel_data",
+					"organization-ownership",
+					"upcoming_posts_metrics",
+					"dashboard_webhook_errors",
+					"retrieving_social_status",
+					"retrieving_billing_portal",
+					"unread_notification_counts",
+				];
+
+				Promise.allSettled(
+					keys.map(key => {
+						debugLog("BACKGROUND", `Fetching query: ${key}`);
+						return queryClient
+							.fetchQuery({ queryKey: [key] })
+							.then(() => {
+								debugLog("BACKGROUND", `✅ Successfully refreshed: ${key}`);
+								return queryClient.invalidateQueries({ queryKey: [key] });
+							})
+							.catch(error => {
+								debugLog("BACKGROUND", `❌ Failed to refresh: ${key}`, error);
+							});
+					}),
+				).then(results => {
+					const successful = results.filter(
+						r => r.status === "fulfilled",
+					).length;
+					const failed = results.filter(r => r.status === "rejected").length;
+					debugLog(
+						"BACKGROUND",
+						`Background refresh completed: ${successful} successful, ${failed} failed`,
+					);
+				});
+			});
+		} catch (error) {
+			console.warn("Background refresh failed:", error);
+		}
+	}, [queryClient]);
+
+	// Team switching handler
+	const handleTeamChange = useCallback(
+		async (team: NonNullable<typeof activeTeam>) => {
+			if (isSwitching || !team?.id) return;
+
+			try {
+				setIsSwitching(true);
+				setLastSwitchedOrgId(team.id);
+
+				// Update cookies
+				await deleteCookie("organization");
+				await createEncryptedCookie("organization", {
+					id: team.id,
+					name: team.name,
+					domain: team.domains[0],
+					is_owner: team.is_owner,
+					description: team.description,
+					github_installation_id: team.github_installation_id,
+					github_installation_status: team.github_installation_status,
+				});
+
+				// Update store
+				setOrganization(team);
+
+				// Background refresh
+				setTimeout(() => {
+					backgroundRefresh();
+				}, 100);
+
+				// Clear switching state
+				setTimeout(() => {
+					setLastSwitchedOrgId(undefined);
+				}, 1000);
+			} catch (error) {
+				console.error("Team switch failed:", error);
+				setLastSwitchedOrgId(undefined);
+			} finally {
+				setIsSwitching(false);
+			}
+		},
+		[backgroundRefresh, isSwitching, setOrganization],
+	);
+
+	// Early return for server-side rendering
+	if (!isClient) {
+		return (
+			<SidebarMenu>
+				<SidebarMenuItem>
+					<div className="h-16 w-full animate-pulse rounded-lg bg-muted"></div>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		);
+	}
+
+	// Determine component state
+	const shouldShowLoading = isLoading || !activeTeam || orgCount === 0;
+
+	// Show loading state
+	if (shouldShowLoading) {
+		return <LoadingSkeleton />;
+	}
+
+	// No organizations fallback
+	if (orgCount === 0) {
+		return (
+			<SidebarMenu>
+				<SidebarMenuItem>
+					<div className="p-4 text-center">
+						<div className="flex flex-col items-center space-y-2">
+							<div className="text-sm font-medium text-red-500">
+								No organizations found
 							</div>
+							<button
+								onClick={() => setCreateModalOpen(true)}
+								className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+							>
+								Create your first organization
+							</button>
 						</div>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			);
-		}
-
-		case "ready": {
-			break;
-		}
-
-		default: {
-			return renderSkeleton();
-		}
+					</div>
+					<CreateOrganizationModal
+						open={createModalOpen}
+						onOpenChange={setCreateModalOpen}
+					/>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		);
 	}
 
+	// Main component render
 	if (!activeTeam) {
-		return renderSkeleton();
+		return <LoadingSkeleton />;
 	}
-	const isDropdownDisabled = isSwitching;
-	const showChevron = !isSwitching;
+
 	const orgStatus = getOrgStatus(activeTeam);
 	const activityInfo = getActivityInfo(activeTeam);
+	const isDropdownDisabled = isSwitching;
 
 	return (
 		<SidebarMenu>
@@ -365,7 +343,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 								<div className="flex items-center space-x-3">
 									<div className="relative">
 										<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground shadow-sm">
-											{activeTeam.name[0]?.toUpperCase() || "?"}
+											{(activeTeam.name?.[0] || "?").toUpperCase()}
 										</div>
 										<div
 											className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background ${orgStatus.color}`}
@@ -374,7 +352,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 									<div className="flex min-w-0 flex-1 flex-col items-start">
 										<div className="flex items-center space-x-2">
 											<span className="truncate text-base font-bold leading-tight">
-												{activeTeam.name}
+												{activeTeam.name || "Unknown Organization"}
 											</span>
 											{activeTeam.is_owner && (
 												<Crown className="h-3 w-3 flex-shrink-0 text-yellow-500" />
@@ -390,10 +368,9 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 										</div>
 										<div className="mt-0.5 flex items-center">
 											<span className="truncate text-xs text-muted-foreground">
-												{organizations.length === 1
+												{orgCount === 1
 													? activityInfo || "Personal workspace"
-													: activityInfo ||
-														`${organizations.length} total workspaces`}
+													: activityInfo || `${orgCount} total workspaces`}
 											</span>
 										</div>
 									</div>
@@ -401,10 +378,8 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 								<div className="ml-2 flex items-center">
 									{isSwitching ? (
 										<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-									) : showChevron ? (
-										<ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
 									) : (
-										<></>
+										<ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
 									)}
 								</div>
 							</div>
@@ -418,31 +393,33 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 						className="w-[--radix-dropdown-menu-trigger-width] min-w-72 rounded-xl shadow-lg"
 					>
 						<DropdownMenuLabel className="px-3 py-2 text-xs text-muted-foreground">
-							{organizations.length === 1
+							{orgCount === 1
 								? "Your Workspace"
-								: `Switch Organization (${organizations.length})`}
+								: `Switch Organization (${orgCount})`}
 						</DropdownMenuLabel>
 
-						{/* Current active organization - Always show, even if it's the only one */}
+						{/* Current active organization */}
 						<DropdownMenuItem
 							className="mx-2 mb-1 gap-3 rounded-lg bg-sidebar-accent/30 p-3"
 							disabled
 						>
 							<div className="relative flex size-6 items-center justify-center rounded-sm border-2 border-sidebar-primary bg-sidebar-primary font-medium text-sidebar-primary-foreground">
-								{activeTeam.name[0]?.toUpperCase() || "?"}
+								{(activeTeam.name?.[0] || "?").toUpperCase()}
 								<div
 									className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${orgStatus.color}`}
 								></div>
 							</div>
 							<div className="flex min-w-0 flex-1 flex-col">
 								<div className="flex items-center space-x-2">
-									<span className="font-medium">{activeTeam.name}</span>
+									<span className="font-medium">
+										{activeTeam.name || "Unknown"}
+									</span>
 									{activeTeam.is_owner && (
 										<Crown className="h-3 w-3 text-yellow-500" />
 									)}
 								</div>
 								<span className="text-xs text-muted-foreground">
-									{organizations.length === 1
+									{orgCount === 1
 										? `Current workspace • ${orgStatus.text}`
 										: `Current • ${orgStatus.text}`}
 									{activeTeam.is_downgraded &&
@@ -455,12 +432,13 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							</DropdownMenuShortcut>
 						</DropdownMenuItem>
 
-						{/* Other organizations - Only show if there are multiple organizations */}
+						{/* Other organizations */}
 						{inactiveTeams.length > 0 && (
 							<>
 								<DropdownMenuSeparator className="my-2" />
-
 								{inactiveTeams.map((team, index) => {
+									if (!team?.id) return;
+
 									const teamStatus = getOrgStatus(team);
 									const teamActivity = getActivityInfo(team);
 
@@ -472,7 +450,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 											className="mx-2 mb-1 cursor-pointer gap-3 rounded-lg p-3 transition-colors hover:bg-sidebar-accent"
 										>
 											<div className="relative flex size-6 items-center justify-center rounded-sm border bg-muted font-medium">
-												{team.name[0]?.toUpperCase() || "?"}
+												{(team.name?.[0] || "?").toUpperCase()}
 												<div
 													className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${teamStatus.color}`}
 												></div>
@@ -480,7 +458,7 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 											<div className="flex min-w-0 flex-1 flex-col">
 												<div className="flex items-center space-x-2">
 													<span className="truncate font-medium">
-														{team.name}
+														{team.name || "Unknown"}
 													</span>
 													{team.is_owner && (
 														<Crown className="h-3 w-3 text-yellow-500" />
@@ -505,10 +483,8 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 							</>
 						)}
 
-						{/* Always show separator before create option */}
+						{/* Create organization option */}
 						<DropdownMenuSeparator className="my-2" />
-
-						{/* Create organization */}
 						<FeatureLimitWrapper
 							limitId={FEATURE_LIMITS.WORKSPACES}
 							currentCount={orgCount}
@@ -561,7 +537,6 @@ export function TeamSwitcher({ isLoading }: TeamSwitcherProps) {
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>
-
 			<CreateOrganizationModal
 				open={createModalOpen}
 				onOpenChange={setCreateModalOpen}
