@@ -6,7 +6,7 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
  *
  * Priority:
  * 1. Organization domain from cookie (with port 8000 in dev)
- * 2. BASE_URL_API_CALL environment variable
+ * 2. BASE_URL_API_CALL environment variabl e
  * 3. Default http://localhost:8000
  *
  * @returns {Promise<string>} The base URL to use for API calls
