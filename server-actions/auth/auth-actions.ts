@@ -9,6 +9,8 @@ export async function confirmMagicLink(token: string) {
 	try {
 		const response = await apiClient.get(
 			`/api/v1/managements/magic-link/confirm/?token=${token}`,
+			{},
+			12000,
 		);
 
 		return response;
