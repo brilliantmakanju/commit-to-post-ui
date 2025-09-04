@@ -22,12 +22,9 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
-import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
-import { logout, signOut } from "@/server-actions/auth/signout";
 import useLogoutStore from "@/zustand/logout-store";
 import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
-import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
 // Dynamically import non-critical components
@@ -97,22 +94,22 @@ export const syncUserData = (userData: any) => {
 };
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
-	const router = useRouter();
-	const userStore = useUserStore();
 	const hasSyncedRef = useRef(false);
 	const logoutStore = useLogoutStore();
 	const { data: session, status } = useSession();
-	const organizationStore = useOrganizationStore();
 	const { setUser, hasHydratedUser } = useUserStore();
 	const [onboardingChecked, setOnboardingChecked] = useState(false);
+	const [initializationComplete, setInitializationComplete] = useState(false);
+	const [forceShowContent, setForceShowContent] = useState(false);
 
 	const { isOpen, close, type, currentPlanId, currentInterval } =
 		usePlanSelectorStore();
+
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
 	const [cookieValidated, setCookieValidated] = useState(false);
 
-	// Organization fetching
+	// Organization fetching with timeout handling
 	const {
 		isError: orgError,
 		shouldShowContent,
@@ -120,7 +117,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	} = useFetchOrganizations();
 
 	// Session management with auto-logout
-	const { isSessionValid, SessionUI } = useSessionManager({
+	const { isSessionValid, SessionUI, logout } = useSessionManager({
 		inactivityTimeout: 30, // 30 minutes of inactivity
 		warningTime: 5, // Warn 5 minutes before logout
 	});
@@ -134,7 +131,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				const syncedData = syncUserData(userData);
 				setUser(syncedData);
 				hasSyncedRef.current = true;
-			} catch {}
+			} catch {
+				console.error("Failed to sync user data:");
+			}
 		},
 		[setUser],
 	);
@@ -144,9 +143,24 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		setIsClient(true);
 	}, []);
 
-	// Cookie validation effect
+	// Emergency timeout to prevent infinite loading
 	useEffect(() => {
 		if (!isClient) return;
+
+		const emergencyTimeout = setTimeout(() => {
+			console.warn("⚠️ Emergency timeout triggered - forcing content display");
+			setForceShowContent(true);
+			setInitializationComplete(true);
+			setOnboardingChecked(true);
+			setCookieValidated(true);
+		}, 20000); // 20 second emergency timeout
+
+		return () => clearTimeout(emergencyTimeout);
+	}, [isClient]);
+
+	// Cookie validation effect - simplified
+	useEffect(() => {
+		if (!isClient || cookieValidated) return;
 
 		let mounted = true;
 
@@ -158,37 +172,41 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 				if (!cookieState) {
 					// Force logout if no cookie_state found
-					logoutStore.setLogout(true);
-					organizationStore.clearOrganization();
-					userStore.clearUser();
-					await clearCookies();
-					await signOut({ redirect: false });
-					globalThis.location.href = "/";
+					await logout();
 					return;
 				}
 
-				// We rely on useSessionManager + fetch interceptor to handle invalid cookies
 				setCookieValidated(true);
 			} catch {
+				console.error("Cookie validation failed:");
 				if (mounted) {
-					// Force logout on cookie validation error
-					logoutStore.setLogout(true);
-					organizationStore.clearOrganization();
-					userStore.clearUser();
-					await clearCookies();
-					await signOut({ redirect: false });
-					globalThis.location.href = "/";
+					// Don't force logout on cookie validation error - might be temporary
+					setCookieValidated(true); // Continue anyway
 				}
 			}
 		};
 
-		const timeout = setTimeout(validateCookie, 100);
+		// Reduce timeout and add fallback
+		const timeout = setTimeout(() => {
+			if (mounted) {
+				validateCookie();
+			}
+		}, 200);
+
+		// Fallback timeout
+		const fallbackTimeout = setTimeout(() => {
+			if (mounted && !cookieValidated) {
+				console.warn("Cookie validation timeout - proceeding anyway");
+				setCookieValidated(true);
+			}
+		}, 3000);
 
 		return () => {
 			mounted = false;
 			clearTimeout(timeout);
+			clearTimeout(fallbackTimeout);
 		};
-	}, [isClient, logoutStore, organizationStore, router, userStore]);
+	}, [isClient, cookieValidated, logout]);
 
 	// Single effect to handle user store synchronization
 	useEffect(() => {
@@ -202,61 +220,81 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		}
 	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
 
-	// --- New user onboarding guard (client-side) ---
+	// Simplified onboarding check
 	useEffect(() => {
+		if (!isClient || !cookieValidated || onboardingChecked) return;
+
 		const checkNewUser = async () => {
 			try {
 				const sessionData = await getDecryptedCookie("user_state");
 				const isNewUser = sessionData?.new_user || false;
 
 				if (isNewUser) {
-					// 🚀 Use hard navigation to prevent dashboard flash
 					globalThis.window.location.replace("/start");
 					return;
 				}
 			} catch {
-				console.error("Failed to check new user cookie");
+				console.error("Failed to check new user cookie:");
 			} finally {
-				// ✅ Only unlock rendering once decision is made
 				setOnboardingChecked(true);
 			}
 		};
 
-		if (isClient && cookieValidated && session?.user) {
-			checkNewUser();
+		// Add timeout for onboarding check
+		const timeout = setTimeout(checkNewUser, 100);
+		const fallbackTimeout = setTimeout(() => {
+			if (!onboardingChecked) {
+				console.warn("Onboarding check timeout - proceeding");
+				setOnboardingChecked(true);
+			}
+		}, 2000);
+
+		return () => {
+			clearTimeout(timeout);
+			clearTimeout(fallbackTimeout);
+		};
+	}, [isClient, cookieValidated, onboardingChecked]);
+
+	// Track when initialization is complete
+	useEffect(() => {
+		if (
+			isClient &&
+			cookieValidated &&
+			onboardingChecked &&
+			!initializationComplete
+		) {
+			setInitializationComplete(true);
 		}
-	}, [isClient, cookieValidated, session]);
+	}, [isClient, cookieValidated, onboardingChecked, initializationComplete]);
 
-	// 🔒 Block rendering until onboarding check is done
-	if (!onboardingChecked) {
-		return <LoadingScreen message="Checking your account..." />;
-	}
-
-	// Comprehensive loading state logic
-	const isSessionLoading = status === "loading";
-	const isInitializing = !isClient || !cookieValidated;
-	const isOrganizationLoading = isOrgLoading;
-	const shouldLogout = logoutStore.logout;
-
-	// Determine what to show
-	const showLoading =
-		isInitializing || isSessionLoading || isOrganizationLoading;
-	// const showContent = !showLoading && !shouldLogout && shouldShowContent;
-	const showContent =
-		!showLoading && !shouldLogout && shouldShowContent && isSessionValid;
-
-	// Don't render anything on server side to prevent hydration mismatch
+	// Early returns for loading states
 	if (!isClient) {
 		return <LoadingScreen message="Initializing..." />;
 	}
 
-	// Show logout modal when logging out
-	if (shouldLogout) {
-		return <LogoutModal showByDefault={shouldLogout} />;
+	if (!onboardingChecked && !forceShowContent) {
+		return <LoadingScreen message="Checking your account..." />;
 	}
 
-	// Show loading states with appropriate messages
-	if (showLoading) {
+	if (logoutStore.logout) {
+		return <LogoutModal showByDefault={logoutStore.logout} />;
+	}
+
+	// Determine loading and content states
+	const isSessionLoading = status === "loading";
+	const isInitializing = !initializationComplete && !forceShowContent;
+	const isOrganizationLoading = isOrgLoading && !forceShowContent;
+
+	const showLoading =
+		isInitializing ||
+		isSessionLoading ||
+		(isOrganizationLoading && !shouldShowContent);
+	const showContent =
+		(shouldShowContent && isSessionValid && initializationComplete) ||
+		forceShowContent;
+
+	// Show loading states with timeouts
+	if (showLoading && !forceShowContent) {
 		let loadingMessage = "Loading...";
 
 		if (isSessionLoading) {
@@ -267,16 +305,11 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			loadingMessage = "Initializing...";
 		}
 
-		return (
-			<>
-				{/* <LogoutModal showByDefault={true} /> */}
-				<LoadingScreen message={loadingMessage} />
-			</>
-		);
+		return <LoadingScreen message={loadingMessage} />;
 	}
 
 	// Handle organization setup errors
-	if (orgError) {
+	if (orgError && !forceShowContent) {
 		return (
 			<div className="flex h-screen w-full items-center justify-center bg-[#0A0A0A]">
 				<div className="flex flex-col items-center space-y-4 text-center">
@@ -300,18 +333,26 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 						There was an issue setting up your organizations. Please refresh the
 						page or contact support.
 					</p>
-					<button
-						onClick={() => globalThis.location.reload()}
-						className="mt-4 rounded bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/80"
-					>
-						Retry
-					</button>
+					<div className="space-x-4">
+						<button
+							onClick={() => setForceShowContent(true)}
+							className="mt-4 rounded bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-500"
+						>
+							Continue Anyway
+						</button>
+						<button
+							onClick={() => globalThis.location.reload()}
+							className="mt-4 rounded bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/80"
+						>
+							Retry
+						</button>
+					</div>
 				</div>
 			</div>
 		);
 	}
 
-	// Only render the main layout when everything is ready
+	// Render the main layout
 	return (
 		<>
 			<SessionUI />
@@ -331,7 +372,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 							<Toaster />
 						</main>
 					</SidebarInset>
-					{/* <MaintenanceCornerBanner /> */}
 				</div>
 			</SidebarProvider>
 

@@ -84,112 +84,26 @@ const findBestOrganizationToSelect = (
 export const useFetchOrganizations = () => {
 	const queryClient = useQueryClient();
 	const [isInitialized, setIsInitialized] = useState(false);
-	const [cookieLoaded, setCookieLoaded] = useState(false);
+	const [hasLoadedFromCookie, setHasLoadedFromCookie] = useState(false);
+	const [initializationStarted, setInitializationStarted] = useState(false);
 
 	const {
 		setOrganization,
-		setOrganizations,
 		setCurrentOrganization,
 		updateOrganizations,
 		organization: currentOrganization,
 		organizations: organizationsInStore,
 	} = useOrganizationStore();
 
-	// Check if we have organizations in store
+	// Simplified check for organizations in store
 	const hasOrganizationsInStore = useMemo(() => {
-		const hasOrganizations = organizationsInStore?.length > 0;
-		debugLog("COMPUTED", "hasOrganizationsInStore", {
-			hasOrganizations,
-			count: organizationsInStore?.length || 0,
-		});
-		return hasOrganizations;
+		return organizationsInStore?.length > 0;
 	}, [organizationsInStore]);
 
 	// Check if we have a current organization set
 	const hasCurrentOrganization = useMemo(() => {
-		const hasCurrent = !!currentOrganization?.domains;
-		debugLog("COMPUTED", "hasCurrentOrganization", {
-			hasCurrent,
-			organizationId: currentOrganization?.id,
-			domains: currentOrganization?.domains,
-			isDowngraded: currentOrganization?.is_downgraded,
-		});
-		return hasCurrent;
+		return !!currentOrganization?.domains;
 	}, [currentOrganization]);
-
-	// Background refresh function - non-blocking
-	const backgroundRefresh = useCallback(async () => {
-		debugGroup("BACKGROUND_REFRESH", () => {
-			debugLog("BACKGROUND", "Starting background refresh of cached queries");
-
-			const queryKeys = [
-				"posts",
-				"gitRepos",
-				"repo_details",
-				"notifications",
-				"connected_repos",
-				"top_repo_metrics",
-				"dashboard_metrics",
-				"repo_webhook_ping",
-				"repo_super_details",
-				"retrieving_webhooks",
-				"recent_notifications",
-				"dashboard_heatmap_data",
-				"upcoming_posts_metrics",
-				"dashboard_channel_data",
-				"organization-ownership",
-				"upcoming_posts_metrics",
-				"dashboard_webhook_errors",
-				"retrieving_social_status",
-				"unread_notification_counts",
-				"retrieving_billing_portal",
-			];
-
-			// Fire and forget - don't await
-			Promise.allSettled(
-				queryKeys.map(key => {
-					debugLog("BACKGROUND", `Fetching query: ${key}`);
-					return queryClient
-						.fetchQuery({ queryKey: [key] })
-						.then(() => {
-							debugLog("BACKGROUND", `✅ Successfully refreshed: ${key}`);
-							return queryClient.invalidateQueries({ queryKey: [key] });
-						})
-						.catch(error => {
-							debugLog("BACKGROUND", `❌ Failed to refresh: ${key}`, error);
-						});
-				}),
-			).then(results => {
-				const successful = results.filter(
-					result => result.status === "fulfilled",
-				).length;
-				const failed = results.filter(
-					result => result.status === "rejected",
-				).length;
-				debugLog(
-					"BACKGROUND",
-					`Background refresh completed: ${successful} successful, ${failed} failed`,
-				);
-			});
-		});
-	}, [queryClient]);
-
-	// Force refetch organizations from backend
-	const refetchOrganizations = useCallback(async () => {
-		debugLog("REFETCH", "Force refetching organizations from backend");
-
-		try {
-			await queryClient.invalidateQueries({ queryKey: ["organizations"] });
-			const result = await queryClient.refetchQueries({
-				queryKey: ["organizations"],
-			});
-			debugLog("REFETCH", "✅ Organizations refetched successfully", result);
-			return result;
-		} catch (error) {
-			debugLog("REFETCH", "❌ Failed to refetch organizations", error);
-			throw error;
-		}
-	}, [queryClient]);
 
 	// Create organization cookie data
 	const createOrganizationCookieData = useCallback(
@@ -213,208 +127,66 @@ export const useFetchOrganizations = () => {
 		[],
 	);
 
-	// Optimized organization synchronization
+	// Simplified organization synchronization with timeout
 	const synchronizeOrganization = useCallback(
 		async (organizations: Organization[]) => {
+			if (initializationStarted) return;
+			setInitializationStarted(true);
+
 			debugLog("SYNC", "Starting organization synchronization", {
 				organizationsCount: organizations.length,
 				currentOrganizationInStore: currentOrganization?.id,
 			});
 
+			// Set a timeout to prevent infinite hanging
+			const syncTimeout = setTimeout(() => {
+				debugLog("SYNC", "⚠️ Synchronization timeout - forcing completion");
+				setIsInitialized(true);
+			}, 10000); // 10 second timeout
+
 			try {
-				const cookieOrganization = await getDecryptedCookie("organization");
-				debugLog("SYNC", "Retrieved cookie organization", cookieOrganization);
-
-				const hasOrganizationFromCookie = !!cookieOrganization?.domain;
-				const hasOrganizationFromZustand = !!currentOrganization?.domains;
-
-				debugLog("SYNC", "Synchronization state analysis", {
-					hasOrganizationFromCookie,
-					hasOrganizationFromZustand,
-					cookieDomain: cookieOrganization?.domain,
-					zustandDomain: currentOrganization?.domains,
-					cookieDowngraded: cookieOrganization?.is_downgraded,
-					zustandDowngraded: currentOrganization?.is_downgraded,
-				});
-
-				// Sort organizations to prioritize non-downgraded ones
+				// Sort organizations first
 				const sortedOrganizations =
 					sortOrganizationsByDowngradeStatus(organizations);
 
-				// Fast path: if everything is in sync, just update the organizations list
-				if (
-					hasOrganizationFromCookie &&
-					hasOrganizationFromZustand &&
-					cookieOrganization.domain === currentOrganization.domains &&
-					cookieOrganization.is_downgraded === currentOrganization.is_downgraded
-				) {
-					debugLog(
-						"SYNC",
-						"✅ Organizations already in sync - updating list only",
-					);
-					updateOrganizations(sortedOrganizations);
-					setIsInitialized(true);
-					return;
-				}
+				// Always update the organizations list first
+				updateOrganizations(sortedOrganizations);
 
-				// Handle different synchronization scenarios
-				if (!hasOrganizationFromCookie && !hasOrganizationFromZustand) {
-					debugLog(
-						"SYNC",
-						"🔄 No organization set anywhere - using best fallback",
-					);
-					const fallbackOrganization =
-						findBestOrganizationToSelect(sortedOrganizations);
-
-					if (fallbackOrganization) {
-						debugLog("SYNC", "Setting fallback organization", {
-							id: fallbackOrganization.id,
-							name: fallbackOrganization.name,
-							domain: fallbackOrganization.domains,
-							isDowngraded: fallbackOrganization.is_downgraded,
-							activityScore: fallbackOrganization.activity_score,
-						});
-
-						// Set organization in store first
-						setCurrentOrganization(fallbackOrganization);
-						setOrganization(fallbackOrganization);
-						updateOrganizations(sortedOrganizations);
-
-						// Create cookie asynchronously
-						const cookieData =
-							createOrganizationCookieData(fallbackOrganization);
-						createEncryptedCookie("organization", cookieData);
-
-						debugLog("SYNC", "✅ Created fallback cookie");
-					} else {
-						debugLog("SYNC", "⚠️ No organizations available for fallback");
-					}
-				} else if (hasOrganizationFromCookie && !hasOrganizationFromZustand) {
-					debugLog(
-						"SYNC",
-						"🔄 Cookie exists but Zustand empty - syncing to Zustand",
-					);
-
-					// Check if the cookie organization still exists and is not downgraded
-					const cookieOrganizationStillValid = sortedOrganizations.find(
-						organization => organization.id === cookieOrganization.id,
-					);
-
-					let organizationToSelect;
-					if (
-						cookieOrganizationStillValid &&
-						!cookieOrganizationStillValid.is_downgraded
-					) {
-						organizationToSelect = cookieOrganizationStillValid;
-						debugLog(
-							"SYNC",
-							"Cookie organization is still valid and not downgraded",
-						);
-					} else {
-						organizationToSelect =
-							findBestOrganizationToSelect(sortedOrganizations);
-						debugLog(
-							"SYNC",
-							"Cookie organization invalid/downgraded, selecting best alternative",
-							{
-								selectedOrganization: organizationToSelect?.id,
-								selectedName: organizationToSelect?.name,
-								isDowngraded: organizationToSelect?.is_downgraded,
-							},
-						);
-					}
-
-					if (organizationToSelect) {
-						setCurrentOrganization(organizationToSelect);
-						setOrganization(organizationToSelect);
-						updateOrganizations(sortedOrganizations);
-
-						// Update cookie if we switched organizations
-						if (organizationToSelect.id !== cookieOrganization.id) {
-							const cookieData =
-								createOrganizationCookieData(organizationToSelect);
-							createEncryptedCookie("organization", cookieData);
-						}
-					}
-				} else if (!hasOrganizationFromCookie && hasOrganizationFromZustand) {
-					debugLog(
-						"SYNC",
-						"🔄 Zustand exists but cookie empty - syncing to cookie",
-					);
-
-					// Check if current organization is still valid and not downgraded
-					const currentOrganizationStillValid = sortedOrganizations.find(
-						organization => organization.id === currentOrganization.id,
-					);
-
-					let organizationToSelect;
-					if (
-						currentOrganizationStillValid &&
-						!currentOrganizationStillValid.is_downgraded
-					) {
-						organizationToSelect = currentOrganizationStillValid;
-					} else {
-						organizationToSelect =
-							findBestOrganizationToSelect(sortedOrganizations);
-						debugLog(
-							"SYNC",
-							"Current organization invalid/downgraded, selecting best alternative",
-						);
-					}
-
-					if (organizationToSelect) {
-						if (organizationToSelect.id !== currentOrganization.id) {
-							setCurrentOrganization(organizationToSelect);
-							setOrganization(organizationToSelect);
-						}
-						updateOrganizations(sortedOrganizations);
-
-						const cookieData =
-							createOrganizationCookieData(organizationToSelect);
-						createEncryptedCookie("organization", cookieData);
-						debugLog("SYNC", "✅ Synced to cookie");
-					}
-				} else if (
-					cookieOrganization?.domain !== currentOrganization.domains ||
-					cookieOrganization?.is_downgraded !==
-						currentOrganization.is_downgraded
-				) {
-					debugLog(
-						"SYNC",
-						"🔄 Cookie and Zustand out of sync - selecting best organization",
-						{
-							cookieDomain: cookieOrganization?.domain,
-							zustandDomain: currentOrganization.domains,
-							cookieDowngraded: cookieOrganization?.is_downgraded,
-							zustandDowngraded: currentOrganization.is_downgraded,
-						},
-					);
-
-					// Find the best organization to select (prefer non-downgraded)
+				// If no current organization, select the best one
+				if (!currentOrganization?.domains && sortedOrganizations.length > 0) {
 					const bestOrganization =
 						findBestOrganizationToSelect(sortedOrganizations);
 
 					if (bestOrganization) {
+						debugLog("SYNC", "Setting best organization", {
+							id: bestOrganization.id,
+							name: bestOrganization.name,
+							domain: bestOrganization.domains,
+							isDowngraded: bestOrganization.is_downgraded,
+						});
+
 						setCurrentOrganization(bestOrganization);
 						setOrganization(bestOrganization);
-						updateOrganizations(sortedOrganizations);
 
-						await deleteCookie("organization");
-						debugLog("SYNC", "Deleted old cookie");
-
+						// Create cookie asynchronously (don't await)
 						const cookieData = createOrganizationCookieData(bestOrganization);
-						createEncryptedCookie("organization", cookieData);
-						debugLog("SYNC", "✅ Updated cookie with best organization data");
+						createEncryptedCookie("organization", cookieData).catch(error => {
+							debugLog("SYNC", "Failed to create cookie", error);
+						});
 					}
 				}
 
+				clearTimeout(syncTimeout);
 				setIsInitialized(true);
+				debugLog("SYNC", "✅ Organization synchronization completed");
 			} catch (error) {
+				clearTimeout(syncTimeout);
 				debugLog("SYNC", "❌ Organization synchronization failed", error);
 				setIsInitialized(true); // Still mark as initialized to prevent infinite loading
 			}
 		},
 		[
+			initializationStarted,
 			currentOrganization,
 			setCurrentOrganization,
 			setOrganization,
@@ -422,6 +194,32 @@ export const useFetchOrganizations = () => {
 			createOrganizationCookieData,
 		],
 	);
+
+	// Background refresh function - simplified and non-blocking
+	const backgroundRefresh = useCallback(async () => {
+		debugLog("BACKGROUND", "Starting background refresh of cached queries");
+
+		const criticalQueries = ["posts", "notifications", "dashboard_metrics"];
+
+		// Fire and forget - don't block initialization
+		Promise.allSettled(
+			criticalQueries.map(key =>
+				queryClient.invalidateQueries({ queryKey: [key] }),
+			),
+		)
+			.then(results => {
+				const successful = results.filter(
+					result => result.status === "fulfilled",
+				).length;
+				debugLog(
+					"BACKGROUND",
+					`Background refresh completed: ${successful} successful`,
+				);
+			})
+			.catch(() => {
+				// Ignore background refresh errors
+			});
+	}, [queryClient]);
 
 	const query = useQuery({
 		queryKey: ["organizations"],
@@ -442,15 +240,9 @@ export const useFetchOrganizations = () => {
 			const organizations = result.organizations ?? [];
 			debugLog("QUERY", "✅ Organizations fetched successfully", {
 				count: organizations.length,
-				organizations: organizations.map(organization => ({
-					id: organization.id,
-					name: organization.name,
-					isDowngraded: organization.is_downgraded,
-					activityScore: organization.activity_score,
-				})),
 			});
 
-			// Sort organizations and sync current organization (await to ensure completion)
+			// Sync organizations (this will set isInitialized)
 			await synchronizeOrganization(organizations);
 
 			// Trigger background refresh (non-blocking)
@@ -464,19 +256,18 @@ export const useFetchOrganizations = () => {
 		refetchOnReconnect: true,
 		refetchOnWindowFocus: false,
 		enabled: true,
-		retry: 3,
-		retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+		retry: 2, // Reduced retries
+		retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
 	});
 
-	// Load from cookie on mount if no store data
+	// Load from cookie on mount - simplified
 	useEffect(() => {
-		if (cookieLoaded) return;
+		if (hasLoadedFromCookie) return;
 
-		debugLog("MOUNT", "Loading organization from cookie");
+		const loadFromCookie = async () => {
+			try {
+				const cookieOrganization = await getDecryptedCookie("organization");
 
-		getDecryptedCookie("organization")
-			.then(cookieOrganization => {
-				debugLog("MOUNT", "Cookie organization retrieved", cookieOrganization);
 				if (cookieOrganization?.domain && !hasCurrentOrganization) {
 					const organizationData: Organization = {
 						id: cookieOrganization.id as string,
@@ -489,7 +280,6 @@ export const useFetchOrganizations = () => {
 							cookieOrganization.github_installation_id as string,
 						github_installation_status:
 							cookieOrganization.github_installation_status as string,
-						// New fields with proper defaults
 						is_downgraded:
 							(cookieOrganization.is_downgraded as boolean) ?? false,
 						downgraded_at: cookieOrganization.downgraded_at as
@@ -503,6 +293,7 @@ export const useFetchOrganizations = () => {
 							| string
 							| undefined,
 					};
+
 					debugLog(
 						"MOUNT",
 						"📦 Setting organization from cookie",
@@ -511,25 +302,53 @@ export const useFetchOrganizations = () => {
 					setCurrentOrganization(organizationData);
 					setOrganization(organizationData);
 				}
-			})
-			.catch(error => {
+			} catch (error) {
 				debugLog("MOUNT", "❌ Failed to load organization from cookie", error);
-			})
-			.finally(() => {
-				setCookieLoaded(true);
-			});
+			} finally {
+				setHasLoadedFromCookie(true);
+			}
+		};
+
+		// Add a small delay to prevent race conditions
+		const timeout = setTimeout(loadFromCookie, 100);
+		return () => clearTimeout(timeout);
 	}, [
-		cookieLoaded,
+		hasLoadedFromCookie,
 		hasCurrentOrganization,
 		setCurrentOrganization,
 		setOrganization,
 	]);
 
-	// Determine comprehensive loading state
+	// Force refetch organizations from backend
+	const refetchOrganizations = useCallback(async () => {
+		debugLog("REFETCH", "Force refetching organizations from backend");
+
+		setIsInitialized(false);
+		setInitializationStarted(false);
+
+		try {
+			await queryClient.invalidateQueries({ queryKey: ["organizations"] });
+			const result = await queryClient.refetchQueries({
+				queryKey: ["organizations"],
+			});
+			debugLog("REFETCH", "✅ Organizations refetched successfully");
+			return result;
+		} catch (error) {
+			debugLog("REFETCH", "❌ Failed to refetch organizations", error);
+			setIsInitialized(true); // Prevent infinite loading
+			throw error;
+		}
+	}, [queryClient]);
+
+	// Determine loading state - simplified logic
 	const isInitialLoading =
-		!cookieLoaded || query.isLoading || (query.isSuccess && !isInitialized);
+		!hasLoadedFromCookie ||
+		(query.isLoading && !isInitialized) ||
+		(!isInitialized && query.isSuccess);
+
 	const shouldShowContent =
 		isInitialized &&
+		hasLoadedFromCookie &&
 		(hasOrganizationsInStore || hasCurrentOrganization || !!query.data);
 
 	// Get sorted organizations for return
@@ -540,6 +359,22 @@ export const useFetchOrganizations = () => {
 		return sortOrganizationsByDowngradeStatus(organizationsToSort);
 	}, [hasOrganizationsInStore, organizationsInStore, query.data]);
 
+	// Add emergency timeout to prevent infinite loading
+	useEffect(() => {
+		if (isInitialLoading) {
+			const emergencyTimeout = setTimeout(() => {
+				debugLog(
+					"EMERGENCY",
+					"⚠️ Emergency timeout triggered - forcing initialization",
+				);
+				setIsInitialized(true);
+				setHasLoadedFromCookie(true);
+			}, 15000); // 15 second emergency timeout
+
+			return () => clearTimeout(emergencyTimeout);
+		}
+	}, [isInitialLoading]);
+
 	// Debug final state
 	useEffect(() => {
 		debugLog("FINAL_STATE", "Hook state computed", {
@@ -547,9 +382,8 @@ export const useFetchOrganizations = () => {
 			shouldShowContent,
 			hasCurrentOrganization,
 			isInitialized,
-			cookieLoaded,
+			hasLoadedFromCookie,
 			queryStatus: query.status,
-			currentOrganizationDowngraded: currentOrganization?.is_downgraded,
 			organizationsCount: sortedOrganizations.length,
 		});
 	}, [
@@ -557,9 +391,8 @@ export const useFetchOrganizations = () => {
 		shouldShowContent,
 		hasCurrentOrganization,
 		isInitialized,
-		cookieLoaded,
+		hasLoadedFromCookie,
 		query.status,
-		currentOrganization?.is_downgraded,
 		sortedOrganizations.length,
 	]);
 
@@ -572,6 +405,6 @@ export const useFetchOrganizations = () => {
 		shouldShowContent,
 		hasCurrentOrganization,
 		isInitialized,
-		refetchOrganizations, // Expose refetch function
+		refetchOrganizations,
 	};
 };
