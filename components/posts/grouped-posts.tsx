@@ -280,7 +280,7 @@ export default function GroupedPostCard({ group }: GroupedPostCardProps) {
 		setMobileView("list");
 	}, []);
 
-	// Modify your dialog close handler
+	// Modify your  dialog close handler
 	const handleDialogClose = useCallback(() => {
 		setIsDialogOpen(false);
 		setCurrentPost(undefined);
