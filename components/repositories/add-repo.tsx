@@ -30,7 +30,7 @@ export function AddRepositoryModal({
 						Connect your Git repository to start generating social media posts
 					</DialogDescription>
 				</DialogHeader>
-				<div className="w-full">
+				<div className="scrollbar-hide w-full overflow-y-auto">
 					<ConnectRepoOnboarding />
 				</div>
 			</DialogContent>
