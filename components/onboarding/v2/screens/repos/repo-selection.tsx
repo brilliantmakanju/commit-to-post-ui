@@ -52,8 +52,8 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 	});
 
 	return (
-		<div className="space-y-3">
-			<div className="space-y-6 p-1">
+		<div className="flex h-full max-h-screen flex-col space-y-3">
+			<div className="flex-shrink-0 space-y-6 p-1">
 				<Input
 					className="w-full"
 					value={searchQuery}
@@ -62,7 +62,7 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 				/>
 			</div>
 
-			<div className="space-y-2 overflow-y-auto p-1">
+			<div className="scrollbar-hide max-h-[60vh] min-h-0 flex-1 space-y-2 overflow-y-auto p-1 sm:max-h-[70vh] md:max-h-none">
 				{isLoading ? (
 					<div className="flex items-center justify-center py-12">
 						<Loader2 className="h-6 w-6 animate-spin text-gray-600" />
@@ -91,7 +91,7 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 													currentUsage={repoCount}
 													position="bottom"
 												>
-													<div className="inline-block cursor-pointer">
+													<div className="inline-block w-full cursor-pointer">
 														<RepoCard
 															repo={repo}
 															isDisabled={true}
@@ -110,7 +110,7 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 											>
 												<div
 													key={`${repo.id}-${repo.updated_at}-${repo.connected_by_user_id}`}
-													className="inline-block cursor-pointer"
+													className="inline-block w-full cursor-pointer"
 												>
 													<RepoCard
 														repo={repo}
@@ -127,7 +127,7 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 						)}
 
 						{selectedRepo.length > 0 && (
-							<div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+							<div className="flex-shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-4">
 								<div className="flex items-center justify-between">
 									<span className="text-sm font-medium text-arch-black">
 										{selectedRepo.length} repository
