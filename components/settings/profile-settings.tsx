@@ -1,14 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { KeyRound, Loader2, Save, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { KeyRound, Loader2, Save, Shield } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaBell, FaGlobe, FaLock, FaPalette, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
 import type * as z from "zod";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -25,24 +26,29 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clearCookies } from "@/lib/cookies/create-cookies";
+import { Switch } from "@/components/ui/switch";
 import {
 	passwordFormSchema,
 	profileFormSchema,
 } from "@/resolvers/auth-resolvers";
+import {
+	getNotificationStatus,
+	toggleEmailNotifications,
+} from "@/server-actions/emails/resubscribe";
 import { updateProfileSetup } from "@/server-actions/onboarding/update-profile";
 import { changePassword } from "@/server-actions/profile/updated-password";
-import useLogoutStore from "@/zustand/logout-store";
-import useOrganizationStore from "@/zustand/useorganization-store";
 import useUserStore from "@/zustand/useuser-store";
 
+import { useSessionManager } from "../tracker/auth-tracker";
+
 export default function ProfileSettings() {
-	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const { data } = useSession();
 	const userStore = useUserStore();
-	const router = useRouter();
-	const logoutStore = useLogoutStore();
-	const organizationStore = useOrganizationStore();
+	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+	const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
+		useState(false);
+	const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+	const [isToggling, setIsToggling] = useState(false);
 
 	// Split full name into first and last name if available
 	const [firstNameFromFull, lastNameFromFull] = userStore.full_name
@@ -79,6 +85,24 @@ export default function ProfileSettings() {
 		},
 	});
 
+	// Load notification status on component mount
+	useEffect(() => {
+		const loadNotificationStatus = async () => {
+			try {
+				const response = await getNotificationStatus();
+				if (response.success) {
+					setEmailNotificationsEnabled(response.subscribed);
+				}
+			} catch (error) {
+				console.error("Failed to load notification status:", error);
+			} finally {
+				setIsLoadingNotifications(false);
+			}
+		};
+
+		loadNotificationStatus();
+	}, []);
+
 	// Update form when data changes
 	useEffect(() => {
 		form.reset({
@@ -86,6 +110,8 @@ export default function ProfileSettings() {
 			lastName: lastName || "",
 		});
 	}, [firstName, lastName, form]);
+
+	const { logout } = useSessionManager();
 
 	// Check if form values are different from initial values
 	const isDirty = () => {
@@ -142,17 +168,31 @@ export default function ProfileSettings() {
 				setIsPasswordModalOpen(false);
 				passwordForm.reset();
 				toast.success("Password changed successfully!");
-				logoutStore.setLogout(true);
-				organizationStore.clearOrganization();
-				userStore.clearUser();
-				await clearCookies();
-				await signOut();
-				router.push("/");
+				await logout();
 			} else {
 				toast.error("Something went wrong. Please try again.");
 			}
 		} catch {
 			toast.error("Failed to change password. Please try again.");
+		}
+	};
+
+	const handleNotificationToggle = async () => {
+		setIsToggling(true);
+		try {
+			const action = emailNotificationsEnabled ? "unsubscribe" : "subscribe";
+			const response = await toggleEmailNotifications(action);
+
+			if (response.success) {
+				setEmailNotificationsEnabled(response.subscribed);
+				toast.success(response.message);
+			}
+		} catch {
+			toast.error(
+				"Failed to update notification preferences. Please try again.",
+			);
+		} finally {
+			setIsToggling(false);
 		}
 	};
 
@@ -165,7 +205,7 @@ export default function ProfileSettings() {
 				<div className="relative p-8">
 					<div className="mb-8 flex items-center gap-3">
 						<div className="rounded-full bg-zinc-700/50 p-2">
-							<User className="h-5 w-5 text-zinc-300" />
+							<FaUser className="h-5 w-5 text-zinc-300" />
 						</div>
 						<div>
 							<h2 className="text-xl font-medium text-zinc-100">
@@ -247,43 +287,188 @@ export default function ProfileSettings() {
 				</div>
 			</div>
 
-			{/* Security Card */}
-			{authenticationType === "email_password" && (
-				<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
-					<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+			{/* Notifications Card */}
+			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-					<div className="relative p-8">
-						<div className="mb-6 flex items-center gap-3">
-							<div className="rounded-full bg-zinc-700/50 p-2">
-								<KeyRound className="h-5 w-5 text-zinc-300" />
-							</div>
+				<div className="relative p-8">
+					<div className="mb-6 flex items-center gap-3">
+						<div className="rounded-full bg-zinc-700/50 p-2">
+							<FaBell className="h-5 w-5 text-zinc-300" />
+						</div>
+						<div>
+							<h2 className="text-xl font-medium text-zinc-100">
+								Notifications
+							</h2>
+							<p className="text-sm text-zinc-400">
+								Manage your notification preferences
+							</p>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
 							<div>
-								<h2 className="text-xl font-medium text-zinc-100">Security</h2>
+								<h3 className="font-medium text-zinc-200">
+									Email notifications
+								</h3>
 								<p className="text-sm text-zinc-400">
-									Manage your account security
+									Get notifications when posts are generated and posted to
+									socials
 								</p>
 							</div>
+							<div className="flex items-center gap-2">
+								{isLoadingNotifications ? (
+									<Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+								) : (
+									<Switch
+										disabled={isToggling}
+										checked={emailNotificationsEnabled}
+										onCheckedChange={handleNotificationToggle}
+										className="data-[state=checked]:bg-zinc-700 data-[state=unchecked]:bg-zinc-100"
+									/>
+								)}
+							</div>
 						</div>
+					</div>
+				</div>
+			</div>
 
-						<div className="flex items-center justify-between rounded-lg border border-zinc-700/50 bg-zinc-900/30 p-4">
+			{/* Privacy & Security Card */}
+			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+				<div className="relative p-8">
+					<div className="mb-6 flex items-center gap-3">
+						<div className="rounded-full bg-zinc-700/50 p-2">
+							<Shield className="h-5 w-5 text-zinc-300" />
+						</div>
+						<div>
+							<h2 className="text-xl font-medium text-zinc-100">
+								Privacy & Security
+							</h2>
+							<p className="text-sm text-zinc-400">
+								Manage your account security and privacy settings
+							</p>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						{authenticationType === "email_password" && (
+							<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
+								<div>
+									<h3 className="font-medium text-zinc-200">Password</h3>
+									<p className="text-sm text-zinc-400">
+										Update your password to keep your account secure
+									</p>
+								</div>
+								<Button
+									variant="outline"
+									onClick={() => setIsPasswordModalOpen(true)}
+									className="border-zinc-700/50 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-900/70 hover:text-zinc-100"
+								>
+									<KeyRound className="mr-2 h-4 w-4" />
+									Change Password
+								</Button>
+							</div>
+						)}
+
+						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
 							<div>
-								<h3 className="font-medium text-zinc-200">Password</h3>
+								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
+									Two-Factor Authentication
+									<Badge
+										variant="secondary"
+										className="bg-zinc-700 text-xs text-zinc-300"
+									>
+										Coming Soon
+									</Badge>
+								</h3>
 								<p className="text-sm text-zinc-400">
-									Update your password to keep your account secure
+									Add an extra layer of security to your account
 								</p>
 							</div>
 							<Button
 								variant="outline"
-								onClick={() => setIsPasswordModalOpen(true)}
-								className="border-zinc-700/50 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-900/70 hover:text-zinc-100"
+								disabled
+								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
 							>
-								<KeyRound className="mr-2 h-4 w-4" />
-								Change Password
+								<FaLock className="mr-2 h-4 w-4" />
+								Enable 2FA
+							</Button>
+						</div>
+
+						{/* <div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
+							<div>
+								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
+									Data Export
+									<Badge
+										variant="secondary"
+										className="bg-zinc-700 text-xs text-zinc-300"
+									>
+										Coming Soon
+									</Badge>
+								</h3>
+								<p className="text-sm text-zinc-400">
+									Download a copy of your account data
+								</p>
+							</div>
+							<Button
+								variant="outline"
+								disabled
+								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
+							>
+								Export Data
+							</Button>
+						</div> */}
+					</div>
+				</div>
+			</div>
+
+			{/* Preferences Card */}
+			{/* <div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+				<div className="relative p-8">
+					<div className="mb-6 flex items-center gap-3">
+						<div className="rounded-full bg-zinc-700/50 p-2">
+							<FaPalette className="h-5 w-5 text-zinc-300" />
+						</div>
+						<div>
+							<h2 className="text-xl font-medium text-zinc-100">Preferences</h2>
+							<p className="text-sm text-zinc-400">
+								Customize your experience and interface
+							</p>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
+							<div>
+								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
+									Theme Preferences
+									<Badge
+										variant="secondary"
+										className="bg-zinc-700 text-xs text-zinc-300"
+									>
+										Coming Soon
+									</Badge>
+								</h3>
+								<p className="text-sm text-zinc-400">
+									Choose between light, dark, or system theme
+								</p>
+							</div>
+							<Button
+								variant="outline"
+								disabled
+								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
+							>
+								Dark Mode
 							</Button>
 						</div>
 					</div>
 				</div>
-			)}
+			</div> */}
 
 			{/* Password Change Modal */}
 			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
