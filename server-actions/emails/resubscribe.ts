@@ -9,11 +9,23 @@ import { apiClient } from "../../lib/utils/api-client";
  */
 export const toggleEmailNotifications = async (
 	action?: "subscribe" | "unsubscribe",
+	reason?: string,
 ) => {
 	try {
+		const requestBody: { action?: string; reason?: string } = {};
+
+		if (action) {
+			requestBody.action = action;
+		}
+
+		// Add reason to request body if provided and action is unsubscribe
+		if (action === "unsubscribe" && reason && reason.trim()) {
+			requestBody.reason = reason.trim();
+		}
+
 		const response = await apiClient.post(
 			"/api/v1/emails/toggle-notifications/",
-			action ? { action } : {},
+			requestBody,
 			{},
 			20000,
 		);
@@ -37,13 +49,11 @@ export const toggleEmailNotifications = async (
 			}));
 			throw new Error(`Validation failed: ${JSON.stringify(errorMessages)}`);
 		}
-
 		if (error instanceof Error) {
 			throw new TypeError(
 				`Failed to update email notifications: ${error.message}`,
 			);
 		}
-
 		throw new Error(
 			"An unexpected error occurred while updating your email notification preferences. Please try again later.",
 		);

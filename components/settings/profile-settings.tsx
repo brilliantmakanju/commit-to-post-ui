@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaBell, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
-import type * as z from "zod";
+import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	passwordFormSchema,
 	profileFormSchema,
@@ -41,10 +42,16 @@ import useUserStore from "@/zustand/useuser-store";
 
 import { useSessionManager } from "../tracker/auth-tracker";
 
+// Schema for unsubscribe reason form
+const unsubscribeReasonSchema = z.object({
+	reason: z.string().min(1, "Please provide a reason for unsubscribing"),
+});
+
 export default function ProfileSettings() {
 	const { data } = useSession();
 	const userStore = useUserStore();
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+	const [isUnsubscribeModalOpen, setIsUnsubscribeModalOpen] = useState(false);
 	const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
 		useState(false);
 	const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
@@ -82,6 +89,13 @@ export default function ProfileSettings() {
 			oldPassword: "",
 			newPassword: "",
 			confirmPassword: "",
+		},
+	});
+
+	const unsubscribeForm = useForm<z.infer<typeof unsubscribeReasonSchema>>({
+		resolver: zodResolver(unsubscribeReasonSchema),
+		defaultValues: {
+			reason: "",
 		},
 	});
 
@@ -177,15 +191,17 @@ export default function ProfileSettings() {
 		}
 	};
 
-	const handleNotificationToggle = async () => {
+	const handleNotificationToggle = async (reason?: string) => {
 		setIsToggling(true);
 		try {
 			const action = emailNotificationsEnabled ? "unsubscribe" : "subscribe";
-			const response = await toggleEmailNotifications(action);
+			const response = await toggleEmailNotifications(action, reason);
 
 			if (response.success) {
 				setEmailNotificationsEnabled(response.subscribed);
 				toast.success(response.message);
+				setIsUnsubscribeModalOpen(false);
+				unsubscribeForm.reset();
 			}
 		} catch {
 			toast.error(
@@ -194,6 +210,22 @@ export default function ProfileSettings() {
 		} finally {
 			setIsToggling(false);
 		}
+	};
+
+	const onNotificationChange = (checked: boolean) => {
+		if (!checked && emailNotificationsEnabled) {
+			// User is trying to unsubscribe, show modal
+			setIsUnsubscribeModalOpen(true);
+		} else {
+			// User is subscribing, no modal needed
+			handleNotificationToggle();
+		}
+	};
+
+	const onUnsubscribeSubmit = async (
+		values: z.infer<typeof unsubscribeReasonSchema>,
+	) => {
+		await handleNotificationToggle(values.reason);
 	};
 
 	return (
@@ -394,9 +426,9 @@ export default function ProfileSettings() {
 										<Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
 									) : (
 										<Switch
-											checked={emailNotificationsEnabled}
-											onCheckedChange={handleNotificationToggle}
 											disabled={isToggling}
+											checked={emailNotificationsEnabled}
+											onCheckedChange={onNotificationChange}
 											className="data-[state=checked]:bg-zinc-600"
 										/>
 									)}
@@ -491,7 +523,6 @@ export default function ProfileSettings() {
 									variant="outline"
 									onClick={() => setIsPasswordModalOpen(false)}
 									disabled={passwordForm.formState.isSubmitting}
-									// className="w-full border-zinc-700/50 text-zinc-200 hover:bg-zinc-900/30 sm:w-auto"
 								>
 									Cancel
 								</Button>
@@ -507,6 +538,80 @@ export default function ProfileSettings() {
 										</>
 									) : (
 										"Change Password"
+									)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
+
+			{/* Unsubscribe Reason Modal */}
+			<Dialog
+				open={isUnsubscribeModalOpen}
+				onOpenChange={setIsUnsubscribeModalOpen}
+			>
+				<DialogContent className="w-full border-zinc-800/50 bg-zinc-950/90 backdrop-blur-xl">
+					<DialogHeader>
+						<DialogTitle className="text-zinc-100">
+							Tell us why you&apos;re unsubscribing
+						</DialogTitle>
+						<p className="text-sm text-zinc-400">
+							Your feedback helps us improve our email communications.
+						</p>
+					</DialogHeader>
+
+					<Form {...unsubscribeForm}>
+						<form
+							onSubmit={unsubscribeForm.handleSubmit(onUnsubscribeSubmit)}
+							className="w-full space-y-4"
+						>
+							<FormField
+								control={unsubscribeForm.control}
+								name="reason"
+								render={({ field }) => (
+									<FormItem className="w-full">
+										<FormLabel className="text-zinc-300">
+											Reason for unsubscribing
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												{...field}
+												disabled={isToggling}
+												className="w-full resize-none border-zinc-800/50 bg-zinc-900/30 text-zinc-100 focus:border-zinc-600 focus:ring-zinc-600/20"
+												placeholder="Please tell us why you're unsubscribing from email notifications..."
+												rows={4}
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+
+							<div className="flex w-full flex-col-reverse gap-3 pt-4 sm:flex-row">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => {
+										setIsUnsubscribeModalOpen(false);
+										unsubscribeForm.reset();
+									}}
+									disabled={isToggling}
+								>
+									Cancel
+								</Button>
+								<Button
+									type="submit"
+									disabled={isToggling}
+									className="w-full bg-zinc-800 text-white hover:bg-zinc-700 sm:w-auto"
+								>
+									{isToggling ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Unsubscribing...
+										</>
+									) : (
+										"Unsubscribe"
 									)}
 								</Button>
 							</div>
