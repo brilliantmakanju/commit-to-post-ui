@@ -26,10 +26,10 @@ export const OnboardingSidebar: React.FC<OnboardingSidebarProps> = ({
 	canNavigateToStep,
 	showHelpButton = true,
 }) => {
-	const { logout: performLogout } = useSessionManager();
+	const { logout } = useSessionManager();
 
 	const logoutClient = async () => {
-		await performLogout();
+		await logout();
 	};
 	return (
 		<aside

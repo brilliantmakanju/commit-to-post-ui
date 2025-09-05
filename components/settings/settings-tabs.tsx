@@ -4,12 +4,9 @@ import { GitBranch, SettingsIcon, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaCreditCard } from "react-icons/fa";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useOrganizationStore from "@/zustand/useorganization-store";
-
-import BillingSettings from "./billing-settings";
 
 const GeneralSettings = dynamic(
 	() => import("@/components/settings/general-settings"),
