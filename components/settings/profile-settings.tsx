@@ -5,7 +5,7 @@ import { KeyRound, Loader2, Save, Shield } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaBell, FaGlobe, FaLock, FaPalette, FaUser } from "react-icons/fa";
+import { FaBell, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
 import type * as z from "zod";
 
@@ -197,34 +197,37 @@ export default function ProfileSettings() {
 	};
 
 	return (
-		<div className="w-full space-y-8 p-6">
+		<div className="w-full space-y-6 sm:space-y-8">
 			{/* Profile Information Card */}
-			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
-				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+			<div className="group relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-800/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-				<div className="relative p-8">
-					<div className="mb-8 flex items-center gap-3">
-						<div className="rounded-full bg-zinc-700/50 p-2">
-							<FaUser className="h-5 w-5 text-zinc-300" />
+				<div className="relative w-full p-4 sm:p-6 lg:p-8">
+					<div className="mb-6 flex flex-col items-start gap-3 sm:mb-8 sm:flex-row sm:items-center">
+						<div className="rounded-full bg-zinc-800/30 p-2">
+							<FaUser className="h-4 w-4 text-zinc-300 sm:h-5 sm:w-5" />
 						</div>
-						<div>
-							<h2 className="text-xl font-medium text-zinc-100">
+						<div className="min-w-0 flex-1">
+							<h2 className="text-lg font-medium text-zinc-100 sm:text-xl">
 								Profile Information
 							</h2>
-							<p className="text-sm text-zinc-400">
+							<p className="text-xs text-zinc-400 sm:text-sm">
 								Update your personal details
 							</p>
 						</div>
 					</div>
 
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-							<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="w-full space-y-4 sm:space-y-6"
+						>
+							<div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 								<FormField
 									control={form.control}
 									name="firstName"
 									render={({ field }) => (
-										<FormItem>
+										<FormItem className="w-full space-y-2">
 											<FormLabel className="text-sm font-medium text-zinc-300">
 												First Name
 											</FormLabel>
@@ -232,7 +235,7 @@ export default function ProfileSettings() {
 												<Input
 													{...field}
 													disabled={form.formState.isSubmitting}
-													className="border-zinc-700/50 bg-zinc-900/50 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-zinc-900/70 focus:ring-1 focus:ring-zinc-500/20"
+													className="w-full border-zinc-800/50 bg-zinc-900/30 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-600 focus:bg-zinc-900/40 focus:ring-1 focus:ring-zinc-600/20"
 													placeholder="Enter your first name"
 												/>
 											</FormControl>
@@ -245,7 +248,7 @@ export default function ProfileSettings() {
 									control={form.control}
 									name="lastName"
 									render={({ field }) => (
-										<FormItem>
+										<FormItem className="w-full space-y-2">
 											<FormLabel className="text-sm font-medium text-zinc-300">
 												Last Name
 											</FormLabel>
@@ -253,7 +256,7 @@ export default function ProfileSettings() {
 												<Input
 													{...field}
 													disabled={form.formState.isSubmitting}
-													className="border-zinc-700/50 bg-zinc-900/50 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-zinc-900/70 focus:ring-1 focus:ring-zinc-500/20"
+													className="w-full border-zinc-800/50 bg-zinc-900/30 text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-zinc-600 focus:bg-zinc-900/40 focus:ring-1 focus:ring-zinc-600/20"
 													placeholder="Enter your last name"
 												/>
 											</FormControl>
@@ -263,22 +266,48 @@ export default function ProfileSettings() {
 								/>
 							</div>
 
-							<div className="flex justify-end pt-4">
+							{/* Email Display */}
+							<div className="w-full space-y-2">
+								<FormLabel className="text-sm font-medium text-zinc-300">
+									Email Address
+								</FormLabel>
+								<div className="relative w-full">
+									<Input
+										value={data?.user?.email || ""}
+										disabled
+										className="w-full cursor-not-allowed border-zinc-800/30 bg-zinc-900/20 text-zinc-400"
+										placeholder="No email available"
+									/>
+									<Badge
+										variant="outline"
+										className="absolute right-2 top-1/2 -translate-y-1/2 border-zinc-600/50 bg-zinc-900/40 text-xs text-zinc-300"
+									>
+										{authenticationType === "google"
+											? "Google"
+											: authenticationType === "github"
+												? "GitHub"
+												: "Email"}
+									</Badge>
+								</div>
+							</div>
+
+							{/* Save Button */}
+							<div className="flex w-full flex-col justify-end gap-3 pt-4 sm:flex-row">
 								<Button
 									type="submit"
 									disabled={form.formState.isSubmitting || !isDirty()}
-									className="relative overflow-hidden bg-zinc-100 font-medium text-zinc-900 transition-all duration-200 hover:bg-zinc-200 disabled:bg-zinc-700 disabled:text-zinc-400"
+									className="w-full border-zinc-700 bg-zinc-800 text-white transition-all duration-200 hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
 								>
 									{form.formState.isSubmitting ? (
-										<div className="flex items-center gap-2">
-											<Loader2 className="h-4 w-4 animate-spin" />
-											<span>Saving...</span>
-										</div>
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Saving...
+										</>
 									) : (
-										<div className="flex items-center gap-2">
-											<Save className="h-4 w-4" />
-											<span>Save Changes</span>
-										</div>
+										<>
+											<Save className="mr-2 h-4 w-4" />
+											Save Changes
+										</>
 									)}
 								</Button>
 							</div>
@@ -287,218 +316,124 @@ export default function ProfileSettings() {
 				</div>
 			</div>
 
-			{/* Notifications Card */}
-			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
-				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+			{/* Security Settings Card */}
+			<div className="group relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-800/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-				<div className="relative p-8">
-					<div className="mb-6 flex items-center gap-3">
-						<div className="rounded-full bg-zinc-700/50 p-2">
-							<FaBell className="h-5 w-5 text-zinc-300" />
+				<div className="relative w-full p-4 sm:p-6 lg:p-8">
+					<div className="mb-4 flex items-center gap-3 sm:mb-6">
+						<div className="rounded-full bg-zinc-800/30 p-2">
+							<Shield className="h-4 w-4 text-zinc-300 sm:h-5 sm:w-5" />
 						</div>
-						<div>
-							<h2 className="text-xl font-medium text-zinc-100">
-								Notifications
+						<div className="min-w-0 flex-1">
+							<h2 className="text-base font-medium text-zinc-100 sm:text-lg lg:text-xl">
+								Security Settings
 							</h2>
-							<p className="text-sm text-zinc-400">
-								Manage your notification preferences
+							<p className="text-xs text-zinc-400 sm:text-sm">
+								Manage your account security
 							</p>
 						</div>
 					</div>
 
-					<div className="space-y-4">
-						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
-							<div>
-								<h3 className="font-medium text-zinc-200">
-									Email notifications
-								</h3>
-								<p className="text-sm text-zinc-400">
-									Get notifications when posts are generated and posted to
-									socials
-								</p>
-							</div>
-							<div className="flex items-center gap-2">
-								{isLoadingNotifications ? (
-									<Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
-								) : (
-									<Switch
-										disabled={isToggling}
-										checked={emailNotificationsEnabled}
-										onCheckedChange={handleNotificationToggle}
-										className="data-[state=checked]:bg-zinc-700 data-[state=unchecked]:bg-zinc-100"
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Privacy & Security Card */}
-			<div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
-				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-				<div className="relative p-8">
-					<div className="mb-6 flex items-center gap-3">
-						<div className="rounded-full bg-zinc-700/50 p-2">
-							<Shield className="h-5 w-5 text-zinc-300" />
-						</div>
-						<div>
-							<h2 className="text-xl font-medium text-zinc-100">
-								Privacy & Security
-							</h2>
-							<p className="text-sm text-zinc-400">
-								Manage your account security and privacy settings
-							</p>
-						</div>
-					</div>
-
-					<div className="space-y-4">
+					<div className="w-full space-y-3 sm:space-y-4">
+						{/* Password Change - Only show for email/password auth */}
 						{authenticationType === "email_password" && (
-							<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
-								<div>
-									<h3 className="font-medium text-zinc-200">Password</h3>
-									<p className="text-sm text-zinc-400">
-										Update your password to keep your account secure
-									</p>
+							<div className="w-full rounded-xl border border-zinc-800/30 bg-zinc-900/20 p-3 sm:p-4">
+								<div className="flex items-start gap-3 sm:items-center">
+									<div className="mt-0.5 rounded-full bg-zinc-800/30 p-2 sm:mt-0">
+										<KeyRound className="h-3.5 w-3.5 text-zinc-300 sm:h-4 sm:w-4" />
+									</div>
+									<div className="min-w-0 flex-1">
+										<h3 className="text-sm font-medium text-zinc-100">
+											Change Password
+										</h3>
+										<p className="text-xs text-zinc-400 sm:text-sm">
+											Update your account password
+										</p>
+										<div className="mt-3 sm:mt-0 sm:hidden">
+											<Button
+												onClick={() => setIsPasswordModalOpen(true)}
+												variant="outline"
+												size="sm"
+												className="w-full border-zinc-700/50 bg-zinc-900/30 text-zinc-200 hover:border-zinc-600/60 hover:bg-zinc-800/40"
+											>
+												Change Password
+											</Button>
+										</div>
+									</div>
+									<div className="hidden sm:block">
+										<Button
+											onClick={() => setIsPasswordModalOpen(true)}
+											variant="outline"
+											size="sm"
+											className="border-zinc-700/50 bg-zinc-900/30 text-zinc-200 hover:border-zinc-600/60 hover:bg-zinc-800/40"
+										>
+											Change Password
+										</Button>
+									</div>
 								</div>
-								<Button
-									variant="outline"
-									onClick={() => setIsPasswordModalOpen(true)}
-									className="border-zinc-700/50 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-900/70 hover:text-zinc-100"
-								>
-									<KeyRound className="mr-2 h-4 w-4" />
-									Change Password
-								</Button>
 							</div>
 						)}
 
-						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
-							<div>
-								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
-									Two-Factor Authentication
-									<Badge
-										variant="secondary"
-										className="bg-zinc-700 text-xs text-zinc-300"
-									>
-										Coming Soon
-									</Badge>
-								</h3>
-								<p className="text-sm text-zinc-400">
-									Add an extra layer of security to your account
-								</p>
+						{/* Email Notifications */}
+						<div className="w-full rounded-xl border border-zinc-800/30 bg-zinc-900/20 p-3 sm:p-4">
+							<div className="flex items-start gap-3 sm:items-center">
+								<div className="mt-0.5 rounded-full bg-zinc-800/30 p-2 sm:mt-0">
+									<FaBell className="h-3.5 w-3.5 text-zinc-300 sm:h-4 sm:w-4" />
+								</div>
+								<div className="min-w-0 flex-1">
+									<h3 className="text-sm font-medium text-zinc-100">
+										Email Notifications
+									</h3>
+									<p className="text-xs text-zinc-400 sm:text-sm">
+										Receive updates and alerts via email
+									</p>
+								</div>
+								<div className="ml-auto flex items-center">
+									{isLoadingNotifications ? (
+										<Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+									) : (
+										<Switch
+											checked={emailNotificationsEnabled}
+											onCheckedChange={handleNotificationToggle}
+											disabled={isToggling}
+											className="data-[state=checked]:bg-zinc-600"
+										/>
+									)}
+								</div>
 							</div>
-							<Button
-								variant="outline"
-								disabled
-								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
-							>
-								<FaLock className="mr-2 h-4 w-4" />
-								Enable 2FA
-							</Button>
 						</div>
-
-						{/* <div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
-							<div>
-								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
-									Data Export
-									<Badge
-										variant="secondary"
-										className="bg-zinc-700 text-xs text-zinc-300"
-									>
-										Coming Soon
-									</Badge>
-								</h3>
-								<p className="text-sm text-zinc-400">
-									Download a copy of your account data
-								</p>
-							</div>
-							<Button
-								variant="outline"
-								disabled
-								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
-							>
-								Export Data
-							</Button>
-						</div> */}
 					</div>
 				</div>
 			</div>
 
-			{/* Preferences Card */}
-			{/* <div className="group relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-800/90 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/60 hover:bg-zinc-800/95">
-				<div className="absolute inset-0 bg-gradient-to-br from-zinc-700/10 via-transparent to-zinc-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-				<div className="relative p-8">
-					<div className="mb-6 flex items-center gap-3">
-						<div className="rounded-full bg-zinc-700/50 p-2">
-							<FaPalette className="h-5 w-5 text-zinc-300" />
-						</div>
-						<div>
-							<h2 className="text-xl font-medium text-zinc-100">Preferences</h2>
-							<p className="text-sm text-zinc-400">
-								Customize your experience and interface
-							</p>
-						</div>
-					</div>
-
-					<div className="space-y-4">
-						<div className="flex items-center justify-between rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-4">
-							<div>
-								<h3 className="flex items-center gap-2 font-medium text-zinc-200">
-									Theme Preferences
-									<Badge
-										variant="secondary"
-										className="bg-zinc-700 text-xs text-zinc-300"
-									>
-										Coming Soon
-									</Badge>
-								</h3>
-								<p className="text-sm text-zinc-400">
-									Choose between light, dark, or system theme
-								</p>
-							</div>
-							<Button
-								variant="outline"
-								disabled
-								className="cursor-not-allowed border-zinc-700/50 bg-zinc-900/50 text-zinc-500"
-							>
-								Dark Mode
-							</Button>
-						</div>
-					</div>
-				</div>
-			</div> */}
-
 			{/* Password Change Modal */}
 			<Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-				<DialogContent className="border border-zinc-800/50 bg-zinc-900/95 backdrop-blur-xl">
+				<DialogContent className="w-full border-zinc-800/50 bg-zinc-950/90 backdrop-blur-xl">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2 text-zinc-100">
-							<KeyRound className="h-5 w-5 text-zinc-400" />
-							Change Password
-						</DialogTitle>
+						<DialogTitle className="text-zinc-100">Change Password</DialogTitle>
 					</DialogHeader>
 
 					<Form {...passwordForm}>
 						<form
 							onSubmit={passwordForm.handleSubmit(onPasswordChange)}
-							className="space-y-4"
+							className="w-full space-y-4"
 						>
 							<FormField
 								control={passwordForm.control}
 								name="oldPassword"
 								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="text-sm font-medium text-zinc-300">
+									<FormItem className="w-full">
+										<FormLabel className="text-zinc-300">
 											Current Password
 										</FormLabel>
 										<FormControl>
 											<Input
-												type="password"
 												{...field}
+												type="password"
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
+												className="w-full border-zinc-800/50 bg-zinc-900/30 text-zinc-100 focus:border-zinc-600 focus:ring-zinc-600/20"
+												placeholder="Enter current password"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -510,16 +445,17 @@ export default function ProfileSettings() {
 								control={passwordForm.control}
 								name="newPassword"
 								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="text-sm font-medium text-zinc-300">
+									<FormItem className="w-full">
+										<FormLabel className="text-zinc-300">
 											New Password
 										</FormLabel>
 										<FormControl>
 											<Input
-												type="password"
 												{...field}
+												type="password"
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
+												className="w-full border-zinc-800/50 bg-zinc-900/30 text-zinc-100 focus:border-zinc-600 focus:ring-zinc-600/20"
+												placeholder="Enter new password"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -531,16 +467,17 @@ export default function ProfileSettings() {
 								control={passwordForm.control}
 								name="confirmPassword"
 								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="text-sm font-medium text-zinc-300">
+									<FormItem className="w-full">
+										<FormLabel className="text-zinc-300">
 											Confirm New Password
 										</FormLabel>
 										<FormControl>
 											<Input
-												type="password"
 												{...field}
+												type="password"
 												disabled={passwordForm.formState.isSubmitting}
-												className="border-zinc-700/50 bg-zinc-800/50 text-zinc-100 focus:border-zinc-500 focus:bg-zinc-800/70 focus:ring-1 focus:ring-zinc-500/20"
+												className="w-full border-zinc-800/50 bg-zinc-900/30 text-zinc-100 focus:border-zinc-600 focus:ring-zinc-600/20"
+												placeholder="Confirm new password"
 											/>
 										</FormControl>
 										<FormMessage className="text-red-400" />
@@ -548,22 +485,28 @@ export default function ProfileSettings() {
 								)}
 							/>
 
-							<div className="flex justify-end pt-4">
+							<div className="flex w-full flex-col-reverse gap-3 pt-4 sm:flex-row">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setIsPasswordModalOpen(false)}
+									disabled={passwordForm.formState.isSubmitting}
+									// className="w-full border-zinc-700/50 text-zinc-200 hover:bg-zinc-900/30 sm:w-auto"
+								>
+									Cancel
+								</Button>
 								<Button
 									type="submit"
 									disabled={passwordForm.formState.isSubmitting}
-									className="bg-zinc-100 font-medium text-zinc-900 hover:bg-zinc-200"
+									className="w-full bg-zinc-800 text-white hover:bg-zinc-700 sm:w-auto"
 								>
 									{passwordForm.formState.isSubmitting ? (
-										<div className="flex items-center gap-2">
-											<Loader2 className="h-4 w-4 animate-spin" />
-											<span>Changing Password...</span>
-										</div>
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Changing...
+										</>
 									) : (
-										<div className="flex items-center gap-2">
-											<KeyRound className="h-4 w-4" />
-											<span>Change Password</span>
-										</div>
+										"Change Password"
 									)}
 								</Button>
 							</div>

@@ -182,6 +182,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				if (mounted) {
 					// Don't force logout on cookie validation error - might be temporary
 					setCookieValidated(true); // Continue anyway
+					await logout();
 				}
 			}
 		};
