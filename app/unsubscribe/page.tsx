@@ -44,7 +44,7 @@ const UnsubscribePage = () => {
 		startTransition(async () => {
 			try {
 				await validateUnsubscribeToken(token, userId);
-				setState("ready");
+				setState("confirm");
 			} catch {
 				setState("invalid");
 			}
