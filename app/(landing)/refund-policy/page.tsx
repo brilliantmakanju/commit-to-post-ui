@@ -1,11 +1,10 @@
 // eslint-disable-next-line import/no-unresolved
-import { refundPolicyData } from "@/components/data/refund-policy";
+import type { Metadata } from "next";
 
-export const metadata = {
-	title: "Refund Policy - Push to Post",
-	description:
-		"Refund policy for Push to Post, the AI-powered GitHub commit to LinkedIn post generator.",
-};
+import { refundPolicyData } from "@/components/data/refund-policy";
+import { commonMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = commonMetadata.refund;
 
 export default function RefundPolicyPage() {
 	return (

@@ -1,11 +1,10 @@
 // eslint-disable-next-line import/no-unresolved
-import { termsData } from "@/components/data/terms-conditions";
+import type { Metadata } from "next";
 
-export const metadata = {
-	title: "Terms and Conditions - Push to Post",
-	description:
-		"Terms and conditions for using Push to Post, the AI-powered GitHub commit to LinkedIn post generator.",
-};
+import { termsData } from "@/components/data/terms-conditions";
+import { commonMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = commonMetadata.terms;
 
 export default function TermsPage() {
 	return (

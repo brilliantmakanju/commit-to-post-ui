@@ -1,11 +1,10 @@
 // eslint-disable-next-line import/no-unresolved
-import { privacyData } from "@/components/data/privacy-policy";
+import type { Metadata } from "next";
 
-export const metadata = {
-	title: "Privacy Policy - Push to Post",
-	description:
-		"Privacy policy for Push to Post, the AI-powered GitHub commit to LinkedIn post generator.",
-};
+import { privacyData } from "@/components/data/privacy-policy";
+import { commonMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = commonMetadata.privacy;
 
 export default function PrivacyPage() {
 	return (
