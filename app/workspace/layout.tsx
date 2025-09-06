@@ -19,7 +19,7 @@ export default function Layout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={"] bg-[#f4f4f4] antialiased"}>
+			<body className={"bg-[#f4f4f4] antialiased"}>
 				<Suspense>
 					<WorkspaceTopNav />
 					<main

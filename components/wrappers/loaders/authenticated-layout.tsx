@@ -181,7 +181,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				console.error("Cookie validation failed:");
 				if (mounted) {
 					// Don't force logout on cookie validation error - might be temporary
-					setCookieValidated(true); // Continue anyway
 					await logout();
 				}
 			}
@@ -335,12 +334,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 						page or contact support.
 					</p>
 					<div className="space-x-4">
-						<button
-							onClick={() => setForceShowContent(true)}
-							className="mt-4 rounded bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-500"
-						>
-							Continue Anyway
-						</button>
 						<button
 							onClick={() => globalThis.location.reload()}
 							className="mt-4 rounded bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/80"
