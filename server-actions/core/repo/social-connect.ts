@@ -71,6 +71,13 @@ export const socialConnectDiscord = async (
 			webhook_url, // ✅ only thing required
 		});
 
+		if (response.status === 402) {
+			return {
+				success: false,
+				message: response.message,
+			};
+		}
+
 		if (![200, 201].includes(response.status)) {
 			return {
 				success: false,
@@ -254,6 +261,13 @@ export const getConnectLinkedinOauth = async (
 		const url = `/api/v1/repositories/integrations/linkedin/connect/?redirect_uri=${redirect_uri}`;
 		const response = await apiClient.get(url, {}, 10000);
 
+		if (response.status === 402) {
+			return {
+				success: false,
+				message: response.error.message,
+			};
+		}
+
 		const authUrl = response?.data?.authorization_url;
 
 		if (response.status !== 200 || !authUrl) {
@@ -353,6 +367,12 @@ export const socialConnectLinkedinOauth = async (
 			};
 		}
 
+		if (response.status === 402) {
+			return {
+				success: false,
+				message: response.error.message,
+			};
+		}
 		if (status !== 200 || !data) {
 			return {
 				success: false,
@@ -429,6 +449,12 @@ export const socialConnectTwitterOauth = async (
 				},
 			};
 		}
+		if (response.status === 402) {
+			return {
+				success: false,
+				message: response.error.message,
+			};
+		}
 
 		if (status !== 200 || !data) {
 			return {
@@ -495,6 +521,12 @@ export const getConnectTwitterOauth = async (
 	try {
 		const url = `/api/v1/repositories/integrations/twitter/connect/?redirect_uri=${redirect_uri}`;
 		const response = await apiClient.get(url, {}, 10000);
+		if (response.status === 402) {
+			return {
+				success: false,
+				message: response.error.message,
+			};
+		}
 
 		const authUrl = response?.data?.authorization_url;
 

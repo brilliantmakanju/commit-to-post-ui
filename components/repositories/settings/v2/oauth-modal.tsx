@@ -132,7 +132,7 @@ export function OAuthModalV2({
 					setCurrentStep("complete");
 				}, 800);
 			} else {
-				toast.error(`Could not connect to ${config.name}`);
+				toast.error(`${result.message}`);
 				setCurrentStep("initializing");
 			}
 		} catch {
@@ -141,7 +141,7 @@ export function OAuthModalV2({
 		} finally {
 			setIsLoading(false);
 		}
-	}, [platform, path, config.name]);
+	}, [platform, path]);
 
 	const getStatusText = () => {
 		switch (currentStep) {
