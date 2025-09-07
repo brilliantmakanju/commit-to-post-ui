@@ -153,7 +153,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			setInitializationComplete(true);
 			setOnboardingChecked(true);
 			setCookieValidated(true);
-		}, 20000); // 20 second emergency timeout
+		}, 5000); // 5 second emergency timeout
 
 		return () => clearTimeout(emergencyTimeout);
 	}, [isClient]);
