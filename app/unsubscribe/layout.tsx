@@ -1,24 +1,28 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-
 export const metadata: Metadata = {
-	title: "Unsubscribe | Push to Post",
+	metadataBase: new URL("https://commit.jolexhive.com/"),
+	title: "Unsubscribe from Emails | Push to Post",
 	description:
-		"Unsubscribe from Push to Post email notifications. Manage your email preferences easily.",
+		"Unsubscribe from Push to Post email notifications securely and easily.",
 	robots: {
 		index: false,
 		follow: false,
 	},
 	openGraph: {
-		title: "Unsubscribe | Push to Post",
-		description: "Unsubscribe from Push to Post email notifications.",
+		title: "Unsubscribe from Emails | Push to Post",
+		description:
+			"Manage your email preferences and unsubscribe from Push to Post notifications.",
 		type: "website",
+		url: "https://commit.jolexhive.com/unsubscribe",
 		siteName: "Push to Post",
+		locale: "en_US",
 	},
 	twitter: {
 		card: "summary",
-		title: "Unsubscribe | Push to Post",
-		description: "Unsubscribe from Push to Post email notifications.",
+		title: "Unsubscribe from Emails | Push to Post",
+		description:
+			"Unsubscribe from Push to Post notifications and update your communication preferences.",
 	},
 };
 
