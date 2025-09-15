@@ -1,12 +1,11 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 
-import { GitBranchIcon } from "lucide-react";
+import Image from "next/image";
 import React, { forwardRef, useRef } from "react";
 import { FaGithub, FaLinkedinIn, FaTiktok, FaTwitter } from "react-icons/fa";
 
 import { AnimatedBeam } from "@/components/magicui/animated-beam";
-import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 import { cn } from "@/lib/utils";
 
 import { BackgroundDots } from "./background-dots";
@@ -64,7 +63,16 @@ export function AnimatedBeamMultipleOutputDemo({
 				</div>
 				<div className="flex flex-col justify-center">
 					<Circle ref={div6Ref} className="size-24">
-						<AnimatedAIIcon color={"#111827"} size={96} />
+						<div className="relative mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-300 dark:from-gray-800 dark:to-gray-900">
+							<Image
+								width={28}
+								height={28}
+								src="/logo.png"
+								alt="PushToPost Logo"
+								className="h-full w-full scale-110 object-contain transition-transform duration-300"
+								priority
+							/>
+						</div>
 					</Circle>
 				</div>
 				<div className="flex flex-col justify-center gap-8">

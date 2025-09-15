@@ -1,6 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-
-import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 
 import { footerData } from "./data";
 
@@ -125,7 +124,16 @@ export default function Footer() {
 						className="group relative transition-all duration-300"
 					>
 						<div className="absolute -inset-2 rounded-lg bg-gradient-to-r from-violet-100 to-cyan-100 opacity-0 blur-xl transition-all duration-300 group-hover:opacity-70"></div>
-						<AnimatedAIIcon color={"#111827"} size={42} />
+						<div className="relative mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-300 dark:from-gray-800 dark:to-gray-900">
+							<Image
+								width={28}
+								height={28}
+								src="/logo.png"
+								alt="PushToPost Logo"
+								className="h-full w-full scale-110 object-contain transition-transform duration-300"
+								priority
+							/>
+						</div>
 					</Link>
 
 					<div className="flex items-center gap-4">

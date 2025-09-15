@@ -1,9 +1,9 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type React from "react";
 
 import { AIBubble } from "@/components/wrappers/loaders/all-bubble";
-import { AnimatedAIIcon } from "@/components/wrappers/loaders/all-icons";
 import { Splash } from "@/components/wrappers/loaders/splash";
 import { seededRandom } from "@/lib/utils/seeded-random";
 
@@ -60,7 +60,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 				animate="animate"
 				style={{ display: "inline-block", position: "relative" }}
 			>
-				<AnimatedAIIcon color={iconColor} size={iconSize} />
+				<div className="relative mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-300 dark:from-gray-800 dark:to-gray-900">
+					<Image
+						width={28}
+						height={28}
+						src="/logo.png"
+						alt="PushToPost Logo"
+						className="h-full w-full scale-110 object-contain transition-transform duration-300"
+						priority
+					/>
+				</div>
 			</motion.div>
 
 			<Splash color={splashColor} duration={splashDuration} />

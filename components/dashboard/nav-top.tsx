@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 import { AnimatedAIIcon } from "../wrappers/loaders/all-icons";
@@ -19,7 +20,16 @@ const TopNavigation = ({ children }: { children: React.ReactNode }) => {
 
 				{/* Right Section: Logo */}
 				<Link href="/" className="flex items-center">
-					<AnimatedAIIcon color="#E5E7EB" size={42} />
+					<div className="relative mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-300 dark:from-gray-800 dark:to-gray-900">
+						<Image
+							width={28}
+							height={28}
+							src="/logo.png"
+							alt="PushToPost Logo"
+							className="h-full w-full scale-110 object-contain transition-transform duration-300"
+							priority
+						/>
+					</div>
 				</Link>
 			</div>
 		</motion.header>

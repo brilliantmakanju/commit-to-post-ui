@@ -2351,10 +2351,10 @@ export class ApiClient {
 // Optimized singleton with better configuration
 export const apiClient = new ApiClient({
 	baseUrl: process.env.BASE_URL_API_CALL || "http://localhost:8000",
-	maxConcurrentRequests: 15,
-	batchSize: 10,
-	connectionPoolSize: 8,
-	timeout: 8000,
+	maxConcurrentRequests: 20,
+	batchSize: 20,
+	connectionPoolSize: 10,
+	timeout: 30000,
 });
 // import { access } from "node:fs";
 
