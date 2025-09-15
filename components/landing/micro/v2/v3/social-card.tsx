@@ -2,8 +2,9 @@
 "use client";
 import Image from "next/image";
 import React, { useMemo } from "react";
-import { FaHeart, FaSmile, FaThumbsUp } from "react-icons/fa";
+import { FaHeart, FaThumbsUp } from "react-icons/fa";
 
+import { getTimeAgo } from "@/lib/get-time";
 import { ConnectedAccount, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,
@@ -14,11 +15,11 @@ const samplePosts = {
 	linkedin:
 		"Just pushed a commit to squash login bug #123 in my-cool-project. Now auth flows like a dream—seamless and secure! Ready to share more updates straight from my terminal. 😶‍🌫️ #WebDev #Git",
 	slack:
-		"Hey team, pushed a commit to fix login bug #123. Auth’s now buttery smooth, no more hiccups! All from my terminal, no tab juggling. Who’s testing it? 😶‍🌫️ #DevLife",
+		"Hey team, pushed a commit to fix login bug #123. Auth's now buttery smooth, no more hiccups! All from my terminal, no tab juggling. Who's testing it? 😶‍🌫️ #DevLife",
 	discord:
-		"Yo, crushed login bug #123 with a clean commit in my-cool-project. Pushed it from terminal and it’s ready to post here—love this flow! What’s your latest fix? 😶‍🌫️ #Code",
+		"Yo, crushed login bug #123 with a clean commit in my-cool-project. Pushed it from terminal and it's ready to post here—love this flow! What's your latest fix? 😶‍🌫️ #Code",
 	twitter:
-		"Fixed login bug #123 with one git push. Auth’s solid now, shared to Twitter from my terminal! No context switching, just coding. 😶‍🌫️ #BuildInPublic #100DaysOfCode",
+		"Fixed login bug #123 with one git push. Auth's solid now, shared to Twitter from my terminal! No context switching, just coding. 😶‍🌫️ #BuildInPublic #100DaysOfCode",
 };
 
 type Platform = "linkedin" | "slack" | "discord" | "twitter";
@@ -28,71 +29,136 @@ interface SocialCardProps {
 	platform: Platform;
 	content: string;
 	isActive: boolean;
+	hideName?: boolean;
+	customName?: string;
+	customAvatar?: string;
+	hideProfile?: boolean;
+	customUsername?: string;
+	hideReactions?: boolean;
+	customTimestamp?: string;
 }
 
-const CARD_HEIGHT = "309px";
+// Default user data (generic/safe names)
+const defaultUsers = {
+	linkedin: {
+		name: "Developer",
+		title: "Software Engineer",
+		avatar: "/default-avatar.png",
+	},
+	twitter: {
+		name: "CodeDev",
+		username: "@codedev",
+		avatar: "/default-avatar.png",
+	},
+	slack: {
+		name: "Developer",
+		avatar: "/default-avatar.png",
+	},
+	discord: {
+		name: "Push to Post",
+		avatar: "/logo.png",
+	},
+};
+
+// Generate random timestamps
+const generateRandomTimestamp = (platform: Platform) => {
+	const timestamps = {
+		linkedin: ["1h", "2h", "3h", "1d", "2d", "1w"],
+		twitter: ["2m", "15m", "1h", "2h", "Aug 15", "Aug 16"],
+		slack: ["Today at 2:34 PM", "Today at 9:15 AM", "Yesterday at 5:20 PM"],
+		discord: ["Today at 9:10 PM", "Yesterday at 2:30 PM", "Aug 15, 2024"],
+	};
+
+	const platformTimestamps = timestamps[platform];
+	return platformTimestamps[
+		Math.floor(Math.random() * platformTimestamps.length)
+	];
+};
 
 // LinkedIn Post Component
-const LinkedInPost = React.memo<{ content: string; isActive: boolean }>(
-	({ content }) => (
-		<div
-			className="w-full rounded-xl border border-gray-200 bg-white"
-			style={{ height: CARD_HEIGHT }}
-		>
-			<div className="p-6 pb-4">
-				<div className="flex items-start gap-4">
-					<div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
-						<Image
-							width={999}
-							height={99}
-							alt="Post content"
-							src={"/jolex_dev.jpg"}
-							className="w-full rounded-full object-cover"
-						/>
+export const LinkedInPost = React.memo<{
+	content: string;
+	isActive: boolean;
+	hideProfile?: boolean;
+	hideName?: boolean;
+	hideReactions?: boolean;
+	customName?: string;
+	customAvatar?: string;
+	customTimestamp?: string;
+}>(
+	({
+		content,
+		hideProfile,
+		hideName,
+		hideReactions,
+		customName,
+		customAvatar,
+		customTimestamp,
+	}) => {
+		const userName = customName || defaultUsers.linkedin.name;
+		const userAvatar = customAvatar || defaultUsers.linkedin.avatar;
+		const timestamp = customTimestamp || generateRandomTimestamp("linkedin");
+
+		return (
+			<div className="w-full rounded-xl border border-gray-200 bg-white">
+				<div className="p-6 px-3 pb-4 pr-9">
+					<div className="flex items-start gap-4">
+						{!hideProfile && (
+							<div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-600 text-sm font-medium text-white">
+								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+									<div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800">
+										<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-white">
+											<div className="h-2 w-2 rotate-45 transform rounded-sm bg-gray-800"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
+						<div className="flex w-full flex-col items-start justify-start">
+							{!hideName && (
+								<div className="flex w-full flex-col items-start justify-start gap-[0.5px] text-xs">
+									<p className="text-sm text-gray-600">
+										{defaultUsers.linkedin.title}
+									</p>
+									<span className="mt-1 text-sm text-gray-500">
+										{timestamp}
+									</span>
+								</div>
+							)}
+
+							<div className={`${hideName ? "" : "mt-3"} flex-1`}>
+								<p className="break-words text-start text-base leading-relaxed text-gray-900">
+									{content}
+								</p>
+							</div>
+						</div>
 					</div>
-					<div className="flex w-full flex-col items-start justify-start">
-						<div className="flex w-full flex-col items-start justify-start gap-[0.5px]">
+				</div>
+				{hideReactions && <div className="mb-1" />}
+
+				{!hideReactions && (
+					<div className="mt-auto border-t border-gray-100 px-6 py-4">
+						<div className="flex items-center justify-between text-sm text-gray-500">
 							<div className="flex items-center gap-2">
-								<h3 className="text-base font-semibold text-gray-900">
-									John Developer
-								</h3>
-								<span className="text-sm text-gray-500">• 1st</span>
+								<div className="flex -space-x-1">
+									<div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500">
+										<FaThumbsUp className="h-3 w-3 text-white" />
+									</div>
+									<div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500">
+										<FaHeart className="h-3 w-3 text-white" />
+									</div>
+								</div>
 							</div>
-							<p className="text-sm text-gray-600">
-								Senior Frontend Engineer at TechCorp
-							</p>
-						</div>
-
-						<div className="flex-1">
-							<p className="break-words text-start text-base leading-relaxed text-gray-900">
-								{content}
-							</p>
+							<div className="ml-2 flex gap-4">
+								<span>Comments</span>
+								<span>Reposts</span>
+							</div>
 						</div>
 					</div>
-				</div>
+				)}
 			</div>
-
-			<div className="mt-auto border-t border-gray-100 px-6 py-4">
-				<div className="flex items-center justify-between text-sm text-gray-500">
-					<div className="flex items-center gap-2">
-						<div className="flex -space-x-1">
-							<div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500">
-								<FaThumbsUp className="h-3 w-3 text-white" />
-							</div>
-							<div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500">
-								<FaHeart className="h-3 w-3 text-white" />
-							</div>
-						</div>
-						<span>24 reactions</span>
-					</div>
-					<div className="flex gap-6">
-						<span>5 comments</span>
-						<span>2 reposts</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	),
+		);
+	},
 );
 
 const CommentIcon = () => (
@@ -130,37 +196,58 @@ const BookmarkIcon = () => (
 	</svg>
 );
 
-const VerifiedIcon = () => (
-	<svg viewBox="0 0 24 24" className="h-5 w-5" fill="#1d9bf0">
-		<path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z" />
-	</svg>
-);
+export const TwitterPost = ({
+	content,
+	isActive,
+	hideProfile,
+	hideName,
+	hideReactions,
+	customName,
+	customUsername,
+	customAvatar,
+	customTimestamp,
+}: {
+	content: string;
+	isActive: boolean;
+	hideProfile?: boolean;
+	hideName?: boolean;
+	hideReactions?: boolean;
+	customName?: string;
+	customUsername?: string;
+	customAvatar?: string;
+	customTimestamp?: string;
+}) => {
+	const userName = customName || defaultUsers.twitter.name;
+	const userUsername = customUsername || defaultUsers.twitter.username;
+	const userAvatar = customAvatar || defaultUsers.twitter.avatar;
+	const timestamp = customTimestamp || generateRandomTimestamp("twitter");
 
-const TwitterPost = ({ content }: { content: string; isActive: boolean }) => {
 	return (
 		<div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-black text-gray-500">
-			<div className="flex w-full items-start justify-between px-4 pb-2 pt-4">
+			<div className="flex w-full items-start justify-between px-3 pb-2 pr-5 pt-4">
 				<div className="flex w-full items-start gap-3">
 					{/* Profile Picture */}
-					<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-lg font-bold text-white">
-						<Image
-							width={999}
-							height={99}
-							alt="Post content"
-							src={"/jolex_dev.jpg"}
-							className="w-full rounded-full object-cover"
-						/>
-					</div>
+					{!hideProfile && (
+						<div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-600 text-sm font-medium text-white">
+							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+								<div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800">
+									<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-white">
+										<div className="h-2 w-2 rotate-45 transform rounded-sm bg-gray-800"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
 
 					{/* User Info */}
 					<div className="flex w-full flex-col items-start justify-start gap-2">
-						<div className="flex items-center gap-1">
-							<span className="font-bold text-white">Brilliant Makanju</span>
-							<VerifiedIcon />
-							<span className="text-gray-500">@Jolex_Dev</span>
-							<span className="text-gray-500">·</span>
-							<span className="text-gray-500">Aug 15</span>
-						</div>
+						{!hideName && (
+							<div className="flex items-center gap-1 text-xs">
+								<span className="text-gray-500">{userUsername}</span>
+								<span className="text-gray-500">·</span>
+								<span className="text-gray-500">{timestamp}</span>
+							</div>
+						)}
 
 						<div className="pb-1">
 							<div className="text-15px whitespace-pre-line text-start leading-5 text-white">
@@ -168,58 +255,46 @@ const TwitterPost = ({ content }: { content: string; isActive: boolean }) => {
 							</div>
 						</div>
 
-						{/* Image */}
-						{/* <div className="mb-3">
-								<Image
-									width={999}
-									height={99}
-									alt="Post content"
-									src={"/Anime-Girl1.png"}
-									className="max-h-96 w-full rounded-2xl object-cover"
-								/>
-							</div> */}
-
 						{/* Action Buttons */}
-						<div className="flex w-full items-center justify-between">
-							{/* Comment */}
-							<button className="group flex items-center gap-2 rounded-full p-2">
-								<CommentIcon />
-								<span className="text-sm text-gray-500">40</span>
-							</button>
-
-							{/* Retweet */}
-							<button className="group flex items-center gap-2 rounded-full p-2">
-								<RetweetIcon />
-								<span className="text-sm text-gray-500">20</span>
-							</button>
-
-							{/* Like */}
-							<button className="group flex items-center gap-2 rounded-full p-2">
-								<HeartIcon />
-								<span className="text-sm text-gray-500">30</span>
-							</button>
-
-							{/* Views */}
-							<button className="group flex items-center gap-2 rounded-full p-2">
-								<svg
-									viewBox="0 0 24 24"
-									className="h-5 w-5 fill-current text-gray-500"
-								>
-									<path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10L6 11v10H4zm9.248 0v-7h2v7h-2z" />
-								</svg>
-								20
-							</button>
-
-							{/* Share & Bookmark */}
-							<div className="flex items-center gap-1">
-								<button className="group rounded-full p-2">
-									<ShareIcon />
+						{hideReactions && <div className="mb-1" />}
+						{!hideReactions && (
+							<div className="flex w-full items-center justify-between">
+								{/* Comment */}
+								<button className="group flex items-center gap-2 rounded-full p-2">
+									<CommentIcon />
 								</button>
-								<button className="group rounded-full p-2">
-									<BookmarkIcon />
+
+								{/* Retweet */}
+								<button className="group flex items-center gap-2 rounded-full p-2">
+									<RetweetIcon />
 								</button>
+
+								{/* Like */}
+								<button className="group flex items-center gap-2 rounded-full p-2">
+									<HeartIcon />
+								</button>
+
+								{/* Views */}
+								<button className="group flex items-center gap-2 rounded-full p-2">
+									<svg
+										viewBox="0 0 24 24"
+										className="h-5 w-5 fill-current text-gray-500"
+									>
+										<path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10L6 11v10H4zm9.248 0v-7h2v7h-2z" />
+									</svg>
+								</button>
+
+								{/* Share & Bookmark */}
+								<div className="flex items-center gap-1">
+									<button className="group rounded-full p-2">
+										<ShareIcon />
+									</button>
+									<button className="group rounded-full p-2">
+										<BookmarkIcon />
+									</button>
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
 				</div>
 			</div>
@@ -228,123 +303,175 @@ const TwitterPost = ({ content }: { content: string; isActive: boolean }) => {
 };
 
 // Slack Message Component
-const SlackMessage = React.memo<{ content: string; isActive: boolean }>(
-	({ content }) => (
-		<div
-			className="flex w-full flex-col rounded-xl border border-gray-200 bg-white"
-			style={{ height: CARD_HEIGHT + 20 }}
-		>
-			<div className="flex-shrink-0 rounded-t-xl border-b border-gray-100 bg-gray-50 px-6 py-4">
-				<div className="flex items-center gap-3">
-					<span className="text-xl text-gray-600">#</span>
-					<span className="text-base font-semibold text-gray-900">general</span>
-					<div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
-						<div className="h-2 w-2 rounded-full bg-green-500"></div>
-						<span>234 members</span>
+export const SlackMessage = React.memo<{
+	content: string;
+	isActive: boolean;
+	hideProfile?: boolean;
+	hideName?: boolean;
+	hideReactions?: boolean;
+	customName?: string;
+	customAvatar?: string;
+	customTimestamp?: string;
+}>(
+	({
+		content,
+		hideProfile,
+		hideName,
+		hideReactions,
+		customName,
+		customAvatar,
+		customTimestamp,
+	}) => {
+		const userName = customName || defaultUsers.slack.name;
+		const userAvatar = customAvatar || defaultUsers.slack.avatar;
+		const timestamp = customTimestamp || generateRandomTimestamp("slack");
+
+		return (
+			<div className="flex w-full flex-col rounded-xl border border-gray-200 bg-white">
+				<div className="flex-shrink-0 rounded-t-xl border-b border-gray-100 bg-gray-50 px-6 py-4">
+					<div className="flex items-center gap-3">
+						<span className="text-xl text-gray-600">#</span>
+						<span className="text-base font-semibold text-gray-900">
+							general
+						</span>
+						<div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
+							<div className="h-2 w-2 rounded-full bg-green-500"></div>
+							<span>members</span>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div className="flex-1 p-6">
-				<div className="flex items-start gap-4">
-					<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-bold text-white">
-						P
-					</div>
-					<div className="min-w-0 flex-1">
-						<div className="mb-2 flex items-center gap-3">
-							<span className="text-base font-bold text-gray-900">
-								Push to Post
-							</span>
-							<div className="rounded bg-green-600 px-2 py-1 text-xs font-bold text-white">
-								APP
+				<div className="flex-1 p-6">
+					<div className="flex items-start gap-4">
+						{!hideProfile && (
+							<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-bold text-white">
+								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+									<div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800">
+										<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-white">
+											<div className="h-2 w-2 rotate-45 transform rounded-sm bg-gray-800"></div>
+										</div>
+									</div>
+								</div>
 							</div>
-							<span className="text-sm text-gray-500">Today at 2:34 PM</span>
+						)}
+						<div className="min-w-0 flex-1">
+							{!hideName && (
+								<div className="mb-2 flex items-center gap-3">
+									<span className="text-base font-bold text-gray-900">
+										{userName}
+									</span>
+									<div className="rounded bg-green-600 px-2 py-1 text-xs font-bold text-white">
+										APP
+									</div>
+									<span className="text-xs text-gray-500">{timestamp}</span>
+								</div>
+							)}
+							<div className={`${hideName ? "" : "mb-4"}`}>
+								<p className="break-words text-start text-base leading-relaxed text-gray-900">
+									{content}
+								</p>
+							</div>
 						</div>
-						<div className="mb-4">
-							<p className="break-words text-start text-base leading-relaxed text-gray-900">
-								{content}
-							</p>
-						</div>
-
-						{/* <div className="flex items-center gap-2">
-							<button className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-gray-100">
-								<span>💯</span>
-								<span>3</span>
-							</button>
-							<button className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-gray-100">
-								<span>🚀</span>
-								<span>1</span>
-							</button>
-							<button className="rounded-md p-1.5 text-gray-500 transition-colors hover:bg-gray-100">
-								<BsReply className="h-4 w-4" />
-							</button>
-						</div> */}
 					</div>
 				</div>
 			</div>
-		</div>
-	),
+		);
+	},
 );
 
 // Discord Message Component
-const DiscordMessage = React.memo<{ content: string; isActive: boolean }>(
-	({ content }) => (
-		<div
-			className="flex w-full flex-col rounded-xl border border-gray-700 bg-gray-800 text-white"
-			style={{ height: CARD_HEIGHT }}
-		>
-			<div className="bg-gray-750 flex-shrink-0 rounded-t-xl border-b border-gray-700 px-6 py-4">
-				<div className="flex items-center gap-3">
-					<span className="text-xl text-gray-400">#</span>
-					<span className="text-base font-semibold text-white">
-						development
-					</span>
-					<div className="ml-2 h-4 w-px bg-gray-600"></div>
-					<span className="text-sm text-gray-400">
-						Frontend team discussions
-					</span>
-				</div>
-			</div>
+export const DiscordMessage = React.memo<{
+	content: string;
+	isActive: boolean;
+	hideProfile?: boolean;
+	hideName?: boolean;
+	hideReactions?: boolean;
+	customName?: string;
+	customAvatar?: string;
+	timestamp?: string;
+	updateTitle?: string;
+	postedVia?: string;
+	postedTimestamp?: string;
+	customTimestamp?: string;
+}>(
+	({
+		content,
+		hideProfile,
+		hideName,
+		hideReactions,
+		customName,
+		customAvatar,
+		timestamp,
+		updateTitle = "Update",
+		postedVia,
+		postedTimestamp,
+		customTimestamp,
+	}) => {
+		const userName = customName || defaultUsers.discord.name;
+		const userAvatar = customAvatar || defaultUsers.discord.avatar;
+		const displayTimestamp =
+			customTimestamp || timestamp || generateRandomTimestamp("discord");
 
-			<div className="flex-1 p-6">
-				<div className="flex items-start gap-4">
-					<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-base font-bold text-white">
-						P
-					</div>
+		return (
+			<div className="flex w-full flex-col rounded-xl border border-gray-700 bg-[#1c1d22] py-3 text-white">
+				{/* Main Message */}
+				<div className="flex items-start gap-4 px-4 py-2 transition-colors hover:bg-gray-800/30">
+					{/* Avatar */}
+					{!hideProfile && (
+						<div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-600 text-sm font-medium text-white">
+							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+								<div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800">
+									<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-white">
+										<div className="h-2 w-2 rotate-45 transform rounded-sm bg-gray-800"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+
 					<div className="min-w-0 flex-1">
-						<div className="mb-2 flex items-center gap-3">
-							<span className="text-base font-semibold text-white">
-								Push to Post
-							</span>
-							<div className="rounded bg-indigo-600 px-2 py-1 text-xs font-bold text-white">
-								BOT
+						{/* Header */}
+						{!hideName && (
+							<div className="mb-1 flex items-center gap-2">
+								<span className="cursor-pointer text-base font-medium text-white hover:underline">
+									{userName}
+								</span>
+								<div className="rounded bg-indigo-600 px-1.5 py-0.5 text-xs font-bold text-white">
+									APP
+								</div>
+								<span className="text-xs font-medium text-gray-400">
+									{displayTimestamp}
+								</span>
 							</div>
-							<span className="text-sm text-gray-400">Today at 2:34 PM</span>
-						</div>
-						<div className="mb-4">
-							<p className="break-words text-start text-base leading-relaxed text-gray-100">
-								{content}
-							</p>
-						</div>
+						)}
 
-						<div className="flex items-center gap-2">
-							<div className="flex cursor-pointer items-center gap-1 rounded-md bg-gray-700 px-3 py-1.5 text-sm transition-colors hover:bg-gray-600">
-								<span>⚡</span>
-								<span className="text-gray-300">4</span>
+						{/* Message Content with Blue Border */}
+						<div className="relative overflow-hidden rounded-2xl bg-[#27272f] pb-2 pt-3">
+							<div className="absolute bottom-0 left-0 top-0 w-1 rounded-full bg-indigo-500"></div>
+							<div className="pl-4">
+								{/* Update Title */}
+								<div className="mb-2 text-base font-semibold text-white">
+									{updateTitle}
+								</div>
+
+								{/* Main Content */}
+								<div className="mb-3 text-sm leading-relaxed text-gray-300">
+									{content}
+								</div>
+
+								{/* Posted Via */}
+								{postedVia && postedTimestamp && (
+									<div className="text-xs text-gray-400">
+										{postedVia} | {postedTimestamp}
+									</div>
+								)}
 							</div>
-							<div className="flex cursor-pointer items-center gap-1 rounded-md bg-gray-700 px-3 py-1.5 text-sm transition-colors hover:bg-gray-600">
-								<span>🔥</span>
-								<span className="text-gray-300">2</span>
-							</div>
-							<button className="rounded-md p-1.5 text-gray-500 transition-colors hover:bg-gray-700">
-								<FaSmile className="h-4 w-4" />
-							</button>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	),
+		);
+	},
 );
 
 // Set display names
@@ -354,21 +481,79 @@ SlackMessage.displayName = "SlackMessage";
 DiscordMessage.displayName = "DiscordMessage";
 
 // Main Social Card Component
-const SocialCard: React.FC<SocialCardProps> = React.memo(
-	({ platform, content, isActive }) => {
+export const SocialCard: React.FC<SocialCardProps> = React.memo(
+	({
+		platform,
+		content,
+		isActive,
+		hideProfile,
+		hideName,
+		hideReactions,
+		customName,
+		customUsername,
+		customAvatar,
+		customTimestamp,
+	}) => {
+		const timeAgo = getTimeAgo(customTimestamp);
+
 		const renderPlatform = () => {
 			switch (platform) {
 				case "linkedin": {
-					return <LinkedInPost content={content} isActive={isActive} />;
+					return (
+						<LinkedInPost
+							content={content}
+							isActive={isActive}
+							hideName={hideName}
+							customName={customName}
+							customTimestamp={timeAgo}
+							hideProfile={hideProfile}
+							customAvatar={customAvatar}
+							hideReactions={hideReactions}
+						/>
+					);
 				}
 				case "twitter": {
-					return <TwitterPost content={content} isActive={isActive} />;
+					return (
+						<TwitterPost
+							content={content}
+							isActive={isActive}
+							hideName={hideName}
+							customName={customName}
+							hideProfile={hideProfile}
+							customTimestamp={timeAgo}
+							customAvatar={customAvatar}
+							hideReactions={hideReactions}
+							customUsername={customUsername}
+						/>
+					);
 				}
 				case "slack": {
-					return <SlackMessage content={content} isActive={isActive} />;
+					return (
+						<SlackMessage
+							content={content}
+							isActive={isActive}
+							hideName={hideName}
+							customName={customName}
+							hideProfile={hideProfile}
+							customTimestamp={timeAgo}
+							customAvatar={customAvatar}
+							hideReactions={hideReactions}
+						/>
+					);
 				}
 				case "discord": {
-					return <DiscordMessage content={content} isActive={isActive} />;
+					return (
+						<DiscordMessage
+							content={content}
+							isActive={isActive}
+							hideName={hideName}
+							customName={customName}
+							hideProfile={hideProfile}
+							customTimestamp={timeAgo}
+							customAvatar={customAvatar}
+							hideReactions={hideReactions}
+						/>
+					);
 				}
 				default: {
 					return;
