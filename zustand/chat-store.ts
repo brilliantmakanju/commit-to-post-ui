@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { getGenerationLimits } from "@/server-actions/playground/generation-limit";
 import { getChatHistory } from "@/server-actions/playground/get-messages";
-import { GenerationLimitsData } from "@/types/playground";
+import { GenerationLimitsData, QualitySettings } from "@/types/playground";
 
 // Type definitions
 export type MessageType = "post" | "image" | "meme";
@@ -117,6 +117,22 @@ interface ChatActions {
 	canGenerate: (type: MessageType) => boolean;
 	getRemainingGenerations: () => number;
 	getGenerationCost: (type: MessageType) => number;
+
+	// New action to update user limits after successful generation
+	updateUserLimitsAfterGeneration: (userLimits: {
+		plan?: string;
+		plan_type?: string;
+		daily_usage?: number;
+		daily_limit?: number;
+		daily_remaining?: number;
+		monthly_usage?: number;
+		monthly_limit?: number;
+		monthly_remaining?: number;
+		remaining_credits?: number;
+		total_credits?: number;
+		quality_settings?: QualitySettings;
+		is_authenticated?: boolean;
+	}) => void;
 }
 
 const useChatStore = create<ChatState & ChatActions>()(
@@ -448,6 +464,66 @@ const useChatStore = create<ChatState & ChatActions>()(
 						return 1;
 					}
 				}
+			},
+
+			// New action implementation
+			updateUserLimitsAfterGeneration: userLimits => {
+				set(state => {
+					if (!state.generationLimits) return state;
+
+					return {
+						generationLimits: {
+							...state.generationLimits,
+							limits: {
+								...state.generationLimits.limits,
+								// Handle both plan and plan_type for compatibility
+								plan:
+									userLimits.plan ||
+									userLimits.plan_type ||
+									state.generationLimits.limits.plan,
+								plan_type:
+									userLimits.plan_type ||
+									userLimits.plan ||
+									state.generationLimits.limits.plan_type,
+								// Update daily limits
+								daily_usage:
+									userLimits.daily_usage ??
+									state.generationLimits.limits.daily_usage,
+								daily_limit:
+									userLimits.daily_limit ??
+									state.generationLimits.limits.daily_limit,
+								daily_remaining:
+									userLimits.daily_remaining ??
+									state.generationLimits.limits.daily_remaining,
+								// Update monthly limits
+								monthly_usage:
+									userLimits.monthly_usage ??
+									state.generationLimits.limits.monthly_usage,
+								monthly_limit:
+									userLimits.monthly_limit ??
+									state.generationLimits.limits.monthly_limit,
+								monthly_remaining:
+									userLimits.monthly_remaining ??
+									state.generationLimits.limits.monthly_remaining,
+								// Update credits
+								remaining_credits:
+									userLimits.remaining_credits ??
+									state.generationLimits.limits.remaining_credits,
+								total_credits:
+									userLimits.total_credits ??
+									state.generationLimits.limits.total_credits,
+								// Update other fields
+								quality_settings:
+									userLimits.quality_settings ??
+									state.generationLimits.limits.quality_settings,
+								is_authenticated:
+									userLimits.is_authenticated ??
+									state.generationLimits.limits.is_authenticated,
+							},
+						},
+						lastLimitsUpdate: new Date().toISOString(),
+					};
+				});
 			},
 		}),
 		{

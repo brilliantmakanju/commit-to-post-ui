@@ -46,6 +46,39 @@ const PlatformIcon = ({ platform }: { platform: string }) => {
 const getSelectionTagStyle = () =>
 	"inline-flex items-center gap-1 rounded-full ml-2 border border-zinc-700/50 bg-arch-dark-light py-[4px] px-2 text-zinc-100 transition-colors hover:border-zinc-600/70";
 
+// Limit Status Component
+const LimitStatusBanner = ({
+	canGenerate,
+	remaining,
+	isAuthenticated,
+	planType,
+}: {
+	canGenerate: boolean;
+	remaining: number;
+	isAuthenticated: boolean;
+	planType: string;
+}) => {
+	if (canGenerate) {
+		return <></>;
+	}
+
+	return (
+		<div className="mb-2 flex items-center gap-3 rounded-md border border-gray-600 bg-gray-800/60 px-4 py-2.5">
+			<div className="h-2 w-2 rounded-full bg-gray-400"></div>
+			<div className="flex-1">
+				<span className="block text-sm text-gray-200">
+					{isAuthenticated ? "Monthly limit reached" : "Daily limit reached"}
+				</span>
+				{!isAuthenticated && (
+					<span className="text-xs text-gray-400">
+						Sign up for higher limits or try again tomorrow
+					</span>
+				)}
+			</div>
+		</div>
+	);
+};
+
 export function ChatInput() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,14 +92,37 @@ export function ChatInput() {
 		clearSelection,
 		addUserMessage,
 		setSelectedMode,
-		setPostModalOpen,
 		setIsGenerating,
+		setPostModalOpen,
 		addServerResponse,
+		updateUserLimitsAfterGeneration,
+		canGenerate,
+		getRemainingGenerations,
+		generationLimits,
 	} = useChatStore();
+
+	// Check if user can generate content
+	const userCanGenerate = canGenerate("post");
+	const remainingGenerations = getRemainingGenerations();
+	const isAuthenticated = generationLimits?.limits?.is_authenticated || false;
+	const planType =
+		generationLimits?.limits?.plan ||
+		generationLimits?.limits?.plan_type ||
+		"anonymous";
 
 	const handleModeSelect = (mode: MessageType) => {
 		// Don't allow selection of disabled modes
 		if (mode === "image" || mode === "meme") {
+			return;
+		}
+
+		// Don't allow mode selection if limit reached
+		if (!userCanGenerate) {
+			toast.error("Generation limit reached", {
+				description: isAuthenticated
+					? "You've reached your monthly generation limit."
+					: "Daily limit reached. Sign up for higher limits or try again tomorrow.",
+			});
 			return;
 		}
 
@@ -88,6 +144,15 @@ export function ChatInput() {
 	};
 
 	const handleSubmit = async () => {
+		if (!userCanGenerate) {
+			toast.error("Generation limit reached", {
+				description: isAuthenticated
+					? "You've reached your monthly generation limit."
+					: "Daily limit reached. Sign up for higher limits or try again tomorrow.",
+			});
+			return;
+		}
+
 		if (!currentInputText.trim()) {
 			toast.error("Please enter a message", {
 				description: "Type something before sending.",
@@ -127,23 +192,49 @@ export function ChatInput() {
 				platform: selectedPlatform || "linkedin",
 			});
 
+			console.log(result, "Result");
+
 			if (result.success && result.data) {
 				// Add successful server response with generated posts
 				addServerResponse(userInputId, {
 					content: result.data.posts,
 				});
+
+				// Update user limits if provided in the response
+				if (result.data.user_limits) {
+					updateUserLimitsAfterGeneration(result.data.user_limits);
+				}
 			} else {
-				// Handle empty or invalid posts array
-				addServerResponse(userInputId, {
-					content:
-						"Sorry, I couldn’t generate a post right now. Please try again.",
-					error: "Empty or invalid posts array returned by API.",
-				});
+				// Handle different error types
+				if (
+					result.error === "daily_limit_exceeded" ||
+					result.error === "monthly_limit_exceeded"
+				) {
+					toast.error("Generation limit reached", {
+						description:
+							result.message || "You've reached your generation limit.",
+					});
+				} else if (result.error === "insufficient_credits") {
+					toast.error("Insufficient credits", {
+						description:
+							result.message ||
+							"You don't have enough credits for this generation.",
+					});
+				} else {
+					// Handle empty or invalid posts array
+					addServerResponse(userInputId, {
+						content:
+							"Sorry, I couldn't generate a post right now. Please try again.",
+						error:
+							result.error || "Empty or invalid posts array returned by API.",
+					});
+				}
 			}
 
 			// Clear input and selections
 			setInputText("");
-		} catch {
+		} catch (error) {
+			console.error("Failed to send message:", error);
 			toast.error("Failed to send message", {
 				description: "Unexpected error. Please try again.",
 			});
@@ -166,6 +257,11 @@ export function ChatInput() {
 	};
 
 	const isSendDisabled = () => {
+		// Check limits first
+		if (!userCanGenerate) {
+			return true;
+		}
+
 		// Basic checks
 		if (!currentInputText.trim() || isSubmitting || isGenerating) {
 			return true;
@@ -190,12 +286,12 @@ export function ChatInput() {
 
 	const getModeButtonStyle = (mode: MessageType) => {
 		const isSelected = selectedMode === mode;
-		const isDisabled = mode === "image" || mode === "meme";
+		const isDisabled = mode === "image" || mode === "meme" || !userCanGenerate;
 		const baseClasses =
 			"h-10 rounded-xl px-4 font-medium transition-all duration-300 ease-out relative overflow-hidden";
 
 		if (isDisabled) {
-			return `${baseClasses} bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-100 active:bg-gray-900 opacity-80`;
+			return `${baseClasses} bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-100 active:bg-gray-900 opacity-60 cursor-not-allowed`;
 		}
 
 		if (isSelected) {
@@ -205,46 +301,43 @@ export function ChatInput() {
 		return `${baseClasses} bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-100 active:bg-gray-900`;
 	};
 
+	const getTextareaClasses = () => {
+		const baseClasses =
+			"h-[100px] max-h-[130px] min-h-[50px] resize-none border-0 bg-transparent p-4 pb-2 text-base leading-relaxed shadow-none focus-visible:ring-0 focus-visible:ring-offset-0";
+
+		if (!userCanGenerate) {
+			return `${baseClasses} opacity-50 cursor-not-allowed`;
+		}
+
+		return baseClasses;
+	};
+
+	const getInputContainerClasses = () => {
+		const baseClasses =
+			"rounded-xl border bg-background/95 pt-2 shadow-lg backdrop-blur-md";
+
+		if (!userCanGenerate) {
+			return `${baseClasses} border-gray-600 bg-gray-900/20`;
+		}
+
+		return `${baseClasses} border-border`;
+	};
+
 	return (
 		<TooltipProvider>
 			<div className="mx-auto max-w-5xl">
-				{/* Selection Display */}
-				{/* {(selectedPlatform || selectedImageStyle) && (
-					<div className="mb-4 flex flex-wrap items-center gap-2">
-						{selectedPlatform && (
-							<div className={getSelectionTagStyle()}>
-								<PlatformIcon platform={selectedPlatform} />
-								<button
-									onClick={clearCurrentSelection}
-									aria-label="Clear platform selection"
-									className="h-auto rounded-full bg-transparent p-0.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-								>
-									<FaTimes className="h-3 w-3" />
-								</button>
-							</div>
-						)}
-
-						{selectedImageStyle && (
-							<div className={getSelectionTagStyle()}>
-								<span className="flex items-center gap-2">
-									<FaImage className="h-3 w-3" />
-									{selectedImageStyle.charAt(0).toUpperCase() +
-										selectedImageStyle.slice(1)}
-								</span>
-								<button
-									onClick={clearCurrentSelection}
-									className="h-auto rounded-full bg-transparent p-0.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-									aria-label="Clear image style selection"
-								>
-									<FaTimes className="h-3 w-3" />
-								</button>
-							</div>
-						)}
-					</div>
-				)} */}
+				{/* Limit Status Banner */}
+				{generationLimits && (
+					<LimitStatusBanner
+						canGenerate={userCanGenerate}
+						remaining={remainingGenerations}
+						isAuthenticated={isAuthenticated}
+						planType={planType}
+					/>
+				)}
 
 				{/* Input Container */}
-				<div className="rounded-xl border border-border bg-background/95 pt-2 shadow-lg backdrop-blur-md">
+				<div className={getInputContainerClasses()}>
 					{selectedPlatform && (
 						<div className={getSelectionTagStyle()}>
 							<PlatformIcon platform={selectedPlatform} />
@@ -252,33 +345,60 @@ export function ChatInput() {
 								onClick={clearCurrentSelection}
 								aria-label="Clear platform selection"
 								className="h-auto rounded-full bg-transparent p-0.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+								disabled={!userCanGenerate}
 							>
 								<FaTimes className="h-3 w-3" />
 							</button>
 						</div>
 					)}
+
 					{/* Text Area */}
 					<Textarea
 						value={currentInputText}
 						onKeyDown={handleKeyPress}
-						disabled={isSubmitting || isGenerating}
-						placeholder="Type your git commit message..."
+						disabled={isSubmitting || isGenerating || !userCanGenerate}
+						placeholder={
+							userCanGenerate
+								? "Type your git commit message..."
+								: "Generation limit reached. Please try again later or upgrade your plan."
+						}
 						onChange={event => setInputText(event.target.value)}
-						className="h-[100px] max-h-[130px] min-h-[50px] resize-none border-0 bg-transparent p-4 pb-2 text-base leading-relaxed shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+						className={getTextareaClasses()}
 					/>
 
 					{/* Bottom Controls */}
 					<div className="flex items-center justify-between border-t border-border p-3">
 						{/* Left Side: Mode Selection Buttons */}
 						<div className="flex items-center gap-2">
-							{/* Post Button - Always Enabled */}
-							<Button
-								className={getModeButtonStyle("post")}
-								disabled={isSubmitting || isGenerating}
-								onClick={() => handleModeSelect("post")}
-							>
-								Post
-							</Button>
+							{/* Post Button */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<div>
+										<Button
+											className={getModeButtonStyle("post")}
+											disabled={
+												isSubmitting || isGenerating || !userCanGenerate
+											}
+											onClick={() => handleModeSelect("post")}
+										>
+											Post
+										</Button>
+									</div>
+								</TooltipTrigger>
+								{!userCanGenerate && (
+									<TooltipContent
+										side="top"
+										className="border-gray-600 bg-gray-900 text-gray-200"
+									>
+										<p>
+											Generation limit reached.{" "}
+											{isAuthenticated
+												? "Monthly limit exceeded."
+												: "Daily limit exceeded."}
+										</p>
+									</TooltipContent>
+								)}
+							</Tooltip>
 
 							{/* Image Button - Disabled with Tooltip */}
 							<Tooltip>
@@ -317,18 +437,32 @@ export function ChatInput() {
 
 						{/* Right Side: Send Button */}
 						<div className="flex items-center gap-2">
-							<Button
-								onClick={handleSubmit}
-								disabled={isSendDisabled()}
-								className={`h-10 rounded-xl px-4 font-medium transition-all duration-200 ease-out ${
-									isSendDisabled()
-										? "cursor-not-allowed bg-gray-600/50 text-white/30"
-										: "transform bg-white text-black shadow-lg hover:-translate-y-0.5 hover:shadow-xl"
-								}`}
-							>
-								<FaPaperPlane className="mr-2 h-4 w-4" />
-								{isSubmitting || isGenerating ? "Sending..." : "Send"}
-							</Button>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<div>
+										<Button
+											onClick={handleSubmit}
+											disabled={isSendDisabled()}
+											className={`h-10 rounded-xl px-4 font-medium transition-all duration-200 ease-out ${
+												isSendDisabled()
+													? "cursor-not-allowed bg-gray-600/50 text-white/30"
+													: "transform bg-white text-black shadow-lg hover:-translate-y-0.5 hover:shadow-xl"
+											}`}
+										>
+											<FaPaperPlane className="mr-2 h-4 w-4" />
+											{isSubmitting || isGenerating ? "Sending..." : "Send"}
+										</Button>
+									</div>
+								</TooltipTrigger>
+								{!userCanGenerate && (
+									<TooltipContent
+										side="top"
+										className="border-gray-600 bg-gray-900 text-gray-200"
+									>
+										<p>Cannot send: Generation limit reached</p>
+									</TooltipContent>
+								)}
+							</Tooltip>
 						</div>
 					</div>
 				</div>
