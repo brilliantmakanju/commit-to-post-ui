@@ -25,7 +25,6 @@ export function ChatContainer() {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const bottomRef = useRef<HTMLDivElement>(null);
 	const hasLoadedHistory = useRef(false);
-	const [isInitializing, setIsInitializing] = useState(true);
 
 	// Load chat history on mount (only once)
 	useEffect(() => {
@@ -45,7 +44,6 @@ export function ChatContainer() {
 			// due to the persist configuration, so no additional action needed
 
 			hasLoadedHistory.current = true;
-			setIsInitializing(false);
 		};
 
 		loadHistory();
@@ -72,14 +70,12 @@ export function ChatContainer() {
 		hasLoadedHistory.current = true;
 	};
 
-	// Show loading skeleton while:
+	// Show loading skeleton only when:
 	// 1. Session is loading, OR
-	// 2. We're loading history from backend for authenticated users, OR
-	// 3. We're still initializing
+	// 2. We're actively loading history from backend AND we don't have messages yet
 	const showLoading =
 		status === "loading" ||
-		(status === "authenticated" && isLoadingHistory) ||
-		isInitializing;
+		(status === "authenticated" && isLoadingHistory && messages.length === 0);
 
 	return (
 		<div
