@@ -1,8 +1,8 @@
 import { UUID } from "node:crypto";
 
 type HeroBannerTopProps = {
-	// The icon to display in the banner, it defaults to null
-	icon?: any | null;
+	// The icon to display in the banner, it defaults to undefined
+	icon?: any | undefined;
 
 	// The title text to be displayed in the banner
 	title?: string;
@@ -91,7 +91,7 @@ export interface SocialAccount {
 	connectedAccounts: ConnectedAccount[];
 }
 
-export type Platform = "linkedin" | "slack" | "discord" | "x";
+export type Platform = "linkedin" | "slack" | "discord" | "twitter" | "x";
 
 export interface PostItem {
 	id: string;
@@ -103,22 +103,96 @@ export interface PostItem {
 	image_urls: string[];
 	organization: string;
 	is_inactive: boolean;
-	video_url: string | null;
-	post_group: string | null;
-	original_status: string | null;
-	actual_publish_time: string | null;
-	scheduled_publish_time: string | null;
-
+	video_url: string | undefined;
+	post_group: string | undefined;
+	original_status: string | undefined;
+	actual_publish_time: string | undefined;
+	scheduled_publish_time: string | undefined;
 	posted_integrations_data: ConnectedAccount[];
 	planned_integrations_data: ConnectedAccount[];
 	pending_integrations_data: ConnectedAccount[];
-
-	// Optional shortcut (if you still want aliasing in UI)
+	// New fields from API response
+	repository: string;
+	posted_channels: string[];
+	planned_channels: string[];
+	pending_integrations_data: ConnectedAccount[];
+	is_grouped: boolean;
+	is_edited: boolean;
+	priority: boolean;
+	source_commit_message: string | undefined;
+	is_original: boolean;
+	platform_order: number;
+	posting_summary: {
+		platform: string;
+		total_posted: number;
+		total_planned: number;
+		is_complete: boolean;
+		remaining: number;
+		integration_details: any[];
+	};
+	tone?: string;
+	// Platform derived from the API structure
 	platform: Platform;
+}
+
+export interface PlatformPosts {
+	posts: PostItem[];
+	count: number;
+	original_post_id: string;
+	platform_display: string;
+	has_scheduled: boolean;
+	has_published: boolean;
+	has_drafted: boolean;
+}
+
+export interface Repository {
+	id: string;
+	name: string;
+	full_name: string;
 }
 
 export interface PostGroup {
 	group_id: string;
+	group_name: string;
+	group_description: string;
+	posts: {
+		[key: string]: PlatformPosts; // twitter, discord, linkedin, etc.
+	};
+	latest_created_at: string;
+	total_posts: number;
+	platforms: string[];
+	source_commit_message: string | undefined;
+	repository: Repository;
+}
+
+// Flattened interface for easier component usage
+export interface FlattenedPostGroup {
+	group_id: string;
+	group_name: string;
+	group_description: string;
 	posts: PostItem[];
 	latest_created_at: string;
+	total_posts: number;
+	platforms: string[];
+	source_commit_message: string | undefined;
+	repository: Repository;
+}
+
+export interface CloudinaryUploadResult {
+	url: string;
+	width: number;
+	bytes: number;
+	format: string;
+	height: number;
+	public_id: string;
+	secure_url: string;
+}
+
+export interface UploadState {
+	id: string;
+	file: File;
+	progress?: number;
+	previewUrl: string;
+	cloudinaryUrl?: string;
+	status: "uploading" | "completed" | "failed";
 }
