@@ -36,44 +36,22 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 							access: response.data.access,
 							refresh: response.data.refresh,
 
-							// Existing fields
+							// Updated fields to match new backend structure
 							plan: response.data.user?.plan,
 							bio: response.data.user?.bio ?? null,
 							email: response.data.user?.email ?? null,
+							profile: response.data.user?.profile ?? null,
 							new_user: response.data.user?.new_user ?? true,
 							last_name: response.data.user?.last_name ?? null,
 							first_name: response.data.user?.first_name ?? null,
 							preferences: response.data.user?.preferences ?? null,
-							subscription_status: response.data.user?.subscription_status,
 							github_connected: response.data.user?.github_connected ?? false,
 							google_connected: response.data.user?.google_connected ?? false,
-							subscription_end_date:
-								response.data.user?.subscription_end_date ?? undefined,
-
-							// NEW FIELDS FOR ENHANCED SUBSCRIPTION MANAGEMENT
-							subscription_start_date:
-								response.data.user?.subscription_start_date ?? undefined,
 							paddle_subscription_id:
 								response.data.user?.paddle_subscription_id ?? null,
-							billing_interval: response.data.user?.billing_interval ?? null,
-							current_price_id: response.data.user?.current_price_id ?? null,
-							pending_plan_change:
-								response.data.user?.pending_plan_change ?? null,
-							pending_plan_effective_date:
-								response.data.user?.pending_plan_effective_date ?? undefined,
-							payment_grace_period_end:
-								response.data.user?.payment_grace_period_end ?? undefined,
-							last_successful_payment:
-								response.data.user?.last_successful_payment ?? undefined,
-							payment_retry_count: response.data.user?.payment_retry_count ?? 0,
-
-							// HELPER FLAGS
-							has_active_subscription:
-								response.data.user?.has_active_subscription ?? false,
-							is_in_grace_period:
-								response.data.user?.is_in_grace_period ?? false,
-							current_billing_type:
-								response.data.user?.current_billing_type ?? null,
+							stripe_subscription_id:
+								response.data.user?.stripe_subscription_id ?? null,
+							credits: response.data.user?.credits ?? 0,
 
 							type: "magic",
 						};
@@ -135,41 +113,23 @@ export const { handlers, signOut, signIn, auth, unstable_update } = NextAuth({
 						// @ts-ignore
 						refreshToken: userData.refresh,
 						user: {
-							// Existing fields
+							// Updated fields to match new backend structure
 							bio: userData.bio,
 							type: userData.type,
 							plan: userData.plan,
 							email: userData.email,
 							access: userData.access,
 							refresh: userData.refresh,
+							profile: userData.profile,
 							new_user: userData.new_user,
 							last_name: userData.last_name,
 							first_name: userData.first_name,
 							preferences: userData.preferences,
 							github_connected: userData.github_connected,
 							google_connected: userData.google_connected,
-							subscription_status: userData?.subscription_status,
-							subscription_end_date:
-								userData?.subscription_end_date ?? undefined,
-
-							// NEW FIELDS
-							subscription_start_date:
-								userData?.subscription_start_date ?? undefined,
-							paddle_subscription_id: userData?.paddle_subscription_id ?? null,
-							billing_interval: userData?.billing_interval ?? null,
-							current_price_id: userData?.current_price_id ?? null,
-							pending_plan_change: userData?.pending_plan_change ?? null,
-							pending_plan_effective_date:
-								userData?.pending_plan_effective_date ?? undefined,
-							payment_grace_period_end:
-								userData?.payment_grace_period_end ?? undefined,
-							last_successful_payment:
-								userData?.last_successful_payment ?? undefined,
-							payment_retry_count: userData?.payment_retry_count ?? 0,
-							has_active_subscription:
-								userData?.has_active_subscription ?? false,
-							is_in_grace_period: userData?.is_in_grace_period ?? false,
-							current_billing_type: userData?.current_billing_type ?? null,
+							paddle_subscription_id: userData.paddle_subscription_id,
+							stripe_subscription_id: userData.stripe_subscription_id,
+							credits: userData.credits,
 						},
 					};
 				} else {
