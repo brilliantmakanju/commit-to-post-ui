@@ -24,7 +24,7 @@ export async function getBaseUrl(): Promise<string> {
 			domainWithPort =
 				process.env.NODE_ENV === "development"
 					? `http://${orgDomain}:8000`
-					: `http://${orgDomain}:8000`;
+					: `https://${orgDomain}`;
 		}
 
 		// Return the first available URL: the constructed domain, an environment variable, or localhost.
