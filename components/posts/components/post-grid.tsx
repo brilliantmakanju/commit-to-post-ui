@@ -1,24 +1,65 @@
 /* eslint-disable import/no-unresolved */
+import { useMemo } from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
+import { useCreatePostModal } from "@/hooks/core/use-createpost-modal";
 import { cn } from "@/lib/utils";
-import type { PostGroup } from "@/types";
+import type { FlattenedPostGroup, PostItem } from "@/types";
 
 import { getLayoutConfig } from "../utils/post-utils";
 import PostCard from "./post-card";
 
 interface PostGridProps {
-	group: PostGroup;
-	onPostClick: (postId: string) => void;
-	onShowMoreClick: () => void;
+	group: FlattenedPostGroup;
 }
 
-export default function PostGrid({
-	group,
-	onPostClick,
-	onShowMoreClick,
-}: PostGridProps) {
-	const layoutConfig = getLayoutConfig(group.posts.length);
-	const postsToShow = group.posts.slice(0, layoutConfig.visiblePosts);
+export default function PostGrid({ group }: PostGridProps) {
+	// Group posts by platform and select the most relevant one per platform
+	const representativePosts = useMemo(() => {
+		const postsByPlatform = new Map<string, PostItem[]>();
+
+		// Group posts by platform
+		group.posts.forEach(post => {
+			const platform = post.platform;
+			if (!postsByPlatform.has(platform)) {
+				postsByPlatform.set(platform, []);
+			}
+			postsByPlatform.get(platform)!.push(post);
+		});
+
+		// Select the most relevant post per platform
+		const selected: PostItem[] = [];
+		postsByPlatform.forEach((posts, platform) => {
+			let selectedPost = posts[0]; // Default fallback
+
+			// Priority 1: Published posts
+			const publishedPosts = posts.filter(p => p.status === "published");
+			if (publishedPosts.length > 0) {
+				selectedPost = publishedPosts[0];
+			}
+			// Priority 2: Scheduled posts (if no published)
+			else {
+				const scheduledPosts = posts.filter(p => p.status === "scheduled");
+				if (scheduledPosts.length > 0) {
+					selectedPost = scheduledPosts[0];
+				}
+				// Priority 3: Original post (if no published/scheduled)
+				else {
+					const originalPosts = posts.filter(p => p.is_original === true);
+					selectedPost = originalPosts.length > 0 ? originalPosts[0] : posts[0];
+				}
+			}
+
+			selected.push(selectedPost);
+		});
+
+		return selected;
+	}, [group.posts]);
+
+	const { openCreatePostModal } = useCreatePostModal();
+
+	const layoutConfig = getLayoutConfig(representativePosts.length);
+	const postsToShow = representativePosts.slice(0, layoutConfig.visiblePosts);
 
 	return (
 		<Card
@@ -34,13 +75,22 @@ export default function PostGrid({
 					)}
 				>
 					{postsToShow.map((post, index) => (
-						<PostCard
-							key={`${post.id}_${index}`}
-							post={post}
-							index={index}
-							onClick={onPostClick}
-						/>
+						<div
+							onClick={() => {
+								openCreatePostModal({
+									platform:
+										(post.platform as "linkedin") || "twitter" || "discord",
+									posts: group.posts,
+									selectedPost: post,
+								});
+							}}
+							key={`${post.id}+${post.created_at}_${index}_${post.source_commit_message}`}
+							className="h-full w-full border-none bg-transparent"
+						>
+							<PostCard post={post} index={index} />
+						</div>
 					))}
+					{/* 					
 					{layoutConfig.showOverlay && (
 						<div
 							onClick={onShowMoreClick}
@@ -53,7 +103,7 @@ export default function PostGrid({
 								Show More
 							</div>
 						</div>
-					)}
+					)} */}
 				</div>
 			</CardContent>
 		</Card>

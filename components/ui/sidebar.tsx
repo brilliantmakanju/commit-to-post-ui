@@ -244,7 +244,7 @@ const Sidebar = React.forwardRef<
 				/>
 				<div
 					className={cn(
-						"fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+						"sticky inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
 						side === "left"
 							? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
 							: "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -312,12 +312,26 @@ const SidebarRail = React.forwardRef<
 			onClick={toggleSidebar}
 			title="Toggle Sidebar"
 			className={cn(
-				"absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
-				"[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
-				"[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-				"group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
+				// Base positioning and size
+				"absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear sm:flex",
+
+				// Side positioning
+				"group-data-[side=left]:-right-4 group-data-[side=right]:left-0",
+
+				// Cursor styles - simple pointer
+				"cursor-pointer",
+
+				// Invisible by default, no background colors or borders
+				"bg-transparent hover:bg-transparent",
+
+				// Remove the after pseudo-element that shows the line
+				// Just keep it completely invisible and non-disturbing
+
+				// Offcanvas positioning adjustments
+				"group-data-[collapsible=offcanvas]:translate-x-0",
 				"[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
 				"[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+
 				className,
 			)}
 			{...props}
@@ -326,6 +340,73 @@ const SidebarRail = React.forwardRef<
 });
 SidebarRail.displayName = "SidebarRail";
 
+// Alternative version with minimal hover feedback (optional)
+const SidebarRailMinimal = React.forwardRef<
+	HTMLButtonElement,
+	React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
+	const { toggleSidebar } = useSidebar();
+
+	return (
+		<button
+			ref={ref}
+			data-sidebar="rail"
+			aria-label="Toggle Sidebar"
+			tabIndex={-1}
+			onClick={toggleSidebar}
+			title="Toggle Sidebar"
+			className={cn(
+				// Base setup - completely invisible clickable area
+				"absolute inset-y-0 z-20 hidden w-6 -translate-x-1/2 sm:flex",
+				"group-data-[side=left]:-right-6 group-data-[side=right]:left-0",
+
+				// Completely transparent and non-disturbing
+				"cursor-pointer bg-transparent",
+
+				// Optional: Very subtle hover effect (only if you want minimal feedback)
+				// "hover:bg-black/5 hover:backdrop-blur-sm",
+
+				// Offcanvas adjustments
+				"group-data-[collapsible=offcanvas]:translate-x-0",
+				"[[data-side=left][data-collapsible=offcanvas]_&]:-right-3",
+				"[[data-side=right][data-collapsible=offcanvas]_&]:-left-3",
+
+				className,
+			)}
+			{...props}
+		/>
+	);
+});
+SidebarRailMinimal.displayName = "SidebarRailMinimal";
+
+// Super minimal version - just a clickable invisible area
+const SidebarRailInvisible = React.forwardRef<
+	HTMLButtonElement,
+	React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
+	const { toggleSidebar } = useSidebar();
+
+	return (
+		<button
+			ref={ref}
+			data-sidebar="rail"
+			aria-label="Toggle Sidebar"
+			tabIndex={-1}
+			onClick={toggleSidebar}
+			title="Toggle Sidebar"
+			className={cn(
+				// Simple invisible clickable edge
+				"absolute inset-y-0 z-20 hidden w-8 sm:flex",
+				"group-data-[side=left]:-right-8 group-data-[side=right]:-left-8",
+				"cursor-pointer bg-transparent",
+				"group-data-[collapsible=offcanvas]:translate-x-0",
+				className,
+			)}
+			{...props}
+		/>
+	);
+});
+SidebarRailInvisible.displayName = "SidebarRailInvisible";
 const SidebarInset = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"main">

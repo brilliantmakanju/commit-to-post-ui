@@ -5,16 +5,12 @@ import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FaGithub } from "react-icons/fa";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Header } from "@/components/general/micro/header";
 import { AddRepositoryModal } from "@/components/repositories/add-repo";
 import { RepositoryCard } from "@/components/repositories/repo-card";
 import { RepositoryFilter } from "@/components/repositories/repo-filter";
 import { Button } from "@/components/ui/button";
 import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 
 interface SocialIntegration {
 	id: string;
@@ -88,17 +84,7 @@ export default function RepositoriesPage() {
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [viewMode, setViewMode] = useState<"grid" | "stacked">("grid");
 	const [sortBy, setSortBy] = useState<"name" | "latest" | "oldest">("latest");
-	const { repositories, isLoadingRepos, totalRepositories } =
-		useRetrieveConnectedRepos();
-
-	const repoCount = totalRepositories;
-
-	const repoLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: repoCount,
-		limitType: "repositories",
-		limitId: FEATURE_LIMITS.REPOSITORIES,
-	});
+	const { repositories, isLoadingRepos } = useRetrieveConnectedRepos();
 
 	const filteredRepositories = useMemo(() => {
 		if (!repositories) return [];
@@ -171,43 +157,13 @@ export default function RepositoriesPage() {
 							</p>
 						</div>
 						{!searchQuery && (
-							<FeatureLimitWrapper
-								currentCount={repoCount}
-								limitId={FEATURE_LIMITS.REPOSITORIES}
-								fallback={
-									<LimitTooltip
-										maxLimit={repoLimitUI.limit}
-										currentUsage={repoCount}
-										limitType="repositories"
-										position="bottom"
-									>
-										<div className="inline-block cursor-pointer">
-											<Button
-												disabled
-												className="bg-white text-black transition-colors hover:bg-zinc-200"
-											>
-												<Plus className="mr-2 h-4 w-4" />
-												Add Repository
-											</Button>
-										</div>
-									</LimitTooltip>
-								}
+							<Button
+								onClick={() => setIsAddModalOpen(true)}
+								className="bg-white text-black transition-colors hover:bg-zinc-200"
 							>
-								<LimitTooltip
-									maxLimit={repoLimitUI.limit}
-									limitType="repositories"
-									currentUsage={repoCount}
-									position="bottom"
-								>
-									<Button
-										onClick={() => setIsAddModalOpen(true)}
-										className="bg-white text-black transition-colors hover:bg-zinc-200"
-									>
-										<Plus className="mr-2 h-4 w-4" />
-										Add Repository
-									</Button>
-								</LimitTooltip>
-							</FeatureLimitWrapper>
+								<Plus className="mr-2 h-4 w-4" />
+								Add Repository
+							</Button>
 						)}
 					</div>
 				</div>
@@ -237,43 +193,13 @@ export default function RepositoriesPage() {
 				heading="Repositories"
 				text="Manage your connected Git repositories"
 			>
-				<FeatureLimitWrapper
-					limitId={FEATURE_LIMITS.REPOSITORIES}
-					currentCount={repoCount}
-					fallback={
-						<LimitTooltip
-							maxLimit={repoLimitUI.limit}
-							currentUsage={repoCount}
-							limitType="repositories"
-							position="bottom"
-						>
-							<div className="inline-block cursor-pointer">
-								<Button
-									disabled
-									className="bg-white text-black transition-colors hover:bg-zinc-200"
-								>
-									<Plus className="mr-2 h-4 w-4" />
-									Add Repository
-								</Button>
-							</div>
-						</LimitTooltip>
-					}
+				<Button
+					onClick={() => setIsAddModalOpen(true)}
+					className="bg-white text-black transition-colors hover:bg-zinc-200"
 				>
-					<LimitTooltip
-						maxLimit={repoLimitUI.limit}
-						limitType="repositories"
-						currentUsage={repoCount}
-						position="bottom"
-					>
-						<Button
-							onClick={() => setIsAddModalOpen(true)}
-							className="bg-white text-black transition-colors hover:bg-zinc-200"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							Add Repository
-						</Button>
-					</LimitTooltip>
-				</FeatureLimitWrapper>
+					<Plus className="mr-2 h-4 w-4" />
+					Add Repository
+				</Button>
 			</Header>
 
 			<RepositoryFilter

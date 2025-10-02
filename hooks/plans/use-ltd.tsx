@@ -4,27 +4,26 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-import { hasLifetimeAccess } from "@/lib/utils/check-plan";
 import useUserStore from "@/zustand/useuser-store";
 
+// NEW: Credit-based lifetime access check
 export function useLifetimeAccess() {
 	const [lifetimeAccess, setLifetimeAccess] = useState(false);
-	const { data: userDetails, status } = useSession();
+	const { status } = useSession();
 	const userStore = useUserStore();
 
 	useEffect(() => {
 		const checkLifetimeAccess = async () => {
 			if (status === "authenticated") {
-				const hasAccess = await hasLifetimeAccess(
-					userStore.plan,
-					userDetails?.user.plan,
-				);
-				setLifetimeAccess(hasAccess);
+				// NEW: Check lifetime access based on plan and credits
+				const isLtdPlan = userStore.plan === "ltd";
+				const hasCredits = (userStore.credits ?? 0) > 0;
+				setLifetimeAccess(isLtdPlan && hasCredits);
 			}
 		};
 
 		checkLifetimeAccess();
-	}, [userDetails, userStore.plan, status]);
+	}, [userStore.plan, userStore.credits, status]);
 
 	return lifetimeAccess;
 }

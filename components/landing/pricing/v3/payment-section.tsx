@@ -297,142 +297,142 @@ const getTooltipMessage = (
 };
 
 export default function PricingSection() {
-	const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
-		"annual",
-	);
-	const userStore = useUserStore();
-	console.log(userStore.plan, "UserStore");
-	const { open: openPlanSelector } = usePlanSelectorStore();
+	// const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+	// 	"annual",
+	// );
+	// const userStore = useUserStore();
+	// console.log(userStore.plan, "UserStore");
+	// const { open: openPlanSelector } = usePlanSelectorStore();
 
-	// Normalize and validate user plan type and billing interval
-	const userPlanType = userStore?.plan?.toLowerCase().trim() as
-		| PlanType
-		| undefined;
+	// // Normalize and validate user plan type and billing interval
+	// const userPlanType = userStore?.plan?.toLowerCase().trim() as
+	// 	| PlanType
+	// 	| undefined;
 
-	const userBillingInterval = normalizeBillingInterval(
-		userStore?.billing_interval,
-	);
+	// const userBillingInterval = normalizeBillingInterval(
+	// 	userStore?.billing_interval,
+	// );
 
-	const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
+	// const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
-	// Check if user is authenticated
-	const isAuthenticated = Boolean(userStore?.email);
+	// // Check if user is authenticated
+	// const isAuthenticated = Boolean(userStore?.email);
 
-	// Check if user has active subscription (Paddle or Stripe)
-	const hasActiveSubscription = Boolean(
-		userStore?.paddle_subscription_id ||
-			userStore?.stripe_subscription_id ||
-			userStore?.has_active_subscription ||
-			userStore?.subscription_status === "active",
-	);
+	// // Check if user has active subscription (Paddle or Stripe)
+	// const hasActiveSubscription = Boolean(
+	// 	userStore?.paddle_subscription_id ||
+	// 		userStore?.stripe_subscription_id ||
+	// 		userStore?.has_active_subscription ||
+	// 		userStore?.subscription_status === "active",
+	// );
 
-	// Check if user has subscription ID (either Paddle or Stripe)
-	const hasSubscriptionId = Boolean(
-		userStore?.paddle_subscription_id || userStore?.stripe_subscription_id,
-	);
+	// // Check if user has subscription ID (either Paddle or Stripe)
+	// const hasSubscriptionId = Boolean(
+	// 	userStore?.paddle_subscription_id || userStore?.stripe_subscription_id,
+	// );
 
-	// Sort plans to ensure popular plan is in the middle
-	const sortedPlans: Plan[] = [...pricingData.plans].sort((planA, planB) => {
-		// Free plan first
-		if (isFreePlan(planA.name)) return -1;
-		if (isFreePlan(planB.name)) return 1;
-		// Popular plan in the middle (second position)
-		if (planA.popular && !planB.popular) return 0;
-		if (!planA.popular && planB.popular) return 1;
-		return 0;
-	});
+	// // Sort plans to ensure popular plan is in the middle
+	// const sortedPlans: Plan[] = [...pricingData.plans].sort((planA, planB) => {
+	// 	// Free plan first
+	// 	if (isFreePlan(planA.name)) return -1;
+	// 	if (isFreePlan(planB.name)) return 1;
+	// 	// Popular plan in the middle (second position)
+	// 	if (planA.popular && !planB.popular) return 0;
+	// 	if (!planA.popular && planB.popular) return 1;
+	// 	return 0;
+	// });
 
-	useEffect(() => {
-		const timers = new Map<string, NodeJS.Timeout>();
+	// useEffect(() => {
+	// 	const timers = new Map<string, NodeJS.Timeout>();
 
-		pricingData.plans.forEach((plan: Plan) => {
-			if (plan.lifetime?.endsIn) {
-				setTimeLeft(previousTimeLeft => ({
-					...previousTimeLeft,
-					[plan.name]: plan.lifetime!.endsIn * 60 * 60,
-				}));
+	// 	pricingData.plans.forEach((plan: Plan) => {
+	// 		if (plan.lifetime?.endsIn) {
+	// 			setTimeLeft(previousTimeLeft => ({
+	// 				...previousTimeLeft,
+	// 				[plan.name]: plan.lifetime!.endsIn * 60 * 60,
+	// 			}));
 
-				const timerId = setInterval(() => {
-					setTimeLeft(previousTimeLeft => ({
-						...previousTimeLeft,
-						[plan.name]: Math.max(0, (previousTimeLeft[plan.name] || 0) - 1),
-					}));
-				}, 1000);
+	// 			const timerId = setInterval(() => {
+	// 				setTimeLeft(previousTimeLeft => ({
+	// 					...previousTimeLeft,
+	// 					[plan.name]: Math.max(0, (previousTimeLeft[plan.name] || 0) - 1),
+	// 				}));
+	// 			}, 1000);
 
-				timers.set(plan.name, timerId);
-			}
-		});
+	// 			timers.set(plan.name, timerId);
+	// 		}
+	// 	});
 
-		return () => {
-			timers.forEach(timerId => clearInterval(timerId));
-		};
-	}, []);
+	// 	return () => {
+	// 		timers.forEach(timerId => clearInterval(timerId));
+	// 	};
+	// }, []);
 
-	const getProductId = (plan: Plan): string => {
-		if (plan.name === "Lifetime Deal" && plan.lifetime) {
-			return plan.lifetime.productId;
-		}
-		return plan.price.productIds[billingCycle];
-	};
+	// const getProductId = (plan: Plan): string => {
+	// 	if (plan.name === "Lifetime Deal" && plan.lifetime) {
+	// 		return plan.lifetime.productId;
+	// 	}
+	// 	return plan.price.productIds[billingCycle];
+	// };
 
-	const handlePlanAction = (
-		plan: Plan,
-		relationship: "current" | "upgrade" | "downgrade" | "switch-interval",
-	) => {
-		const isFree = isFreePlan(plan.name);
+	// const handlePlanAction = (
+	// 	plan: Plan,
+	// 	relationship: "current" | "upgrade" | "downgrade" | "switch-interval",
+	// ) => {
+	// 	const isFree = isFreePlan(plan.name);
 
-		// Don't do anything for current plan
-		if (relationship === "current") {
-			return;
-		}
+	// 	// Don't do anything for current plan
+	// 	if (relationship === "current") {
+	// 		return;
+	// 	}
 
-		// For free plans, always use Paddle checkout (handled by PaddleCheckout component)
-		if (isFree && !hasActiveSubscription) {
-			return;
-		}
+	// 	// For free plans, always use Paddle checkout (handled by PaddleCheckout component)
+	// 	if (isFree && !hasActiveSubscription) {
+	// 		return;
+	// 	}
 
-		// If user has subscription ID, use plan selector for upgrades/downgrades/switches
-		if (hasSubscriptionId && userStore?.plan && isAuthenticated) {
-			const currentBillingInterval = userBillingInterval;
+	// 	// If user has subscription ID, use plan selector for upgrades/downgrades/switches
+	// 	if (hasSubscriptionId && userStore?.plan && isAuthenticated) {
+	// 		const currentBillingInterval = userBillingInterval;
 
-			switch (relationship) {
-				case "upgrade": {
-					openPlanSelector(
-						"upgrade",
-						userStore.plan.toLowerCase(),
-						currentBillingInterval,
-					);
+	// 		switch (relationship) {
+	// 			case "upgrade": {
+	// 				openPlanSelector(
+	// 					"upgrade",
+	// 					userStore.plan.toLowerCase(),
+	// 					currentBillingInterval,
+	// 				);
 
-					break;
-				}
-				case "downgrade": {
-					openPlanSelector(
-						"downgrade",
-						userStore.plan.toLowerCase(),
-						currentBillingInterval,
-					);
+	// 				break;
+	// 			}
+	// 			case "downgrade": {
+	// 				openPlanSelector(
+	// 					"downgrade",
+	// 					userStore.plan.toLowerCase(),
+	// 					currentBillingInterval,
+	// 				);
 
-					break;
-				}
-				case "switch-interval": {
-					// For interval switches, we might need a different action
-					// You can implement this based on your plan selector capabilities
-					openPlanSelector(
-						"switch-interval" as any, // Type assertion if needed
-						userStore.plan.toLowerCase(),
-						billingCycle, // Target billing cycle
-					);
+	// 				break;
+	// 			}
+	// 			case "switch-interval": {
+	// 				// For interval switches, we might need a different action
+	// 				// You can implement this based on your plan selector capabilities
+	// 				openPlanSelector(
+	// 					"switch-interval" as any, // Type assertion if needed
+	// 					userStore.plan.toLowerCase(),
+	// 					billingCycle, // Target billing cycle
+	// 				);
 
-					break;
-				}
-				// No default
-			}
-			return;
-		}
+	// 				break;
+	// 			}
+	// 			// No default
+	// 		}
+	// 		return;
+	// 	}
 
-		// For authenticated users without subscription IDs, or unauthenticated users
-		// Use Paddle checkout (handled by PaddleCheckout component)
-	};
+	// 	// For authenticated users without subscription IDs, or unauthenticated users
+	// 	// Use Paddle checkout (handled by PaddleCheckout component)
+	// };
 
 	return (
 		<section className="mb-[100px] w-full py-10">
@@ -448,283 +448,282 @@ export default function PricingSection() {
 						{pricingData.title}
 					</h2>
 				</div>
-
-				{/* Billing Toggle */}
-				<div className="mb-16 flex justify-center">
-					<div className="relative inline-flex items-center rounded-full border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-900">
-						<button
-							onClick={() => setBillingCycle("monthly")}
-							className={cn(
-								"relative rounded-full px-6 py-2 text-sm font-medium transition-all duration-200",
-								billingCycle === "monthly"
-									? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
-									: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
-							)}
-						>
-							Monthly
-						</button>
-						<button
-							onClick={() => setBillingCycle("annual")}
-							className={cn(
-								"relative flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium transition-all duration-200",
-								billingCycle === "annual"
-									? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
-									: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
-							)}
-						>
-							Yearly
-						</button>
-					</div>
-				</div>
-
-				{/* Pricing Cards */}
-				<div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-					{sortedPlans.map((plan: Plan, index: number) => {
-						const isPro = plan.popular;
-						const productId = getProductId(plan);
-						const isFree = isFreePlan(plan.name);
-						const currentPrice =
-							billingCycle === "monthly"
-								? plan.price.monthly
-								: plan.price.annual;
-						const previousPrice = plan.price.previous?.[billingCycle];
-						const displayPrice =
-							billingCycle === "annual" && !isFree
-								? calculateMonthlyPrice(currentPrice)
-								: currentPrice;
-						const billedPrice =
-							billingCycle === "annual" && !isFree ? currentPrice : 0;
-						const { dollars, cents } = formatPrice(isFree ? 0 : displayPrice);
-
-						// Enhanced relationship detection considering billing interval
-						const relationship = userPlanType
-							? getPlanRelationship(
-									userPlanType,
-									userBillingInterval,
-									plan.name.toLowerCase(),
-									billingCycle,
-								)
-							: "upgrade";
-
-						// Get button configuration based on relationship
-						const buttonConfig = getButtonTextAndVariant(
-							plan,
-							userPlanType || "basic",
-							userBillingInterval,
-							billingCycle,
-							isAuthenticated ? relationship : "unauthenticated",
-							hasActiveSubscription,
-							hasSubscriptionId,
-							isAuthenticated,
-						);
-
-						// Get tooltip message
-						const tooltipMessage = getTooltipMessage(
-							relationship,
-							plan.name,
-							billingCycle,
-							isFree,
-							hasSubscriptionId,
-							isAuthenticated,
-						);
-
-						// Determine if we should use plan selector vs paddle checkout
-						const shouldUsePlanSelector =
-							isAuthenticated &&
-							hasSubscriptionId &&
-							!isFree &&
-							relationship !== "current";
-
-						// Enhanced current plan badge logic
-						const isCurrentPlanAndInterval =
-							relationship === "current" &&
-							isAuthenticated &&
-							userPlanType &&
-							normalizePlanName(userPlanType) ===
-								normalizePlanName(plan.name) &&
-							userBillingInterval === billingCycle;
-
-						return (
-							<Card
-								key={plan.name}
-								className={cn(
-									"relative border-0 border-none bg-transparent shadow-none transition-all duration-300",
-									isPro && "lg:scale-105",
-								)}
-							>
-								{/* Popular Badge */}
-								{isPro && (
-									<div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2 transform">
-										<div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black">
-											<Star className="h-4 w-4 fill-current" />
-											Most Popular
-										</div>
-									</div>
-								)}
-
-								<CardContent
-									className={cn(
-										"rounded-2xl border p-8 transition-all duration-300",
-										isPro
-											? "border-black bg-gray-50 shadow-lg dark:border-white dark:bg-gray-900"
-											: "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-800 dark:bg-black dark:hover:border-gray-700",
-									)}
-								>
-									{/* Plan Header */}
-									<div className="mb-4">
-										<div className="mb-3 flex items-center gap-3">
-											<h3 className="text-2xl font-medium text-black dark:text-white">
-												{plan.name === "Basic" ? "Starter" : plan.name}
-											</h3>
-											{previousPrice && (
-												<span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-													Save {calculateDiscount(previousPrice, currentPrice)}%
-												</span>
-											)}
-											{isCurrentPlanAndInterval && (
-												<span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
-													Current
-												</span>
-											)}
-											{relationship === "switch-interval" &&
-												isAuthenticated && (
-													<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-														Switch Billing
-													</span>
-												)}
-										</div>
-										<p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-											{plan.badge}
-										</p>
-									</div>
-
-									{/* Pricing */}
-									<div className="mb-5">
-										<div className="mb-2 flex items-baseline gap-2">
-											<div className="flex items-baseline">
-												<span className="text-5xl font-light text-black dark:text-white">
-													${dollars}
-												</span>
-												<span className="text-2xl font-light text-gray-600 dark:text-gray-400">
-													.{cents}
-												</span>
-											</div>
-											{previousPrice && (
-												<span className="text-xl font-light text-gray-400 line-through dark:text-gray-600">
-													${previousPrice.toFixed(2)}
-												</span>
-											)}
-											<span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
-												/month
-											</span>
-										</div>
-
-										{billedPrice > 0 && (
-											<p className="text-sm text-gray-500 dark:text-gray-400">
-												Billed as ${billedPrice.toFixed(2)}/year
-											</p>
-										)}
-
-										{billingCycle === "annual" && !isFree && (
-											<p className="text-sm font-medium text-green-600 dark:text-green-400">
-												Save $
-												{(
-													((plan.price.monthly * 12 - currentPrice) * 100) /
-													100
-												).toFixed(2)}{" "}
-												with yearly pricing
-											</p>
-										)}
-
-										<p className="text-sm text-gray-500 dark:text-gray-400">
-											{isFree ? "Forever free" : "Taxes calculated at checkout"}
-										</p>
-									</div>
-
-									{/* CTA Button */}
-									{shouldUsePlanSelector ? (
-										<Button
-											variant={buttonConfig.variant}
-											className={cn(
-												"mb-8 w-full py-3",
-												buttonConfig.variant === "outline"
-													? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
-													: "",
-											)}
-											disabled={buttonConfig.disabled}
-											onClick={() => handlePlanAction(plan, relationship)}
-										>
-											{buttonConfig.icon}
-											{buttonConfig.text}
-										</Button>
-									) : (
-										<PaddleCheckout
-											locale="en"
-											theme="light"
-											displayMode="overlay"
-											environment={
-												process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
-													| "sandbox"
-													| "production"
-											}
-											productId={productId}
-											tooltipMessage={tooltipMessage}
-											forceDisabled={buttonConfig.disabled}
-											disabledReason={
-												relationship === "current" ? "current-plan" : undefined
-											}
-										>
-											<Button
-												variant={buttonConfig.variant}
-												className={cn(
-													"mb-8 w-full py-3",
-													buttonConfig.variant === "outline"
-														? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
-														: "",
-												)}
-												disabled={buttonConfig.disabled}
-											>
-												{buttonConfig.icon}
-												{buttonConfig.text}
-											</Button>
-										</PaddleCheckout>
-									)}
-
-									{/* Features */}
-									<div className="-mt-2 space-y-4">
-										{plan.features.map(
-											(feature: string | PlanFeature, featureIndex: Key) => {
-												const featureName =
-													typeof feature === "string" ? feature : feature.name;
-												const isAvailable =
-													typeof feature === "string"
-														? true
-														: feature.available;
-
-												if (!isAvailable) return;
-
-												return (
-													<div
-														key={featureIndex}
-														className="flex items-start gap-3"
-													>
-														<div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black dark:bg-white">
-															<Check className="h-3 w-3 text-white dark:text-black" />
-														</div>
-														<span className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-															{featureName}
-														</span>
-													</div>
-												);
-											},
-										)}
-									</div>
-								</CardContent>
-							</Card>
-						);
-					})}
-				</div>
 			</div>
 		</section>
 	);
 }
+// {/* Billing Toggle */}
+// <div className="mb-16 flex justify-center">
+// 	<div className="relative inline-flex items-center rounded-full border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-900">
+// 		<button
+// 			onClick={() => setBillingCycle("monthly")}
+// 			className={cn(
+// 				"relative rounded-full px-6 py-2 text-sm font-medium transition-all duration-200",
+// 				billingCycle === "monthly"
+// 					? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
+// 					: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+// 			)}
+// 		>
+// 			Monthly
+// 		</button>
+// 		<button
+// 			onClick={() => setBillingCycle("annual")}
+// 			className={cn(
+// 				"relative flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium transition-all duration-200",
+// 				billingCycle === "annual"
+// 					? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
+// 					: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+// 			)}
+// 		>
+// 			Yearly
+// 		</button>
+// 	</div>
+// </div>
+
+// {/* Pricing Cards */}
+// <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+// 	{sortedPlans.map((plan: Plan, index: number) => {
+// 		const isPro = plan.popular;
+// 		const productId = getProductId(plan);
+// 		const isFree = isFreePlan(plan.name);
+// 		const currentPrice =
+// 			billingCycle === "monthly"
+// 				? plan.price.monthly
+// 				: plan.price.annual;
+// 		const previousPrice = plan.price.previous?.[billingCycle];
+// 		const displayPrice =
+// 			billingCycle === "annual" && !isFree
+// 				? calculateMonthlyPrice(currentPrice)
+// 				: currentPrice;
+// 		const billedPrice =
+// 			billingCycle === "annual" && !isFree ? currentPrice : 0;
+// 		const { dollars, cents } = formatPrice(isFree ? 0 : displayPrice);
+
+// 		// Enhanced relationship detection considering billing interval
+// 		const relationship = userPlanType
+// 			? getPlanRelationship(
+// 					userPlanType,
+// 					userBillingInterval,
+// 					plan.name.toLowerCase(),
+// 					billingCycle,
+// 				)
+// 			: "upgrade";
+
+// 		// Get button configuration based on relationship
+// 		const buttonConfig = getButtonTextAndVariant(
+// 			plan,
+// 			userPlanType || "basic",
+// 			userBillingInterval,
+// 			billingCycle,
+// 			isAuthenticated ? relationship : "unauthenticated",
+// 			hasActiveSubscription,
+// 			hasSubscriptionId,
+// 			isAuthenticated,
+// 		);
+
+// 		// Get tooltip message
+// 		const tooltipMessage = getTooltipMessage(
+// 			relationship,
+// 			plan.name,
+// 			billingCycle,
+// 			isFree,
+// 			hasSubscriptionId,
+// 			isAuthenticated,
+// 		);
+
+// 		// Determine if we should use plan selector vs paddle checkout
+// 		const shouldUsePlanSelector =
+// 			isAuthenticated &&
+// 			hasSubscriptionId &&
+// 			!isFree &&
+// 			relationship !== "current";
+
+// 		// Enhanced current plan badge logic
+// 		const isCurrentPlanAndInterval =
+// 			relationship === "current" &&
+// 			isAuthenticated &&
+// 			userPlanType &&
+// 			normalizePlanName(userPlanType) ===
+// 				normalizePlanName(plan.name) &&
+// 			userBillingInterval === billingCycle;
+
+// 		return (
+// 			<Card
+// 				key={plan.name}
+// 				className={cn(
+// 					"relative border-0 border-none bg-transparent shadow-none transition-all duration-300",
+// 					isPro && "lg:scale-105",
+// 				)}
+// 			>
+// 				{/* Popular Badge */}
+// 				{isPro && (
+// 					<div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2 transform">
+// 						<div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black">
+// 							<Star className="h-4 w-4 fill-current" />
+// 							Most Popular
+// 						</div>
+// 					</div>
+// 				)}
+
+// 				<CardContent
+// 					className={cn(
+// 						"rounded-2xl border p-8 transition-all duration-300",
+// 						isPro
+// 							? "border-black bg-gray-50 shadow-lg dark:border-white dark:bg-gray-900"
+// 							: "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-800 dark:bg-black dark:hover:border-gray-700",
+// 					)}
+// 				>
+// 					{/* Plan Header */}
+// 					<div className="mb-4">
+// 						<div className="mb-3 flex items-center gap-3">
+// 							<h3 className="text-2xl font-medium text-black dark:text-white">
+// 								{plan.name === "Basic" ? "Starter" : plan.name}
+// 							</h3>
+// 							{previousPrice && (
+// 								<span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+// 									Save {calculateDiscount(previousPrice, currentPrice)}%
+// 								</span>
+// 							)}
+// 							{isCurrentPlanAndInterval && (
+// 								<span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
+// 									Current
+// 								</span>
+// 							)}
+// 							{relationship === "switch-interval" &&
+// 								isAuthenticated && (
+// 									<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+// 										Switch Billing
+// 									</span>
+// 								)}
+// 						</div>
+// 						<p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+// 							{plan.badge}
+// 						</p>
+// 					</div>
+
+// 					{/* Pricing */}
+// 					<div className="mb-5">
+// 						<div className="mb-2 flex items-baseline gap-2">
+// 							<div className="flex items-baseline">
+// 								<span className="text-5xl font-light text-black dark:text-white">
+// 									${dollars}
+// 								</span>
+// 								<span className="text-2xl font-light text-gray-600 dark:text-gray-400">
+// 									.{cents}
+// 								</span>
+// 							</div>
+// 							{previousPrice && (
+// 								<span className="text-xl font-light text-gray-400 line-through dark:text-gray-600">
+// 									${previousPrice.toFixed(2)}
+// 								</span>
+// 							)}
+// 							<span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
+// 								/month
+// 							</span>
+// 						</div>
+
+// 						{billedPrice > 0 && (
+// 							<p className="text-sm text-gray-500 dark:text-gray-400">
+// 								Billed as ${billedPrice.toFixed(2)}/year
+// 							</p>
+// 						)}
+
+// 						{billingCycle === "annual" && !isFree && (
+// 							<p className="text-sm font-medium text-green-600 dark:text-green-400">
+// 								Save $
+// 								{(
+// 									((plan.price.monthly * 12 - currentPrice) * 100) /
+// 									100
+// 								).toFixed(2)}{" "}
+// 								with yearly pricing
+// 							</p>
+// 						)}
+
+// 						<p className="text-sm text-gray-500 dark:text-gray-400">
+// 							{isFree ? "Forever free" : "Taxes calculated at checkout"}
+// 						</p>
+// 					</div>
+
+// 					{/* CTA Button */}
+// 					{shouldUsePlanSelector ? (
+// 						<Button
+// 							variant={buttonConfig.variant}
+// 							className={cn(
+// 								"mb-8 w-full py-3",
+// 								buttonConfig.variant === "outline"
+// 									? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
+// 									: "",
+// 							)}
+// 							disabled={buttonConfig.disabled}
+// 							onClick={() => handlePlanAction(plan, relationship)}
+// 						>
+// 							{buttonConfig.icon}
+// 							{buttonConfig.text}
+// 						</Button>
+// 					) : (
+// 						<PaddleCheckout
+// 							locale="en"
+// 							theme="light"
+// 							displayMode="overlay"
+// 							environment={
+// 								process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
+// 									| "sandbox"
+// 									| "production"
+// 							}
+// 							productId={productId}
+// 							tooltipMessage={tooltipMessage}
+// 							forceDisabled={buttonConfig.disabled}
+// 							disabledReason={
+// 								relationship === "current" ? "current-plan" : undefined
+// 							}
+// 						>
+// 							<Button
+// 								variant={buttonConfig.variant}
+// 								className={cn(
+// 									"mb-8 w-full py-3",
+// 									buttonConfig.variant === "outline"
+// 										? "border-gray-300 bg-transparent text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-900"
+// 										: "",
+// 								)}
+// 								disabled={buttonConfig.disabled}
+// 							>
+// 								{buttonConfig.icon}
+// 								{buttonConfig.text}
+// 							</Button>
+// 						</PaddleCheckout>
+// 					)}
+
+// 					{/* Features */}
+// 					<div className="-mt-2 space-y-4">
+// 						{plan.features.map(
+// 							(feature: string | PlanFeature, featureIndex: Key) => {
+// 								const featureName =
+// 									typeof feature === "string" ? feature : feature.name;
+// 								const isAvailable =
+// 									typeof feature === "string"
+// 										? true
+// 										: feature.available;
+
+// 								if (!isAvailable) return;
+
+// 								return (
+// 									<div
+// 										key={featureIndex}
+// 										className="flex items-start gap-3"
+// 									>
+// 										<div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black dark:bg-white">
+// 											<Check className="h-3 w-3 text-white dark:text-black" />
+// 										</div>
+// 										<span className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+// 											{featureName}
+// 										</span>
+// 									</div>
+// 								);
+// 							},
+// 						)}
+// 					</div>
+// 				</CardContent>
+// 			</Card>
+// 		);
+// 	})}
+// </div>

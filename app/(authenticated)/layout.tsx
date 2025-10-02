@@ -28,7 +28,7 @@ export default async function Layout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={"grid grid-cols-1 antialiased"}>
+			<body className={"grid grid-cols-1 bg-[#0A0A0A] antialiased"}>
 				<AuthenticatedLayout>{children}</AuthenticatedLayout>
 				<Analytics />
 			</body>

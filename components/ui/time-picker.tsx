@@ -24,6 +24,8 @@ interface TimePickerProps {
 	onChange?: (value: string) => void;
 	className?: string;
 	placeholder?: string;
+	inline?: boolean;
+	disabled?: boolean;
 }
 
 // Parse the time value (HH:MM format)
@@ -45,6 +47,8 @@ export function TimePicker({
 	onChange,
 	className,
 	placeholder = "Select time",
+	inline = false,
+	disabled = false,
 }: TimePickerProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const { hours, minutes } = parseTime(value || "09:00");
@@ -74,13 +78,120 @@ export function TimePicker({
 		{ value: "45", label: "45" },
 	];
 
+	// Inline time picker content (stacked layout)
+	const TimePickerContent = () => (
+		<div className="flex w-full flex-col gap-5">
+			{/* Display Selected Time */}
+			<div className="text-center">
+				<div className="text-3xl font-semibold text-white">
+					{formatTime(hours, minutes)}
+				</div>
+				<p className="mt-1 text-xs text-neutral-500">
+					Select your preferred time
+				</p>
+			</div>
+
+			{/* Hour Picker */}
+			<div className="flex flex-col gap-2">
+				<label className="text-sm text-neutral-300">Hour</label>
+				<Select
+					value={hours}
+					disabled={disabled}
+					onValueChange={newHours => handleTimeChange(newHours, minutes)}
+				>
+					<SelectTrigger className="w-full border border-neutral-700 bg-neutral-900 text-white hover:border-neutral-600 disabled:cursor-not-allowed disabled:opacity-50">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent className="max-h-60 border border-neutral-700 bg-neutral-900 text-white">
+						{hourOptions.map(option => (
+							<SelectItem
+								key={option.value}
+								value={option.value}
+								className="hover:bg-neutral-800"
+							>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{/* Minute Picker */}
+			<div className="flex flex-col gap-2">
+				<label className="text-sm text-neutral-300">Minute</label>
+				<Select
+					value={minutes}
+					disabled={disabled}
+					onValueChange={newMinutes => handleTimeChange(hours, newMinutes)}
+				>
+					<SelectTrigger className="w-full border border-neutral-700 bg-neutral-900 text-white hover:border-neutral-600 disabled:cursor-not-allowed disabled:opacity-50">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent className="border border-neutral-700 bg-neutral-900 text-white">
+						{minuteOptions.map(option => (
+							<SelectItem
+								key={option.value}
+								value={option.value}
+								className="hover:bg-neutral-800"
+							>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{/* Presets */}
+			<div className="grid grid-cols-3 gap-2 border-t border-neutral-800">
+				{[
+					{ label: "9:00 AM", value: ["09", "00"] },
+					{ label: "12:00 PM", value: ["12", "00"] },
+					{ label: "5:00 PM", value: ["17", "00"] },
+				].map(({ label, value }) => (
+					<Button
+						key={label}
+						variant="ghost"
+						size="sm"
+						disabled={disabled}
+						onClick={() => handleTimeChange(value[0], value[1])}
+						className="w-full rounded border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-white hover:bg-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						{label}
+					</Button>
+				))}
+			</div>
+
+			{/* Done Button - only show in popover mode */}
+			{!inline && (
+				<Button
+					disabled={disabled}
+					className="w-full rounded bg-white/10 text-sm font-medium text-white hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+					onClick={() => setIsOpen(false)}
+				>
+					Done
+				</Button>
+			)}
+		</div>
+	);
+
+	// Return inline version
+	if (inline) {
+		return (
+			<div className={cn("w-full", className)}>
+				<TimePickerContent />
+			</div>
+		);
+	}
+
+	// Return popover version (default)
 	return (
 		<Popover open={isOpen} onOpenChange={setIsOpen}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="outline"
+					disabled={disabled}
 					className={cn(
-						"w-full justify-start border border-zinc-700 bg-zinc-800 text-left font-normal text-white hover:bg-transparent hover:text-white",
+						"w-full justify-start border border-zinc-700 bg-zinc-800 text-left font-normal text-white hover:bg-transparent hover:text-white disabled:cursor-not-allowed disabled:opacity-50",
 						!value && "text-neutral-500",
 						className,
 					)}
@@ -94,95 +205,7 @@ export function TimePicker({
 				className="w-auto rounded-md border border-zinc-700 bg-zinc-800 p-4 shadow-xl"
 				align="start"
 			>
-				<div className="space-y-5">
-					{/* Display Selected Time */}
-					<div className="text-center">
-						<div className="text-3xl font-semibold text-white">
-							{formatTime(hours, minutes)}
-						</div>
-						<p className="mt-1 text-xs text-neutral-500">
-							Select your preferred time
-						</p>
-					</div>
-
-					{/* Hour & Minute Pickers */}
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<label className="text-sm text-neutral-300">Hour</label>
-							<Select
-								value={hours}
-								onValueChange={newHours => handleTimeChange(newHours, minutes)}
-							>
-								<SelectTrigger className="w-full border border-neutral-700 bg-neutral-900 text-white hover:border-neutral-600">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent className="max-h-60 border border-neutral-700 bg-neutral-900 text-white">
-									{hourOptions.map(option => (
-										<SelectItem
-											key={option.value}
-											value={option.value}
-											className="hover:bg-neutral-800"
-										>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						<div className="space-y-2">
-							<label className="text-sm text-neutral-300">Minute</label>
-							<Select
-								value={minutes}
-								onValueChange={newMinutes =>
-									handleTimeChange(hours, newMinutes)
-								}
-							>
-								<SelectTrigger className="w-full border border-neutral-700 bg-neutral-900 text-white hover:border-neutral-600">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent className="border border-neutral-700 bg-neutral-900 text-white">
-									{minuteOptions.map(option => (
-										<SelectItem
-											key={option.value}
-											value={option.value}
-											className="hover:bg-neutral-800"
-										>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-
-					{/* Presets */}
-					<div className="flex justify-between gap-2 border-t border-neutral-800 pt-3">
-						{[
-							{ label: "9:00 AM", value: ["09", "00"] },
-							{ label: "12:00 PM", value: ["12", "00"] },
-							{ label: "5:00 PM", value: ["17", "00"] },
-						].map(({ label, value }) => (
-							<Button
-								key={label}
-								variant="ghost"
-								size="sm"
-								onClick={() => handleTimeChange(value[0], value[1])}
-								className="rounded border border-neutral-700 bg-neutral-800 px-3 py-1 text-sm text-white hover:bg-white/20 hover:text-white"
-							>
-								{label}
-							</Button>
-						))}
-					</div>
-
-					{/* Done Button */}
-					<Button
-						className="w-full rounded bg-white/10 text-sm font-medium text-white hover:bg-white/20"
-						onClick={() => setIsOpen(false)}
-					>
-						Done
-					</Button>
-				</div>
+				<TimePickerContent />
 			</PopoverContent>
 		</Popover>
 	);

@@ -4,14 +4,10 @@
 import { Send } from "lucide-react";
 import { useEffect } from "react";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 
 interface PostingSettings {
 	posting_strategy: string;
@@ -46,13 +42,6 @@ export const RepoPostingSettingsCard = ({
 	onChange,
 	loading = true,
 }: RepoPostingSettingsCardProps) => {
-	const analyticsLimitUI = useLimitUI({
-		currentCount: 1,
-		warningThreshold: 80,
-		limitType: "analytics",
-		limitId: FEATURE_LIMITS.ADVANCED_ANALYTICS,
-	});
-
 	useEffect(() => {
 		if (
 			settings.posting_strategy === "manual" &&
@@ -144,36 +133,10 @@ export const RepoPostingSettingsCard = ({
 							Require manual approval before publishing posts
 						</p>
 					</div>
-					<FeatureLimitWrapper
-						limitId={FEATURE_LIMITS.ADVANCED_ANALYTICS}
-						currentCount={1}
-						fallback={
-							<LimitTooltip
-								position="left"
-								currentUsage={1}
-								limitType="analytics"
-								maxLimit={analyticsLimitUI.limit}
-							>
-								<div className="cursor-not-allowed opacity-50">
-									<Switch checked={false} />
-								</div>
-							</LimitTooltip>
-						}
-					>
-						<LimitTooltip
-							position="left"
-							currentUsage={1}
-							limitType="analytics"
-							maxLimit={analyticsLimitUI.limit}
-						>
-							<Switch
-								checked={settings.manual_approval}
-								onCheckedChange={checked =>
-									onChange("manual_approval", checked)
-								}
-							/>
-						</LimitTooltip>
-					</FeatureLimitWrapper>
+					<Switch
+						checked={settings.manual_approval}
+						onCheckedChange={checked => onChange("manual_approval", checked)}
+					/>
 				</div>
 				{/* )} */}
 

@@ -13,7 +13,7 @@ import {
 import { getTimeAgo } from "@/lib/get-time";
 import type { ChatMessage as ChatMessageType } from "@/zustand/chat-store";
 
-import { SocialCard } from "../landing/micro/v2/v3/social-card";
+import { SocialCard } from "../landing/micro/v3/social-card";
 
 interface ChatMessageProps {
 	message: ChatMessageType;

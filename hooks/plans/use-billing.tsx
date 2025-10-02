@@ -4,9 +4,9 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-import hasAccess from "@/lib/utils/check-plan";
 import useUserStore from "@/zustand/useuser-store";
 
+// NEW: Credit-based access check
 export function useCheckAccess() {
 	const { status } = useSession();
 	const userStore = useUserStore();
@@ -15,12 +15,9 @@ export function useCheckAccess() {
 	useEffect(() => {
 		const checkAccess = async () => {
 			if (status === "authenticated") {
-				const newBillingPlan = await hasAccess({
-					plan: userStore.plan,
-					subscription_status: userStore.subscription_status,
-					subscription_end_date: userStore.subscription_end_date,
-				});
-				setBillingPlan(newBillingPlan);
+				// NEW: Check access based on credits instead of subscription status
+				const hasCredits = (userStore.credits ?? 0) > 0;
+				setBillingPlan(hasCredits);
 			}
 		};
 

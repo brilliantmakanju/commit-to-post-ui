@@ -2,7 +2,7 @@
 "use client";
 import React, { useMemo } from "react";
 
-import { CardStack } from "@/components/landing/micro/v2/v3/social-card";
+import { CardStack } from "@/components/landing/micro/v3/social-card";
 import { ConnectedAccount, SocialAccount } from "@/types";
 import useOrganizationStore, {
 	OrganizationSocial,

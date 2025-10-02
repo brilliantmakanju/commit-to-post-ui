@@ -12482,3 +12482,782 @@ payload = json.loads(request.body)
 
 
  -->
+
+
+
+
+
+<!-- 
+
+// Undo/Redo functionality
+	// const handleUndo = useCallback(() => {
+	// 	if (!activeVersion?.id || disabled) return;
+
+	// 	const versionHistory = historyRef.current.get(activeVersion.id) || [];
+	// 	const currentIndex = historyIndexRef.current.get(activeVersion.id) || 0;
+
+	// 	if (currentIndex <= 0) return;
+
+	// 	try {
+	// 		const newIndex = currentIndex - 1;
+	// 		const targetEntry = versionHistory[newIndex];
+	// 		if (!targetEntry) return;
+
+	// 		updateVersionContent(targetEntry.content);
+
+	// 		// Update images
+	// 		const currentImageUrls = extractImageUrls(currentImages);
+	// 		const targetImageUrls = targetEntry.images;
+
+	// 		if (!arraysEqual(currentImageUrls, targetImageUrls)) {
+	// 			targetImageUrls.forEach((url, index) => {
+	// 				if (index < currentImageUrls.length) {
+	// 					if (currentImageUrls[index] !== url) {
+	// 						removeVersionImage?.(index);
+	// 						updateVersionImage(url);
+	// 					}
+	// 				} else {
+	// 					updateVersionImage(url);
+	// 				}
+	// 			});
+
+	// 			for (
+	// 				let index = currentImageUrls.length - 1;
+	// 				index >= targetImageUrls.length;
+	// 				index--
+	// 			) {
+	// 				removeVersionImage?.(index);
+	// 			}
+	// 		}
+
+	// 		historyIndexRef.current.set(activeVersion.id, newIndex);
+	// 	} catch (error) {
+	// 		console.error("Error during undo:", error);
+	// 		setSaveError("Failed to undo changes. Please try again.");
+	// 	}
+	// }, [
+	// 	activeVersion?.id,
+	// 	disabled,
+	// 	updateVersionContent,
+	// 	currentImages,
+	// 	removeVersionImage,
+	// 	updateVersionImage,
+	// ]);
+
+	// const handleRedo = useCallback(() => {
+	// 	if (!activeVersion?.id || disabled) return;
+
+	// 	const versionHistory = historyRef.current.get(activeVersion.id) || [];
+	// 	const currentIndex = historyIndexRef.current.get(activeVersion.id) || 0;
+
+	// 	if (currentIndex >= versionHistory.length - 1) return;
+
+	// 	try {
+	// 		const newIndex = currentIndex + 1;
+	// 		const targetEntry = versionHistory[newIndex];
+	// 		if (!targetEntry) return;
+
+	// 		updateVersionContent(targetEntry.content);
+
+	// 		// Update images
+	// 		const currentImageUrls = extractImageUrls(currentImages);
+	// 		const targetImageUrls = targetEntry.images;
+
+	// 		if (!arraysEqual(currentImageUrls, targetImageUrls)) {
+	// 			targetImageUrls.forEach((url, index) => {
+	// 				if (index < currentImageUrls.length) {
+	// 					if (currentImageUrls[index] !== url) {
+	// 						removeVersionImage?.(index);
+	// 						updateVersionImage(url);
+	// 					}
+	// 				} else {
+	// 					updateVersionImage(url);
+	// 				}
+	// 			});
+
+	// 			for (
+	// 				let index = currentImageUrls.length - 1;
+	// 				index >= targetImageUrls.length;
+	// 				index--
+	// 			) {
+	// 				removeVersionImage?.(index);
+	// 			}
+	// 		}
+
+	// 		historyIndexRef.current.set(activeVersion.id, newIndex);
+	// 	} catch (error) {
+	// 		console.error("Error during redo:", error);
+	// 		setSaveError("Failed to redo changes. Please try again.");
+	// 	}
+	// }, [
+	// 	activeVersion?.id,
+	// 	disabled,
+	// 	updateVersionContent,
+	// 	currentImages,
+	// 	removeVersionImage,
+	// 	updateVersionImage,
+	// ]);
+
+	// Undo/Redo availability
+	// const canUndo = useMemo(() => {
+	// 	if (disabled || !activeVersion?.id) return false;
+	// 	const currentIndex = historyIndexRef.current.get(activeVersion.id) || 0;
+	// 	return currentIndex > 0;
+	// }, [disabled, activeVersion?.id]);
+
+	// const canRedo = useMemo(() => {
+	// 	if (disabled || !activeVersion?.id) return false;
+	// 	const versionHistory = historyRef.current.get(activeVersion.id) || [];
+	// 	const currentIndex = historyIndexRef.current.get(activeVersion.id) || 0;
+	// 	return currentIndex < versionHistory.length - 1;
+	// }, [disabled, activeVersion?.id]);
+
+	// // Keyboard shortcuts
+	// useEffect(() => {
+	// 	const handleKeyDown = (event: KeyboardEvent) => {
+	// 		if (disabled) return;
+
+	// 		const target = event.target as HTMLElement;
+	// 		if (target.tagName === "TEXTAREA") {
+	// 			const isMac = navigator.platform.toUpperCase().includes("MAC");
+	// 			const ctrlKey = isMac ? event.metaKey : event.ctrlKey;
+
+	// 			if (ctrlKey && !event.shiftKey && event.key === "z") {
+	// 				event.preventDefault();
+	// 				handleUndo();
+	// 			} else if (
+	// 				ctrlKey &&
+	// 				(event.key === "y" || (event.shiftKey && event.key === "Z"))
+	// 			) {
+	// 				event.preventDefault();
+	// 				handleRedo();
+	// 			}
+	// 		}
+	// 	};
+
+	// 	document.addEventListener("keydown", handleKeyDown);
+	// 	return () => document.removeEventListener("keydown", handleKeyDown);
+	// }, [disabled, handleUndo, handleRedo]);
+
+	// Cleanup blob URLs
+	 -->
+
+
+
+     <!-- # Push to Post Landing Page - Comprehensive Development Prompt
+
+## Project Overview
+Build a **strictly monochrome** landing page for Push to Post - the first tool to auto-post Git commits to social platforms. Target audience: developers who hate self-promotion but need visibility. Color palette: **ONLY** white (#FFFFFF), black (#000000), and shades of gray (#F8F8F8, #E5E5E5, #9CA3AF, #6B7280, #374151, #1F2937).
+
+## Design Philosophy & Inspiration
+**Primary Inspiration**: Linear.app's clean, professional aesthetics with focus on professionalism and perfection, combined with Vercel's developer-focused approach
+
+**Key Design Principles**:
+- **Minimalist Developer Aesthetic**: Clean, no-bullshit design that speaks to developers
+- **Terminal-First Visual Language**: Code snippets, monospace fonts, terminal mockups
+- **Zero Color Distraction**: Strict black/white/gray palette reinforces focus on functionality
+- **Mobile-First Responsive**: 360px mobile to 1200px desktop, smooth scaling
+- **Performance-Obsessed**: <1s load time, optimized images, minimal dependencies
+
+## Technical Specifications
+
+### Color Palette (Strictly Enforced)
+```css
+--white: #FFFFFF          /* Primary background */
+--black: #000000          /* Primary text, buttons */
+--gray-50: #F8F8F8        /* Subtle backgrounds */
+--gray-200: #E5E5E5       /* Borders, dividers */
+--gray-400: #9CA3AF       /* Secondary text */
+--gray-500: #6B7280       /* Muted text */
+--gray-700: #374151       /* Strong secondary */
+--gray-800: #1F2937       /* Dark backgrounds */
+```
+
+### Typography System
+```css
+/* Primary Font: Inter (Sans-serif) */
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+font-weights: 400 (regular), 600 (semibold), 700 (bold)
+
+/* Code Font: Fira Code (Monospace) */
+font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+font-weight: 400
+
+/* Font Scale */
+--text-xs: 12px     /* Fine print */
+--text-sm: 14px     /* Secondary text */
+--text-base: 16px   /* Body text */
+--text-lg: 18px     /* Large body */
+--text-xl: 20px     /* Subheadings */
+--text-2xl: 24px    /* Section titles */
+--text-3xl: 30px    /* Page titles */
+--text-4xl: 36px    /* Hero desktop */
+--text-5xl: 48px    /* Hero large */
+```
+
+### Layout System
+```css
+/* Container Widths */
+--container-sm: 640px
+--container-md: 768px  
+--container-lg: 1024px
+--container-xl: 1280px
+--content-max: 800px    /* Primary content width */
+
+/* Spacing Scale */
+--space-1: 4px
+--space-2: 8px
+--space-3: 12px
+--space-4: 16px
+--space-6: 24px
+--space-8: 32px
+--space-12: 48px
+--space-16: 64px
+--space-24: 96px
+
+/* Section Padding */
+--section-py: 96px      /* Desktop vertical */
+--section-py-mobile: 64px /* Mobile vertical */
+```
+
+## Detailed Section Specifications
+
+### 1. Hero Section
+**Purpose**: Hook developers with the core problem (invisible work) and solution (auto-posting)
+
+**Layout Structure**:
+```html
+<section class="hero bg-white py-24 px-4">
+  <div class="max-w-3xl mx-auto text-center">
+    <!-- Primary headline -->
+    <!-- Supporting subheadline -->
+    <!-- Primary CTA button -->
+    <!-- Trust indicator -->
+    <!-- Visual demo mockup -->
+  </div>
+</section>
+```
+
+**Content Elements**:
+- **Headline**: "Your Code's Loud. You Don't Have to Be." (36px desktop, 28px mobile, Inter 700, black)
+- **Subhead**: "Commits stack up, profile's dead. Auto-post to Twitter, LinkedIn, Discord. Stay seen, no effort." (18px desktop, 16px mobile, Inter 400, #374151)
+- **Primary CTA**: Black button, white text, 8px radius, hover to #1F2937
+- **Trust Line**: "First to turn Git commits into posts. Built by a dev tired of ghosting." (14px, #6B7280)
+
+**Visual Element**: Terminal mockup showing:
+```
+$ git commit -m "fix: resolve memory leak in user service"
+$ git push origin main
+
+✓ Posted to Twitter: "Fixed memory leak—cleaned up 47 lines. #webdev #debugging"
+✓ Posted to LinkedIn: "Just resolved a tricky memory leak in our user service..."
+✓ Posted to Discord: "Another bug down! 💻 #dev-wins"
+```
+
+**Specifications**:
+- Mockup: 640x360px, black background (#000000), white/green text
+- Responsive: Stack elements on mobile (<768px)
+- Animation: Fade-in on load (0.5s ease-in-out)
+- Height: ~400px desktop, ~500px mobile
+
+### 2. Problem/Solution (Why Us) Section
+**Purpose**: Reinforce the pain point and unique value proposition
+
+**Layout Structure**:
+```html
+<section class="why-us bg-gray-50 py-16 px-4">
+  <div class="max-w-4xl mx-auto text-center">
+    <!-- Section title -->
+    <!-- Three-column benefit grid -->
+    <!-- Supporting text -->
+  </div>
+</section>
+```
+
+**Content Grid** (3 cards):
+1. **"Push code, it posts"** - No manual typing, no hype—just proof you're building
+2. **"Track your streak"** - Post history with login, see your consistency
+3. **"First to exist"** - First to auto-post commits. Free for 5/day, $5.99 for 100
+
+**Card Design**:
+- Border: 1px solid #E5E5E5
+- Background: #FFFFFF
+- Padding: 24px
+- Radius: 8px
+- Hover: Border to #9CA3AF (0.3s transition)
+
+### 3. How It Works Section
+**Purpose**: Show the simple 3-step process
+
+**Layout Structure**:
+```html
+<section class="how-it-works bg-white py-16 px-4">
+  <div class="max-w-3xl mx-auto text-center">
+    <!-- Section title -->
+    <!-- Three-step process -->
+    <!-- CTA to playground -->
+  </div>
+</section>
+```
+
+**Step Design**:
+- Numbered circles: Black background, white numbers
+- Circle size: 32px x 32px
+- Steps arranged horizontally (desktop), vertically (mobile)
+- Step text: 16px Inter 400, #374151
+
+**Steps**:
+1. **Link your GitHub repo** - 10s setup
+2. **Pick platforms** - Twitter, LinkedIn, Discord
+3. **Push code** - It posts. You're visible.
+
+### 4. Demo Section
+**Purpose**: Show the actual commit-to-post transformation
+
+**Visual Requirements**:
+- **Static Image** (will become video Oct 8): 640x360px
+- **Content**: Split-screen showing git commit → social posts
+- **Style**: Terminal aesthetic with social media previews
+- **File Size**: <200KB for fast loading
+
+**Layout**:
+```html
+<section class="demo bg-gray-50 py-16 px-4">
+  <div class="max-w-3xl mx-auto text-center">
+    <!-- Section title -->
+    <!-- Demo description -->
+    <!-- Demo visual -->
+    <!-- CTA to try playground -->
+  </div>
+</section>
+```
+
+### 5. Pricing Section
+**Purpose**: Present clear, simple pricing tiers
+
+**Tier Structure**:
+
+**Starter (Free)**:
+- Price: $0/month
+- Repos: 1 GitHub repo
+- Platforms: LinkedIn only
+- Posts: 5 posts/day
+- Features: Professional tone, post history, credits shown
+- CTA: "Get It Free" → /signup
+
+**Pro (Most Popular)**:
+- Price: $5.99/month
+- Badge: "Most Popular" (white background, black border)
+- Repos: 5 GitHub repos
+- Platforms: Twitter, LinkedIn, Discord
+- Posts: 100 posts/day
+- Features: Multiple tones, hashtags, scheduling, support
+- CTA: "Go Pro" → /checkout/pro
+
+**Studio**:
+- Price: $22.99/month
+- Repos: Unlimited
+- Platforms: Twitter, LinkedIn, Discord
+- Posts: Unlimited
+- Features: Team management, workspaces, priority support
+- CTA: "Go Studio" → /checkout/studio
+
+**Card Design**:
+- Border: 1px solid #000000
+- Background: #FFFFFF
+- Padding: 32px
+- Radius: 8px
+- Most Popular badge: Absolute positioned, -translate-y-1/2
+
+### 6. Footer Section
+**Purpose**: Personal touch and essential links
+
+**Background**: Black (#000000)
+**Text**: White (#FFFFFF)
+**Content**: 
+- Personal story: "Built by a dev in Lagos tired of being invisible"
+- Contact links: Twitter, LinkedIn (underlined)
+- Product links: Playground, Pricing
+
+## Interactive Elements
+
+### Button Specifications
+```css
+/* Primary Button */
+.btn-primary {
+  background: #000000;
+  color: #FFFFFF;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #1F2937;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: transparent;
+  color: #000000;
+  border: 1px solid #E5E5E5;
+  padding: 12px 24px;
+  border-radius: 8px;
+}
+
+.btn-secondary:hover {
+  border-color: #9CA3AF;
+  background: #F8F8F8;
+}
+```
+
+### Animation Requirements
+```css
+/* Fade-in on scroll */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Button hover animations */
+.btn {
+  transition: all 0.2s ease;
+}
+```
+
+## Mobile Responsiveness
+
+### Breakpoints
+```css
+/* Mobile First Approach */
+--mobile: 0px
+--tablet: 640px
+--desktop: 1024px
+--large: 1280px
+```
+
+### Mobile Optimizations
+- **Typography**: Reduce by 2-4px per size
+- **Spacing**: Reduce padding by 25-50%
+- **Grid**: Stack all multi-column layouts
+- **Images**: Maintain aspect ratio, reduce max-width
+- **Touch Targets**: Minimum 44px height for buttons
+
+### Critical Mobile Elements
+```css
+@media (max-width: 640px) {
+  .hero h1 { font-size: 28px; }
+  .section { padding: 64px 16px; }
+  .grid { grid-template-columns: 1fr; gap: 16px; }
+  .demo-image { max-width: 100%; height: auto; }
+}
+```
+
+## Performance Requirements
+
+### Image Optimization
+- **Format**: WebP with PNG fallback
+- **Sizes**: Multiple responsive sizes
+- **Loading**: Lazy loading for below-fold content
+- **Compression**: <200KB per image
+
+### Code Optimization
+```html
+<!-- Critical CSS inline -->
+<style>
+  /* Above-fold styles only */
+</style>
+
+<!-- Font loading optimization -->
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fira-code.woff2" as="font" type="font/woff2" crossorigin>
+```
+
+### Loading Performance
+- **Target**: <1s First Contentful Paint
+- **CDN**: Use Tailwind CSS via CDN for development
+- **Optimization**: Minify HTML, compress images, defer non-critical JS
+
+## Accessibility Requirements
+
+### WCAG Compliance
+```html
+<!-- Semantic HTML structure -->
+<main>
+  <section aria-labelledby="hero-title">
+    <h1 id="hero-title">Your Code's Loud. You Don't Have to Be.</h1>
+  </section>
+</main>
+
+<!-- Alt text for all images -->
+<img src="demo.png" alt="Terminal showing git commit command transforming into social media posts" />
+
+<!-- Focus management -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+```
+
+### Color Contrast
+- **Black on White**: 21:1 ratio (AAA)
+- **Gray text**: Minimum 4.5:1 ratio (AA)
+- **Interactive elements**: Clear focus indicators
+
+## Development Stack
+
+### Recommended Technologies
+```json
+{
+  "framework": "HTML5 + Tailwind CSS",
+  "fonts": ["Inter", "Fira Code"],
+  "animations": "CSS transitions + Intersection Observer",
+  "deployment": "Netlify/Vercel",
+  "cdn": "https://cdn.tailwindcss.com"
+}
+```
+
+### File Structure
+```
+/
+├── index.html
+├── assets/
+│   ├── images/
+│   │   ├── commit-demo.webp
+│   │   ├── commit-demo.png (fallback)
+│   │   └── logo.svg
+│   ├── css/
+│   │   └── custom.css (minimal overrides)
+│   └── js/
+│       └── main.js (scroll animations)
+```
+
+## Testing Requirements
+
+### Cross-Browser Testing
+- Chrome, Firefox, Safari, Edge (latest 2 versions)
+- Mobile: iOS Safari, Chrome Android
+
+### Performance Testing
+- **Lighthouse Score**: >90 for all metrics
+- **Load Time**: <1s on 3G connection
+- **Image Loading**: Progressive enhancement
+
+### Responsive Testing
+```
+Mobile: 360px, 375px, 414px
+Tablet: 768px, 834px, 1024px  
+Desktop: 1280px, 1440px, 1920px
+```
+
+## Edge Cases & Error Handling
+
+### Content Overflow
+```css
+.text-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+```
+
+### Image Loading Failures
+```html
+<img src="demo.webp" 
+     onerror="this.src='demo.png'" 
+     alt="Commit to post demonstration" />
+```
+
+### Slow Connections
+```html
+<!-- Loading skeleton -->
+<div class="loading-skeleton bg-gray-200 animate-pulse">
+  <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+  <div class="h-4 bg-gray-300 rounded w-1/2"></div>
+</div>
+```
+
+## Content Guidelines
+
+### Tone of Voice
+- **Direct**: No fluff, straight to the point
+- **Developer-Centric**: Use technical language appropriately
+- **Honest**: No fake metrics or inflated claims
+- **Conversational**: Dev-to-dev communication style
+
+### Call-to-Action Hierarchy
+1. **Primary**: "Try Playground Now" (appears 3 times)
+2. **Secondary**: Pricing CTAs ("Get It Free", "Go Pro", "Go Studio")
+3. **Tertiary**: Footer links (Playground, Pricing)
+
+### Error Prevention
+- **Typos**: Use spell-check and technical review
+- **Links**: All CTAs must work (test before deployment)
+- **Responsive**: Test on actual devices, not just browser dev tools
+
+## Final Deliverable Checklist
+
+### Pre-Launch Requirements
+- [ ] All sections implemented with exact specifications
+- [ ] Black/white/gray color palette strictly enforced
+- [ ] Mobile responsive on all breakpoints
+- [ ] Images optimized (<200KB each)
+- [ ] All CTAs linked to correct endpoints
+- [ ] Accessibility features implemented
+- [ ] Performance metrics met (Lighthouse >90)
+- [ ] Cross-browser testing completed
+
+### Post-Launch Iterations
+- [ ] A/B test headline variations
+- [ ] Replace demo image with video (Oct 8)
+- [ ] Add playground integration metrics
+- [ ] Monitor conversion rates by section
+
+## Implementation Priority
+1. **Week 1**: Hero + Why Us sections (core value prop)
+2. **Week 2**: How It Works + Demo (proof of concept)
+3. **Week 3**: Pricing + Footer (conversion optimization)
+4. **Week 4**: Mobile polish + performance optimization
+
+
+
+
+import { ArrowRight } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import type { Metadata } from "next"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
+
+import { getAllBlogs, getBlogCategories } from "../lib/blog"
+import { PageTransition } from "../components/page-transition"
+import { BlogCard } from "../components/blog/blog-card"
+
+export const metadata: Metadata = {
+  title: "Blog | JolexHive",
+  description: "Explore our latest articles, tutorials, and insights on software development, AI, and technology.",
+  openGraph: {
+    title: "Blog | JolexHive",
+    description: "Explore our latest articles, tutorials, and insights on software development, AI, and technology.",
+    images: [{ url: "/-blog-og.jpg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | JolexHive",
+    description: "Explore our latest articles, tutorials, and insights on software development, AI, and technology.",
+    images: ["/-blog-og.jpg"],
+  },
+}
+
+export default async function BlogPage() {
+  const blogs = await getAllBlogs()
+  const categories = await getBlogCategories()
+
+  // Get the most recent blog for the featured section
+  const featuredBlog = blogs[0]
+
+  // Group remaining blogs by category
+  const blogsByCategory = categories.reduce(
+    (acc, category) => {
+      acc[category] = blogs.filter((blog) => blog.category === category && blog.id !== featuredBlog.id)
+      return acc
+    },
+    {} as Record<string, typeof blogs>,
+  )
+
+  return (
+    <PageTransition>
+      <div className="container mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <section className="mb-16 flex flex-col items-center text-center">
+          <h1 className="mb-4 text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+            Our Blog
+          </h1>
+          <p className="mb-6 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+            Insights, tutorials, and updates from the JolexHive team
+          </p>
+          <Separator className="w-24 bg-zinc-300 dark:bg-zinc-700" />
+        </section>
+
+        {/* Featured Post */}
+        {featuredBlog && (
+          <section className="mb-16">
+            <h2 className="mb-8 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Featured Post
+            </h2>
+            <Card className="overflow-hidden border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="grid md:grid-cols-2">
+                <div className="relative aspect-video md:aspect-auto md:h-full">
+                  <Image
+                    src={featuredBlog.coverImage || "/placeholder.svg"}
+                    alt={featuredBlog.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col justify-center p-6">
+                  <Badge variant="secondary" className="mb-2 w-fit bg-zinc-100 dark:bg-zinc-800">
+                    {featuredBlog.category}
+                  </Badge>
+                  <h3 className="mb-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{featuredBlog.title}</h3>
+                  <p className="mb-4 text-zinc-600 dark:text-zinc-400">{featuredBlog.excerpt}</p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                        <Image
+                          src={featuredBlog.author.avatar || "/placeholder.svg"}
+                          alt={featuredBlog.author.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">{featuredBlog.author.name}</span>
+                    </div>
+                    <span className="text-sm text-zinc-500 dark:text-zinc-500">{featuredBlog.date}</span>
+                  </div>
+                  <Button
+                    asChild
+                    className="mt-6 gap-2 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                  >
+                    <Link href={`/blog/${featuredBlog.slug}`}>
+                      Read Article
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* Blog Posts by Category */}
+        {Object.entries(blogsByCategory).map(
+          ([category, categoryBlogs]) =>
+            categoryBlogs.length > 0 && (
+              <section key={category} className="mb-16">
+                <div className="mb-8 flex items-center">
+                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{category}</h2>
+                  <Separator className="ml-4 flex-1 bg-zinc-200 dark:bg-zinc-800" />
+                </div>
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                  {categoryBlogs.map((blog) => (
+                    <BlogCard key={blog.id} blog={blog} />
+                  ))}
+                </div>
+              </section>
+            ),
+        )}
+      </div>
+    </PageTransition>
+  )
+}
+ -->

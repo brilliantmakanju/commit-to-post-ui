@@ -1,8 +1,9 @@
 "use client";
 
+import { MenuIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { FaLink, FaXbox } from "react-icons/fa";
+import { Fa500Px } from "react-icons/fa";
 
 import { cn } from "@/lib/utils";
 
@@ -203,7 +204,11 @@ export const MobileNavToggle: React.FC<MobileNavToggleProps> = ({
 			className="p-2 text-gray-700 transition-colors duration-200 hover:text-gray-900"
 			aria-label={isOpen ? "Close menu" : "Open menu"}
 		>
-			{isOpen ? <FaXbox className="h-5 w-5" /> : <FaLink className="h-5 w-5" />}
+			{isOpen ? (
+				<MenuIcon className="h-5 w-5" />
+			) : (
+				<Fa500Px className="h-5 w-5" />
+			)}
 		</button>
 	);
 };

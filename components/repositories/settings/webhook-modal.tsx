@@ -7,11 +7,7 @@ import { useState } from "react";
 import { FaDiscord } from "react-icons/fa";
 import { toast } from "sonner";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { socialConnectDiscord } from "@/server-actions/core/repo/social-connect";
 import { getOrganizations } from "@/server-actions/organizations/get-organizations";
 import useOrganizationStore from "@/zustand/useorganization-store";
@@ -57,13 +53,6 @@ export function WebhookModal({
 		error: (message: any) => toast.error(message, { style: toastStyles }),
 		success: (message: any) => toast.success(message, { style: toastStyles }),
 	};
-
-	const socialLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: socialCount,
-		limitType: "social_integrations",
-		limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
-	});
 
 	const handleSave = async () => {
 		if (!webhookUrl.trim()) {
@@ -228,52 +217,18 @@ export function WebhookModal({
 							>
 								Cancel
 							</button>
-							<FeatureLimitWrapper
-								limitId={FEATURE_LIMITS.SOCIAL_ACCOUNTS}
-								currentCount={socialCount}
-								fallback={
-									<LimitTooltip
-										limitType="social_integrations"
-										maxLimit={socialLimitUI.limit}
-										currentUsage={socialCount}
-										position="bottom"
-									>
-										<div className="inline-block cursor-not-allowed">
-											<button
-												disabled
-												className="flex items-center gap-2 rounded-lg bg-white px-6 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												{isLoading ? (
-													<Loader2 className="h-4 w-4 animate-spin" />
-												) : (
-													<Plus className="h-4 w-4" />
-												)}
-												{isLoading ? "Connecting..." : "Connect"}
-											</button>
-										</div>
-									</LimitTooltip>
-								}
+							<button
+								onClick={handleSave}
+								disabled={isLoading || !webhookUrl.trim()}
+								className="flex items-center gap-2 rounded-lg bg-white px-6 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
 							>
-								<LimitTooltip
-									limitType="social_integrations"
-									maxLimit={socialLimitUI.limit}
-									currentUsage={socialCount}
-									position="bottom"
-								>
-									<button
-										onClick={handleSave}
-										disabled={isLoading || !webhookUrl.trim()}
-										className="flex items-center gap-2 rounded-lg bg-white px-6 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										{isLoading ? (
-											<Loader2 className="h-4 w-4 animate-spin" />
-										) : (
-											<Plus className="h-4 w-4" />
-										)}
-										{isLoading ? "Connecting..." : "Connect"}
-									</button>
-								</LimitTooltip>
-							</FeatureLimitWrapper>
+								{isLoading ? (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								) : (
+									<Plus className="h-4 w-4" />
+								)}
+								{isLoading ? "Connecting..." : "Connect"}
+							</button>
 						</div>
 					</div>
 				</div>

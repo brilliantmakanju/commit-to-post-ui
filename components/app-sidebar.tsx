@@ -16,6 +16,7 @@ import {
 	SidebarFooter,
 	SidebarHeader,
 	SidebarRail,
+	useSidebar,
 } from "@/components/ui/sidebar";
 
 import { TeamSwitcher } from "./organization-sidebar";
@@ -50,11 +51,14 @@ const navigationItems = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { toggleSidebar } = useSidebar();
 	const [isClient, setIsClient] = useState(false);
 
 	useEffect(() => {
 		// Ensure we're on the client side
 		setIsClient(true);
+		toggleSidebar();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// For SSR compatibility, always render something
@@ -62,14 +66,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const isLoading = !isClient;
 
 	return (
-		<Sidebar variant="inset" collapsible="icon" {...props}>
+		<Sidebar variant="floating" collapsible="icon" {...props}>
 			<SidebarHeader>
 				<TeamSwitcher isLoading={isLoading} />
 			</SidebarHeader>
-			<SidebarContent>
+			<SidebarContent className="-ml-1">
 				<NavMain items={navigationItems} isLoading={isLoading} />
 			</SidebarContent>
-			<SidebarFooter>
+			<SidebarFooter className="flex lg:hidden">
 				<NavUser isLoadingAttachment={isLoading} />
 			</SidebarFooter>
 			<SidebarRail />

@@ -36,8 +36,8 @@ export const pricingData: PricingData = {
 				monthly: 0,
 				annual: 0,
 				productIds: {
-					monthly: "pri_01k3spk8fx68c94dzr3fwm1qjb",
-					annual: "pri_01k3spk8fx68c94dzr3fwm1qjb",
+					monthly: "pri_01k5kmdseat00v7mr5s4rdj4jw",
+					annual: "pri_01k5kmdseat00v7mr5s4rdj4jw",
 				},
 			},
 			features: [
@@ -56,8 +56,8 @@ export const pricingData: PricingData = {
 				monthly: 5.99,
 				annual: 64.68,
 				productIds: {
-					monthly: "pri_01jvjty2hpznp9yag1reeax2my",
-					annual: "pri_01jvjtzj91vpyndb4qc6xwk5mm",
+					monthly: "pri_01k5kmdseat00v7mr5s4rdj4jw",
+					annual: "pri_01k5kmdseat00v7mr5s4rdj4jw",
 				},
 			},
 			features: [
@@ -79,8 +79,8 @@ export const pricingData: PricingData = {
 				monthly: 22.99,
 				annual: 246.6,
 				productIds: {
-					monthly: "pri_01k3g4fz3xq6awekczekqkz4kp",
-					annual: "pri_01k3g5xeyeq74vgdb6pgkd9e0k",
+					monthly: "pri_01k3kp1cz5y21fhp7nzmdzgz8d",
+					annual: "pri_01k3kp3qhvjey338wg9s0e8950",
 				},
 			},
 			features: [

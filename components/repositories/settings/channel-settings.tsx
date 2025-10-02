@@ -314,17 +314,10 @@ export const RepoChannelSettingsCard = ({
 		);
 	};
 
-	const repoSocialsLimit = useLimitUI({
-		warningThreshold: 80,
-		limitType: "repo_socials",
-		currentCount: socials.length,
-		limitId: FEATURE_LIMITS.REPO_SOCIALS,
-	});
-
 	const hashtagLimit = useLimitUI({
+		currentCount: 1,
 		warningThreshold: 80,
 		limitType: "hashtag_automation",
-		currentCount: 1,
 		limitId: FEATURE_LIMITS.HASHTAG_AUTOMATION,
 	});
 
@@ -395,31 +388,24 @@ export const RepoChannelSettingsCard = ({
 									)}
 								</span>
 							</Button>
-							<LimitTooltip
-								position="left"
-								limitType="repo_socials"
-								currentUsage={socials.length}
-								maxLimit={repoSocialsLimit.limit}
+							<Button
+								onClick={() => {
+									setOpenSocialConnect(true);
+								}}
+								disabled={isConnecting || isSaving}
+								className="border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40 disabled:cursor-not-allowed disabled:opacity-50"
 							>
-								<Button
-									onClick={() => {
-										setOpenSocialConnect(true);
-									}}
-									disabled={isConnecting || isSaving}
-									className="border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40 disabled:cursor-not-allowed disabled:opacity-50"
-								>
-									<span className="flex items-center gap-2">
-										{isConnecting ? (
-											<>
-												<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
-												Loading...
-											</>
-										) : (
-											"Connect"
-										)}
-									</span>
-								</Button>
-							</LimitTooltip>
+								<span className="flex items-center gap-2">
+									{isConnecting ? (
+										<>
+											<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
+											Loading...
+										</>
+									) : (
+										"Connect"
+									)}
+								</span>
+							</Button>
 						</div>
 					</CardTitle>
 				</CardHeader>
@@ -434,7 +420,7 @@ export const RepoChannelSettingsCard = ({
 					/>
 
 					<div className="flex w-full items-center justify-between">
-						<div>
+						<div className="w-full">
 							<Label className="text-sm font-medium text-zinc-100">
 								Hashtag Automation
 							</Label>
@@ -443,29 +429,31 @@ export const RepoChannelSettingsCard = ({
 							</p>
 						</div>
 						{/* Hashtag Automation */}
-						<FeatureLimitWrapper
-							limitId={FEATURE_LIMITS.HASHTAG_AUTOMATION}
-							currentCount={1}
-							fallback={
-								<LimitTooltip
-									limitType="hashtag_automation"
-									maxLimit={hashtagLimit.limit}
-									currentUsage={1}
-									position="left"
-								>
-									<div className="flex w-full cursor-not-allowed items-center justify-between opacity-50">
-										<Switch checked={false} />
-									</div>
-								</LimitTooltip>
-							}
-						>
-							<Switch
-								checked={localSettings.hashtag_automation}
-								onCheckedChange={checked =>
-									onChange("hashtag_automation", checked)
+						<div className="">
+							<FeatureLimitWrapper
+								limitId={FEATURE_LIMITS.HASHTAG_AUTOMATION}
+								currentCount={1}
+								fallback={
+									<LimitTooltip
+										limitType="hashtag_automation"
+										maxLimit={hashtagLimit.limit}
+										currentUsage={1}
+										position="left"
+									>
+										<div className="flex w-full cursor-not-allowed items-center justify-between opacity-50">
+											<Switch checked={false} />
+										</div>
+									</LimitTooltip>
 								}
-							/>
-						</FeatureLimitWrapper>
+							>
+								<Switch
+									checked={localSettings.hashtag_automation}
+									onCheckedChange={checked =>
+										onChange("hashtag_automation", checked)
+									}
+								/>
+							</FeatureLimitWrapper>
+						</div>
 					</div>
 
 					{/* Default Hashtags */}

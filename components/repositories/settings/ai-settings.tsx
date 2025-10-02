@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
 import LimitTooltip from "@/components/feature-flag/limit-tooltip";
@@ -66,21 +66,27 @@ export const RepoAISettingsCard = ({
 	}
 
 	// 🔑 Plan-based tone visibility logic
-	let selectableTones: string[] = [];
-	if (useStore.plan === "pro") {
-		const firstTwo = tones.slice(0, 2);
-		const middleIndex = Math.floor(tones.length / 2);
-		const middleTwo = tones.slice(middleIndex, middleIndex + 2);
-		selectableTones = [
-			...firstTwo.map(t => t.value),
-			...middleTwo.map(t => t.value),
-		];
-	} else if (useStore.plan === "studio") {
-		selectableTones = tones.map(t => t.value);
-	} else {
-		// basic → only their current selected tone
-		selectableTones = [settings.ai_tone];
-	}
+	// let selectableTones: string[] = [];
+	let selectableTones: string[] =
+		useStore.plan === "studio" || useStore.plan === "pro"
+			? tones.map(t => t.value)
+			: [settings.ai_tone];
+
+	// if (useStore.plan === "pro") {
+	// 	const firstTwo = tones.slice(0, 2);
+	// 	const middleIndex = Math.floor(tones.length / 2);
+	// 	const middleTwo = tones.slice(middleIndex, middleIndex + 2);
+	// 	selectableTones = [
+	// 		...firstTwo.map(t => t.value),
+	// 		...middleTwo.map(t => t.value),
+	// 	];
+	// } else
+	// if (useStore.plan === "studio" || useStore.plan === "pro") {
+	// 	selectableTones = tones.map(t => t.value);
+	// } else {
+	// 	// basic → only their current selected tone
+	// 	selectableTones = [settings.ai_tone];
+	// }
 
 	// reorder tones → selected one always first
 	const orderedTones = [
@@ -141,7 +147,7 @@ export const RepoAISettingsCard = ({
 							currentCount={1}
 							fallback={
 								<LimitTooltip
-									position="left"
+									position="bottom"
 									currentUsage={1}
 									limitType="ai_tones"
 									maxLimit={tonesLimitUI.limit}

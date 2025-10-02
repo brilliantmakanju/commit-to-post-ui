@@ -16,13 +16,13 @@ import {
 } from "react-icons/fa";
 import { toast } from "sonner";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
+// import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
+// import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { OAuthModalV2 } from "@/components/repositories/settings/v2/oauth-modal";
 import { WebhookModal } from "@/components/repositories/settings/webhook-modal";
 import { Button } from "@/components/ui/button";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
+// import { useLimitUI } from "@/hooks/use-limit-ui";
+// import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { initializeFeatureFlags } from "@/lib/utils/feature-flags-init";
 import { initializeFeatureLimits } from "@/lib/utils/feature-limits-init";
 import { disconnectIntegration } from "@/server-actions/core/repo/social-connect";
@@ -168,8 +168,8 @@ const SocialAccountItem: React.FC<{
 	onRemoveAccount: (accountId: string) => void;
 }> = ({ account, onRemoveAccount, onConnect }) => {
 	const pathname = usePathname();
-	const { organization } = useOrganizationStore();
-	const socialCount = (organization?.socials ?? []).length;
+	// const { organization } = useOrganizationStore();
+	// const socialCount = (organization?.socials ?? []).length;
 	const [isCollapsed, setIsCollapsed] = React.useState(true);
 
 	// Check if we're on /settings or /settings?something
@@ -232,12 +232,12 @@ const SocialAccountItem: React.FC<{
 		}
 	};
 
-	const socialLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: socialCount,
-		limitType: "social_integrations",
-		limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
-	});
+	// const socialLimitUI = useLimitUI({
+	// 	warningThreshold: 80,
+	// 	currentCount: socialCount,
+	// 	limitType: "social_integrations",
+	// 	limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
+	// });
 
 	return (
 		<div className={cardClass}>
@@ -252,7 +252,7 @@ const SocialAccountItem: React.FC<{
 							<p className={descClass}>{account.description}</p>
 						</div>
 					</div>
-					<FeatureLimitWrapper
+					{/* <FeatureLimitWrapper
 						limitId={FEATURE_LIMITS.SOCIAL_ACCOUNTS}
 						currentCount={socialCount}
 						fallback={
@@ -276,14 +276,14 @@ const SocialAccountItem: React.FC<{
 							currentUsage={socialCount}
 							position="bottom"
 						>
-							<Button
-								onClick={() => onConnect(account.id)}
-								className={buttonConnectClasses}
-							>
-								Connect
-							</Button>
 						</LimitTooltip>
-					</FeatureLimitWrapper>
+					</FeatureLimitWrapper> */}
+					<Button
+						onClick={() => onConnect(account.id)}
+						className={buttonConnectClasses}
+					>
+						Connect
+					</Button>
 				</div>
 			</div>
 

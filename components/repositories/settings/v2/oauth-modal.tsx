@@ -6,19 +6,14 @@ import { useCallback, useState } from "react";
 import { FaDiscord, FaLinkedin, FaSlack } from "react-icons/fa";
 import { toast } from "sonner";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import {
 	getConnectLinkedinOauth,
 	getConnectTwitterOauth,
 } from "@/server-actions/core/repo/social-connect";
-import useOrganizationStore from "@/zustand/useorganization-store";
 
-type Platform = "linkedin" | "slack" | "discord" | "x";
+type Platform = "linkedin" | "slack" | "discord" | "x" | "twitter";
 
 interface OAuthModalProps {
 	org_id: string;
@@ -48,6 +43,10 @@ const platformConfig = {
 		name: "X (Twitter)",
 		icon: XIcon,
 	},
+	twitter: {
+		name: "X (Twitter)",
+		icon: XIcon,
+	},
 	linkedin: {
 		name: "LinkedIn",
 		icon: FaLinkedin,
@@ -61,20 +60,11 @@ export function OAuthModalV2({
 	platform,
 }: OAuthModalProps) {
 	const path = usePathname();
-	const { organization } = useOrganizationStore();
 	const [isLoading, setIsLoading] = useState(false);
-	const socialCount = (organization?.socials ?? []).length;
 	const [currentStep, setCurrentStep] = useState<OAuthStep>("initializing");
 
 	const config = platformConfig[platform];
 	const PlatformIcon = config?.icon;
-
-	const socialLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: socialCount,
-		limitType: "social_integrations",
-		limitId: FEATURE_LIMITS.SOCIAL_ACCOUNTS,
-	});
 
 	// Check if we're on /settings or /settings?something
 	const isSettingsPage = path === "/settings" || path.startsWith("/settings?");
@@ -113,7 +103,7 @@ export function OAuthModalV2({
 			let result;
 			if (platform === "linkedin") {
 				result = await getConnectLinkedinOauth(path);
-			} else if (platform === "x") {
+			} else if (platform === "x" || platform === "twitter") {
 				result = await getConnectTwitterOauth(path);
 			} else {
 				toast.error("OAuth not yet implemented for this platform");
@@ -246,58 +236,22 @@ export function OAuthModalV2({
 								{" "}
 								{currentStep === "complete" ? "Done" : "Cancel"}{" "}
 							</Button>
-							<FeatureLimitWrapper
-								limitId={FEATURE_LIMITS.SOCIAL_ACCOUNTS}
-								currentCount={socialCount}
-								fallback={
-									<LimitTooltip
-										limitType="social_integrations"
-										maxLimit={socialLimitUI.limit}
-										currentUsage={socialCount}
-										position="bottom"
-									>
-										<div className="inline-block cursor-not-allowed">
-											{currentStep === "initializing" && (
-												<Button
-													disabled
-													className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-												>
-													{" "}
-													{isLoading ? (
-														<Loader2 className="h-4 w-4 animate-spin" />
-													) : (
-														<></>
-													)}{" "}
-													Connect{" "}
-												</Button>
-											)}
-										</div>
-									</LimitTooltip>
-								}
-							>
-								<LimitTooltip
-									limitType="social_integrations"
-									maxLimit={socialLimitUI.limit}
-									currentUsage={socialCount}
-									position="bottom"
+
+							{currentStep === "initializing" && (
+								<Button
+									onClick={initiateOAuth}
+									disabled={isLoading}
+									className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
 								>
-									{currentStep === "initializing" && (
-										<Button
-											onClick={initiateOAuth}
-											disabled={isLoading}
-											className="flex items-center space-x-2 border border-arch-black bg-arch-black px-6 py-3 text-white hover:bg-arch-dark focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-										>
-											{" "}
-											{isLoading ? (
-												<Loader2 className="h-4 w-4 animate-spin" />
-											) : (
-												<></>
-											)}{" "}
-											Connect{" "}
-										</Button>
-									)}
-								</LimitTooltip>
-							</FeatureLimitWrapper>{" "}
+									{" "}
+									{isLoading ? (
+										<Loader2 className="h-4 w-4 animate-spin" />
+									) : (
+										<></>
+									)}{" "}
+									Connect{" "}
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

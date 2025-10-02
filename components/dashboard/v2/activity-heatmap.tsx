@@ -6,9 +6,8 @@ import {
 	getDay,
 	isSameMonth,
 	startOfMonth,
-	subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, {
 	useCallback,
 	useEffect,
@@ -17,21 +16,9 @@ import React, {
 	useState,
 } from "react";
 
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	// eslint-disable-next-line import/no-unresolved
-} from "@/components/ui/popover";
 // eslint-disable-next-line import/no-unresolved
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-	// eslint-disable-next-line import/no-unresolved
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import useRetrieveHeatmapData from "@/hooks/core/charts";
 
 // Dark mode optimized colors for Push to Post

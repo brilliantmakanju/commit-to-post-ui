@@ -140,7 +140,7 @@ export default function IntegrationTabs({
 								<span className="text-sm text-zinc-400">
 									Pending Integrations
 								</span>
-								<Button
+								{/* <Button
 									size="sm"
 									variant="outline"
 									onClick={onCancelAllIntegrations}
@@ -153,7 +153,7 @@ export default function IntegrationTabs({
 										<Minus className="mr-1 h-3 w-3" />
 									)}
 									Cancel All
-								</Button>
+								</Button> */}
 							</div>
 						)}
 						{currentPost.pending_integrations_data.length === 0 ? (
@@ -257,7 +257,7 @@ export default function IntegrationTabs({
 										)
 									</Label>
 								</div>
-								<Button
+								{/* <Button
 									size="sm"
 									variant="outline"
 									onClick={onAddAllIntegrations}
@@ -274,7 +274,7 @@ export default function IntegrationTabs({
 										<Plus className="mr-1 h-3 w-3" />
 									)}
 									Add All
-								</Button>
+								</Button> */}
 							</div>
 						)}
 						{availableSocials.length === 0 ? (

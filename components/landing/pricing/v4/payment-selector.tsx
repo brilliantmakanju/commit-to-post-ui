@@ -58,629 +58,631 @@ export default function PlanSelector({
 	currentInterval = "monthly", // Fallback only
 }: PlanSelectorProps) {
 	// Get user data from Zustand store
-	const userStore = useUserStore();
-	const { refetchOrganizations } = useFetchOrganizations();
 
-	const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">(
-		() => {
-			const interval = userStore?.billing_interval?.toLowerCase() as
-				| "monthly"
-				| "annual"
-				| undefined;
-			return interval && (interval === "monthly" || interval === "annual")
-				? interval
-				: currentInterval;
-		},
-	);
-	const [selectedPlanName, setSelectedPlanName] = useState<string>("pro");
-	const [isLoading, setIsLoading] = useState(false);
+	// const userStore = useUserStore();
+	// const { refetchOrganizations } = useFetchOrganizations();
 
-	// Check if user has subscription ID
-	const hasSubscriptionId = Boolean(
-		userStore?.paddle_subscription_id || userStore?.stripe_subscription_id,
-	);
+	// const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">(
+	// 	() => {
+	// 		const interval = userStore?.billing_interval?.toLowerCase() as
+	// 			| "monthly"
+	// 			| "annual"
+	// 			| undefined;
+	// 		return interval && (interval === "monthly" || interval === "annual")
+	// 			? interval
+	// 			: currentInterval;
+	// 	},
+	// );
+	// const [selectedPlanName, setSelectedPlanName] = useState<string>("pro");
+	// const [isLoading, setIsLoading] = useState(false);
 
-	// Get current plan from user store with fallback to props
-	const getCurrentPlan = () => {
-		// Priority: user store data > props > defaults
-		const planName =
-			userStore?.plan?.toLowerCase() || currentPlanId?.toLowerCase() || "basic";
-		const interval = userStore?.billing_interval?.toLowerCase() as
-			| "monthly"
-			| "annual"
-			| undefined;
-		const safeInterval =
-			interval && (interval === "monthly" || interval === "annual")
-				? interval
-				: currentInterval || "monthly";
+	// // Check if user has subscription ID
+	// const hasSubscriptionId = Boolean(
+	// 	userStore?.paddle_subscription_id || userStore?.stripe_subscription_id,
+	// );
 
-		const plan = pricingData.plans.find(
-			p => p.name.toLowerCase() === planName.toLowerCase(),
-		);
+	// // Get current plan from user store with fallback to props
+	// const getCurrentPlan = () => {
+	// 	// Priority: user store data > props > defaults
+	// 	const planName =
+	// 		userStore?.plan?.toLowerCase() || currentPlanId?.toLowerCase() || "basic";
+	// 	const interval = userStore?.billing_interval?.toLowerCase() as
+	// 		| "monthly"
+	// 		| "annual"
+	// 		| undefined;
+	// 	const safeInterval =
+	// 		interval && (interval === "monthly" || interval === "annual")
+	// 			? interval
+	// 			: currentInterval || "monthly";
 
-		if (plan) {
-			return {
-				name: plan.name, // Keep original case from pricingData
-				interval: safeInterval,
-			};
-		}
-		return { name: "Basic", interval: "monthly" as const };
-	};
+	// 	const plan = pricingData.plans.find(
+	// 		p => p.name.toLowerCase() === planName.toLowerCase(),
+	// 	);
 
-	const currentPlan = getCurrentPlan();
+	// 	if (plan) {
+	// 		return {
+	// 			name: plan.name, // Keep original case from pricingData
+	// 			interval: safeInterval,
+	// 		};
+	// 	}
+	// 	return { name: "Basic", interval: "monthly" as const };
+	// };
 
-	// Update billing period when user data changes
-	useEffect(() => {
-		const interval = userStore?.billing_interval?.toLowerCase() as
-			| "monthly"
-			| "annual"
-			| undefined;
-		if (interval && (interval === "monthly" || interval === "annual")) {
-			setBillingPeriod(interval);
-		}
-	}, [userStore?.billing_interval]);
+	// const currentPlan = getCurrentPlan();
 
-	const getActionType = (
-		targetPlanName: string,
-	): "upgrade" | "downgrade" | "same" => {
-		const currentOrder = getPlanOrder(currentPlan.name);
-		const targetOrder = getPlanOrder(targetPlanName);
+	// // Update billing period when user data changes
+	// useEffect(() => {
+	// 	const interval = userStore?.billing_interval?.toLowerCase() as
+	// 		| "monthly"
+	// 		| "annual"
+	// 		| undefined;
+	// 	if (interval && (interval === "monthly" || interval === "annual")) {
+	// 		setBillingPeriod(interval);
+	// 	}
+	// }, [userStore?.billing_interval]);
 
-		if (targetOrder > currentOrder) return "upgrade";
-		if (targetOrder < currentOrder) return "downgrade";
-		return "same";
-	};
+	// const getActionType = (
+	// 	targetPlanName: string,
+	// ): "upgrade" | "downgrade" | "same" => {
+	// 	const currentOrder = getPlanOrder(currentPlan.name);
+	// 	const targetOrder = getPlanOrder(targetPlanName);
 
-	const getFilteredPlans = () => {
-		const currentOrder = getPlanOrder(currentPlan.name);
-		const currentPlanFromData = pricingData.plans.find(
-			p => p.name.toLowerCase() === currentPlan.name.toLowerCase(),
-		);
+	// 	if (targetOrder > currentOrder) return "upgrade";
+	// 	if (targetOrder < currentOrder) return "downgrade";
+	// 	return "same";
+	// };
 
-		if (type === "upgrade") {
-			// Include current plan + higher tier plans
-			const higherTierPlans = pricingData.plans.filter(
-				plan => getPlanOrder(plan.name) > currentOrder,
-			);
+	// const getFilteredPlans = () => {
+	// 	const currentOrder = getPlanOrder(currentPlan.name);
+	// 	const currentPlanFromData = pricingData.plans.find(
+	// 		p => p.name.toLowerCase() === currentPlan.name.toLowerCase(),
+	// 	);
 
-			// Always include current plan so users can switch billing intervals
-			const plansToShow = currentPlanFromData
-				? [currentPlanFromData, ...higherTierPlans]
-				: higherTierPlans;
+	// 	if (type === "upgrade") {
+	// 		// Include current plan + higher tier plans
+	// 		const higherTierPlans = pricingData.plans.filter(
+	// 			plan => getPlanOrder(plan.name) > currentOrder,
+	// 		);
 
-			// Remove duplicates by plan name (in case current plan is already in higher tier plans)
-			return plansToShow.filter(
-				(plan, index, self) =>
-					index ===
-					self.findIndex(p => p.name.toLowerCase() === plan.name.toLowerCase()),
-			);
-		} else if (type === "downgrade") {
-			// Include current plan + lower tier plans
-			const lowerTierPlans = pricingData.plans.filter(
-				plan => getPlanOrder(plan.name) < currentOrder,
-			);
+	// 		// Always include current plan so users can switch billing intervals
+	// 		const plansToShow = currentPlanFromData
+	// 			? [currentPlanFromData, ...higherTierPlans]
+	// 			: higherTierPlans;
 
-			// Always include current plan so users can switch billing intervals
-			const plansToShow = currentPlanFromData
-				? [currentPlanFromData, ...lowerTierPlans]
-				: lowerTierPlans;
+	// 		// Remove duplicates by plan name (in case current plan is already in higher tier plans)
+	// 		return plansToShow.filter(
+	// 			(plan, index, self) =>
+	// 				index ===
+	// 				self.findIndex(p => p.name.toLowerCase() === plan.name.toLowerCase()),
+	// 		);
+	// 	} else if (type === "downgrade") {
+	// 		// Include current plan + lower tier plans
+	// 		const lowerTierPlans = pricingData.plans.filter(
+	// 			plan => getPlanOrder(plan.name) < currentOrder,
+	// 		);
 
-			// Remove duplicates by plan name
-			return plansToShow.filter(
-				(plan, index, self) =>
-					index ===
-					self.findIndex(p => p.name.toLowerCase() === plan.name.toLowerCase()),
-			);
-		}
+	// 		// Always include current plan so users can switch billing intervals
+	// 		const plansToShow = currentPlanFromData
+	// 			? [currentPlanFromData, ...lowerTierPlans]
+	// 			: lowerTierPlans;
 
-		return pricingData.plans;
-	};
+	// 		// Remove duplicates by plan name
+	// 		return plansToShow.filter(
+	// 			(plan, index, self) =>
+	// 				index ===
+	// 				self.findIndex(p => p.name.toLowerCase() === plan.name.toLowerCase()),
+	// 		);
+	// 	}
 
-	const filteredPlans = getFilteredPlans();
+	// 	return pricingData.plans;
+	// };
 
-	const handlePlanChangeResponse = (response: PlanChangeResponse) => {
-		// Check if we need to redirect to Paddle management URLs
-		if (response.requires_payment_update && response.redirect_url) {
-			toast.info("Redirecting to update payment method...", {
-				description:
-					response.message || "Please complete the payment update to proceed.",
-			});
+	// const filteredPlans = getFilteredPlans();
 
-			// Close the modal first
-			onOpenChange(false);
+	// const handlePlanChangeResponse = (response: PlanChangeResponse) => {
+	// 	// Check if we need to redirect to Paddle management URLs
+	// 	if (response.requires_payment_update && response.redirect_url) {
+	// 		toast.info("Redirecting to update payment method...", {
+	// 			description:
+	// 				response.message || "Please complete the payment update to proceed.",
+	// 		});
 
-			// Redirect after a short delay
-			setTimeout(() => {
-				handlePaddleRedirect(response.redirect_url!);
-			}, 1000);
+	// 		// Close the modal first
+	// 		onOpenChange(false);
 
-			return;
-		}
+	// 		// Redirect after a short delay
+	// 		setTimeout(() => {
+	// 			handlePaddleRedirect(response.redirect_url!);
+	// 		}, 1000);
 
-		// Handle other management URLs if needed
-		if (response.management_urls?.update_payment_method) {
-			toast.info("Payment method update available", {
-				description: "A payment update may be required.",
-				action: {
-					label: "Update Payment",
-					onClick: () =>
-						handlePaddleRedirect(
-							response.management_urls!.update_payment_method!,
-						),
-				},
-			});
-		}
+	// 		return;
+	// 	}
 
-		// Show success/error messages
-		if (response.success) {
-			toast.success(response.message || "Plan changed successfully");
-		} else {
-			toast.error(response.error || "Failed to change plan");
-		}
+	// 	// Handle other management URLs if needed
+	// 	if (response.management_urls?.update_payment_method) {
+	// 		toast.info("Payment method update available", {
+	// 			description: "A payment update may be required.",
+	// 			action: {
+	// 				label: "Update Payment",
+	// 				onClick: () =>
+	// 					handlePaddleRedirect(
+	// 						response.management_urls!.update_payment_method!,
+	// 					),
+	// 			},
+	// 		});
+	// 	}
 
-		// Close modal on success
-		if (response.success) {
-			onOpenChange(false);
-		}
-	};
+	// 	// Show success/error messages
+	// 	if (response.success) {
+	// 		toast.success(response.message || "Plan changed successfully");
+	// 	} else {
+	// 		toast.error(response.error || "Failed to change plan");
+	// 	}
 
-	const handlePlanChange = async (planName: string) => {
-		const selectedPlan = filteredPlans.find(
-			p => p.name.toLowerCase() === planName.toLowerCase(),
-		);
-		if (!selectedPlan) return;
+	// 	// Close modal on success
+	// 	if (response.success) {
+	// 		onOpenChange(false);
+	// 	}
+	// };
 
-		const isSamePlan =
-			planName.toLowerCase() === currentPlan.name.toLowerCase() &&
-			billingPeriod.toLowerCase() === currentPlan.interval.toLowerCase();
-		if (isSamePlan) return;
+	// const handlePlanChange = async (planName: string) => {
+	// 	const selectedPlan = filteredPlans.find(
+	// 		p => p.name.toLowerCase() === planName.toLowerCase(),
+	// 	);
+	// 	if (!selectedPlan) return;
 
-		setIsLoading(true);
+	// 	const isSamePlan =
+	// 		planName.toLowerCase() === currentPlan.name.toLowerCase() &&
+	// 		billingPeriod.toLowerCase() === currentPlan.interval.toLowerCase();
+	// 	if (isSamePlan) return;
 
-		try {
-			// If user doesn't have subscription ID, close modal and trigger paddle checkout
-			if (!hasSubscriptionId) {
-				// Close the plan selector modal first
-				onOpenChange(false);
+	// 	setIsLoading(true);
 
-				toast.info("Redirecting to payment...", {
-					description: `Setting up your ${planName} plan`,
-				});
+	// 	try {
+	// 		// If user doesn't have subscription ID, close modal and trigger paddle checkout
+	// 		if (!hasSubscriptionId) {
+	// 			// Close the plan selector modal first
+	// 			onOpenChange(false);
 
-				setIsLoading(false);
-				return;
-			}
+	// 			toast.info("Redirecting to payment...", {
+	// 				description: `Setting up your ${planName} plan`,
+	// 			});
 
-			// User has subscription ID - use the normal plan change flow
-			// Dynamically pick productId based on billingPeriod state
-			const priceId = selectedPlan.price.productIds[billingPeriod];
+	// 			setIsLoading(false);
+	// 			return;
+	// 		}
 
-			const response = await changeSubscriptionPlan({
-				new_price_id: priceId,
-			});
+	// 		// User has subscription ID - use the normal plan change flow
+	// 		// Dynamically pick productId based on billingPeriod state
+	// 		const priceId = selectedPlan.price.productIds[billingPeriod];
 
-			// Handle the response which might include management URLs
-			handlePlanChangeResponse(response);
+	// 		const response = await changeSubscriptionPlan({
+	// 			new_price_id: priceId,
+	// 		});
 
-			// Update Zustand user store on success (if no redirect required)
-			if (response.success && !response.requires_payment_update) {
-				useUserStore.getState().setUser({
-					plan: response.new_plan || planName.toLowerCase(),
-					billing_interval: billingPeriod,
-					current_price_id: priceId,
-					pending_plan_change: response.new_plan,
-					pending_plan_effective_date: response.effective_date
-						? new Date(response.effective_date)
-						: undefined,
-					subscription_status: "active",
-					has_active_subscription: true,
-				});
+	// 		// Handle the response which might include management URLs
+	// 		handlePlanChangeResponse(response);
 
-				initializeFeatureLimits();
-				initializeFeatureFlags();
-				await refetchOrganizations();
-			}
-		} catch {
-			toast.error("Error changing plan");
-		} finally {
-			setIsLoading(false);
-		}
-	};
+	// 		// Update Zustand user store on success (if no redirect required)
+	// 		if (response.success && !response.requires_payment_update) {
+	// 			useUserStore.getState().setUser({
+	// 				plan: response.new_plan || planName.toLowerCase(),
+	// 				billing_interval: billingPeriod,
+	// 				current_price_id: priceId,
+	// 				pending_plan_change: response.new_plan,
+	// 				pending_plan_effective_date: response.effective_date
+	// 					? new Date(response.effective_date)
+	// 					: undefined,
+	// 				subscription_status: "active",
+	// 				has_active_subscription: true,
+	// 			});
 
-	const getSavings = () => {
-		const selectedPlan = filteredPlans.find(
-			p => p.name.toLowerCase() === selectedPlanName.toLowerCase(),
-		);
-		if (!selectedPlan || selectedPlan.price.monthly === 0) return 0;
+	// 			initializeFeatureLimits();
+	// 			initializeFeatureFlags();
+	// 			await refetchOrganizations();
+	// 		}
+	// 	} catch {
+	// 		toast.error("Error changing plan");
+	// 	} finally {
+	// 		setIsLoading(false);
+	// 	}
+	// };
 
-		const monthlyTotal = selectedPlan.price.monthly * 12;
-		const annualPrice = selectedPlan.price.annual;
-		return Math.round(((monthlyTotal - annualPrice) / monthlyTotal) * 100);
-	};
+	// const getSavings = () => {
+	// 	const selectedPlan = filteredPlans.find(
+	// 		p => p.name.toLowerCase() === selectedPlanName.toLowerCase(),
+	// 	);
+	// 	if (!selectedPlan || selectedPlan.price.monthly === 0) return 0;
 
-	const isCurrent = (planName: string) => {
-		return (
-			planName.toLowerCase() === currentPlan.name.toLowerCase() &&
-			billingPeriod.toLowerCase() === currentPlan.interval.toLowerCase()
-		);
-	};
+	// 	const monthlyTotal = selectedPlan.price.monthly * 12;
+	// 	const annualPrice = selectedPlan.price.annual;
+	// 	return Math.round(((monthlyTotal - annualPrice) / monthlyTotal) * 100);
+	// };
 
-	const isCurrentPlanDifferentBilling = (planName: string) => {
-		return (
-			planName.toLowerCase() === currentPlan.name.toLowerCase() &&
-			billingPeriod.toLowerCase() !== currentPlan.interval.toLowerCase()
-		);
-	};
+	// const isCurrent = (planName: string) => {
+	// 	return (
+	// 		planName.toLowerCase() === currentPlan.name.toLowerCase() &&
+	// 		billingPeriod.toLowerCase() === currentPlan.interval.toLowerCase()
+	// 	);
+	// };
 
-	// Handle card selection - this updates both selected plan and features
-	const handleCardSelect = (planName: string) => {
-		setSelectedPlanName(planName);
-	};
+	// const isCurrentPlanDifferentBilling = (planName: string) => {
+	// 	return (
+	// 		planName.toLowerCase() === currentPlan.name.toLowerCase() &&
+	// 		billingPeriod.toLowerCase() !== currentPlan.interval.toLowerCase()
+	// 	);
+	// };
 
-	const handleOpenChange = (newOpen: boolean) => {
-		if (!isLoading) {
-			onOpenChange(newOpen);
-		}
-	};
+	// // Handle card selection - this updates both selected plan and features
+	// const handleCardSelect = (planName: string) => {
+	// 	setSelectedPlanName(planName);
+	// };
 
-	// Get selected plan details for features display
-	const getSelectedPlanDetails = () => {
-		return filteredPlans.find(
-			p => p.name.toLowerCase() === selectedPlanName.toLowerCase(),
-		);
-	};
+	// const handleOpenChange = (newOpen: boolean) => {
+	// 	if (!isLoading) {
+	// 		onOpenChange(newOpen);
+	// 	}
+	// };
 
-	// Set initial selected plan - Updated to handle card selection properly
-	useEffect(() => {
-		if (filteredPlans.length > 0) {
-			const currentPlanInFiltered = filteredPlans.find(
-				p => p.name.toLowerCase() === currentPlan.name.toLowerCase(),
-			);
+	// // Get selected plan details for features display
+	// const getSelectedPlanDetails = () => {
+	// 	return filteredPlans.find(
+	// 		p => p.name.toLowerCase() === selectedPlanName.toLowerCase(),
+	// 	);
+	// };
 
-			if (currentPlanInFiltered) {
-				setSelectedPlanName(currentPlanInFiltered.name); // Keep original case
-			} else {
-				setSelectedPlanName(filteredPlans[0].name); // Keep original case
-			}
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-	// For plans without subscription ID, render Paddle button instead
-	const renderPlanButton = (
-		plan: any,
-		isCurrentPlan: boolean,
-		isCurrentPlanDiffBilling: boolean,
-		actionType: string,
-	) => {
-		// If user doesn't have subscription ID and it's not the current plan, show Paddle checkout
-		if (!hasSubscriptionId && !isCurrentPlan && !isCurrentPlanDiffBilling) {
-			const productId = plan.price.productIds[billingPeriod];
+	// // Set initial selected plan - Updated to handle card selection properly
+	// useEffect(() => {
+	// 	if (filteredPlans.length > 0) {
+	// 		const currentPlanInFiltered = filteredPlans.find(
+	// 			p => p.name.toLowerCase() === currentPlan.name.toLowerCase(),
+	// 		);
 
-			return (
-				<PaddleCheckout
-					locale="en"
-					theme="light"
-					displayMode="overlay"
-					environment={
-						process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
-							| "sandbox"
-							| "production"
-					}
-					productId={productId}
-				>
-					<Button
-						size="sm"
-						className={`ml-[-30px] h-8 text-xs font-semibold uppercase tracking-wide transition-all ${
-							actionType === "upgrade"
-								? "bg-black text-white shadow-sm hover:bg-gray-800"
-								: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-						}`}
-					>
-						{actionType === "upgrade" ? "GET PLAN" : "SWITCH PLAN"}
-					</Button>
-				</PaddleCheckout>
-			);
-		}
+	// 		if (currentPlanInFiltered) {
+	// 			setSelectedPlanName(currentPlanInFiltered.name); // Keep original case
+	// 		} else {
+	// 			setSelectedPlanName(filteredPlans[0].name); // Keep original case
+	// 		}
+	// 	}
+	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, []);
+	// // For plans without subscription ID, render Paddle button instead
+	// const renderPlanButton = (
+	// 	plan: any,
+	// 	isCurrentPlan: boolean,
+	// 	isCurrentPlanDiffBilling: boolean,
+	// 	actionType: string,
+	// ) => {
+	// 	// If user doesn't have subscription ID and it's not the current plan, show Paddle checkout
+	// 	if (hasSubscriptionId) {
+	// 		const productId = plan.price.productIds[billingPeriod];
 
-		// Regular button logic for users with subscription IDs
-		if (isCurrentPlan) {
-			return (
-				<div className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-blue-600">
-					ACTIVE
-				</div>
-			);
-		}
+	// 		return (
+	// 			<PaddleCheckout
+	// 				locale="en"
+	// 				theme="light"
+	// 				displayMode="overlay"
+	// 				environment={
+	// 					process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
+	// 						| "sandbox"
+	// 						| "production"
+	// 				}
+	// 				productId={productId}
+	// 			>
+	// 				<Button
+	// 					size="sm"
+	// 					className={`ml-[-30px] h-8 text-xs font-semibold uppercase tracking-wide transition-all ${
+	// 						actionType === "upgrade"
+	// 							? "bg-black text-white shadow-sm hover:bg-gray-800"
+	// 							: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+	// 					}`}
+	// 				>
+	// 					{actionType === "upgrade" ? "GET PLAN" : "SWITCH PLAN"}
+	// 				</Button>
+	// 			</PaddleCheckout>
+	// 		);
+	// 	}
 
-		if (isCurrentPlanDiffBilling) {
-			return (
-				<Button
-					size="sm"
-					onClick={event => {
-						event.stopPropagation();
-						handlePlanChange(plan.name);
-					}}
-					disabled={isLoading}
-					className="h-8 bg-blue-600 px-4 text-xs font-semibold uppercase tracking-wide text-white transition-all hover:bg-blue-700 disabled:opacity-50"
-				>
-					{isLoading &&
-					selectedPlanName.toLowerCase() === plan.name.toLowerCase()
-						? "..."
-						: "SWITCH"}
-				</Button>
-			);
-		}
+	// 	// Regular button logic for users with subscription IDs
+	// 	if (isCurrentPlan) {
+	// 		return (
+	// 			<div className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-blue-600">
+	// 				ACTIVE
+	// 			</div>
+	// 		);
+	// 	}
 
-		return (
-			<Button
-				size="sm"
-				onClick={event => {
-					event.stopPropagation();
-					handlePlanChange(plan.name);
-				}}
-				disabled={isLoading}
-				className={`h-8 px-4 text-xs font-semibold uppercase tracking-wide transition-all ${
-					actionType === "upgrade"
-						? "bg-black text-white shadow-sm hover:bg-gray-800"
-						: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-				} disabled:opacity-50`}
-			>
-				{isLoading && selectedPlanName.toLowerCase() === plan.name.toLowerCase()
-					? "..."
-					: actionType === "upgrade"
-						? "UPGRADE"
-						: "DOWNGRADE"}
-			</Button>
-		);
-	};
+	// 	if (isCurrentPlanDiffBilling) {
+	// 		return (
+	// 			<Button
+	// 				size="sm"
+	// 				onClick={event => {
+	// 					event.stopPropagation();
+	// 					handlePlanChange(plan.name);
+	// 				}}
+	// 				disabled={isLoading}
+	// 				className="h-8 bg-blue-600 px-4 text-xs font-semibold uppercase tracking-wide text-white transition-all hover:bg-blue-700 disabled:opacity-50"
+	// 			>
+	// 				{isLoading &&
+	// 				selectedPlanName.toLowerCase() === plan.name.toLowerCase()
+	// 					? "..."
+	// 					: "SWITCH"}
+	// 			</Button>
+	// 		);
+	// 	}
+
+	// 	return (
+	// 		<Button
+	// 			size="sm"
+	// 			onClick={event => {
+	// 				event.stopPropagation();
+	// 				handlePlanChange(plan.name);
+	// 			}}
+	// 			disabled={isLoading}
+	// 			className={`h-8 px-4 text-xs font-semibold uppercase tracking-wide transition-all ${
+	// 				actionType === "upgrade"
+	// 					? "bg-black text-white shadow-sm hover:bg-gray-800"
+	// 					: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+	// 			} disabled:opacity-50`}
+	// 		>
+	// 			{isLoading && selectedPlanName.toLowerCase() === plan.name.toLowerCase()
+	// 				? "..."
+	// 				: actionType === "upgrade"
+	// 					? "UPGRADE"
+	// 					: "DOWNGRADE"}
+	// 		</Button>
+	// 	);
+	// };
 
 	if (!open) return;
 
-	const selectedPlanDetails = getSelectedPlanDetails();
+	// const selectedPlanDetails = getSelectedPlanDetails();
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden border-0 bg-white p-0 shadow-2xl">
-				<div className="flex h-full flex-col lg:flex-row">
-					{/* Left side - Plan selection */}
-					<div className="flex max-h-[85vh] w-full flex-col p-4 lg:max-h-full lg:w-1/2 lg:p-6">
-						<DialogHeader className="mb-4 flex-shrink-0 space-y-1 text-left">
-							<DialogTitle className="text-lg font-medium text-black">
-								{type === "upgrade"
-									? "UPGRADE PLAN"
-									: type === "downgrade"
-										? "DOWNGRADE PLAN"
-										: "SELECT PLAN"}
-							</DialogTitle>
-							<DialogDescription className="text-sm text-gray-500">
-								{type === "upgrade"
-									? "Choose a higher tier plan or switch billing"
-									: type === "downgrade"
-										? "Select a lower tier plan or switch billing"
-										: "Simple and flexible per-user pricing"}
-							</DialogDescription>
-							{/* Show current plan info */}
-							<div className="mt-2 text-xs text-gray-400">
-								Current: {currentPlan.name} ({currentPlan.interval})
-								{!hasSubscriptionId && (
-									<span className="ml-2 text-orange-500">
-										• No active subscription
-									</span>
-								)}
-							</div>
-						</DialogHeader>
+		// <Dialog open={open} onOpenChange={handleOpenChange}>
+		// 	<DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden border-0 bg-white p-0 shadow-2xl">
+		// 		<div className="flex h-full flex-col lg:flex-row">
+		// 			{/* Left side - Plan selection */}
+		// 			<div className="flex max-h-[85vh] w-full flex-col p-4 lg:max-h-full lg:w-1/2 lg:p-6">
+		// 				<DialogHeader className="mb-4 flex-shrink-0 space-y-1 text-left">
+		// 					<DialogTitle className="text-lg font-medium text-black">
+		// 						{type === "upgrade"
+		// 							? "UPGRADE PLAN"
+		// 							: type === "downgrade"
+		// 								? "DOWNGRADE PLAN"
+		// 								: "SELECT PLAN"}
+		// 					</DialogTitle>
+		// 					<DialogDescription className="text-sm text-gray-500">
+		// 						{type === "upgrade"
+		// 							? "Choose a higher tier plan or switch billing"
+		// 							: type === "downgrade"
+		// 								? "Select a lower tier plan or switch billing"
+		// 								: "Simple and flexible per-user pricing"}
+		// 					</DialogDescription>
+		// 					{/* Show current plan info */}
+		// 					<div className="mt-2 text-xs text-gray-400">
+		// 						Current: {currentPlan.name} ({currentPlan.interval})
+		// 						{!hasSubscriptionId && (
+		// 							<span className="ml-2 text-orange-500">
+		// 								• No active subscription
+		// 							</span>
+		// 						)}
+		// 					</div>
+		// 				</DialogHeader>
 
-						{/* Billing Period Tabs */}
-						<Tabs
-							value={billingPeriod}
-							onValueChange={value =>
-								setBillingPeriod(value as "monthly" | "annual")
-							}
-							className="mb-4 flex-shrink-0"
-						>
-							<TabsList className="grid h-9 w-full grid-cols-2 bg-gray-100 p-1">
-								<TabsTrigger
-									value="monthly"
-									className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
-								>
-									MONTHLY
-								</TabsTrigger>
-								<TabsTrigger
-									value="annual"
-									className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
-								>
-									ANNUAL {getSavings() > 0 && `(SAVE ${getSavings()}%)`}
-								</TabsTrigger>
-							</TabsList>
+		// 				{/* Billing Period Tabs */}
+		// 				<Tabs
+		// 					value={billingPeriod}
+		// 					onValueChange={value =>
+		// 						setBillingPeriod(value as "monthly" | "annual")
+		// 					}
+		// 					className="mb-4 flex-shrink-0"
+		// 				>
+		// 					<TabsList className="grid h-9 w-full grid-cols-2 bg-gray-100 p-1">
+		// 						<TabsTrigger
+		// 							value="monthly"
+		// 							className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
+		// 						>
+		// 							MONTHLY
+		// 						</TabsTrigger>
+		// 						<TabsTrigger
+		// 							value="annual"
+		// 							className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
+		// 						>
+		// 							ANNUAL {getSavings() > 0 && `(SAVE ${getSavings()}%)`}
+		// 						</TabsTrigger>
+		// 					</TabsList>
 
-							<TabsContent
-								value={billingPeriod}
-								className="mt-4 flex-1 overflow-y-hidden"
-							>
-								<div className="items- flex flex-col justify-between gap-2 space-y-3">
-									{filteredPlans.map(plan => {
-										const isSelected =
-											selectedPlanName.toLowerCase() ===
-											plan.name.toLowerCase();
-										const isCurrentPlan = isCurrent(plan.name.toLowerCase());
-										const isCurrentPlanDiffBilling =
-											isCurrentPlanDifferentBilling(plan.name.toLowerCase());
-										const price =
-											billingPeriod === "monthly"
-												? plan.price.monthly
-												: plan.price.annual;
-										const actionType = getActionType(plan.name.toLowerCase());
+		// 					<TabsContent
+		// 						value={billingPeriod}
+		// 						className="mt-4 flex-1 overflow-y-hidden"
+		// 					>
+		// 						<div className="items- flex flex-col justify-between gap-2 space-y-3">
+		// 							{filteredPlans.map(plan => {
+		// 								const isSelected =
+		// 									selectedPlanName.toLowerCase() ===
+		// 									plan.name.toLowerCase();
+		// 								const isCurrentPlan = isCurrent(plan.name.toLowerCase());
+		// 								const isCurrentPlanDiffBilling =
+		// 									isCurrentPlanDifferentBilling(plan.name.toLowerCase());
+		// 								const price =
+		// 									billingPeriod === "monthly"
+		// 										? plan.price.monthly
+		// 										: plan.price.annual;
+		// 								const actionType = getActionType(plan.name.toLowerCase());
 
-										return (
-											<div
-												key={plan.name.toLowerCase()}
-												onClick={() => handleCardSelect(plan.name)}
-												className={`relative cursor-pointer rounded-lg border p-4 transition-all ${
-													isCurrentPlan
-														? "border-blue-300 bg-blue-50"
-														: isCurrentPlanDiffBilling
-															? "bg-blue-25 border-blue-200 hover:border-blue-300"
-															: isSelected
-																? "border-black bg-gray-50 ring-1 ring-black/20"
-																: "border-gray-200 hover:border-gray-300"
-												}`}
-											>
-												{plan.popular &&
-													!isCurrentPlan &&
-													!isCurrentPlanDiffBilling && (
-														<Badge className="absolute -top-2 right-1 bg-black px-2 py-0.5 text-xs text-white hover:bg-black">
-															POPULAR
-														</Badge>
-													)}
+		// 								return (
+		// 									<div
+		// 										key={plan.name.toLowerCase()}
+		// 										onClick={() => handleCardSelect(plan.name)}
+		// 										className={`relative cursor-pointer rounded-lg border p-4 transition-all ${
+		// 											isCurrentPlan
+		// 												? "border-blue-300 bg-blue-50"
+		// 												: isCurrentPlanDiffBilling
+		// 													? "bg-blue-25 border-blue-200 hover:border-blue-300"
+		// 													: isSelected
+		// 														? "border-black bg-gray-50 ring-1 ring-black/20"
+		// 														: "border-gray-200 hover:border-gray-300"
+		// 										}`}
+		// 									>
+		// 										{plan.popular &&
+		// 											!isCurrentPlan &&
+		// 											!isCurrentPlanDiffBilling && (
+		// 												<Badge className="absolute -top-2 right-1 bg-black px-2 py-0.5 text-xs text-white hover:bg-black">
+		// 													POPULAR
+		// 												</Badge>
+		// 											)}
 
-												<div className="grid w-full grid-cols-5 items-center gap-3">
-													<div className="col-span-4">
-														<div className="mb-1 flex flex-wrap items-center gap-2">
-															<h4 className="text-sm font-semibold uppercase tracking-wide text-black">
-																{plan.name}
-															</h4>
-															{isCurrentPlan && (
-																<Badge className="bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-600">
-																	CURRENT
-																</Badge>
-															)}
-															{isCurrentPlanDiffBilling && (
-																<Badge className="bg-blue-100 px-2 py-0.5 text-xs text-blue-700 hover:bg-blue-100">
-																	SWITCH BILLING
-																</Badge>
-															)}
-														</div>
-														<div className="mb-1 flex items-baseline">
-															<span className="text-xl font-light text-black">
-																${price.toFixed(2)}
-															</span>
-															<span className="ml-1 text-xs uppercase tracking-wide text-gray-500">
-																/{billingPeriod === "monthly" ? "MO" : "YR"}
-															</span>
-														</div>
-														<p className="line-clamp-2 text-xs text-gray-600">
-															{plan.badge}
-														</p>
-														{isCurrentPlanDiffBilling && (
-															<p className="mt-1 text-xs text-blue-600">
-																Switch to {billingPeriod} billing
-															</p>
-														)}
-													</div>
+		// 										<div className="grid w-full grid-cols-5 items-center gap-3">
+		// 											<div className="col-span-4">
+		// 												<div className="mb-1 flex flex-wrap items-center gap-2">
+		// 													<h4 className="text-sm font-semibold uppercase tracking-wide text-black">
+		// 														{plan.name}
+		// 													</h4>
+		// 													{isCurrentPlan && (
+		// 														<Badge className="bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-600">
+		// 															CURRENT
+		// 														</Badge>
+		// 													)}
+		// 													{isCurrentPlanDiffBilling && (
+		// 														<Badge className="bg-blue-100 px-2 py-0.5 text-xs text-blue-700 hover:bg-blue-100">
+		// 															SWITCH BILLING
+		// 														</Badge>
+		// 													)}
+		// 												</div>
+		// 												<div className="mb-1 flex items-baseline">
+		// 													<span className="text-xl font-light text-black">
+		// 														${price.toFixed(2)}
+		// 													</span>
+		// 													<span className="ml-1 text-xs uppercase tracking-wide text-gray-500">
+		// 														/{billingPeriod === "monthly" ? "MO" : "YR"}
+		// 													</span>
+		// 												</div>
+		// 												<p className="line-clamp-2 text-xs text-gray-600">
+		// 													{plan.badge}
+		// 												</p>
+		// 												{isCurrentPlanDiffBilling && (
+		// 													<p className="mt-1 text-xs text-blue-600">
+		// 														Switch to {billingPeriod} billing
+		// 													</p>
+		// 												)}
+		// 											</div>
 
-													<div className="col-span-1 flex justify-end">
-														{renderPlanButton(
-															plan,
-															isCurrentPlan,
-															isCurrentPlanDiffBilling,
-															actionType,
-														)}
-													</div>
-												</div>
-											</div>
-										);
-									})}
+		// 											<div className="col-span-1 flex justify-end">
+		// 												{renderPlanButton(
+		// 													plan,
+		// 													isCurrentPlan,
+		// 													isCurrentPlanDiffBilling,
+		// 													actionType,
+		// 												)}
+		// 											</div>
+		// 										</div>
+		// 									</div>
+		// 								);
+		// 							})}
 
-									{/* Compare Plans Link */}
-									<div className="w-full flex-shrink-0 items-start justify-end text-left">
-										<Link
-											href="/pricing"
-											className="text-xs uppercase tracking-wide text-gray-500 transition-colors hover:text-black"
-										>
-											COMPARE PRICING →
-										</Link>
-									</div>
-								</div>
-							</TabsContent>
-						</Tabs>
+		// 							{/* Compare Plans Link */}
+		// 							<div className="w-full flex-shrink-0 items-start justify-end text-left">
+		// 								<Link
+		// 									href="/pricing"
+		// 									className="text-xs uppercase tracking-wide text-gray-500 transition-colors hover:text-black"
+		// 								>
+		// 									COMPARE PRICING →
+		// 								</Link>
+		// 							</div>
+		// 						</div>
+		// 					</TabsContent>
+		// 				</Tabs>
 
-						{/* No Subscription ID Warning */}
-						{!hasSubscriptionId && (
-							<div className="mb-3 flex-shrink-0 rounded-lg border border-blue-200 bg-blue-50 p-3">
-								<div className="flex items-start gap-2">
-									<div className="mt-0.5 h-4 w-4 flex-shrink-0 rounded-full bg-blue-500" />
-									<div>
-										<p className="text-xs font-medium uppercase tracking-wide text-blue-800">
-											NEW SUBSCRIPTION
-										</p>
-										<p className="mt-1 text-xs text-blue-700">
-											You&apos;ll be redirected to complete your payment and
-											activate your subscription.
-										</p>
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
+		// 				{/* No Subscription ID Warning */}
+		// 				{!hasSubscriptionId && (
+		// 					<div className="mb-3 flex-shrink-0 rounded-lg border border-blue-200 bg-blue-50 p-3">
+		// 						<div className="flex items-start gap-2">
+		// 							<div className="mt-0.5 h-4 w-4 flex-shrink-0 rounded-full bg-blue-500" />
+		// 							<div>
+		// 								<p className="text-xs font-medium uppercase tracking-wide text-blue-800">
+		// 									NEW SUBSCRIPTION
+		// 								</p>
+		// 								<p className="mt-1 text-xs text-blue-700">
+		// 									You&apos;ll be redirected to complete your payment and
+		// 									activate your subscription.
+		// 								</p>
+		// 							</div>
+		// 						</div>
+		// 					</div>
+		// 				)}
+		// 			</div>
 
-					{/* Right side - Features display */}
-					<div className="flex max-h-[40vh] w-full flex-col items-start justify-between overflow-y-auto border-t border-gray-100 bg-gray-50 p-4 lg:max-h-full lg:w-1/2 lg:border-l lg:border-t-0 lg:p-6">
-						{selectedPlanDetails && (
-							<div className="flex w-full flex-col items-start justify-start gap-2">
-								<div className="mb-6">
-									<div className="mb-3 flex flex-wrap items-center gap-2">
-										<h3 className="text-lg font-semibold text-black">
-											{selectedPlanDetails.name} Plan
-										</h3>
-										{selectedPlanDetails.popular && (
-											<Badge className="bg-black px-2 py-0.5 text-xs text-white hover:bg-black">
-												POPULAR
-											</Badge>
-										)}
-									</div>
-									<p className="text-sm text-gray-600">
-										{selectedPlanDetails.badge}
-									</p>
-								</div>
+		// 			{/* Right side - Features display */}
+		// 			<div className="flex max-h-[40vh] w-full flex-col items-start justify-between overflow-y-auto border-t border-gray-100 bg-gray-50 p-4 lg:max-h-full lg:w-1/2 lg:border-l lg:border-t-0 lg:p-6">
+		// 				{selectedPlanDetails && (
+		// 					<div className="flex w-full flex-col items-start justify-start gap-2">
+		// 						<div className="mb-6">
+		// 							<div className="mb-3 flex flex-wrap items-center gap-2">
+		// 								<h3 className="text-lg font-semibold text-black">
+		// 									{selectedPlanDetails.name} Plan
+		// 								</h3>
+		// 								{selectedPlanDetails.popular && (
+		// 									<Badge className="bg-black px-2 py-0.5 text-xs text-white hover:bg-black">
+		// 										POPULAR
+		// 									</Badge>
+		// 								)}
+		// 							</div>
+		// 							<p className="text-sm text-gray-600">
+		// 								{selectedPlanDetails.badge}
+		// 							</p>
+		// 						</div>
 
-								<div className="mb-6">
-									<h4 className="mb-4 text-sm font-medium uppercase tracking-wide text-gray-800">
-										What&apos;s Included
-									</h4>
-									<div className="space-y-3">
-										{selectedPlanDetails.features.map((feature, index) => (
-											<div key={index} className="flex items-start gap-3">
-												<div className="mt-0.5 flex-shrink-0">
-													<Check className="h-4 w-4 text-green-600" />
-												</div>
-												<span className="text-sm text-gray-700">
-													{feature.name}
-												</span>
-											</div>
-										))}
-									</div>
-								</div>
+		// 						<div className="mb-6">
+		// 							<h4 className="mb-4 text-sm font-medium uppercase tracking-wide text-gray-800">
+		// 								What&apos;s Included
+		// 							</h4>
+		// 							<div className="space-y-3">
+		// 								{selectedPlanDetails.features.map((feature, index) => (
+		// 									<div key={index} className="flex items-start gap-3">
+		// 										<div className="mt-0.5 flex-shrink-0">
+		// 											<Check className="h-4 w-4 text-green-600" />
+		// 										</div>
+		// 										<span className="text-sm text-gray-700">
+		// 											{feature.name}
+		// 										</span>
+		// 									</div>
+		// 								))}
+		// 							</div>
+		// 						</div>
 
-								{/* Plan comparison hint */}
-								{selectedPlanName.toLowerCase() !==
-									currentPlan.name.toLowerCase() && (
-									<div className="w-full rounded-lg border border-gray-200 bg-white p-4">
-										<h5 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-800">
-											{getActionType(selectedPlanName) === "upgrade"
-												? "Upgrading From"
-												: "Downgrading From"}
-										</h5>
-										<p className="mb-3 text-sm text-gray-600">
-											{currentPlan.name} ({currentPlan.interval})
-										</p>
-										{getActionType(selectedPlanName) === "upgrade" && (
-											<p className="rounded bg-green-50 p-2 text-xs text-green-700">
-												✓ You&apos;ll gain access to all{" "}
-												{selectedPlanDetails.name} features
-											</p>
-										)}
-										{getActionType(selectedPlanName) === "downgrade" && (
-											<p className="rounded bg-orange-50 p-2 text-xs text-orange-700">
-												Downgrading will limit your access to premium features
-												and may affect existing usage.
-											</p>
-										)}
-									</div>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
+		// 						{/* Plan comparison hint */}
+		// 						{selectedPlanName.toLowerCase() !==
+		// 							currentPlan.name.toLowerCase() && (
+		// 							<div className="w-full rounded-lg border border-gray-200 bg-white p-4">
+		// 								<h5 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-800">
+		// 									{getActionType(selectedPlanName) === "upgrade"
+		// 										? "Upgrading From"
+		// 										: "Downgrading From"}
+		// 								</h5>
+		// 								<p className="mb-3 text-sm text-gray-600">
+		// 									{currentPlan.name} ({currentPlan.interval})
+		// 								</p>
+		// 								{getActionType(selectedPlanName) === "upgrade" && (
+		// 									<p className="rounded bg-green-50 p-2 text-xs text-green-700">
+		// 										✓ You&apos;ll gain access to all{" "}
+		// 										{selectedPlanDetails.name} features
+		// 									</p>
+		// 								)}
+		// 								{getActionType(selectedPlanName) === "downgrade" && (
+		// 									<p className="rounded bg-orange-50 p-2 text-xs text-orange-700">
+		// 										Downgrading will limit your access to premium features
+		// 										and may affect existing usage.
+		// 									</p>
+		// 								)}
+		// 							</div>
+		// 						)}
+		// 					</div>
+		// 				)}
+		// 			</div>
+		// 		</div>
+		// 	</DialogContent>
+		// </Dialog>
+		<>d</>
 	);
 }

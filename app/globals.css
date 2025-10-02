@@ -209,3 +209,837 @@ body {
 .animate-slow-pulse {
   animation: slow-pulse 2.5s ease-in-out infinite;
 }
+
+
+/* Twitter Preview Dark Mode Override - Add this to your main CSS */
+
+/* Force dark mode styling for Twitter previews */
+.twitter-preview__wrapper,
+.twitter-preview__wrapper * {
+  color-scheme: dark;
+}
+
+/* Main wrapper dark styling */
+.twitter-preview__wrapper {
+  background-color: #000000 !important;
+  color: #e7e9ea !important;
+  border: 1px solid #2f3336 !important;
+  border-radius: 16px !important;
+}
+
+/* Container styling */
+.twitter-preview__container {
+  background-color: transparent !important;
+}
+
+/* Header styling */
+.twitter-preview__name {
+  color: #e7e9ea !important;
+  font-weight: 700 !important;
+}
+
+.twitter-preview__screen-name,
+.twitter-preview__date {
+  color: #71767b !important;
+}
+
+/* Content text styling */
+.twitter-preview__text {
+  color: #e7e9ea !important;
+}
+
+/* Profile image container */
+.twitter-preview__profile-image {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background-color: #16181c !important;
+  flex-shrink: 0 !important;
+}
+
+.twitter-preview__profile-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Media styling */
+.twitter-preview__media {
+  border: 1px solid #2f3336 !important;
+  border-radius: 16px !important;
+  background-color: #16181c !important;
+}
+
+/* Footer/action buttons */
+.twitter-preview__footer svg {
+  fill: #71767b !important;
+}
+
+.twitter-preview__footer svg:hover {
+  fill: #e7e9ea !important;
+}
+
+/* Card styling for link previews */
+.twitter-preview__card {
+  background-color: #000000 !important;
+  border: 1px solid #2f3336 !important;
+  border-radius: 16px !important;
+}
+
+.twitter-preview__card-body {
+  background-color: transparent !important;
+  color: #e7e9ea !important;
+}
+
+.twitter-preview__card-title {
+  color: #e7e9ea !important;
+}
+
+.twitter-preview__card-description,
+.twitter-preview__card-url {
+  color: #71767b !important;
+}
+
+/* Thread connector */
+.twitter-preview__connector {
+  background-color: #2f3336 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .twitter-preview__container {
+    grid-template-columns: 40px auto !important;
+    gap: 8px !important;
+  }
+  
+  .twitter-preview__profile-image {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* LinkedIn Preview Dark Mode Override - Add this to your main CSS */
+
+/* Force dark mode styling for LinkedIn previews */
+.linkedin-preview__wrapper,
+.linkedin-preview__wrapper * {
+  color-scheme: dark;
+}
+
+/* Main wrapper dark styling */
+.linkedin-preview__wrapper {
+  background-color: transparent !important;
+  color: #e4e6ea !important;
+  border-radius: 0px !important;
+  padding: 0px !important;
+}
+
+/* Container styling */
+.linkedin-preview__container {
+  background-color: #1b1f23 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Header styling */
+.linkedin-preview__header {
+  background-color: transparent !important;
+}
+
+.linkedin-preview__header--profile-name {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.linkedin-preview__header--profile-title {
+  color: #b0b3b8 !important;
+}
+
+.linkedin-preview__header--profile-actor {
+  color: #65676b !important;
+}
+
+.linkedin-preview__header--profile-meta,
+.linkedin-preview__header--profile-meta * {
+  color: #65676b !important;
+}
+
+/* Profile image container */
+.linkedin-preview__header--avatar {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background-color: #2e3338 !important;
+  flex-shrink: 0 !important;
+}
+
+.linkedin-preview__header--avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Content styling */
+.linkedin-preview__caption {
+  color: #e4e6ea !important;
+  background-color: transparent !important;
+}
+
+/* Media and article styling */
+.linkedin-preview__content article,
+.linkedin-preview__media {
+  background-color: #2e3338 !important;
+  border-radius: 8px !important;
+}
+
+.linkedin-preview__media-item img,
+.linkedin-preview__media-item video {
+  background-color: #2e3338 !important;
+}
+
+/* Description styling */
+.linkedin-preview__description {
+  background-color: #2e3338 !important;
+}
+
+.linkedin-preview__description--title {
+  color: #ffffff !important;
+}
+
+.linkedin-preview__description--meta,
+.linkedin-preview__description--url {
+  color: #65676b !important;
+}
+
+.linkedin-preview__image {
+  background-color: #2e3338 !important;
+}
+
+/* Link styling */
+.linkedin-preview__caption a,
+.linkedin-preview__description a {
+  color: #0a66c2 !important;
+  text-decoration: none !important;
+}
+
+.linkedin-preview__caption a:hover,
+.linkedin-preview__description a:hover {
+  text-decoration: underline !important;
+}
+
+/* Section heading overrides for dark mode */
+.social-preview .linkedin-preview__section h2,
+.social-preview .linkedin-preview__section h3,
+.social-preview .linkedin-preview__section h4 {
+  color: #e4e6ea !important;
+}
+
+.social-preview .linkedin-preview__section .social-preview__section-desc {
+  color: #b0b3b8 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .linkedin-preview__header--avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+
+
+/* Discord Preview Component Styles */
+
+.discord-preview {
+  /* Base Discord colors */
+  --discord-bg-primary: #36393f;
+  --discord-bg-secondary: #2f3136;
+  --discord-bg-tertiary: #202225;
+  --discord-text-primary: #ffffff;
+  --discord-text-secondary: #b9bbbe;
+  --discord-text-muted: #8e9297;
+  --discord-accent: #5865f2;
+  --discord-green: #3ba55c;
+  --discord-yellow: #faa61a;
+  --discord-red: #ed4245;
+  --discord-blue: #5865f2;
+  --discord-link: #00aff4;
+}
+
+/* Override any conflicting styles */
+.discord-preview * {
+  box-sizing: border-box;
+}
+
+/* Main container */
+.discord-preview__container {
+  background-color: var(--discord-bg-primary);
+  color: var(--discord-text-primary);
+  font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.375;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Channel header */
+.discord-preview__channel-header {
+  background-color: var(--discord-bg-secondary);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(79, 84, 92, 0.48);
+}
+
+.discord-preview__channel-name {
+  color: var(--discord-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Message container */
+.discord-preview__message {
+  padding: 8px 16px;
+  position: relative;
+  transition: background-color 0.1s ease-out;
+}
+
+.discord-preview__message:hover {
+  background-color: rgba(4, 4, 5, 0.07);
+}
+
+/* Reply indicator */
+.discord-preview__reply {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--discord-text-muted);
+}
+
+.discord-preview__reply-line {
+  width: 16px;
+  height: 16px;
+  position: relative;
+}
+
+.discord-preview__reply-line::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  width: 16px;
+  height: 1px;
+  background-color: var(--discord-text-muted);
+  border-radius: 1px;
+}
+
+.discord-preview__reply-line::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--discord-text-muted);
+  border-radius: 1px;
+}
+
+/* Avatar */
+.discord-preview__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.discord-preview__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discord-preview__avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background-color: var(--discord-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Message header */
+.discord-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.discord-preview__username {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--discord-text-primary);
+  cursor: pointer;
+}
+
+.discord-preview__username:hover {
+  text-decoration: underline;
+}
+
+.discord-preview__bot-tag {
+  background-color: var(--discord-blue);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.discord-preview__verified-tag {
+  background-color: var(--discord-green);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.discord-preview__timestamp {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--discord-text-muted);
+  cursor: pointer;
+}
+
+.discord-preview__timestamp:hover {
+  color: var(--discord-text-secondary);
+}
+
+.discord-preview__edited {
+  font-size: 10px;
+  color: var(--discord-text-muted);
+}
+
+/* Message content */
+.discord-preview__content {
+  font-size: 16px;
+  line-height: 1.375;
+  color: var(--discord-text-primary);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+.discord-preview__content:last-child {
+  margin-bottom: 0;
+}
+
+.discord-preview__content a {
+  color: var(--discord-link);
+  text-decoration: none;
+}
+
+.discord-preview__content a:hover {
+  text-decoration: underline;
+}
+
+/* Attachments */
+.discord-preview__attachment {
+  margin-top: 8px;
+  max-width: 520px;
+}
+
+.discord-preview__image {
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.discord-preview__image:hover {
+  opacity: 0.9;
+}
+
+.discord-preview__video {
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+}
+
+.discord-preview__file {
+  background-color: var(--discord-bg-secondary);
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.discord-preview__file:hover {
+  background-color: #36393f;
+}
+
+.discord-preview__file-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #4f545c;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--discord-text-secondary);
+}
+
+.discord-preview__file-info {
+  flex: 1;
+}
+
+.discord-preview__file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-link);
+  margin-bottom: 2px;
+}
+
+.discord-preview__file-name:hover {
+  text-decoration: underline;
+}
+
+.discord-preview__file-size {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+}
+
+/* Embeds */
+.discord-preview__embed {
+  background-color: var(--discord-bg-secondary);
+  border-radius: 4px;
+  border-left: 4px solid #202225;
+  max-width: 520px;
+  margin-top: 8px;
+  padding: 12px 16px;
+}
+
+.discord-preview__embed-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.discord-preview__embed-author-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.discord-preview__embed-author-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--discord-text-primary);
+}
+
+.discord-preview__embed-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--discord-text-primary);
+  margin-bottom: 4px;
+}
+
+.discord-preview__embed-title a {
+  color: var(--discord-link);
+  text-decoration: none;
+}
+
+.discord-preview__embed-title a:hover {
+  text-decoration: underline;
+}
+
+.discord-preview__embed-description {
+  font-size: 14px;
+  line-height: 1.375;
+  color: var(--discord-text-secondary);
+  margin-bottom: 8px;
+}
+
+.discord-preview__embed-fields {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.discord-preview__embed-field {
+  min-width: 0;
+}
+
+.discord-preview__embed-field-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--discord-text-primary);
+  margin-bottom: 2px;
+}
+
+.discord-preview__embed-field-value {
+  font-size: 14px;
+  line-height: 1.375;
+  color: var(--discord-text-secondary);
+}
+
+.discord-preview__embed-image {
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+  margin-top: 8px;
+}
+
+.discord-preview__embed-thumbnail {
+  float: right;
+  margin-left: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  max-width: 80px;
+  max-height: 80px;
+}
+
+.discord-preview__embed-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  margin-top: 8px;
+}
+
+.discord-preview__embed-footer-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+/* Reactions */
+.discord-preview__reactions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.discord-preview__reaction {
+  background-color: var(--discord-bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.discord-preview__reaction:hover {
+  background-color: #36393f;
+}
+
+.discord-preview__reaction--reacted {
+  background-color: rgba(88, 101, 242, 0.15);
+  border-color: var(--discord-blue);
+  color: var(--discord-blue);
+}
+
+.discord-preview__reaction-count {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .discord-preview__container {
+    border-radius: 0;
+  }
+  
+  .discord-preview__message {
+    padding: 8px 12px;
+  }
+  
+  .discord-preview__channel-header {
+    padding: 12px;
+  }
+  
+  .discord-preview__embed,
+  .discord-preview__attachment {
+    max-width: 100%;
+  }
+}
+
+
+
+/* Enhanced Loading Animations */
+@keyframes loading-progress {
+  0% {
+    width: 20%;
+    opacity: 0.4;
+  }
+  50% {
+    width: 80%;
+    opacity: 1;
+  }
+  100% {
+    width: 60%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
+                0 0 25px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+.loading-container {
+  animation: float 3s ease-in-out infinite;
+}
+
+.loading-spinner {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Status indicator animations */
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.status-indicator {
+  animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+/* Connection status in grayscale */
+@keyframes connection-pulse {
+  0%, 100% {
+    color: #e5e5e5; /* light gray */
+  }
+  50% {
+    color: #ffffff; /* pure white */
+  }
+}
+
+.connection-status {
+  animation: connection-pulse 2s ease-in-out infinite;
+}
+
+/* Delay animation classes */
+.animation-delay-75 {
+  animation-delay: 75ms;
+}
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+/* Enhanced backdrop blur effect */
+.enhanced-backdrop {
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+}
+
+/* Loading text fade in */
+@keyframes text-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-text {
+  animation: text-fade-in 0.5s ease-out;
+}
+
+/* Monochrome Progress bar */
+.progress-bar {
+  background: linear-gradient(
+    90deg,
+    #000000 0%,
+    #808080 50%,
+    #ffffff 100%
+  );
+  background-size: 200% 100%;
+  animation: gradient-shift 2s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}

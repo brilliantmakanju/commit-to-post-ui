@@ -1,7 +1,9 @@
 /* eslint-disable import/no-unresolved */
 "use client";
+import { useMemo } from "react";
 
-import { PostGroup } from "@/types";
+import { transformPostGroupsResponse } from "@/lib/post-transformer";
+import { FlattenedPostGroup, PostGroup } from "@/types";
 
 import GroupedPostCard from "./grouped-posts";
 
@@ -11,6 +13,12 @@ interface PostsGridProps {
 }
 
 export default function PostsGrid({ posts, isLoading }: PostsGridProps) {
+	// Transform the nested API response into flattened structure
+	const flattenedPosts: FlattenedPostGroup[] = useMemo(() => {
+		if (!posts || posts.length === 0) return [];
+		return transformPostGroupsResponse(posts);
+	}, [posts]);
+
 	if (isLoading) {
 		return (
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -24,7 +32,7 @@ export default function PostsGrid({ posts, isLoading }: PostsGridProps) {
 		);
 	}
 
-	if (posts.length === 0) {
+	if (flattenedPosts.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center gap-4 py-20 text-center text-white">
 				<div className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-900/50 ring-1 ring-zinc-700">
@@ -40,7 +48,7 @@ export default function PostsGrid({ posts, isLoading }: PostsGridProps) {
 
 	return (
 		<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-			{posts.map((postGroup: PostGroup, index) => (
+			{flattenedPosts.map((postGroup: FlattenedPostGroup, index) => (
 				<GroupedPostCard
 					key={`${postGroup.group_id}_${index}`}
 					group={postGroup}

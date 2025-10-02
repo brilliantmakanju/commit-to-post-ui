@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, {
 	Suspense,
@@ -14,13 +13,9 @@ import React, {
 import { AppSidebar } from "@/components/app-sidebar";
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
 import { RequestInterceptor } from "@/components/interceptor";
-import PlanSelector from "@/components/landing/pricing/v4/payment-selector";
+import { TopNav } from "@/components/top-nav";
 import { useSessionManager } from "@/components/tracker/auth-tracker";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/zustand/logout-store";
@@ -102,8 +97,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const [initializationComplete, setInitializationComplete] = useState(false);
 	const [forceShowContent, setForceShowContent] = useState(false);
 
-	const { isOpen, close, type, currentPlanId, currentInterval } =
-		usePlanSelectorStore();
+	const { isOpen, close, type, currentPlanId } = usePlanSelectorStore();
 
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
@@ -350,12 +344,16 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	return (
 		<>
 			<SessionUI />
-			<SidebarProvider className="scrollbar-hide h-screen overflow-hidden md:rounded-[20px]">
-				<div className="flex h-screen w-full">
+
+			<SidebarProvider className="scrollbar-hide h-screen overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
+				<div className="relative flex h-screen w-full">
 					<AppSidebar />
 					<SidebarInset className="scrollbar-hide relative flex-1 overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
+						{/* Top Navigation Bar with integrated user data */}
+						<TopNav isLoadingAttachment={false} />
+
 						<main className="scrollbar-hide relative mb-2 h-full w-full overflow-y-auto text-[#EAF6FF] md:mb-0">
-							<SidebarTrigger className="absolute left-0 top-0" />
+							{/* Removed SidebarTrigger since it's now in TopNav */}
 							<Suspense
 								fallback={<LoadingScreen message="Loading content..." />}
 							>
@@ -368,16 +366,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					</SidebarInset>
 				</div>
 			</SidebarProvider>
-
-			<PlanSelector
-				type={type || "upgrade"}
-				open={isOpen}
-				currentPlanId={currentPlanId || ""}
-				onOpenChange={open => {
-					if (!open) close();
-				}}
-				currentInterval={currentInterval}
-			/>
 		</>
 	);
 }

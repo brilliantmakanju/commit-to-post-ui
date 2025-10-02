@@ -11,14 +11,12 @@ import { FeaturesSectionDemo } from "@/components/landing/feature/v2/features";
 import HeroSection from "@/components/landing/micro/hero-section";
 import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
 import PricingTable from "@/components/landing/pricing";
-import PlanSelector from "@/components/landing/pricing/v4/payment-selector";
 import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { signOut } from "@/server-actions/auth/signout";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useLogoutStore from "@/zustand/logout-store";
-import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
 import useUserStore from "@/zustand/useuser-store";
 
 export default function Home() {
@@ -30,14 +28,6 @@ export default function Home() {
 	const hasSyncedRef = useRef(false);
 	const { data: session, status } = useSession();
 	const { setUser, hasHydratedUser } = useUserStore();
-
-	const {
-		isOpen: selector,
-		close,
-		type,
-		currentPlanId,
-		currentInterval,
-	} = usePlanSelectorStore();
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
@@ -103,7 +93,7 @@ export default function Home() {
 				<PricingTable />
 				<FAQs />
 			</div>
-			<PlanSelector
+			{/* <PlanSelector
 				open={selector}
 				type={type || "upgrade"}
 				currentPlanId={currentPlanId || ""}
@@ -111,7 +101,7 @@ export default function Home() {
 					if (!open) close();
 				}}
 				currentInterval={currentInterval}
-			/>
+			/> */}
 		</>
 	);
 }

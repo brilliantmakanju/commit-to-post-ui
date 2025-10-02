@@ -13,8 +13,6 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from "@/components/ui/table";
 import useRetrieveMetrics from "@/hooks/core/metric";
-// eslint-disable-next-line import/no-unresolved
-import { webhookErrorsData } from "@/lib/data";
 
 const getStatusColor = (status: number) => {
 	if (status >= 500) return "bg-red-500/20 text-red-400 border-red-500/30";

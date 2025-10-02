@@ -5,8 +5,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { FaDiscord, FaLinkedinIn, FaSlack } from "react-icons/fa";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import {
 	Dialog,
 	DialogContent,
@@ -14,8 +12,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import useOrganizationStore from "@/zustand/useorganization-store";
 
 // --- Types
@@ -295,14 +291,6 @@ const ConnectRepoSocialOnboarding = ({
 		[socials],
 	);
 
-	// Pass that count into useLimitUI
-	const repoSocialsLimit = useLimitUI({
-		warningThreshold: 80,
-		limitType: "repo_socials",
-		currentCount: selectedSocialsCount,
-		limitId: FEATURE_LIMITS.REPO_SOCIALS,
-	});
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[80vh] flex-col border border-gray-600 bg-arch-white px-0 shadow-lg sm:max-w-md">
@@ -355,57 +343,21 @@ const ConnectRepoSocialOnboarding = ({
 											if (isSelected) {
 												// Already selected -> don’t disable, always allow toggle
 												return (
-													<LimitTooltip
+													<SocialItem
 														key={social.id}
-														position="bottom"
-														limitType="repo_socials"
-														maxLimit={repoSocialsLimit.limit}
-														currentUsage={selectedSocialsCount}
-													>
-														<SocialItem
-															social={social}
-															toggleSocial={toggleSocial}
-														/>
-													</LimitTooltip>
+														social={social}
+														toggleSocial={toggleSocial}
+													/>
 												);
 											}
 
 											// Not selected -> enforce limit
 											return (
-												<FeatureLimitWrapper
+												<SocialItem
 													key={social.id}
-													limitId={FEATURE_LIMITS.REPO_SOCIALS}
-													currentCount={selectedSocialsCount}
-													fallback={
-														<div className="flex w-full flex-col gap-2">
-															<LimitTooltip
-																position="bottom"
-																limitType="repo_socials"
-																maxLimit={repoSocialsLimit.limit}
-																currentUsage={selectedSocialsCount}
-															>
-																<div className="inline-block cursor-not-allowed opacity-40">
-																	<SocialItem
-																		social={social}
-																		toggleSocial={() => {}}
-																	/>
-																</div>
-															</LimitTooltip>
-														</div>
-													}
-												>
-													<LimitTooltip
-														position="bottom"
-														limitType="repo_socials"
-														maxLimit={repoSocialsLimit.limit}
-														currentUsage={selectedSocialsCount}
-													>
-														<SocialItem
-															social={social}
-															toggleSocial={toggleSocial}
-														/>
-													</LimitTooltip>
-												</FeatureLimitWrapper>
+													social={social}
+													toggleSocial={toggleSocial}
+												/>
 											);
 										})}
 									</div>

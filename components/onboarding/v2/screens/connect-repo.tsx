@@ -7,8 +7,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { connectGithubRepoBatch } from "@/server-actions/user-actions/connect-git-repo";
 import { getGitHubRepos } from "@/server-actions/user-actions/get-repos";
 import useOrganizationStore from "@/zustand/useorganization-store";
@@ -105,15 +103,6 @@ const ConnectRepoOnboarding = () => {
 	);
 	const remainingSlots = Math.max(0, planLimits.maxRepos - totalRepositories);
 	const maxSelectionAllowed = Math.min(planLimits.maxSelection, remainingSlots);
-
-	const repoLimitUI = useLimitUI({
-		warningThreshold: 80,
-		limitType: "repositories",
-		currentCount: totalRepositories,
-		limitId: FEATURE_LIMITS.REPOSITORIES,
-	});
-
-	const shouldShowUpgradePrompt = repoLimitUI.isAtLimit;
 
 	const selectedRepoNames = useMemo(() => {
 		return selectedRepo
@@ -312,7 +301,6 @@ const ConnectRepoOnboarding = () => {
 						onSearchChange={setSearchQuery}
 						onRepoSelect={handleRepoSelection}
 						maxSelectionAllowed={maxSelectionAllowed}
-						shouldShowUpgradePrompt={shouldShowUpgradePrompt}
 						isLoading={isLoadingRepos || isLoadingConnectedRepo}
 					/>
 				);

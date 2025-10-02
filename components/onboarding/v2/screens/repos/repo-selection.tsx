@@ -2,13 +2,8 @@
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 // eslint-disable-next-line import/no-unresolved
 import { Input } from "@/components/ui/input";
-import useRetrieveConnectedRepos from "@/hooks/core/repo/get-repo-hook";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 
 import { RepoCard } from "./repo-card";
 import { GitHubRepo } from "./type";
@@ -19,7 +14,6 @@ interface RepoSelectionProps {
 	selectedRepo: string[];
 	repositories: GitHubRepo[];
 	maxSelectionAllowed: number;
-	shouldShowUpgradePrompt: boolean;
 	onSearchChange: (query: string) => void;
 	onRepoSelect: (repoId: string) => void;
 }
@@ -32,23 +26,13 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 	onRepoSelect,
 	onSearchChange,
 	maxSelectionAllowed,
-	shouldShowUpgradePrompt,
 }) => {
-	const { totalRepositories } = useRetrieveConnectedRepos();
 	const filteredRepos = repositories.filter(repo => {
 		const matchesSearch =
 			repo.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			(repo.description &&
 				repo.description.toLowerCase().includes(searchQuery.toLowerCase()));
 		return matchesSearch && !repo.is_connected && !repo.status;
-	});
-	const repoCount = totalRepositories;
-
-	const repoLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: repoCount,
-		limitType: "repositories",
-		limitId: FEATURE_LIMITS.REPOSITORIES,
 	});
 
 	return (
@@ -75,52 +59,20 @@ export const RepoSelection: React.FC<RepoSelectionProps> = ({
 								{filteredRepos.map(repo => {
 									const isSelected = selectedRepo.includes(repo.id.toString());
 									const shouldDisable =
-										!isSelected &&
-										(selectedRepo.length >= maxSelectionAllowed ||
-											shouldShowUpgradePrompt);
+										!isSelected && selectedRepo.length >= maxSelectionAllowed;
 
 									return (
-										<FeatureLimitWrapper
-											key={repo.id}
-											currentCount={repoCount}
-											limitId={FEATURE_LIMITS.REPOSITORIES}
-											fallback={
-												<LimitTooltip
-													maxLimit={repoLimitUI.limit}
-													limitType="repositories"
-													currentUsage={repoCount}
-													position="bottom"
-												>
-													<div className="inline-block w-full cursor-pointer">
-														<RepoCard
-															repo={repo}
-															isDisabled={true}
-															isSelected={false}
-															onSelect={() => {}}
-														/>
-													</div>
-												</LimitTooltip>
-											}
+										<div
+											key={`${repo.id}-${repo.updated_at}-${repo.connected_by_user_id}`}
+											className="inline-block w-full cursor-pointer"
 										>
-											<LimitTooltip
-												maxLimit={repoLimitUI.limit}
-												limitType="repositories"
-												currentUsage={repoCount}
-												position="bottom"
-											>
-												<div
-													key={`${repo.id}-${repo.updated_at}-${repo.connected_by_user_id}`}
-													className="inline-block w-full cursor-pointer"
-												>
-													<RepoCard
-														repo={repo}
-														isSelected={isSelected}
-														onSelect={onRepoSelect}
-														isDisabled={shouldDisable}
-													/>
-												</div>
-											</LimitTooltip>
-										</FeatureLimitWrapper>
+											<RepoCard
+												repo={repo}
+												isSelected={isSelected}
+												onSelect={onRepoSelect}
+												isDisabled={shouldDisable}
+											/>
+										</div>
 									);
 								})}
 							</div>

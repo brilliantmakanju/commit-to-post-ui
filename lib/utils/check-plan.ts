@@ -1,5 +1,11 @@
+/* eslint-disable unicorn/no-empty-file */
+// COMMENTED OUT: This file is deprecated in favor of credit-based system
+// All subscription-based access checks have been moved to feature-flag-utils.ts
+
 "use server";
 
+// COMMENTED OUT: Old subscription-based access logic
+/*
 interface User {
 	plan: string;
 	subscription_status: string;
@@ -38,3 +44,7 @@ export async function hasLifetimeAccess(
 	// Check if either plan is "ltd" (lifetime access)
 	return userStorePlan === "ltd" || userDetailsPlan === "ltd";
 }
+*/
+
+// NEW: Credit-based access functions (moved to feature-flag-utils.ts)
+// Use checkFeatureAccess, hasWorkspaceAccess, etc. from feature-flag-utils.ts instead

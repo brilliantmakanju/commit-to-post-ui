@@ -14,6 +14,8 @@ import useRepoWebhookPing from "@/hooks/core/repo/get-repo-webhook-pings";
 import { fetchPosts } from "@/server-actions/core/get-posts";
 import { updateRepoStatus } from "@/server-actions/core/repo/repo-status";
 
+import CreatePostModal from "../posts/components/regenerate-post";
+
 const PAGE_SIZE = 50;
 
 const ViewRepo = () => {
@@ -81,6 +83,17 @@ const ViewRepo = () => {
 				onPostsPageChange={handlePostsPageChange}
 				isLoadingPosts={isLoading || isGettingLogs}
 				postsTotalPages={Math.ceil((data?.count ?? 1) / PAGE_SIZE)}
+			/>
+			<CreatePostModal
+				repoId={repoId}
+				onDeletePost={async postId => {
+					// Your global delete handler
+					console.log("GG");
+				}}
+				onUpdatePost={async (postId, content, image) => {
+					// Your global update handler
+					console.log("GG");
+				}}
 			/>
 		</section>
 	);

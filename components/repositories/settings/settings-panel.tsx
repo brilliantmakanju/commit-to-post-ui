@@ -3,20 +3,14 @@ import { UUID } from "node:crypto";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isEqual from "fast-deep-equal";
-import {
-	AlertCircle,
-	CheckCircle,
-	CheckCircle2,
-	RotateCcw,
-	XCircle,
-} from "lucide-react";
+import { CheckCircle, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaDiscord, FaLinkedinIn, FaSlack, FaTwitter } from "react-icons/fa";
 import { toast } from "sonner";
 
-import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-import LimitTooltip from "@/components/feature-flag/limit-tooltip";
+// import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
+// import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -24,8 +18,8 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
+// import { useLimitUI } from "@/hooks/use-limit-ui";
+// import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { deleteRepo } from "@/server-actions/core/repo/repo-status";
 import { updateRepoSettings } from "@/server-actions/user-actions/repo/edit-repo";
 
@@ -34,7 +28,6 @@ import { RepoChannelSettingsCard } from "./channel-settings";
 import { RepoCommitFiltersCard } from "./commit-filters";
 import { RepoDangerZoneCard } from "./danger-zone";
 import { RepoGeneralSettingsCard } from "./general-settings";
-import { RepoPostingSettingsCard } from "./posting-settings";
 
 interface SettingsPanelProps {
 	repo_id: UUID;
@@ -168,12 +161,12 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 		}
 	};
 
-	const analyticsLimitUI = useLimitUI({
-		currentCount: 0,
-		warningThreshold: 80,
-		limitType: "analytics",
-		limitId: FEATURE_LIMITS.ADVANCED_ANALYTICS,
-	});
+	// const analyticsLimitUI = useLimitUI({
+	// 	currentCount: 0,
+	// 	warningThreshold: 80,
+	// 	limitType: "analytics",
+	// 	limitId: FEATURE_LIMITS.ADVANCED_ANALYTICS,
+	// });
 
 	if (
 		isLoadingRepoDetails ||
@@ -249,7 +242,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 		<div className="space-y-6 pb-4">
 			<div className="flex justify-end gap-2 pt-6">
 				{/* Revert Button */}
-				<FeatureLimitWrapper
+				{/* <FeatureLimitWrapper
 					limitId={FEATURE_LIMITS.ADVANCED_ANALYTICS}
 					currentCount={0}
 					fallback={
@@ -280,26 +273,26 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 						</LimitTooltip>
 					}
 				>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								disabled={!isDirty || mutation.isPending}
-								onClick={handleRevertSettings}
-								className="hover:bg-muted"
-							>
-								<RotateCcw className="h-5 w-5" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="top" className="text-xs">
-							Revert
-						</TooltipContent>
-					</Tooltip>
-				</FeatureLimitWrapper>
+				</FeatureLimitWrapper> */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							disabled={!isDirty || mutation.isPending}
+							onClick={handleRevertSettings}
+							className="hover:bg-muted"
+						>
+							<RotateCcw className="h-5 w-5" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent side="top" className="text-xs">
+						Revert
+					</TooltipContent>
+				</Tooltip>
 
 				{/* Save Button */}
-				<FeatureLimitWrapper
+				{/* <FeatureLimitWrapper
 					limitId={FEATURE_LIMITS.ADVANCED_ANALYTICS}
 					currentCount={0}
 					fallback={
@@ -309,9 +302,9 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 							limitType="analytics"
 							maxLimit={1}
 						>
-							<div className="cursor-not-allowed opacity-50">
-								{/* Save Button */}
-								<Tooltip>
+							<div className="cursor-not-allowed opacity-50"> */}
+				{/* Save Button */}
+				{/* <Tooltip>
 									<TooltipTrigger asChild>
 										<Button
 											variant="default"
@@ -353,46 +346,46 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 						</LimitTooltip>
 					}
 				>
-					{/* Save Button */}
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								variant="default"
-								size="icon"
-								disabled={!isDirty || mutation.isPending}
-								onClick={handleSaveSettings}
-								className="hover:bg-primary/90"
-							>
-								{mutation.isPending ? (
-									<svg
-										className="h-5 w-5 animate-spin"
-										viewBox="0 0 24 24"
-										fill="none"
-									>
-										<circle
-											className="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											strokeWidth="4"
-										></circle>
-										<path
-											className="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-										></path>
-									</svg>
-								) : (
-									<CheckCircle className="h-5 w-5" />
-								)}
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="top" className="text-xs">
-							{mutation.isPending ? "Saving..." : "Save Settings"}
-						</TooltipContent>
-					</Tooltip>
-				</FeatureLimitWrapper>
+				</FeatureLimitWrapper> */}
+				{/* Save Button */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="default"
+							size="icon"
+							disabled={!isDirty || mutation.isPending}
+							onClick={handleSaveSettings}
+							className="hover:bg-primary/90"
+						>
+							{mutation.isPending ? (
+								<svg
+									className="h-5 w-5 animate-spin"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									></circle>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+									></path>
+								</svg>
+							) : (
+								<CheckCircle className="h-5 w-5" />
+							)}
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent side="top" className="text-xs">
+						{mutation.isPending ? "Saving..." : "Save Settings"}
+					</TooltipContent>
+				</Tooltip>
 			</div>
 
 			{/* General Settings */}
@@ -419,11 +412,11 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 			/>
 
 			{/* Posting Settings */}
-			<RepoPostingSettingsCard
+			{/* <RepoPostingSettingsCard
 				settings={localSettings}
 				loading={isLoadingRepoDetails}
 				onChange={handleSettingChange}
-			/>
+			/> */}
 
 			{/* Channel Settings - Updated to use new data structure */}
 			<RepoChannelSettingsCard

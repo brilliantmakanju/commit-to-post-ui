@@ -14,6 +14,7 @@ import {
 	FaUsers,
 } from "react-icons/fa";
 
+import { XIcon } from "@/components/posts/utils/post-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,7 @@ import {
 import useRetrieveUpcomingPost from "@/hooks/core/upcoming";
 
 const platformIconMap = {
-	Twitter: <FaTwitter className="h-4 w-4 text-blue-400" />,
+	Twitter: <XIcon className="h-4 w-4" />,
 	LinkedIn: <FaLinkedin className="h-4 w-4 text-blue-600" />,
 	Discord: <FaDiscord className="h-4 w-4 text-indigo-500" />,
 	default: <FaGlobe className="h-4 w-4 text-gray-400" />,
@@ -47,26 +48,7 @@ type Platform = keyof typeof platformIconMap;
 const getPlatformIcon = (platform: string) => {
 	return platformIconMap[platform as Platform] ?? platformIconMap.default;
 };
-// Helper function to get status badge variant
-const getStatusVariant = (status: any) => {
-	switch (status?.toLowerCase()) {
-		case "scheduled": {
-			return "secondary";
-		}
-		case "draft": {
-			return "outline";
-		}
-		case "published": {
-			return "default";
-		}
-		case "failed": {
-			return "destructive";
-		}
-		default: {
-			return "default";
-		}
-	}
-};
+
 // Helper function to get status styles (black & white shades only)
 const getStatusStyles = (status: string = "") => {
 	switch (status.toLowerCase()) {

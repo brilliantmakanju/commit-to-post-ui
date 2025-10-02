@@ -12,158 +12,187 @@ import {
 	NavbarButton,
 	NavbarLogo,
 	NavBody,
-	NavItems,
 } from "@/components/ui/resizable-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useLogoutStore from "@/zustand/logout-store";
 import useUserStore from "@/zustand/useuser-store";
 
 import AuthButtons from "./auth-buttons";
-import { links } from "./data";
 
 const TopNavigation = () => {
 	const userStore = useUserStore();
 	const logoutStore = useLogoutStore();
 	const { data, status } = useSession();
+
+	const [isVisible, setIsVisible] = useState(true);
+	const [lastScrollY, setLastScrollY] = useState(0);
+	const [isScrolled, setIsScrolled] = useState(false);
 	const [localStatus, setLocalStatus] = useState("loading");
 	const [loadingTimeout, setLoadingTimeout] = useState(false);
+	const openModal = useAuthModalStore(state => state.openModal);
+
 	const userEmail = userStore.email || data?.user?.email;
 
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-	// Set a maximum loading time to prevent infinite loading
+	// Smooth scroll handler with optimized performance
 	useEffect(() => {
-		// If we're still showing loading after 1 second, force a status decision
-		const timer = setTimeout(() => {
-			setLoadingTimeout(true);
-		}, 1000);
+		let ticking = false;
 
+		const handleScroll = () => {
+			if (!ticking) {
+				requestAnimationFrame(() => {
+					const currentScrollY = window.scrollY;
+					const scrollingDown = currentScrollY > lastScrollY;
+					const scrollingUp = currentScrollY < lastScrollY;
+
+					// Update scrolled state for styling
+					setIsScrolled(currentScrollY > 20);
+
+					// Update visibility based on scroll behavior
+					if (currentScrollY < 100) {
+						setIsVisible(true);
+					} else if (scrollingDown && currentScrollY > 150) {
+						setIsVisible(false);
+					} else if (scrollingUp) {
+						setIsVisible(true);
+					}
+
+					setLastScrollY(currentScrollY);
+					ticking = false;
+				});
+				ticking = true;
+			}
+		};
+
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, [lastScrollY]);
+
+	// Loading timeout
+	useEffect(() => {
+		const timer = setTimeout(() => setLoadingTimeout(true), 1000);
 		return () => clearTimeout(timer);
 	}, []);
 
-	// Sync the status with both next-auth and our zustand store
+	// Authentication state management
 	useEffect(() => {
 		if (logoutStore.logout) {
-			// If user has logged out through our custom process
 			setLocalStatus("unauthenticated");
 		} else if (status === "authenticated" && data) {
-			// If next-auth says we're authenticated
 			setLocalStatus("authenticated");
 		} else if (status === "unauthenticated") {
-			// If next-auth says we're not authenticated
 			setLocalStatus("unauthenticated");
 		} else if (status === "loading" && !loadingTimeout) {
-			// Still loading, but respect timeout
 			setLocalStatus("loading");
 		} else if (loadingTimeout) {
-			// Loading timed out, make a best guess based on available data
 			setLocalStatus(userEmail ? "authenticated" : "unauthenticated");
 		}
 	}, [status, data, userEmail, logoutStore.logout, loadingTimeout]);
 
-	// Determine what to show in the auth area
 	const renderAuthContent = () => {
 		if (localStatus === "loading" && !loadingTimeout) {
-			return <Skeleton className="h-[40px] w-[100px] rounded-md" />;
-		} else if (
+			return (
+				<Skeleton className="h-10 w-32 animate-pulse rounded-full bg-gray-800/60" />
+			);
+		}
+
+		if (
 			localStatus === "authenticated" ||
 			(localStatus === "loading" && userEmail)
 		) {
 			return (
 				<NavbarButton
 					variant="secondary"
-					className="w-full bg-transparent hover:bg-transparent"
+					className="bg-transparent p-0 transition-all duration-300 hover:bg-transparent"
 					href="/dashboard"
 				>
-					<Button variant="default" className="w-full">
+					<Button className="h-auto rounded-full border border-white/20 bg-white px-6 py-2.5 text-sm font-medium text-black shadow-lg transition-all duration-300 ease-out hover:scale-105 hover:bg-gray-50 hover:shadow-xl">
 						Dashboard
 					</Button>
 				</NavbarButton>
 			);
-		} else {
-			return <AuthButtons />;
 		}
+
+		return <AuthButtons />;
 	};
 
 	return (
-		<Navbar>
-			{/* Desktop Navigation */}
-			<NavBody>
-				<NavbarLogo />
-				<NavItems items={links} />
-				<div className="flex items-center gap-4">{renderAuthContent()}</div>
-			</NavBody>
+		<div
+			className={`w-full transition-all duration-500 ease-out xl:container xl:mx-auto ${
+				isScrolled
+					? `fixed left-0 right-0 top-0 z-50 transform ${
+							isVisible
+								? "translate-y-0 opacity-100"
+								: "-translate-y-full opacity-0"
+						}`
+					: "relative"
+			} `}
+		>
+			{/* Glassmorphism Background */}
+			<div
+				className={`absolute inset-0 mx-1 mt-3 rounded-2xl border transition-all duration-500 ease-out ${
+					isScrolled
+						? "scale-100 border-white/20 bg-white/90 opacity-100 backdrop-blur-xl"
+						: "scale-95 border-transparent bg-white opacity-0"
+				}`}
+				style={{
+					backdropFilter: isScrolled ? "blur(20px) saturate(150%)" : "none",
+					WebkitBackdropFilter: isScrolled
+						? "blur(20px) saturate(150%)"
+						: "none",
+				}}
+			/>
 
-			{/* Mobile Navigation */}
-			<MobileNav>
-				<MobileNavHeader>
-					<NavbarLogo />
-					<MobileNavToggle
-						isOpen={isMobileMenuOpen}
-						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-					/>
-				</MobileNavHeader>
-
-				<MobileNavMenu
-					isOpen={isMobileMenuOpen}
-					onClose={() => setIsMobileMenuOpen(false)}
+			<Navbar className="relative z-10 border-none bg-transparent">
+				{/* Desktop Navigation */}
+				<NavBody
+					className={`transition-all duration-500 ease-out ${
+						isScrolled ? "px-8 pb-3 pt-6" : "px-4 py-6 sm:px-6 lg:px-8"
+					} `}
 				>
-					{links.map((item, index) => (
-						<a
-							key={`mobile-link-${index}`}
-							href={item.link}
-							onClick={() => setIsMobileMenuOpen(false)}
-							className="relative text-neutral-600 dark:text-neutral-300"
-						>
-							<span className="block">{item.name}</span>
-						</a>
-					))}
-					<div className="flex w-full flex-col gap-4">
-						{renderAuthContent()}
+					<div className="flex w-full items-center justify-between">
+						<div className="transition-transform duration-300 hover:scale-105">
+							<NavbarLogo />
+						</div>
+						<div className="flex items-center">{renderAuthContent()}</div>
 					</div>
-				</MobileNavMenu>
-			</MobileNav>
-		</Navbar>
+				</NavBody>
+
+				{/* Mobile Navigation */}
+				<MobileNav className="lg:hidden">
+					<div
+						className={`border-t transition-all duration-500 ease-out ${
+							isScrolled
+								? "border-white/20 bg-white/90 opacity-100 backdrop-blur-xl"
+								: "border-none border-transparent bg-transparent"
+						} `}
+					>
+						<MobileNavHeader className="px-4 py-4">
+							<div className="transition-transform duration-300 hover:scale-105">
+								<NavbarLogo />
+							</div>
+
+							<NavbarButton
+								className="bg-transparent p-0 hover:bg-transparent"
+								variant="secondary"
+							>
+								<Button
+									variant={"secondary"}
+									className="group relative px-4 py-2 text-sm font-medium text-arch-black shadow-none"
+									onClick={() => openModal("login")}
+								>
+									<span className="relative bg-transparent">
+										Sign In
+										<span className="absolute bottom-0 left-0 block h-[1px] w-0 bg-black transition-all duration-300 group-hover:w-full"></span>
+									</span>
+								</Button>
+							</NavbarButton>
+						</MobileNavHeader>
+					</div>
+				</MobileNav>
+			</Navbar>
+		</div>
 	);
 };
 
 export default TopNavigation;
-
-// {/* <AnimatePresence>
-// 	{(isVisible || !isScrolled) && (
-// 		<motion.header
-// 			initial={{ y: 0, opacity: 1 }}
-// 			animate={{
-// 				y: 0,
-// 				opacity: 1,
-// 				position: isScrolled ? "fixed" : "relative",
-// 			}}
-// 			exit={{ y: -100, opacity: 0 }}
-// 			transition={{ duration: 0.3 }}
-// 			className={`${
-// 				isScrolled
-// 					? "fixed left-0 right-0 top-4 z-20"
-// 					: "relative lg:py-[20px]"
-// 			} mx-auto w-[100%] max-w-7xl py-[12.6px] lg:px-10`}
-// 		>
-// 			<div
-// 				className={`mx-auto rounded-xl ${
-// 					isScrolled
-// 						? "border border-[#969DAD] border-opacity-15 bg-white/70 shadow-lg backdrop-blur-xl dark:border-slate-700/30 dark:bg-slate-800/70"
-// 						: "bg-transparent"
-// 				}`}
-// 			>
-// 				<div className="mx-auto px-4 sm:px-6 lg:px-8">
-// 					<div className="flex items-center justify-between py-2">
-// 						{/* Left Section: Logo + Nav Links */}
-// 						<div className="flex items-center space-x-4">
-// 							<Logo />
-// 						</div>
-// 						<NavLinks />
-// 						{/* Right Section: Auth Buttons */}
-// 						<div className="flex items-center">{renderAuthContent()}</div>
-// 					</div>
-// 				</div>
-// 			</div>
-// 		</motion.header>
-// 	)}
-// </AnimatePresence> */}

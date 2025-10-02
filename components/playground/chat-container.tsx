@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import {
 	type ChatMessage as ChatMessageType,
@@ -16,8 +16,8 @@ export function ChatContainer() {
 	const {
 		messages,
 		isGenerating,
-		isLoadingHistory,
 		historyError,
+		isLoadingHistory,
 		loadChatHistory,
 		setHistoryError,
 	} = useChatStore();
@@ -36,9 +36,7 @@ export function ChatContainer() {
 			if (status === "authenticated" && session?.user) {
 				try {
 					await loadChatHistory();
-				} catch (error) {
-					console.error("Failed to load chat history:", error);
-				}
+				} catch {}
 			}
 			// For unauthenticated users, Zustand will automatically load from localStorage
 			// due to the persist configuration, so no additional action needed
@@ -63,9 +61,7 @@ export function ChatContainer() {
 		if (status === "authenticated" && session?.user) {
 			try {
 				await loadChatHistory();
-			} catch (error) {
-				console.error("Retry failed:", error);
-			}
+			} catch {}
 		}
 		hasLoadedHistory.current = true;
 	};

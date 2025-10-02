@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 "use client";
 
 import { UUID } from "node:crypto";
@@ -6,6 +7,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+	countPostsByStatus,
+	getAllPostsFromGroup,
+	groupHasStatus,
+} from "@/lib/post-transformer";
 import { PostGroup } from "@/types";
 
 import PostsGrid from "../posts/posts-grid";
@@ -81,8 +87,13 @@ const normalizeTabValue = (tab: string | null): ValidTab => {
 const getGroupStatus = (
 	group: PostGroup,
 ): "published" | "scheduled" | "drafted" => {
+	// Get all posts from the nested structure
+	const allPosts = getAllPostsFromGroup(group);
+
+	if (allPosts.length === 0) return "drafted";
+
 	// If all posts have the same status, return that status
-	const statuses = group.posts.flatMap(post => post.status);
+	const statuses = allPosts.map(post => post.status);
 	const uniqueStatuses = [...new Set(statuses)];
 
 	if (uniqueStatuses.length === 1) {
@@ -96,11 +107,14 @@ const getGroupStatus = (
 };
 
 const getRelevantDate = (group: PostGroup, activeTab: ValidTab) => {
+	const allPosts = getAllPostsFromGroup(group);
 	const groupStatus = getGroupStatus(group);
 
 	// Find the most relevant post in the group for sorting
 	const relevantPost =
-		group.posts.find(post => post.status === groupStatus) || group.posts[0];
+		allPosts.find(post => post.status === groupStatus) || allPosts[0];
+
+	if (!relevantPost) return group.latest_created_at;
 
 	switch (activeTab) {
 		case "scheduled": {
@@ -249,43 +263,57 @@ export function RepoTabs({
 		}
 	}, [searchParams]);
 
-	// Calculate tab counts - counts actual PostItem, not groups
+	// Calculate tab counts - Updated to work with nested structure
 	const tabCounts = useMemo(() => {
-		const allPosts = posts.flatMap(group => group.posts);
+		if (!posts || posts.length === 0) {
+			return { all: 0, drafted: 0, published: 0, scheduled: 0 };
+		}
+
+		let allCount = 0;
+		let draftedCount = 0;
+		let publishedCount = 0;
+		let scheduledCount = 0;
+
+		posts.forEach(group => {
+			allCount += group.total_posts;
+			draftedCount += countPostsByStatus(group, "drafted");
+			publishedCount += countPostsByStatus(group, "published");
+			scheduledCount += countPostsByStatus(group, "scheduled");
+		});
 
 		return {
-			all: allPosts.length,
-			drafted: allPosts.filter(post => post.status === "drafted").length,
-			published: allPosts.filter(post => post.status === "published").length,
-			scheduled: allPosts.filter(post => post.status === "scheduled").length,
+			all: allCount,
+			drafted: draftedCount,
+			published: publishedCount,
+			scheduled: scheduledCount,
 		};
 	}, [posts]);
 
-	// Filter and sort posts - memoized with stable dependencies
+	// Filter and sort posts - Updated for nested structure
 	const filteredAndSortedPosts = useMemo(() => {
-		let filtered = posts;
+		if (!posts || posts.length === 0) return [];
+
+		let filtered = [...posts];
 
 		// Filter by tab
 		if (activeTab !== "all" && activeTab !== "settings") {
-			filtered = filtered
-				.map(group => {
-					const matchingPosts = group.posts.filter(
-						post => post.status === activeTab,
-					);
-					if (matchingPosts.length === 0) return; // drop group if no matches
-					return { ...group, posts: matchingPosts };
-				})
-				.filter(Boolean) as PostGroup[];
+			filtered = filtered.filter(group =>
+				groupHasStatus(
+					group,
+					activeTab as "published" | "scheduled" | "drafted",
+				),
+			);
 		}
 
 		// Filter by search query
 		if (searchQuery) {
 			const lowerSearchQuery = searchQuery.toLowerCase();
-			filtered = filtered.filter(group =>
-				group.posts.some(post =>
+			filtered = filtered.filter(group => {
+				const allPosts = getAllPostsFromGroup(group);
+				return allPosts.some(post =>
 					post.content.toLowerCase().includes(lowerSearchQuery),
-				),
-			);
+				);
+			});
 		}
 
 		// Sort posts
