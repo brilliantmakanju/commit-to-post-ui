@@ -9,6 +9,7 @@ import { getDecryptedCookie } from "@/lib/cookies/getcookies";
  * 2. BASE_URL_API_CALL environment variabl e
  * 3. Default http://localhost:8000
  *
+ * d
  * @returns {Promise<string>} The base URL to use for API calls
  */
 export async function getBaseUrl(): Promise<string> {
