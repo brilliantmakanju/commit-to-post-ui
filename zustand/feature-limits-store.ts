@@ -1,15 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// Feature Categories
 export const FEATURE_CATEGORIES = [
-	"posts",
 	"ai_tones",
-	"analytics",
 	"workspaces",
-	"repo_socials",
-	"repositories",
+	"image_upload",
+	"schedule_post",
 	"hashtag_automation",
-	"social_integrations",
 ] as const;
 
 export type FeatureCategory = (typeof FEATURE_CATEGORIES)[number];

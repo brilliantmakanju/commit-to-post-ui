@@ -1,24 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type IntervalType = "monthly" | "annual";
-
 interface PlanSelectorState {
 	// modal controls
 	isOpen: boolean;
-	type: "upgrade" | "downgrade" | undefined;
+	type: "upgrade" | undefined;
 
 	// plan context
 	currentPlanId: string | undefined;
-	currentInterval: IntervalType;
 }
 
 interface PlanSelectorActions {
-	open: (
-		type: "upgrade" | "downgrade",
-		planId: string,
-		interval: IntervalType,
-	) => void;
+	open: (type: "upgrade", planId: string) => void;
 	close: () => void;
 	setPlanSelector: (partial: Partial<PlanSelectorState>) => void;
 	clear: () => void;
@@ -31,15 +24,13 @@ const usePlanSelectorStore = create<PlanSelectorState & PlanSelectorActions>()(
 			isOpen: false,
 			type: undefined,
 			currentPlanId: undefined,
-			currentInterval: "monthly",
 
 			// actions
-			open: (type, planId, interval) =>
+			open: (type, planId) =>
 				set({
 					type,
 					isOpen: true,
 					currentPlanId: planId,
-					currentInterval: interval,
 				}),
 			close: () =>
 				set({
@@ -53,7 +44,6 @@ const usePlanSelectorStore = create<PlanSelectorState & PlanSelectorActions>()(
 					isOpen: false,
 					type: undefined,
 					currentPlanId: undefined,
-					currentInterval: "monthly",
 				}),
 		}),
 		{
