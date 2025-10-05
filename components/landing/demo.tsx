@@ -421,41 +421,7 @@ export default function VideoPlayer() {
 		duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
 
 	return (
-		<section className="container mx-auto flex w-full flex-col items-center justify-center gap-4 px-4 sm:gap-6 sm:px-6 md:gap-8">
-			{/* <div className="flex w-full flex-col items-center justify-center gap-1 text-center sm:gap-2">
-				<Heading
-					as="h3"
-					className="text-2xl font-semibold text-gray-900 sm:text-3xl md:text-4xl"
-				>
-					{" "}
-					See It In Action
-				</Heading>
-				<Paragraph className="max-w-2xl text-base leading-relaxed text-gray-600 sm:text-lg">
-					Create content as you build. Every commit triggers an AI-crafted post
-					that&#39;s engaging, accurate, and designed to{" "}
-					<Span className="font-medium text-green-500">
-						boost your visibility
-					</Span>
-					.
-				</Paragraph>
-			</div> */}
-			<div className="flex w-full flex-col items-center justify-center gap-1 text-center sm:gap-2">
-				<Paragraph
-					className={
-						"mb-1 flex w-auto items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-center text-xs uppercase tracking-wider text-zinc-100 dark:text-zinc-400 sm:mb-2 md:text-sm"
-					}
-				>
-					<span className="mr-3 h-2 w-2 rounded-full bg-gray-100" />
-					Live Preview
-				</Paragraph>
-				<Heading
-					as="h3"
-					className={"text-md md:text-md font-bold text-gray-900"}
-				>
-					Turn commits into instant posts
-				</Heading>
-			</div>
-
+		<section className="flex w-full flex-col items-center justify-center gap-4 px-4 sm:gap-6 sm:px-6 md:gap-8">
 			<div
 				ref={containerRef as any}
 				className="relative aspect-video w-full max-w-6xl overflow-hidden rounded-xl bg-black shadow-2xl ring-1 ring-white/10"

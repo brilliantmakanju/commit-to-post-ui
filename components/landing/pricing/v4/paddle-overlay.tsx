@@ -177,7 +177,7 @@ export default function PaddleCheckout({
 								<Loader2 className="h-5 w-5 animate-spin text-black dark:text-white" />
 							</div>
 						)}
-						<div className={cn(loading && "opacity-50", "w-full")}>
+						<div className={cn(loading && "opacity-50", "-ml-7 w-full")}>
 							{children}
 						</div>
 					</div>

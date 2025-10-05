@@ -5,10 +5,10 @@ const Logo = () => {
 	return (
 		<Link
 			href="/"
-			className="group relative z-20 flex items-center transition-all duration-300 hover:scale-105"
+			className="group relative z-20 flex items-center transition-all duration-300"
 		>
 			{/* Logo container with better spacing */}
-			<div className="relative mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
+			<div className="relative mr-2 flex h-9 w-9 items-center justify-center rounded-lg">
 				<Image
 					width={28}
 					height={28}
@@ -21,9 +21,9 @@ const Logo = () => {
 			{/* Brand name with black/white theme */}
 			<div className="flex flex-col">
 				<span className="flex items-center gap-0.5 font-mono text-lg font-bold leading-tight tracking-tight">
-					<span className="text-white">Push</span>
-					<span className="text-gray-400">to</span>
-					<span className="text-white">Draft</span>
+					<span className="text-[black]">Push</span>
+					<span className="text-gray-800">to</span>
+					<span className="text-[black]">Draft</span>
 				</span>
 			</div>
 		</Link>

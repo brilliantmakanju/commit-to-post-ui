@@ -52,23 +52,23 @@ export function PasswordLoginForm({
 		userStore.clearUser();
 		await signOut();
 
-		try {
-			const apiRequest = await loginUser({
-				email: values.email,
-				password: values.password,
-			});
-			if (apiRequest?.message === "Invalid credentials.") {
-				toast.error("Invalid credentials, please try again");
-			} else if (apiRequest?.message === "Something went wrong.") {
-				toast.error("Something went wrong. Please try again later.");
-			} else {
-				globalThis.window.location.reload();
-				toast.success("Welcome back!");
-				form.reset();
-			}
-		} catch (error) {
-			toast.error((error as Error).message);
-		}
+		// try {
+		// 	const apiRequest = await loginUser({
+		// 		email: values.email,
+		// 		password: values.password,
+		// 	});
+		// 	if (apiRequest?.message === "Invalid credentials.") {
+		// 		toast.error("Invalid credentials, please try again");
+		// 	} else if (apiRequest?.message === "Something went wrong.") {
+		// 		toast.error("Something went wrong. Please try again later.");
+		// 	} else {
+		// 		globalThis.window.location.reload();
+		// 		toast.success("Welcome back!");
+		// 		form.reset();
+		// 	}
+		// } catch (error) {
+		// 	toast.error((error as Error).message);
+		// }
 	};
 
 	return (

@@ -56,6 +56,7 @@
 		"jose": "^5.9.6",
 		"jwt-decode": "^4.0.0",
 		"lucide-react": "^0.460.0",
+		"mailchecker": "^6.0.18",
 		"motion": "^12.5.0",
 		"motion-primitives": "^0.1.0",
 		"motions": "^0.0.1",

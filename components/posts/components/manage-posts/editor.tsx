@@ -215,6 +215,25 @@ export const Editor: React.FC<EditorProps> = ({
 		return userSubscriptionTier !== "basic";
 	}, [userSubscriptionTier]);
 
+	// Get current platform from character counts
+	const currentPlatform = useMemo(() => {
+		const characterCounts = getCharacterCounts();
+		if (characterCounts.length > 0) {
+			return characterCounts[0].platform.toLowerCase();
+		}
+		return "";
+	}, [getCharacterCounts]);
+
+	// Check if current platform is Twitter/X
+	const isTwitterPlatform = useMemo(() => {
+		return currentPlatform === "twitter" || currentPlatform === "x";
+	}, [currentPlatform]);
+
+	// Determine if image upload should be blocked
+	const shouldBlockImageUpload = useMemo(() => {
+		return isTwitterPlatform;
+	}, [isTwitterPlatform]);
+
 	// Current state with better memoization
 	const currentContent = activeVersion?.content || "";
 	const currentImages = useMemo(() => {
@@ -240,7 +259,10 @@ export const Editor: React.FC<EditorProps> = ({
 		() => currentImages.some(image => image.uploadError),
 		[currentImages],
 	);
-	const canAddMoreImages = currentImages.length < MAX_IMAGES && canUploadImages;
+	const canAddMoreImages =
+		currentImages.length < MAX_IMAGES &&
+		canUploadImages &&
+		!shouldBlockImageUpload;
 	const isProcessing = isUploading || removingImageIds.size > 0;
 
 	// History management
@@ -440,10 +462,18 @@ export const Editor: React.FC<EditorProps> = ({
 		],
 	);
 
-	// File upload handler with subscription check
+	// File upload handler with subscription check and Twitter/X platform check
 	const handleFileUpload = useCallback(
 		async (file: File) => {
-			// Check subscription tier first
+			// Check if Twitter/X platform
+			if (shouldBlockImageUpload) {
+				toast.error("Image upload not available for Twitter/X", {
+					description: "Image uploads for Twitter/X posts coming soon!",
+				});
+				return;
+			}
+
+			// Check subscription tier
 			if (!canUploadImages) {
 				toast.error("Image upload not available", {
 					description: "Upgrade to Pro or Premium to upload images",
@@ -525,6 +555,7 @@ export const Editor: React.FC<EditorProps> = ({
 			updateVersionImage,
 			uploadToServer,
 			canUploadImages,
+			shouldBlockImageUpload,
 		],
 	);
 
@@ -532,6 +563,14 @@ export const Editor: React.FC<EditorProps> = ({
 	const handleDrop = useCallback(
 		async (event: React.DragEvent) => {
 			event.preventDefault();
+
+			// Check if Twitter/X platform
+			if (shouldBlockImageUpload) {
+				toast.error("Image upload not available for Twitter/X", {
+					description: "Image uploads for Twitter/X posts coming soon!",
+				});
+				return;
+			}
 
 			if (!canUploadImages) {
 				toast.error("Image upload not available", {
@@ -572,7 +611,12 @@ export const Editor: React.FC<EditorProps> = ({
 				toast.error("Failed to process dropped files");
 			}
 		},
-		[handleFileUpload, currentImages.length, canUploadImages],
+		[
+			handleFileUpload,
+			currentImages.length,
+			canUploadImages,
+			shouldBlockImageUpload,
+		],
 	);
 
 	// File input change handler
@@ -580,6 +624,15 @@ export const Editor: React.FC<EditorProps> = ({
 		async (event: React.ChangeEvent<HTMLInputElement>) => {
 			const files = event.target.files;
 			if (!files?.length) return;
+
+			// Check if Twitter/X platform
+			if (shouldBlockImageUpload) {
+				toast.error("Image upload not available for Twitter/X", {
+					description: "Image uploads for Twitter/X posts coming soon!",
+				});
+				event.target.value = "";
+				return;
+			}
 
 			if (!canUploadImages) {
 				toast.error("Image upload not available", {
@@ -615,7 +668,12 @@ export const Editor: React.FC<EditorProps> = ({
 				event.target.value = "";
 			}
 		},
-		[handleFileUpload, currentImages.length, canUploadImages],
+		[
+			handleFileUpload,
+			currentImages.length,
+			canUploadImages,
+			shouldBlockImageUpload,
+		],
 	);
 
 	// Content change handler with debouncing
@@ -876,6 +934,14 @@ export const Editor: React.FC<EditorProps> = ({
 										Pro+
 									</Badge>
 								)}
+								{shouldBlockImageUpload && (
+									<Badge
+										variant="outline"
+										className="ml-2 border-blue-500/30 bg-blue-500/10 text-xs text-blue-400"
+									>
+										Coming Soon
+									</Badge>
+								)}
 							</Label>
 							{currentImages.length > 0 && (
 								<span className="text-xs text-zinc-400">
@@ -884,6 +950,36 @@ export const Editor: React.FC<EditorProps> = ({
 								</span>
 							)}
 						</div>
+
+						{/* Twitter/X Image Upload Disclaimer */}
+						{shouldBlockImageUpload && (
+							<div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+								<div className="flex items-start gap-3">
+									<div className="flex-shrink-0 rounded-full bg-blue-500/10 p-2">
+										<AlertTriangle className="h-4 w-4 text-blue-400" />
+									</div>
+									<div className="flex-1 space-y-1">
+										<p className="text-sm font-medium text-blue-300">
+											Image uploads not available for Twitter/X posts
+										</p>
+										<p className="text-xs leading-relaxed text-blue-400/80">
+											We&apos;re working hard to bring image upload support for
+											Twitter/X posts. This feature is coming soon! For now, you
+											can still create and schedule text-based posts for your
+											Twitter/X accounts.
+										</p>
+										<div className="mt-2 flex items-center gap-2">
+											<div className="flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-1">
+												<Calendar className="h-3 w-3 text-blue-400" />
+												<span className="text-xs font-medium text-blue-300">
+													Coming Soon
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
 
 						<div className="grid grid-cols-2 gap-3">
 							{currentImages
@@ -1040,10 +1136,14 @@ export const Editor: React.FC<EditorProps> = ({
 											!disabled &&
 											!isProcessing &&
 											canUploadImages &&
+											!shouldBlockImageUpload &&
 											fileInputRef.current?.click()
 										}
 										className={`flex h-[120px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-700/50 bg-zinc-900/20 text-center transition-colors ${
-											disabled || isProcessing || !canUploadImages
+											disabled ||
+											isProcessing ||
+											!canUploadImages ||
+											shouldBlockImageUpload
 												? "cursor-not-allowed opacity-50"
 												: "cursor-pointer hover:border-zinc-600/50 hover:bg-zinc-900/40"
 										}`}
@@ -1078,6 +1178,11 @@ export const Editor: React.FC<EditorProps> = ({
 														⚡ Pro+ required
 													</p>
 												)}
+												{shouldBlockImageUpload && (
+													<p className="mt-2 text-xs text-blue-400">
+														🚀 Coming soon for Twitter/X
+													</p>
+												)}
 											</>
 										)}
 										<input
@@ -1085,7 +1190,12 @@ export const Editor: React.FC<EditorProps> = ({
 											className="hidden"
 											ref={fileInputRef}
 											onChange={handleFileInputChange}
-											disabled={disabled || isProcessing || !canUploadImages}
+											disabled={
+												disabled ||
+												isProcessing ||
+												!canUploadImages ||
+												shouldBlockImageUpload
+											}
 											accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
 											multiple={canAddMoreImages && currentImages.length === 0}
 										/>

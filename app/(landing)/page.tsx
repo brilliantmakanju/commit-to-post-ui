@@ -4,13 +4,13 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef } from "react";
 
 import SubAuthPage from "@/components/auth/sub-modal";
-import CtaSection from "@/components/call-to-action";
-import FAQs from "@/components/faqs";
-import VideoPlayer from "@/components/landing/demo";
-import { FeaturesSectionDemo } from "@/components/landing/feature/v2/features";
-import HeroSection from "@/components/landing/micro/hero-section";
-import { WorkflowDemo } from "@/components/landing/micro/workflow-usage";
-import PricingTable from "@/components/landing/pricing";
+import { BentoGridSection } from "@/components/landing/micro/v3/bento-grid";
+import CTASection from "@/components/landing/micro/v3/cta-sec";
+import VideoDemo from "@/components/landing/micro/v3/demo-video";
+import FAQSection from "@/components/landing/micro/v3/faq-v3";
+import FooterSection from "@/components/landing/micro/v3/footer-v3";
+import HeroSection from "@/components/landing/micro/v3/hero-section";
+import PricingSection from "@/components/landing/micro/v3/pricing-section";
 import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
@@ -83,15 +83,15 @@ export default function Home() {
 
 	return (
 		<>
-			<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-[family-name:var(--font-geist-sans)]">
+			<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-sans">
 				{isOpen && <SubAuthPage />}
 				<HeroSection />
-				<WorkflowDemo />
-				<FeaturesSectionDemo />
-				<VideoPlayer />
-				<CtaSection />
-				<PricingTable />
-				<FAQs />
+				<VideoDemo />
+				<BentoGridSection />
+				<PricingSection />
+				<FAQSection />
+				<CTASection />
+				<FooterSection />
 			</div>
 			{/* <PlanSelector
 				open={selector}

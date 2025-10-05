@@ -1,5 +1,5 @@
-/* eslint-disable import/no-unresolved */
 "use client";
+
 import { Mail } from "lucide-react";
 
 import {
@@ -13,7 +13,8 @@ import {
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 
 export default function CheckEmailModal() {
-	const { openModal } = useAuthModalStore();
+	const { openModal, isProcessing } = useAuthModalStore();
+
 	return (
 		<div className="flex items-center justify-center px-4">
 			<Card className="w-full max-w-md">
@@ -35,10 +36,12 @@ export default function CheckEmailModal() {
 				<CardFooter className="flex flex-col space-y-4">
 					<div className="text-center text-sm">
 						<span
-							onClick={() => {
-								openModal("login");
-							}}
-							className="cursor-pointer text-primary underline-offset-4 hover:underline"
+							onClick={() => !isProcessing && openModal("login")}
+							className={`text-primary underline-offset-4 hover:underline ${
+								isProcessing
+									? "cursor-not-allowed opacity-50"
+									: "cursor-pointer"
+							}`}
 						>
 							Back to login
 						</span>

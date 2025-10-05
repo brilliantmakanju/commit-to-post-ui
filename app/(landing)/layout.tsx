@@ -61,33 +61,37 @@ export default function Layout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className={"bg-[#f4f4f4] antialiased"}>
+			<body>
 				<Suspense>
-					<TopNavigation />
-					<main
-						role="main"
-						className="relative flex w-full flex-col items-start justify-start xl:container xl:mx-auto"
-					>
-						{children}
-						<Link
-							href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
-							target="_blank"
-							className="fixed bottom-4 right-4 z-50"
-						>
-							<Image
-								src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=941497&theme=dark&t=1741847658944"
-								alt="Push&#0032;to&#0032;Post - Push&#0032;Code&#0046;&#0032;Post&#0032;Updates&#0046;&#0032;Automate&#0032;Your&#0032;Dev&#0032;Journey&#0046; | Product Hunt"
-								width={250}
-								height={54}
-								className="h-[54px] w-[250px]"
-							/>
-						</Link>
+					<main className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden bg-white">
+						<div className="relative flex w-full flex-col items-center justify-start">
+							<div className="relative flex min-h-screen w-full max-w-none flex-col items-start justify-start px-4 sm:px-6 md:px-8 lg:w-[1260px] lg:max-w-[1460px] lg:px-0">
+								<div className="absolute left-4 top-0 z-0 h-full w-[1px] bg-gray-200 shadow-[1px_0px_0px_white] sm:left-6 md:left-8 lg:left-0"></div>
+								<div className="absolute right-4 top-0 z-0 h-full w-[1px] bg-gray-200 shadow-[1px_0px_0px_white] sm:right-6 md:right-8 lg:right-0"></div>
+								<TopNavigation />
+
+								<div className="relative flex flex-col items-center justify-center gap-4 self-stretch overflow-hidden border-b border-gray-200 sm:gap-6">
+									<div className="flex w-full flex-col items-center justify-start px-2 pb-8 pl-0 pr-0 sm:px-4 sm:pb-12 sm:pl-0 sm:pr-0 md:px-8 md:pb-16 lg:px-0">
+										{children}
+										<Link
+											href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
+											target="_blank"
+											className="fixed bottom-4 right-4 z-50"
+										>
+											<Image
+												src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=941497&theme=dark&t=1741847658944"
+												alt="Push&#0032;to&#0032;Post - Push&#0032;Code&#0046;&#0032;Post&#0032;Updates&#0046;&#0032;Automate&#0032;Your&#0032;Dev&#0032;Journey&#0046; | Product Hunt"
+												width={250}
+												height={54}
+												className="h-[54px] w-[250px]"
+											/>
+										</Link>
+										<Toaster />
+									</div>
+								</div>
+							</div>
+						</div>
 					</main>
-					<Toaster />
-					<Footer />
-					{/* <MaintenanceModal /> */}
-					{/* <MaintenanceCornerBanner /> */}
-					<Analytics />
 				</Suspense>
 			</body>
 		</html>

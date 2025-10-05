@@ -1,10 +1,12 @@
 /* eslint-disable import/no-unresolved */
 "use client";
+
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -21,6 +23,7 @@ import { VerificationAnimation } from "./verification-sub-modal";
 
 export default function MagicVerifyModal() {
 	const hasSyncedRef = useRef(false);
+	const hasSubmittedRef = useRef(false);
 	const searchParams = useSearchParams();
 	const { data: session, status } = useSession();
 	const { setUser, hasHydratedUser } = useUserStore();
@@ -31,25 +34,27 @@ export default function MagicVerifyModal() {
 	const [errorMessage, setErrorMessage] = useState<string>(
 		"The magic link is invalid or has expired",
 	);
-	const { closeModal } = useAuthModalStore();
-	const hasSubmittedRef = useRef(false);
+	const { closeModal, openModal, setProcessing } = useAuthModalStore();
 
 	// Memoized sync function to prevent recreations
 	const syncUserStoreData = useCallback(
 		(userData: any) => {
-			if (hasSyncedRef.current) return; // Prevent multiple syncs
+			if (hasSyncedRef.current) return;
 
 			try {
 				const syncedData = syncUserData(userData);
 				setUser(syncedData);
 				hasSyncedRef.current = true;
-			} catch {}
+			} catch (error) {
+				console.error("Failed to sync user data:", error);
+			}
 		},
 		[setUser],
 	);
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
+
 		// Return early if no token is found
 		if (!getToken) {
 			closeModal();
@@ -57,15 +62,26 @@ export default function MagicVerifyModal() {
 		}
 
 		const verifyToken = async (token: string) => {
+			setProcessing(true);
+
 			try {
-				const apiRequest = await verifyAndLogin({
-					token: token,
-				});
+				const apiRequest = await verifyAndLogin({ token });
 
 				if (apiRequest?.message === "success") {
 					setVerificationState("success");
+
+					// Sync user data if authenticated
+					if (
+						status === "authenticated" &&
+						session?.user &&
+						!hasHydratedUser &&
+						!hasSyncedRef.current
+					) {
+						syncUserStoreData(session.user);
+					}
+
 					setTimeout(() => {
-						globalThis.window.location.replace("/workspace");
+						globalThis.location.replace("/workspace");
 					}, 2000);
 				} else if (apiRequest?.message === "Invalid credentials.") {
 					setErrorMessage("Invalid credentials, please try again");
@@ -75,23 +91,21 @@ export default function MagicVerifyModal() {
 					setVerificationState("error");
 				}
 			} catch (error) {
-				setErrorMessage((error as Error).message);
+				setErrorMessage(
+					error instanceof Error
+						? error.message
+						: "An unexpected error occurred",
+				);
 				setVerificationState("error");
+			} finally {
+				setProcessing(false);
 			}
 		};
 
-		// Only submit the magic link verification if it hasn't been submitted yet
+		// Only submit the magic link verification once
 		if (!hasSubmittedRef.current) {
 			hasSubmittedRef.current = true;
 			verifyToken(getToken);
-			if (
-				status === "authenticated" &&
-				session?.user &&
-				!hasHydratedUser &&
-				!hasSyncedRef.current
-			) {
-				syncUserStoreData(session.user);
-			}
 		}
 	}, [
 		status,
@@ -100,7 +114,13 @@ export default function MagicVerifyModal() {
 		session?.user,
 		hasHydratedUser,
 		syncUserStoreData,
+		setProcessing,
 	]);
+
+	const handleRetry = () => {
+		closeModal();
+		openModal("login");
+	};
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -123,6 +143,7 @@ export default function MagicVerifyModal() {
 				</CardHeader>
 				<CardContent className="flex flex-col items-center justify-center py-10">
 					{verificationState === "verifying" && <VerificationAnimation />}
+
 					{verificationState === "success" && (
 						<div className="flex flex-col items-center space-y-4 text-center">
 							<div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
@@ -138,6 +159,7 @@ export default function MagicVerifyModal() {
 							</div>
 						</div>
 					)}
+
 					{verificationState === "error" && (
 						<div className="flex flex-col items-center space-y-4 text-center">
 							<div className="rounded-full bg-red-100 p-3 dark:bg-red-900/20">
@@ -151,6 +173,9 @@ export default function MagicVerifyModal() {
 									{errorMessage}
 								</p>
 							</div>
+							<Button onClick={handleRetry} variant="outline" className="mt-4">
+								Back to Login
+							</Button>
 						</div>
 					)}
 				</CardContent>

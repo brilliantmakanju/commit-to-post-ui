@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 import { MagicLinkForm } from "./magic-link-form";
-import { PasswordLoginForm } from "./password-login-form";
 
 interface LoginFormProps {
 	setView: (view: "login" | "signup" | "forgot") => void;
 }
 
 export default function LoginForm({ setView }: LoginFormProps) {
-	const [isMagicLink, setIsMagicLink] = useState(true);
-
 	return (
 		<div className="grid w-[402px] gap-6">
 			<div className="flex flex-col space-y-2 text-center">
@@ -20,7 +15,7 @@ export default function LoginForm({ setView }: LoginFormProps) {
 					Sign in to your account to continue
 				</p>
 			</div>
-			<MagicLinkForm onToggleForm={() => setIsMagicLink(false)} />
+			<MagicLinkForm />
 			{/* {isMagicLink ? (
 			) : (
 				<PasswordLoginForm
