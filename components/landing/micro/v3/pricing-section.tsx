@@ -28,7 +28,7 @@ interface UnlockPack {
 	buttonStyle: "secondary" | "primary" | "inverse";
 	borderStyle: string;
 	theme: "light" | "dark";
-	productId: string; // Added for Paddle
+	productId: string;
 }
 
 interface UnlockPackCardProps {
@@ -43,7 +43,7 @@ interface RefillPack {
 	price: number;
 	credits: number;
 	badge?: string;
-	productId: string; // Added for Paddle
+	productId: string;
 }
 
 type PlanButtonProps = {
@@ -60,75 +60,77 @@ const PRICING_DATA = {
 	unlockPacks: [
 		{
 			id: "free",
-			name: "Basic Tier",
-			description: "Frictionless onboarding to test the core concept",
+			name: "Starter",
+			description: "Test drive the platform and see the magic in action",
 			price: 0,
 			credits: 10,
 			priceLabel: "10 credits (one-time grant)",
 			features: [
 				{
-					text: "10 credits included",
-					tooltip: "Get started with 50 free credits to test the platform",
+					text: "GitHub commit tracking",
+					tooltip: "Automatically track your GitHub commits for content ideas",
 				},
 				{
-					text: "1 tone only",
-					tooltip: "Access to one content tone style",
+					text: "Post to LinkedIn, Twitter & Discord",
+					tooltip: "Publish directly to all supported platforms",
 				},
 				{
-					text: "Multi-platform publishing",
-					tooltip: "Publish to multiple social media platforms",
+					text: "AI-powered draft generation",
+					tooltip:
+						"Get AI assistance to create engaging posts from your commits",
 				},
 			],
-			buttonText: "Sign Up Free",
+			buttonText: "Start Free",
 			buttonStyle: "secondary" as const,
 			borderStyle: "border-gray-200",
 			theme: "light" as const,
-			productId: "", // No product ID for free tier
+			productId: "",
 		},
 		{
 			id: "pro",
-			name: "Pro Unlock",
+			name: "Pro",
 			description:
-				"Permanently unlock all solo features for authentic content scaling.",
-			price: 25,
-			credits: 625,
-			priceLabel: "$25 One-time payment (Best Solo Value)",
+				"Unlock premium features for consistent content creation at scale",
+			price: 19,
+			credits: 500,
+			priceLabel: "$19 One-time payment (Best Value)",
 			features: [
 				{
 					text: "500 credits included",
-					tooltip: "Receive 500 credits with your unlock purchase",
+					tooltip:
+						"Generate 500 posts or distribute to 500 platforms - never expires",
 				},
 				{
-					text: "Image upload",
-					tooltip: "Upload custom images for your content",
+					text: "Image uploads for LinkedIn & Discord",
+					tooltip: "Add custom images to your posts for better engagement",
 				},
 				{
-					text: "Content scheduling",
-					tooltip: "Schedule posts for automatic publishing",
+					text: "Advanced scheduling",
+					tooltip: "Schedule posts in advance across all platforms",
 				},
 				{
-					text: "Multi-tone support",
-					tooltip: "Access multiple content tone styles",
+					text: "Multiple tone styles",
+					tooltip: "Choose from various writing tones to match your brand",
 				},
 			],
-			buttonText: "Get Pro Unlock",
+			buttonText: "Unlock Pro",
 			buttonStyle: "primary" as const,
 			borderStyle: "border-gray-300",
-			theme: "light" as const,
-			productId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRODUCT_ID || "dao",
+			theme: "dark" as const,
+			productId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRODUCT_ID || "",
 		},
 		{
 			id: "studio",
-			name: "Studio Unlock",
+			name: "Studio",
 			description:
-				"Everything in Pro + permanent team scaling and collaboration tools.",
-			price: 75,
-			credits: 2500,
-			priceLabel: "$75 One-time payment (Maximum Solo Value)",
+				"Everything in Pro + advanced features for power users and teams",
+			price: 49,
+			credits: 1500,
+			priceLabel: "$49 One-time payment (Maximum Value)",
 			features: [
 				{
-					text: "2,500 credits included",
-					tooltip: "Receive 2,500 credits with your unlock purchase",
+					text: "1,500 credits included",
+					tooltip: "Massive credit bundle for high-volume content creators",
 				},
 				{
 					text: "All Pro features",
@@ -143,38 +145,39 @@ const PRICING_DATA = {
 					tooltip: "Collaborate with your team in shared workspaces",
 				},
 			],
-			buttonText: "Get Studio Unlock",
+			buttonText: "Unlock Studio",
 			buttonStyle: "inverse" as const,
 			borderStyle: "border-gray-800",
-			theme: "dark" as const,
-			productId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_PRODUCT_ID || "sss",
+			theme: "light" as const,
+			productId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_PRODUCT_ID || "",
 		},
 	],
 	refillPacks: [
 		{
-			id: "standard",
-			name: "Standard Refill",
-			description: "Good for light users or quick top-ups",
-			price: 10,
-			credits: 200,
-			productId: process.env.NEXT_PUBLIC_PADDLE_STANDARD_REFILL_ID || "ssas",
+			id: "starter",
+			name: "Starter Refill",
+			description: "Perfect for testing or light usage",
+			price: 9,
+			credits: 150,
+			productId: process.env.NEXT_PUBLIC_PADDLE_STANDARD_REFILL_ID || "",
 		},
 		{
-			id: "high-volume",
-			name: "High-Volume Refill",
-			description: "Better value for regular users",
-			price: 50,
-			credits: 1250,
-			productId: process.env.NEXT_PUBLIC_PADDLE_HIGH_VOLUME_REFILL_ID || "sacd",
+			id: "growth",
+			name: "Growth Refill",
+			description: "Best value for regular content creators",
+			price: 29,
+			credits: 600,
+			badge: "POPULAR",
+			productId: process.env.NEXT_PUBLIC_PADDLE_HIGH_VOLUME_REFILL_ID || "",
 		},
 		{
-			id: "bulk",
-			name: "Bulk/Team Refill",
-			description: "Maximum value for teams and power users",
-			price: 100,
-			credits: 3333,
+			id: "scale",
+			name: "Scale Refill",
+			description: "Maximum savings for power users and teams",
+			price: 79,
+			credits: 2000,
 			badge: "BEST VALUE",
-			productId: process.env.NEXT_PUBLIC_PADDLE_BULK_REFILL_ID || "dadfad",
+			productId: process.env.NEXT_PUBLIC_PADDLE_BULK_REFILL_ID || "",
 		},
 	],
 };
@@ -333,7 +336,6 @@ const CreditWorkCard = memo(
 
 CreditWorkCard.displayName = "CreditWorkCard";
 
-// Separated button component inside same file
 function PlanButton({
 	isCurrentPlan,
 	isDowngrade,
@@ -345,9 +347,10 @@ function PlanButton({
 	const buttonText = useMemo(() => {
 		if (isCurrentPlan) return "Current Plan";
 		if (id === "free") return packButtonText;
+		if (isDowngrade) return "Not Available";
 		if (canUpgrade) return `Upgrade to ${name}`;
 		return packButtonText;
-	}, [isCurrentPlan, id, packButtonText, name, canUpgrade]);
+	}, [isCurrentPlan, id, packButtonText, name, canUpgrade, isDowngrade]);
 
 	const ButtonComponent = useMemo(() => {
 		if (isCurrentPlan) {
@@ -363,7 +366,18 @@ function PlanButton({
 			);
 		}
 
-		if (isDowngrade) return;
+		if (isDowngrade) {
+			return (
+				<button
+					disabled
+					className="flex w-full cursor-not-allowed items-center justify-center rounded-full border-2 border-gray-300 bg-gray-100 px-5 py-3 opacity-50"
+				>
+					<span className="font-sans text-sm font-semibold leading-5 text-gray-500">
+						{buttonText}
+					</span>
+				</button>
+			);
+		}
 
 		if (id === "free" && buttonStyle === "secondary") {
 			return (
@@ -429,25 +443,16 @@ const UnlockPackCard = memo(({ pack, userPlanId }: UnlockPackCardProps) => {
 				? "shadow-lg hover:shadow-xl"
 				: "shadow-sm hover:shadow-md";
 
-	// Determine if this is the user's current plan
 	const isCurrentPlan = userPlanId === pack.id;
-
-	// Determine if user can upgrade (user is on a lower tier)
 	const userTier = getPlanTier(userPlanId || "free");
 	const packTier = getPlanTier(pack.id);
 	const canUpgrade = packTier > userTier;
-	const isDowngrade = packTier < userTier;
-
-	// Don't render downgrade plans at all
-	if (isDowngrade && !isCurrentPlan) {
-		return;
-	}
+	const shouldDisableButton = packTier < userTier;
 
 	return (
 		<div
-			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.borderStyle} ${bgClass} px-7 py-7 ${shadowClass} transition-shadow ${isCurrentPlan ? "ring-2 ring-blue-500 ring-offset-2" : ""}`}
+			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.borderStyle} ${bgClass} px-7 py-7 ${shadowClass} transition-shadow ${isCurrentPlan ? "ring-2 ring-blue-500 ring-offset-2" : ""} ${shouldDisableButton ? "opacity-60" : ""}`}
 		>
-			{/* Current Plan Badge */}
 			{isCurrentPlan && (
 				<div className="absolute right-5 top-5 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold tracking-wider text-white">
 					ACTIVE
@@ -481,7 +486,7 @@ const UnlockPackCard = memo(({ pack, userPlanId }: UnlockPackCardProps) => {
 
 				<PlanButton
 					isCurrentPlan={isCurrentPlan}
-					isDowngrade={isDowngrade}
+					isDowngrade={shouldDisableButton}
 					canUpgrade={canUpgrade}
 					pack={pack}
 				/>
@@ -517,7 +522,7 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 
 	const savings = useMemo(
 		() =>
-			pack.id === "standard"
+			pack.id === "starter"
 				? 0
 				: calculateSavings(
 						pack.price,
@@ -533,28 +538,28 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 			...(savings > 0
 				? [
 						{
-							text: `${savings}% savings`,
-							tooltip: `Save ${savings}% compared to standard pricing`,
+							text: `${savings}% better value`,
+							tooltip: `Save ${savings}% per credit compared to Starter pricing`,
 						},
 					]
 				: [
 						{
-							text: "Use anytime",
-							tooltip: "No time restrictions on credit usage",
+							text: "No commitment needed",
+							tooltip: "Buy only what you need, when you need it",
 						},
 					]),
 			{
 				text: `${pack.credits.toLocaleString()} credits`,
 				tooltip:
-					pack.id === "standard"
-						? "Perfect for occasional content creators"
-						: pack.id === "high-volume"
-							? "Ideal for regular content creators"
-							: "Perfect for teams and high-volume creators",
+					pack.id === "starter"
+						? "Great for trying out or occasional posting"
+						: pack.id === "growth"
+							? "Perfect for consistent weekly content creation"
+							: "Ideal for daily posting and team collaboration",
 			},
 			{
-				text: "Never expires",
-				tooltip: "Use your credits whenever you need them",
+				text: "Credits never expire",
+				tooltip: "Use your credits at your own pace - no time pressure",
 			},
 		],
 		[savings, pack.credits, pack.id],
@@ -594,10 +599,12 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 
 	return (
 		<div
-			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.badge ? "border-gray-300 shadow-md hover:shadow-lg" : "border-gray-200 shadow-sm hover:shadow-md"} bg-white px-7 py-7 transition-shadow`}
+			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.badge && pack.id === "scale" ? "border-gray-300 shadow-md hover:shadow-lg" : pack.badge && pack.id === "growth" ? "border-blue-300 shadow-md hover:shadow-lg" : "border-gray-200 shadow-sm hover:shadow-md"} bg-white px-7 py-7 transition-shadow`}
 		>
 			{pack.badge && (
-				<div className="absolute right-5 top-5 rounded-full bg-black px-3 py-1 text-[10px] font-bold tracking-wider text-white">
+				<div
+					className={`absolute right-5 top-5 rounded-full ${pack.id === "growth" ? "bg-blue-600" : "bg-black"} px-3 py-1 text-[10px] font-bold tracking-wider text-white`}
+				>
 					{pack.badge}
 				</div>
 			)}
@@ -639,11 +646,7 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 
 RefillPackCard.displayName = "RefillPackCard";
 
-// ============================================
-// MAIN PRICING SECTION
-// ============================================
 export default function PricingSection() {
-	// Get user plan from Zustand store
 	const userStore = useUserStore();
 	const userPlanId = userStore?.plan?.toLowerCase() || undefined;
 
@@ -651,18 +654,18 @@ export default function PricingSection() {
 		() => [
 			{
 				icon: Zap,
-				title: "1 Credit = 1 Unique Post Generated",
-				subtitle: "Creation cost",
+				title: "1 Credit = 1 Post Draft Generated",
+				subtitle: "AI-powered from your commits",
 			},
 			{
 				icon: Sparkles,
-				title: "1 Credit = 1 Platform Published To",
-				subtitle: "Distribution cost",
+				title: "1 Credit = 1 Platform Distribution",
+				subtitle: "LinkedIn, Twitter, or Discord",
 			},
 			{
 				icon: Infinity,
 				title: "Credits Never Expire",
-				subtitle: "Use at your pace",
+				subtitle: "Use at your own pace",
 			},
 		],
 		[],
@@ -672,7 +675,6 @@ export default function PricingSection() {
 
 	return (
 		<section className="relative -mt-[160px] flex w-full flex-col items-center justify-center bg-white">
-			{/* Header Section */}
 			<header className="flex items-center justify-center self-stretch border-b border-gray-200 px-6 py-16 md:px-24 md:pb-10">
 				<div className="flex w-full max-w-[720px] flex-col items-center justify-start gap-5 px-6 py-5">
 					<h2 className="flex flex-col justify-center self-stretch text-center font-sans text-4xl font-bold leading-tight tracking-tight text-gray-900 md:text-6xl md:leading-[72px]">
@@ -687,7 +689,6 @@ export default function PricingSection() {
 				</div>
 			</header>
 
-			{/* How Credits Work Section */}
 			<div className="flex items-center justify-center self-stretch border-b border-l border-r border-gray-200 bg-gray-50 px-6 py-10 md:px-16">
 				<div className="flex w-full max-w-[1100px] flex-col gap-12">
 					<h3 className="text-center font-sans text-3xl font-bold text-black">
@@ -707,7 +708,6 @@ export default function PricingSection() {
 				</div>
 			</div>
 
-			{/* Unlock Packs Section */}
 			<div
 				id="pricing"
 				className="scroll-mt-20 self-stretch border-b border-gray-200 bg-white py-16"
@@ -742,7 +742,6 @@ export default function PricingSection() {
 				</div>
 			</div>
 
-			{/* Refill Packs Section */}
 			<div
 				id="refill"
 				className="scroll-mt-20 self-stretch border-b border-l border-r border-gray-200 bg-gray-50 px-2 py-10"
