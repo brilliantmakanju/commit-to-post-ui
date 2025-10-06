@@ -271,7 +271,7 @@ export const UpcomingPosts = () => {
 
 export const UpcomingPostsSkeleton = () => {
 	return (
-		<div className="h-[104px] space-y-2">
+		<div className="h-[304px] space-y-2">
 			<div className="flex items-center gap-2">
 				<Skeleton className="h-6 w-14 bg-zinc-800/50" />
 				<Skeleton className="h-3 w-6 bg-zinc-800/50" />
