@@ -9,33 +9,55 @@ interface UserPreferences {
 
 interface CreditInfo {
 	balance: number;
-	lifetimeCredits: number;
 	billingType: string;
+	lifetimeCredits: number;
 	lastUpdated: string | undefined;
 }
 
 interface UserState {
-	// Core user fields
-	plan: string;
+	// ===== CORE USER FIELDS =====
+	first_name: string;
 	last_name: string;
 	full_name: string;
-	first_name: string;
-	profile: string | undefined;
 	justUpdated: boolean;
+	bio: string | undefined;
 	hasHydratedUser: boolean;
+	email: string | undefined;
+	profile: string | undefined;
+	preferences: UserPreferences;
+
+	// ===== AUTHENTICATION & CONNECTIONS =====
 	github_connected: boolean;
 	google_connected: boolean;
-	preferences: UserPreferences;
-	bio: string | undefined;
-	email: string | undefined;
 
-	// Subscription & billing fields
+	// ===== SUBSCRIPTION & BILLING FIELDS =====
+	plan: string;
+	subscription_status: string;
+	payment_retry_count: number;
+	billing_interval: string | undefined;
+	current_price_id: string | undefined;
+	pending_plan_change: string | undefined;
+	subscription_end_date: string | undefined;
 	paddle_subscription_id: string | undefined;
-	stripe_subscription_id: string | undefined;
+	last_successful_payment: string | undefined;
+	subscription_start_date: string | undefined;
+	payment_grace_period_end: string | undefined;
+	pending_plan_effective_date: string | undefined;
+	stripe_subscription_id: string | undefined; // Legacy/backward compat (holds paddle_customer_id)
 
-	// Enhanced credit management
+	// ===== SUBSCRIPTION HELPER FLAGS =====
+	is_in_grace_period: boolean;
+	has_active_subscription: boolean;
+	current_billing_type: string | undefined;
+
+	// ===== CREDIT MANAGEMENT =====
 	credits: number;
 	creditInfo: CreditInfo;
+
+	// ===== BONUS FLAGS =====
+	spin_bonus_claimed: boolean;
+	spin_bonus_skipped: boolean;
+	signup_bonus_claimed: boolean;
 }
 
 interface UserActions {
@@ -43,60 +65,102 @@ interface UserActions {
 	setJustUpdated: (value: boolean) => void;
 	setUser: (user: Partial<UserState>) => void;
 
-	// Specific update methods for frequently changed fields
-	updateProfile: (profile: string | undefined) => void;
-	updateCredits: (credits: number) => void;
-	updatePlan: (plan: string) => void;
+	// ===== SPECIFIC UPDATE METHODS =====
 	updateBio: (bio: string) => void;
+	updatePlan: (plan: string) => void;
+	updateCredits: (credits: number) => void;
+	updateProfile: (profile: string | undefined) => void;
 	updatePreferences: (preferences: UserPreferences) => void;
 	updateName: (firstName: string, lastName: string) => void;
+	updateConnections: (github?: boolean, google?: boolean) => void;
 	updateSubscriptionIds: (
 		paddleId: string | undefined,
 		stripeId: string | undefined,
 	) => void;
-	updateConnections: (github?: boolean, google?: boolean) => void;
 
-	// Enhanced credit management
-	updateCreditInfo: (creditInfo: Partial<CreditInfo>) => void;
-	addCredits: (amount: number, description?: string) => void;
-	deductCredits: (amount: number, description?: string) => void;
+	// ===== SUBSCRIPTION MANAGEMENT =====
+	updateSubscriptionStatus: (status: string) => void;
+	setPendingPlanChange: (plan?: string, effectiveDate?: string) => void;
+	updateSubscriptionDates: (
+		startDate?: string,
+		endDate?: string,
+		effectiveDate?: string,
+	) => void;
+	updateBillingInfo: (
+		interval?: string,
+		priceId?: string,
+		billingType?: string,
+	) => void;
+	updatePaymentInfo: (
+		lastPayment?: string,
+		graceEnd?: string,
+		retryCount?: number,
+	) => void;
+
+	// ===== ENHANCED CREDIT MANAGEMENT =====
 	setFullCreditInfo: (info: CreditInfo) => void;
+	addCredits: (amount: number, description?: string) => void;
+	updateCreditInfo: (creditInfo: Partial<CreditInfo>) => void;
+	deductCredits: (amount: number, description?: string) => void;
 
-	// Utility methods
-	hasCredits: (amount?: number) => boolean;
-	canAfford: (amount: number) => boolean;
+	// ===== BONUS MANAGEMENT =====
+	skipSpinBonus: () => void;
+	claimSpinBonus: () => void;
+	claimSignupBonus: () => void;
+
+	// ===== UTILITY METHODS =====
 	getBalance: () => number;
+	isSubscriptionActive: () => boolean;
+	canAfford: (amount: number) => boolean;
+	hasCredits: (amount?: number) => boolean;
 	toggleConnection: (type: "github" | "google") => void;
 
-	// Quick actions for optimistic updates
-	optimisticDeduct: (amount: number) => void;
+	// ===== OPTIMISTIC UPDATE METHODS =====
 	optimisticAdd: (amount: number) => void;
+	optimisticDeduct: (amount: number) => void;
 	revertOptimisticUpdate: (amount: number, wasDeduction: boolean) => void;
 }
 
 const useUserStore = create<UserState & UserActions>()(
 	persist(
 		(set, get) => ({
-			// Core defaults
-			bio: "",
-			plan: "",
+			// ===== CORE USER DEFAULTS =====
+			first_name: "",
+			last_name: "",
+			full_name: "",
 			email: "",
 			profile: undefined,
-			full_name: "",
-			last_name: "",
-			first_name: "",
+			bio: "",
 			preferences: {},
 			justUpdated: false,
 			hasHydratedUser: false,
+
+			// ===== AUTHENTICATION & CONNECTIONS DEFAULTS =====
 			github_connected: false,
 			google_connected: false,
 
-			// Subscription & billing defaults
+			// ===== SUBSCRIPTION & BILLING DEFAULTS =====
+			plan: "",
+			subscription_status: "inactive",
+			subscription_start_date: undefined,
+			subscription_end_date: undefined,
 			paddle_subscription_id: undefined,
 			stripe_subscription_id: undefined,
-			credits: 0,
+			billing_interval: undefined,
+			current_price_id: undefined,
+			pending_plan_change: undefined,
+			pending_plan_effective_date: undefined,
+			payment_grace_period_end: undefined,
+			last_successful_payment: undefined,
+			payment_retry_count: 0,
 
-			// Enhanced credit info
+			// ===== SUBSCRIPTION HELPER FLAGS DEFAULTS =====
+			has_active_subscription: false,
+			is_in_grace_period: false,
+			current_billing_type: undefined,
+
+			// ===== CREDIT MANAGEMENT DEFAULTS =====
+			credits: 0,
 			creditInfo: {
 				balance: 0,
 				lifetimeCredits: 0,
@@ -104,6 +168,12 @@ const useUserStore = create<UserState & UserActions>()(
 				lastUpdated: undefined,
 			},
 
+			// ===== BONUS FLAGS DEFAULTS =====
+			signup_bonus_claimed: false,
+			spin_bonus_claimed: false,
+			spin_bonus_skipped: false,
+
+			// ===== CORE SETTERS =====
 			setUser: user => {
 				set(state => ({ ...state, ...user }));
 			},
@@ -112,7 +182,7 @@ const useUserStore = create<UserState & UserActions>()(
 				set({ justUpdated: value });
 			},
 
-			// Specific update methods for frequently changed fields
+			// ===== SPECIFIC UPDATE METHODS =====
 			updateProfile: profile => {
 				set(state => ({ ...state, profile, justUpdated: true }));
 			},
@@ -170,7 +240,67 @@ const useUserStore = create<UserState & UserActions>()(
 				}));
 			},
 
-			// Enhanced credit management methods
+			// ===== SUBSCRIPTION MANAGEMENT METHODS =====
+			updateSubscriptionStatus: status => {
+				set(state => ({
+					...state,
+					subscription_status: status,
+					has_active_subscription: status === "active",
+					justUpdated: true,
+				}));
+			},
+
+			updateSubscriptionDates: (startDate, endDate, effectiveDate) => {
+				set(state => ({
+					...state,
+					...(startDate !== undefined && {
+						subscription_start_date: startDate,
+					}),
+					...(endDate !== undefined && { subscription_end_date: endDate }),
+					...(effectiveDate !== undefined && {
+						pending_plan_effective_date: effectiveDate,
+					}),
+					justUpdated: true,
+				}));
+			},
+
+			updateBillingInfo: (interval, priceId, billingType) => {
+				set(state => ({
+					...state,
+					...(interval !== undefined && { billing_interval: interval }),
+					...(priceId !== undefined && { current_price_id: priceId }),
+					...(billingType !== undefined && {
+						current_billing_type: billingType,
+					}),
+					justUpdated: true,
+				}));
+			},
+
+			updatePaymentInfo: (lastPayment, graceEnd, retryCount) => {
+				set(state => ({
+					...state,
+					...(lastPayment !== undefined && {
+						last_successful_payment: lastPayment,
+					}),
+					...(graceEnd !== undefined && { payment_grace_period_end: graceEnd }),
+					...(retryCount !== undefined && { payment_retry_count: retryCount }),
+					is_in_grace_period: graceEnd
+						? new Date(graceEnd) > new Date()
+						: state.is_in_grace_period,
+					justUpdated: true,
+				}));
+			},
+
+			setPendingPlanChange: (plan, effectiveDate) => {
+				set(state => ({
+					...state,
+					pending_plan_change: plan,
+					pending_plan_effective_date: effectiveDate,
+					justUpdated: true,
+				}));
+			},
+
+			// ===== ENHANCED CREDIT MANAGEMENT METHODS =====
 			updateCreditInfo: creditInfo => {
 				set(state => ({
 					...state,
@@ -179,7 +309,6 @@ const useUserStore = create<UserState & UserActions>()(
 						...creditInfo,
 						lastUpdated: new Date().toISOString(),
 					},
-					// Keep credits in sync with creditInfo.balance
 					credits: creditInfo.balance ?? state.credits,
 					justUpdated: true,
 				}));
@@ -226,7 +355,32 @@ const useUserStore = create<UserState & UserActions>()(
 				});
 			},
 
-			// Utility methods
+			// ===== BONUS MANAGEMENT METHODS =====
+			claimSignupBonus: () => {
+				set(state => ({
+					...state,
+					signup_bonus_claimed: true,
+					justUpdated: true,
+				}));
+			},
+
+			claimSpinBonus: () => {
+				set(state => ({
+					...state,
+					spin_bonus_claimed: true,
+					justUpdated: true,
+				}));
+			},
+
+			skipSpinBonus: () => {
+				set(state => ({
+					...state,
+					spin_bonus_skipped: true,
+					justUpdated: true,
+				}));
+			},
+
+			// ===== UTILITY METHODS =====
 			hasCredits: (amount = 1) => {
 				return get().credits >= amount;
 			},
@@ -247,7 +401,15 @@ const useUserStore = create<UserState & UserActions>()(
 				}));
 			},
 
-			// Optimistic update methods for immediate UI feedback
+			isSubscriptionActive: () => {
+				const state = get();
+				return (
+					state.has_active_subscription ||
+					state.subscription_status === "active"
+				);
+			},
+
+			// ===== OPTIMISTIC UPDATE METHODS =====
 			optimisticDeduct: amount => {
 				const state = get();
 				if (state.credits >= amount) {
@@ -281,9 +443,10 @@ const useUserStore = create<UserState & UserActions>()(
 				}
 			},
 
+			// ===== CLEAR USER METHOD =====
 			clearUser: () =>
 				set({
-					// Clear core fields
+					// Core fields
 					bio: "",
 					plan: "",
 					email: "",
@@ -294,21 +457,43 @@ const useUserStore = create<UserState & UserActions>()(
 					preferences: {},
 					justUpdated: false,
 					hasHydratedUser: false,
+
+					// Authentication & connections
 					github_connected: false,
 					google_connected: false,
 
-					// Clear subscription & billing fields
+					// Subscription & billing fields
+					subscription_status: "inactive",
+					subscription_start_date: undefined,
+					subscription_end_date: undefined,
 					paddle_subscription_id: undefined,
 					stripe_subscription_id: undefined,
-					credits: 0,
+					billing_interval: undefined,
+					current_price_id: undefined,
+					pending_plan_change: undefined,
+					pending_plan_effective_date: undefined,
+					payment_grace_period_end: undefined,
+					last_successful_payment: undefined,
+					payment_retry_count: 0,
 
-					// Clear credit info
+					// Subscription helper flags
+					has_active_subscription: false,
+					is_in_grace_period: false,
+					current_billing_type: undefined,
+
+					// Credit management
+					credits: 0,
 					creditInfo: {
 						balance: 0,
 						lifetimeCredits: 0,
 						billingType: "credits",
 						lastUpdated: undefined,
 					},
+
+					// Bonus flags
+					signup_bonus_claimed: false,
+					spin_bonus_claimed: false,
+					spin_bonus_skipped: false,
 				}),
 		}),
 		{

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-// eslint-disable-next-line import/no-unresolved
 import { getMetrics, getTopRepoMetrics } from "@/server-actions/core/metrics";
 import { getWebhookErrors } from "@/server-actions/core/webhook-errors";
 
@@ -12,14 +11,30 @@ type MetricsResponse = {
 	scheduled_posts: number;
 };
 
+type ConnectedIntegration = {
+	platform: string;
+	handle: string;
+	display_name: string;
+};
+
 type TopRepoMetric = {
 	name: string;
+	full_name: string;
 	postsThisWeek: number;
+	totalPosts: number;
+	scheduledPosts: number;
+	trend: "up" | "down" | "stable";
 	channelDistribution: {
-		linkedIn: number;
-		slack: number;
-		discord: number;
+		twitter?: number;
+		linkedin?: number;
+		discord?: number;
+		[key: string]: number | undefined;
 	};
+	connectedIntegrations: ConnectedIntegration[];
+	lastActivity: string | undefined;
+	repoUrl: string | undefined;
+	isPrivate: boolean;
+	activePlatforms: string[];
 };
 
 export type WebhookError = {
@@ -28,8 +43,9 @@ export type WebhookError = {
 	time: string;
 	status: number;
 };
+
 const useRetrieveMetrics = () => {
-	// 🔹 General dashboard metrics
+	// General dashboard metrics
 	const {
 		data: mainData,
 		isLoading: isLoadingMain,
@@ -38,7 +54,6 @@ const useRetrieveMetrics = () => {
 		queryKey: ["dashboard_metrics"],
 		queryFn: async () => {
 			const response = await getMetrics();
-
 			if (response?.data) {
 				const {
 					scheduled_posts_count,
@@ -47,7 +62,6 @@ const useRetrieveMetrics = () => {
 					posts_this_week,
 					scheduled_posts,
 				} = response.data;
-
 				return {
 					scheduled_posts_count: scheduled_posts_count ?? 0,
 					generated_posts_count: generated_posts_count ?? 0,
@@ -56,7 +70,6 @@ const useRetrieveMetrics = () => {
 					scheduled_posts: scheduled_posts ?? 0,
 				};
 			}
-
 			return {
 				scheduled_posts_count: 0,
 				generated_posts_count: 0,
@@ -68,7 +81,7 @@ const useRetrieveMetrics = () => {
 		enabled: true,
 	});
 
-	// 🔹 Top repo metrics
+	// Top repo metrics
 	const {
 		data: topRepoMetrics,
 		isLoading: isLoadingTopRepos,
@@ -77,12 +90,10 @@ const useRetrieveMetrics = () => {
 		queryKey: ["top_repo_metrics"],
 		queryFn: async () => {
 			const response = await getTopRepoMetrics();
-
 			if (Array.isArray(response.data)) {
 				return response.data;
 			}
-
-			return []; // fallback
+			return [];
 		},
 		enabled: true,
 	});

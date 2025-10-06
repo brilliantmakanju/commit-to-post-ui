@@ -19,14 +19,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import useLogoutStore from "@/zustand/logout-store";
-import usePlanSelectorStore from "@/zustand/use-plan-selector-store";
 import useUserStore from "@/zustand/useuser-store";
 
 // Dynamically import non-critical components
-const SubPlanCheckout = dynamic(
-	() => import("@/components/auth/subscription/sub-plan-checkout"),
-	{ ssr: false },
-);
 const Toaster = dynamic(
 	() => import("@/components/ui/sonner").then(module_ => module_.Toaster),
 	{ ssr: false },
@@ -46,45 +41,70 @@ const LoadingScreen = ({ message }: { message?: string }) => (
 	</div>
 );
 
-// Helper function to sync user data with proper date parsing
-const parseDate = (dateString: string | undefined) => {
+// Helper function to parse dates safely
+const parseDate = (dateString: string | undefined | null) => {
 	if (!dateString) return;
-	return new Date(dateString);
+	try {
+		const date = new Date(dateString);
+		return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+	} catch {
+		return;
+	}
 };
 
+// Enhanced sync function with all new fields
 export const syncUserData = (userData: any) => {
 	return {
-		// Existing fields
-		plan: userData.plan || "basic",
-		subscription_status: userData.subscription_status || "inactive",
-		subscription_end_date: parseDate(userData.subscription_end_date),
-		email: userData.email || "",
+		// ===== CORE USER FIELDS =====
 		first_name: userData.first_name || "",
 		last_name: userData.last_name || "",
+		email: userData.email || "",
+		profile: userData.profile || undefined,
 		bio: userData.bio || "",
-		github_connected: userData.github_connected || false,
-		google_connected: userData.google_connected || false,
-		stripe_subscription_id: userData.stripe_subscription_id || "",
 		preferences: userData.preferences || {},
 		hasHydratedUser: true,
 
-		// NEW SUBSCRIPTION FIELDS
-		subscription_start_date: parseDate(userData.subscription_start_date),
+		// ===== AUTHENTICATION & CONNECTIONS =====
+		github_connected: userData.github_connected || false,
+		google_connected: userData.google_connected || false,
+
+		// ===== SUBSCRIPTION & BILLING FIELDS =====
+		plan: userData.plan || "basic",
 		paddle_subscription_id: userData.paddle_subscription_id || undefined,
+		stripe_subscription_id: userData.stripe_subscription_id || undefined,
+
+		// Subscription status and dates
+		subscription_status: userData.subscription_status || "inactive",
+		subscription_start_date: parseDate(userData.subscription_start_date),
+		subscription_end_date: parseDate(userData.subscription_end_date),
+
+		// Billing details
 		billing_interval: userData.billing_interval || undefined,
 		current_price_id: userData.current_price_id || undefined,
+
+		// Plan changes
 		pending_plan_change: userData.pending_plan_change || undefined,
 		pending_plan_effective_date: parseDate(
 			userData.pending_plan_effective_date,
 		),
+
+		// Payment information
 		payment_grace_period_end: parseDate(userData.payment_grace_period_end),
 		last_successful_payment: parseDate(userData.last_successful_payment),
 		payment_retry_count: userData.payment_retry_count || 0,
 
-		// HELPER FLAGS
+		// ===== SUBSCRIPTION HELPER FLAGS =====
 		has_active_subscription: userData.has_active_subscription || false,
 		is_in_grace_period: userData.is_in_grace_period || false,
 		current_billing_type: userData.current_billing_type || undefined,
+
+		// ===== CREDIT MANAGEMENT =====
+		credits: userData.credits || 0,
+
+		// ===== BONUS FLAGS =====
+		signup_bonus_claimed: userData.signup_bonus_claimed || false,
+		spin_bonus_claimed: userData.spin_bonus_claimed || false,
+		spin_bonus_skipped: userData.spin_bonus_skipped || false,
 	};
 };
 
@@ -96,8 +116,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const [onboardingChecked, setOnboardingChecked] = useState(false);
 	const [initializationComplete, setInitializationComplete] = useState(false);
 	const [forceShowContent, setForceShowContent] = useState(false);
-
-	const { isOpen, close, type, currentPlanId } = usePlanSelectorStore();
 
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
@@ -112,8 +130,8 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 	// Session management with auto-logout
 	const { isSessionValid, SessionUI, logout } = useSessionManager({
-		inactivityTimeout: 30, // 30 minutes of inactivity
-		warningTime: 5, // Warn 5 minutes before logout
+		inactivityTimeout: 50, // 50 minutes of inactivity
+		warningTime: 10, // Warn 10 minutes before logout
 	});
 
 	// Memoized sync function to prevent recreations
@@ -125,8 +143,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				const syncedData = syncUserData(userData);
 				setUser(syncedData);
 				hasSyncedRef.current = true;
-			} catch {
-				console.error("Failed to sync user data:");
+				console.log("✅ User data synced successfully");
+			} catch (error) {
+				console.error("❌ Failed to sync user data:", error);
 			}
 		},
 		[setUser],
@@ -171,8 +190,8 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				}
 
 				setCookieValidated(true);
-			} catch {
-				console.error("Cookie validation failed:");
+			} catch (error) {
+				console.error("Cookie validation failed:", error);
 				if (mounted) {
 					// Don't force logout on cookie validation error - might be temporary
 					await logout();
@@ -227,8 +246,8 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					globalThis.window.location.replace("/start");
 					return;
 				}
-			} catch {
-				console.error("Failed to check new user cookie:");
+			} catch (error) {
+				console.error("Failed to check new user cookie:", error);
 			} finally {
 				setOnboardingChecked(true);
 			}
@@ -359,7 +378,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 							>
 								{children}
 							</Suspense>
-							<SubPlanCheckout />
 							<RequestInterceptor />
 							<Toaster />
 						</main>

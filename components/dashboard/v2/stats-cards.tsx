@@ -31,7 +31,7 @@ export function StatCards() {
 		{
 			title: "Total Repositories",
 			value: totalRepositories?.toString() ?? "0",
-			description: "managed by Push to Post",
+			description: "managed by Push to Draft",
 		},
 		{
 			title: "Posts This Week",
