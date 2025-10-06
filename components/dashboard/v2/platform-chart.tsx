@@ -222,18 +222,28 @@ export function ChannelDistribution() {
 
 export function ChannelDistributionSkeleton() {
 	return (
-		<div className="space-y-3">
-			<div className="flex items-center justify-between">
-				<Skeleton className="h-9 w-32 bg-zinc-800/50" />
-				<Skeleton className="h-4 w-20 bg-zinc-800/50" />
+		<div className="flex items-center justify-center gap-6 py-2">
+			{/* Left: List Skeleton */}
+			<div className="w-56 space-y-1.5 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3">
+				{Array.from({ length: 2 }).map((_, index) => (
+					<div
+						key={index}
+						className="flex items-center justify-between gap-3 rounded-md border border-zinc-800/40 bg-zinc-900/50 px-3 py-2"
+					>
+						<div className="flex items-center gap-2">
+							<Skeleton className="h-7 w-7 rounded bg-zinc-800/70" />
+							<Skeleton className="h-4 w-20 bg-zinc-800/70" />
+						</div>
+						<div className="flex items-baseline gap-1.5">
+							<Skeleton className="h-3 w-8 bg-zinc-800/70" />
+						</div>
+					</div>
+				))}
 			</div>
+
+			{/* Right: Chart Skeleton */}
 			<div className="flex items-center justify-center py-2">
 				<Skeleton className="h-[160px] w-[160px] rounded-full bg-zinc-800/50" />
-			</div>
-			<div className="space-y-1.5 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-2">
-				{Array.from({ length: 3 }).map((_, index) => (
-					<Skeleton key={index} className="h-11 bg-zinc-800/50" />
-				))}
 			</div>
 		</div>
 	);

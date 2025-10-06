@@ -271,13 +271,13 @@ export const UpcomingPosts = () => {
 
 export const UpcomingPostsSkeleton = () => {
 	return (
-		<div className="h-[304px] space-y-2">
+		<div className="h-[104px] space-y-2">
 			<div className="flex items-center gap-2">
 				<Skeleton className="h-6 w-14 bg-zinc-800/50" />
 				<Skeleton className="h-3 w-6 bg-zinc-800/50" />
 			</div>
 			<div className="space-y-1 rounded-lg border border-zinc-800/50 bg-zinc-900/20 p-1.5">
-				{Array.from({ length: 10 }).map((_, index) => (
+				{Array.from({ length: 3 }).map((_, index) => (
 					<div
 						key={index}
 						className="flex gap-1.5 rounded border border-zinc-800/40 bg-zinc-900/50 p-1.5"

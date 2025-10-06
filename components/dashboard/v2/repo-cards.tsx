@@ -147,17 +147,31 @@ export function StatCardsSkeleton() {
 	return (
 		<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{Array.from({ length: 3 }).map((_, index) => (
-				<Card key={index} className="border border-zinc-800/50 bg-zinc-900/40">
+				<Card
+					key={index}
+					className="h-full border border-zinc-800/50 bg-zinc-900/40"
+				>
+					{/* Header Row: Repo identity + trend */}
 					<CardHeader className="pb-2">
-						<div className="flex items-center gap-2">
-							<Skeleton className="h-7 w-7 bg-zinc-800/50" />
-							<Skeleton className="h-5 w-32 bg-zinc-800/50" />
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2 truncate">
+								<Skeleton className="h-7 w-7 rounded bg-zinc-800/50" />
+								<Skeleton className="h-5 w-28 bg-zinc-800/50" />
+							</div>
+							<Skeleton className="h-4 w-4 rounded-full bg-zinc-800/50" />
 						</div>
 					</CardHeader>
+
 					<CardContent className="space-y-3">
-						<Skeleton className="h-6 w-20 bg-zinc-800/50" />
-						<Skeleton className="h-4 w-32 bg-zinc-800/50" />
-						<Skeleton className="h-6 w-24 bg-zinc-800/50" />
+						{/* Main Stats Row */}
+						<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center gap-2">
+								<Skeleton className="h-6 w-10 bg-zinc-800/50" />
+							</div>
+							<div className="flex items-center gap-4">
+								<Skeleton className="h-4 w-16 bg-zinc-800/50" />
+							</div>
+						</div>
 					</CardContent>
 				</Card>
 			))}
