@@ -137,9 +137,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 		selectedTones,
 		activeVersionId,
 		showPreviewModal,
-		showScheduleModal,
 		selectedVersions,
 		showPublishModal,
+		showScheduleModal,
+		pendingOperations,
 		showVersionSidebar,
 		showGeneratorSidebar,
 
@@ -931,16 +932,27 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 	// Handle dialog open/close
 	const handleDialogOpenChange = useCallback(
 		(open: boolean) => {
-			if (!open && isCriticalOperationRunning() && !loadingState.canCancel) {
+			if (
+				!open &&
+				isCriticalOperationRunning() &&
+				!loadingState.canCancel &&
+				pendingOperations
+			) {
 				return; // Prevent closing during critical operations
 			}
+
 			if (!open) {
-				// Clear selected socials when closing
+				// If there are pending operations, block closing
+				if (pendingOperations && pendingOperations.size > 0) {
+					return;
+				}
+
+				// Safe to clear and close
 				setSelectedSocials(new Set());
 				closeModal();
 			}
 		},
-		[isCriticalOperationRunning, loadingState, closeModal],
+		[isCriticalOperationRunning, loadingState, closeModal, pendingOperations],
 	);
 
 	// Handle schedule post function
@@ -1034,12 +1046,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
 				useCreatePostModalStore.setState({ posts: updatedPosts });
 
-				// Clear selected socials
-				setSelectedSocials(new Set());
 				toast.success(result.message || "Post scheduled successfully!");
 
-				// Close the schedule modal AND the main modal
-				// closeSpecificModal("schedule");
+				// Safe to clear and close
+				setSelectedSocials(new Set());
 				closeModal();
 			}
 		} catch (error) {
@@ -1147,10 +1157,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 				);
 
 				useCreatePostModalStore.setState({ posts: updatedPosts });
-
-				// Clear selected socials
-				setSelectedSocials(new Set());
-
 				// Show success message with credits info
 				const successMessage = result.message || "Post published successfully!";
 				const creditsInfo = result.credits_used
@@ -1158,7 +1164,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 					: "";
 				toast.success(successMessage + creditsInfo);
 
-				// Close the modal
+				// Safe to clear and close
+				setSelectedSocials(new Set());
 				closeModal();
 			}
 		} catch (error) {
