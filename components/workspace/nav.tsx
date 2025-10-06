@@ -1,4 +1,5 @@
 "use client";
+import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 
 import {
@@ -11,67 +12,41 @@ import {
 	NavBody,
 	// eslint-disable-next-line import/no-unresolved
 } from "@/components/ui/resizable-navbar";
-import { useLimitUI } from "@/hooks/use-limit-ui";
-import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
-import useOrganizationStore from "@/zustand/useorganization-store";
+import { hasWorkspaceAccess } from "@/lib/utils/feature-flag-utils";
+import useUserStore from "@/zustand/useuser-store";
 
-import FeatureLimitWrapper from "../feature-flag/feature-limit-wrapper";
-import LimitTooltip from "../feature-flag/limit-tooltip";
 import { CreateOrganizationModal } from "../organization/create-organization";
 import { Button } from "../ui/button";
 
 const WorkspaceTopNav = () => {
-	const { organizations } = useOrganizationStore();
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-	const orgCount = organizations.length;
+	const { data: session } = useSession();
+	const { plan, credits } = useUserStore();
 
-	// use workspaces limit, not social accounts
-	const workspaceLimitUI = useLimitUI({
-		warningThreshold: 80,
-		currentCount: orgCount,
-		limitType: "workspaces",
-		limitId: FEATURE_LIMITS.WORKSPACES,
-	});
+	// NEW: Check if user has workspace access (studio plan + credits)
+	const userPlan = plan;
+	const userCredits = credits || 0;
+	const canAccessWorkspace = hasWorkspaceAccess(
+		userPlan,
+		!!session?.user,
+		userCredits,
+	);
 
 	const renderWorkspaceAction = () => {
 		return (
-			<FeatureLimitWrapper
-				limitId={FEATURE_LIMITS.WORKSPACES}
-				currentCount={orgCount}
-				fallback={
-					<LimitTooltip
-						maxLimit={workspaceLimitUI.limit}
-						currentUsage={orgCount}
-						limitType="workspaces"
-						position="bottom"
+			<>
+				{canAccessWorkspace && (
+					<Button
+						variant="default"
+						className="w-full"
+						onClick={() => setCreateModalOpen(true)}
 					>
-						<div className="w-full bg-transparent hover:bg-transparent">
-							<button disabled className="w-full">
-								Create a new workspace
-							</button>
-						</div>
-					</LimitTooltip>
-				}
-			>
-				<LimitTooltip
-					maxLimit={workspaceLimitUI.limit}
-					currentUsage={orgCount}
-					limitType="workspaces"
-					position="bottom"
-				>
-					<div className="w-full bg-transparent hover:bg-transparent">
-						<Button
-							variant="default"
-							className="w-full"
-							onClick={() => setCreateModalOpen(true)}
-						>
-							Create a new workspace
-						</Button>
-					</div>
-				</LimitTooltip>
-			</FeatureLimitWrapper>
+						Create a new workspace
+					</Button>
+				)}
+			</>
 		);
 	};
 

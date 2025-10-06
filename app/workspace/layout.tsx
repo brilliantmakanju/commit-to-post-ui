@@ -58,15 +58,23 @@ export default function Layout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={"bg-[#f4f4f4] antialiased"}>
+			<body>
 				<Suspense>
-					<WorkspaceTopNav />
-					<main
-						role="main"
-						className="relative flex w-full flex-col items-start justify-start xl:container xl:mx-auto"
-					>
-						{children}
-						<Toaster />
+					<main className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden border-none bg-white">
+						<div className="relative flex w-full flex-col items-center justify-start border-none">
+							<div className="relative flex min-h-screen w-full max-w-none flex-col items-start justify-start px-4 sm:px-6 md:px-8 lg:w-[1260px] lg:max-w-[1460px] lg:px-0">
+								<div className="absolute left-4 top-0 z-0 h-full w-[1px] bg-gray-200 shadow-[1px_0px_0px_white] sm:left-6 md:left-8 lg:left-0"></div>
+								<div className="absolute right-4 top-0 z-0 h-full w-[1px] bg-gray-200 shadow-[1px_0px_0px_white] sm:right-6 md:right-8 lg:right-0"></div>
+								<WorkspaceTopNav />
+
+								<div className="relative flex flex-col items-center justify-center gap-4 self-stretch overflow-hidden border-none sm:gap-6">
+									<div className="flex w-full flex-col items-center justify-start border-none px-2 pb-8 pl-0 pr-0 sm:px-4 sm:pb-12 sm:pl-0 sm:pr-0 md:px-8 md:pb-16 lg:px-0">
+										{children}
+										<Toaster />
+									</div>
+								</div>
+							</div>
+						</div>
 					</main>
 				</Suspense>
 			</body>
