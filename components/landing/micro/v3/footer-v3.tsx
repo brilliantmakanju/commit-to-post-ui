@@ -134,9 +134,9 @@ export default function FooterSection() {
 	// Memoize legal links
 	const legalLinks = useMemo<LegalLink[]>(
 		() => [
-			{ href: "/terms", label: "Terms" },
-			{ href: "/privacy", label: "Privacy" },
-			{ href: "/refund", label: "Refund" },
+			{ href: "/terms", label: "Terms of service" },
+			{ href: "/privacy", label: "Privacy Policy" },
+			{ href: "/refund", label: "Refund Policy" },
 		],
 		[],
 	);
