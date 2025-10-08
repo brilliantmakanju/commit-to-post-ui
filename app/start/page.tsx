@@ -5,6 +5,7 @@ import { FaCode, FaGithub, FaShareAlt } from "react-icons/fa";
 import { toast } from "sonner";
 
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
+import CreditBonusParent from "@/components/onboarding/spin/container";
 import { OnboardingFlow } from "@/components/onboarding/v2/onboarding-flow";
 import ConnectGithub from "@/components/onboarding/v2/screens/connect-github";
 import ConnectRepoOnboarding from "@/components/onboarding/v2/screens/connect-repo";
@@ -58,14 +59,6 @@ const OnboardingPage: React.FC = () => {
 				optional: false, // Mandatory
 				icon: <FaCode className="h-6 w-6" />,
 			},
-			// {
-			// 	id: 4,
-			// 	title: "Setup Complete",
-			// 	subtitle: "You're ready to push commits to your socials",
-			// 	content: "Launch Setup",
-			// 	optional: false, // Mandatory confirmation
-			// 	icon: <FaRocket className="h-6 w-6" />,
-			// },
 		],
 		showProgress: true, // Keep progress bar for clarity
 		allowSkipOptional: true, // Allow skipping additional socials in step 2
@@ -95,11 +88,14 @@ const OnboardingPage: React.FC = () => {
 	};
 
 	return (
-		<OnboardingFlow
-			config={onboardingConfig}
-			onComplete={handleComplete}
-			onStepContent={handleStepContent}
-		/>
+		<>
+			<CreditBonusParent />
+			<OnboardingFlow
+				config={onboardingConfig}
+				onComplete={handleComplete}
+				onStepContent={handleStepContent}
+			/>
+		</>
 	);
 };
 

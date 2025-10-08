@@ -59,7 +59,7 @@ type PlanButtonProps = {
 const PRICING_DATA = {
 	unlockPacks: [
 		{
-			id: "free",
+			id: "basic",
 			name: "Starter",
 			description: "Test drive the platform and see the magic in action",
 			price: 0,
@@ -203,7 +203,7 @@ const calculateSavings = (
 
 const getPlanTier = (planId: string): number => {
 	const tiers: Record<string, number> = {
-		free: 0,
+		basic: 0,
 		pro: 1,
 		studio: 2,
 	};
@@ -342,13 +342,21 @@ function PlanButton({
 	canUpgrade,
 	pack,
 }: PlanButtonProps) {
-	const { id, buttonText: packButtonText, buttonStyle, productId, name } = pack;
+	const {
+		id,
+		name,
+		price,
+		credits,
+		productId,
+		buttonStyle,
+		buttonText: packButtonText,
+	} = pack;
 
 	const buttonText = useMemo(() => {
 		if (isCurrentPlan) return "Current Plan";
-		if (id === "free") return packButtonText;
-		if (isDowngrade) return "Not Available";
+		if (id === "basic") return packButtonText;
 		if (canUpgrade) return `Upgrade to ${name}`;
+		if (isDowngrade) return "Change Plan";
 		return packButtonText;
 	}, [isCurrentPlan, id, packButtonText, name, canUpgrade, isDowngrade]);
 
@@ -368,18 +376,30 @@ function PlanButton({
 
 		if (isDowngrade) {
 			return (
-				<button
-					disabled
-					className="flex w-full cursor-not-allowed items-center justify-center rounded-full border-2 border-gray-300 bg-gray-100 px-5 py-3 opacity-50"
+				<PaddleCheckout
+					locale="en"
+					theme="light"
+					displayMode="overlay"
+					environment={
+						process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
+							| "sandbox"
+							| "production"
+					}
+					productId={productId}
+					credits={credits}
+					forceDisabled={true}
+					disabledReason="has-access"
 				>
-					<span className="font-sans text-sm font-semibold leading-5 text-gray-500">
-						{buttonText}
-					</span>
-				</button>
+					<button className="flex w-full cursor-not-allowed items-center justify-center rounded-full border-2 border-gray-300 bg-gray-100 px-5 py-3 opacity-50">
+						<span className="font-sans text-sm font-semibold leading-5 text-gray-500">
+							{buttonText}
+						</span>
+					</button>
+				</PaddleCheckout>
 			);
 		}
 
-		if (id === "free" && buttonStyle === "secondary") {
+		if (id === "basic" && buttonStyle === "secondary") {
 			return (
 				<button className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-5 py-3 shadow-[0px_2px_8px_rgba(0,0,0,0.08)] transition-colors hover:bg-gray-50">
 					<span className="font-sans text-sm font-semibold leading-5 text-black">
@@ -418,6 +438,7 @@ function PlanButton({
 							| "production"
 					}
 					productId={productId}
+					credits={credits}
 				>
 					<ButtonInner />
 				</PaddleCheckout>
@@ -425,7 +446,15 @@ function PlanButton({
 		}
 
 		return;
-	}, [isCurrentPlan, isDowngrade, id, buttonStyle, productId, buttonText]);
+	}, [
+		id,
+		credits,
+		productId,
+		buttonText,
+		buttonStyle,
+		isDowngrade,
+		isCurrentPlan,
+	]);
 
 	return ButtonComponent;
 }
@@ -444,14 +473,16 @@ const UnlockPackCard = memo(({ pack, userPlanId }: UnlockPackCardProps) => {
 				: "shadow-sm hover:shadow-md";
 
 	const isCurrentPlan = userPlanId === pack.id;
-	const userTier = getPlanTier(userPlanId || "free");
+
 	const packTier = getPlanTier(pack.id);
+	const userTier = getPlanTier(userPlanId || "basic");
+
 	const canUpgrade = packTier > userTier;
 	const shouldDisableButton = packTier < userTier;
 
 	return (
 		<div
-			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.borderStyle} ${bgClass} px-7 py-7 ${shadowClass} transition-shadow ${isCurrentPlan ? "ring-2 ring-blue-500 ring-offset-2" : ""} ${shouldDisableButton ? "opacity-60" : ""}`}
+			className={`relative flex min-w-0 flex-col justify-between gap-10 overflow-hidden rounded-2xl border-2 ${pack.borderStyle} ${bgClass} px-7 py-7 ${shadowClass} transition-shadow ${isCurrentPlan ? "ring-2 ring-blue-500 ring-offset-2" : ""}`}
 		>
 			{isCurrentPlan && (
 				<div className="absolute right-5 top-5 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold tracking-wider text-white">
@@ -566,15 +597,17 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 	);
 
 	const ButtonComponent = useMemo(() => {
+		const buttonContent = (
+			<button className="relative flex w-full items-center justify-center overflow-hidden rounded-full bg-black px-5 py-3 shadow-[0px_2px_8px_rgba(0,0,0,0.15)] transition-colors hover:bg-gray-800">
+				<div className="pointer-events-none absolute left-0 top-[-0.5px] h-[45px] w-full bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(0,0,0,0.05)] mix-blend-overlay" />
+				<span className="relative z-10 font-sans text-sm font-semibold leading-5 text-white">
+					Buy Credits
+				</span>
+			</button>
+		);
+
 		if (!pack.productId) {
-			return (
-				<button className="relative flex w-full items-center justify-center overflow-hidden rounded-full bg-black px-5 py-3 shadow-[0px_2px_8px_rgba(0,0,0,0.15)] transition-colors hover:bg-gray-800">
-					<div className="pointer-events-none absolute left-0 top-[-0.5px] h-[45px] w-full bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(0,0,0,0.05)] mix-blend-overlay" />
-					<span className="relative z-10 font-sans text-sm font-semibold leading-5 text-white">
-						Buy Credits
-					</span>
-				</button>
-			);
+			return buttonContent;
 		}
 
 		return (
@@ -586,16 +619,12 @@ const RefillPackCard = memo(({ pack, baseRefill }: RefillPackCardProps) => {
 					process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "sandbox" | "production"
 				}
 				productId={pack.productId}
+				credits={pack.credits}
 			>
-				<button className="relative flex w-full items-center justify-center overflow-hidden rounded-full bg-black px-5 py-3 shadow-[0px_2px_8px_rgba(0,0,0,0.15)] transition-colors hover:bg-gray-800">
-					<div className="pointer-events-none absolute left-0 top-[-0.5px] h-[45px] w-full bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(0,0,0,0.05)] mix-blend-overlay" />
-					<span className="relative z-10 font-sans text-sm font-semibold leading-5 text-white">
-						Buy Credits
-					</span>
-				</button>
+				{buttonContent}
 			</PaddleCheckout>
 		);
-	}, [pack.productId]);
+	}, [pack.productId, pack.credits]);
 
 	return (
 		<div
@@ -729,8 +758,8 @@ export default function PricingSection() {
 							<div className="grid w-full min-w-0 flex-1 gap-8 lg:grid-cols-3">
 								{PRICING_DATA.unlockPacks.map(pack => (
 									<UnlockPackCard
-										key={pack.id}
 										pack={pack}
+										key={pack.id}
 										userPlanId={userPlanId || ""}
 									/>
 								))}

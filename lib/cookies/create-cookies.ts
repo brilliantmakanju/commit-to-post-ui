@@ -1,5 +1,5 @@
 "use server";
-import { EncryptJWT } from "jose";
+import { EncryptJWT, jwtDecrypt } from "jose";
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 
@@ -9,7 +9,7 @@ const ENCRYPTION_KEY =
 const COOKIE_NAME = "session";
 
 // Utility function to encrypt data with all encryption logic encapsulated
-const encrypt = async (payload: any): Promise<string> => {
+export const encrypt = async (payload: any): Promise<string> => {
 	// For A128GCM, we need a 16-byte (128-bit) key
 	const keyBuffer = new TextEncoder().encode(ENCRYPTION_KEY).slice(0, 16);
 
@@ -21,6 +21,21 @@ const encrypt = async (payload: any): Promise<string> => {
 
 	const encryptedValue = await encryptJwt.encrypt(keyBuffer);
 	return encryptedValue;
+};
+
+// Utility function to decrypt data (SERVER ACTION)
+export const decrypt = async (token: string): Promise<any> => {
+	try {
+		const keyBuffer = new TextEncoder().encode(ENCRYPTION_KEY).slice(0, 16);
+
+		const { payload } = await jwtDecrypt(token, keyBuffer, {
+			clockTolerance: 15,
+		});
+
+		return payload;
+	} catch {
+		return undefined;
+	}
 };
 // Simplified cookie creation function that uses the encryption service
 export async function createEncryptedCookie(
@@ -87,4 +102,16 @@ export const clearCookies = async () => {
 	} catch {
 		return;
 	}
+};
+
+// Create encrypted purchase success token
+export const createPurchaseToken = async (data: {
+	credits: number;
+}): Promise<string> => {
+	return await encrypt(data);
+};
+
+// Decrypt purchase token (SERVER ACTION - called from client)
+export const decryptPurchaseToken = async (token: string) => {
+	return await decrypt(token);
 };

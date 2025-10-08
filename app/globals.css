@@ -1043,3 +1043,11 @@ html {
 .animation-delay-150 {
   animation-delay: 150ms;
 }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}

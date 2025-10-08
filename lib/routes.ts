@@ -4,7 +4,6 @@ export const PROTECTED_SUB_ROUTES = [
 	"/auth",
 	"/posts",
 	"/setup",
-	"/success",
 	"/payment",
 	"/settings",
 	"/workspace",

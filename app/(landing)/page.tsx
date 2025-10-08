@@ -11,7 +11,9 @@ import FAQSection from "@/components/landing/micro/v3/faq-v3";
 import FooterSection from "@/components/landing/micro/v3/footer-v3";
 import HeroSection from "@/components/landing/micro/v3/hero-section";
 import PricingSection from "@/components/landing/micro/v3/pricing-section";
+import PurchaseSuccessModal from "@/components/landing/pricing/payment-success";
 import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
+import { usePurchaseSuccess } from "@/hooks/plans/payment-success";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { signOut } from "@/server-actions/auth/signout";
@@ -21,13 +23,14 @@ import useUserStore from "@/zustand/useuser-store";
 
 export default function Home() {
 	const router = useRouter();
-	const searchParams = useSearchParams();
-	const logoutStore = useLogoutStore();
-	const { isOpen, openModal } = useAuthModalStore();
-
 	const hasSyncedRef = useRef(false);
+	const logoutStore = useLogoutStore();
+	const searchParams = useSearchParams();
 	const { data: session, status } = useSession();
+	const { isOpen, openModal } = useAuthModalStore();
 	const { setUser, hasHydratedUser } = useUserStore();
+	// Handle purchase success
+	const { isModalOpen, closeModal } = usePurchaseSuccess();
 
 	useEffect(() => {
 		const getToken = searchParams.get("token");
@@ -84,6 +87,8 @@ export default function Home() {
 	return (
 		<>
 			<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-sans">
+				{/* Purchase Success Modal */}
+				<PurchaseSuccessModal isOpen={isModalOpen} onClose={closeModal} />
 				{isOpen && <SubAuthPage />}
 				<HeroSection />
 				<VideoDemo />
@@ -93,15 +98,6 @@ export default function Home() {
 				<CTASection />
 				<FooterSection />
 			</div>
-			{/* <PlanSelector
-				open={selector}
-				type={type || "upgrade"}
-				currentPlanId={currentPlanId || ""}
-				onOpenChange={open => {
-					if (!open) close();
-				}}
-				currentInterval={currentInterval}
-			/> */}
 		</>
 	);
 }

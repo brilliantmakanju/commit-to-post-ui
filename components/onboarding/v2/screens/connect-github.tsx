@@ -106,7 +106,7 @@ const ConnectGithub = () => {
 										? "cursor-not-allowed bg-gray-100 text-gray-400 hover:bg-gray-100"
 										: githubConnected
 											? "bg-red-100 text-red-600 hover:bg-red-200"
-											: "border border-zinc-700/50 bg-zinc-800/30 px-6 py-2 text-zinc-100 hover:border-zinc-600/70 hover:bg-zinc-700/40"
+											: "border border-zinc-700/50 px-6 py-2 text-zinc-100"
 								}`}
 							>
 								{isLoading || isDisconnecting ? (

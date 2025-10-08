@@ -11,6 +11,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { createPurchaseToken } from "@/lib/cookies/create-cookies";
 import { cn } from "@/lib/utils";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useUserStore from "@/zustand/useuser-store";
@@ -30,25 +31,29 @@ interface PaddleCheckoutProps {
 		| "has-access"
 		| "not-initialized"
 		| "loading";
+	// New props for pricing store integration
+	credits?: number;
 }
 
 export default function PaddleCheckout({
 	theme,
 	children,
 	productId,
+	successUrl,
 	environment,
 	displayMode,
 	locale = "en",
-	successUrl = process.env.NEXT_PUBLIC_PADDLE_SUCCESS,
 	tooltipMessage,
-	forceDisabled = false,
 	disabledReason,
+	forceDisabled = false,
+
+	credits,
 }: PaddleCheckoutProps) {
 	const { status } = useSession();
 	const useStore = useUserStore();
+	const { openModal } = useAuthModalStore();
 	const [loading, setLoading] = useState(false);
 	const [paddle, setPaddle] = useState<Paddle | undefined>();
-	const { openModal } = useAuthModalStore();
 
 	useEffect(() => {
 		initializePaddle({
@@ -69,6 +74,18 @@ export default function PaddleCheckout({
 				setLoading(true);
 
 				try {
+					// Create encrypted token with purchase details
+					let finalSuccessUrl = successUrl || globalThis.location.origin;
+
+					if (credits !== undefined) {
+						const token = await createPurchaseToken({
+							credits,
+						});
+
+						// Append encrypted token to success URL
+						finalSuccessUrl = `${globalThis.location.origin}?purchase=${encodeURIComponent(token)}`;
+					}
+
 					paddle.Checkout.open({
 						items: [
 							{
@@ -86,8 +103,8 @@ export default function PaddleCheckout({
 							showAddTaxId: true,
 							variant: "one-page",
 							showAddDiscounts: false,
-							successUrl: successUrl,
 							displayMode: displayMode,
+							successUrl: finalSuccessUrl,
 							allowedPaymentMethods: ["card", "paypal"],
 						},
 					});
