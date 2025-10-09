@@ -1,47 +1,47 @@
 import type { Metadata } from "next";
 
-const baseUrl = "https://commit.jolexhive.com/";
+const baseUrl = "https://pushtodraft.app/";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(baseUrl),
 	title: {
-		default: "Notifications | Push to Post",
-		template: "%s | Push to Post",
+		default: "Notifications | Push to Draft",
+		template: "%s | Push to Draft",
 	},
 	description:
-		"View your Push to Post notifications, including generated post updates, publishing activity, and important account alerts.",
+		"Stay informed with Push to Draft notifications — track AI draft generations, credit usage, and important updates about your workspace.",
 	openGraph: {
 		type: "website",
 		locale: "en_US",
 		url: `${baseUrl}notifications`,
-		title: "Notifications | Push to Post",
+		title: "Notifications | Push to Draft",
 		description:
-			"Stay updated with your latest generated posts, publishing status, and account notifications.",
-		siteName: "Push to Post",
+			"View your latest activity across Push to Draft — AI-generated drafts, credit updates, and important workspace alerts in one place.",
+		siteName: "Push to Draft",
 		images: [
 			{
 				url: `${baseUrl}opengraph-image.jpg`,
 				width: 1200,
 				height: 630,
-				alt: "Push to Post Notifications",
+				alt: "Push to Draft Notifications",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Notifications | Push to Post",
+		title: "Notifications | Push to Draft",
 		description:
-			"Check your latest Push to Post activity: AI post generation, publishing status, and account updates.",
+			"Check your latest Push to Draft activity — from AI draft generations to credit usage and account updates.",
 		images: [`${baseUrl}twitter-image.jpg`],
 	},
 	keywords: [
-		"Push to Post notifications",
-		"AI post updates",
-		"social media publishing status",
-		"developer automation alerts",
-		"commit to post updates",
+		"Push to Draft notifications",
+		"AI draft updates",
+		"credit usage alerts",
+		"developer workflow updates",
+		"build in public automation",
+		"Git commit to social draft",
 	],
-	// Recommended: hide from Google since it’s private/authenticated
 	robots: {
 		index: false,
 		follow: false,

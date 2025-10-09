@@ -1,28 +1,53 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
+
 export const metadata: Metadata = {
-	metadataBase: new URL("https://commit.jolexhive.com/"),
-	title: "Unsubscribe from Emails | Push to Post",
+	metadataBase: new URL("https://pushtodraft.app/"),
+	title: "Unsubscribe from Emails | Push to Draft",
 	description:
-		"Unsubscribe from Push to Post email notifications securely and easily.",
+		"Securely unsubscribe from Push to Draft emails or adjust your notification preferences. You're always in control of how we communicate with you.",
+	openGraph: {
+		title: "Unsubscribe from Emails | Push to Draft",
+		description:
+			"Manage your email preferences or unsubscribe from Push to Draft notifications. Take full control over your communication settings.",
+		type: "website",
+		url: "https://pushtodraft.app/unsubscribe",
+		siteName: "Push to Draft",
+		locale: "en_US",
+		images: [
+			{
+				url: "https://pushtodraft.app/opengraph-image.jpg",
+				width: 1200,
+				height: 630,
+				alt: "Push to Draft - Email Preferences",
+			},
+		],
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Unsubscribe from Emails | Push to Draft",
+		description:
+			"Easily manage your email preferences or unsubscribe from Push to Draft notifications. No spam. No friction. Full control.",
+		site: "@Jolex_Dev",
+		creator: "@Jolex_Dev",
+		images: ["https://pushtodraft.app/twitter-image.jpg"],
+	},
+	keywords: [
+		"unsubscribe from Push to Draft",
+		"email preferences",
+		"notification settings",
+		"unsubscribe page",
+		"privacy control",
+		"user communication preferences",
+		"developer notifications",
+		"email management",
+	],
 	robots: {
 		index: false,
 		follow: false,
 	},
-	openGraph: {
-		title: "Unsubscribe from Emails | Push to Post",
-		description:
-			"Manage your email preferences and unsubscribe from Push to Post notifications.",
-		type: "website",
-		url: "https://commit.jolexhive.com/unsubscribe",
-		siteName: "Push to Post",
-		locale: "en_US",
-	},
-	twitter: {
-		card: "summary",
-		title: "Unsubscribe from Emails | Push to Post",
-		description:
-			"Unsubscribe from Push to Post notifications and update your communication preferences.",
+	alternates: {
+		canonical: "https://pushtodraft.app/unsubscribe",
 	},
 };
 

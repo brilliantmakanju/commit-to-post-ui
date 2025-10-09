@@ -8,47 +8,63 @@ import { Toaster } from "@/components/ui/sonner";
 import WorkspaceTopNav from "@/components/workspace/nav";
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://commit.jolexhive.com/"),
+	metadataBase: new URL("https://pushtodraft.app/"),
 	title:
-		"Select Workspace - Push to Post | AI-Powered Git Commit to Social Media",
+		"Select Workspace - Push to Draft | AI-Powered Git Commit to Post Drafts",
 	description:
-		"Choose your workspace to log in and start turning Git commits into shareable social media posts with AI. Push to Post makes it effortless to showcase your projects on LinkedIn, Twitter, and beyond.",
+		"Choose your workspace to log in and start turning your Git commits into authentic post drafts. Push to Draft helps developers share real progress and build in public with ease.",
 	openGraph: {
-		title: "Select Workspace - Push to Post",
+		title: "Select Workspace - Push to Draft",
 		description:
-			"Log in by selecting your workspace. Push to Post transforms your Git commits into AI-generated social media content for LinkedIn, Twitter, and more.",
+			"Select your workspace to access Push to Draft — the AI tool that transforms your Git commits into genuine, human-like post drafts ready for LinkedIn, Twitter, or your next blog post.",
 		type: "website",
-		url: "https://commit.jolexhive.com/workspace",
-		siteName: "Push to Post",
+		url: "https://pushtodraft.app/workspace",
+		siteName: "Push to Draft",
 		locale: "en_US",
 		images: [
 			{
-				url: "https://commit.jolexhive.com/opengraph-image.jpg",
+				url: "https://pushtodraft.app/opengraph-image.jpg",
 				width: 1200,
 				height: 630,
-				alt: "Push to Post - Select Workspace",
+				alt: "Push to Draft - Select Workspace",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Select Workspace - Push to Post | AI Git Commit to Social Media",
+		title: "Select Workspace - Push to Draft | AI Commit to Post Drafts",
 		description:
-			"Pick your workspace and log in to start generating AI-powered social media posts from your Git commits. Share your progress effortlessly.",
+			"Pick your workspace to start generating AI-assisted post drafts from your Git commits. Push to Draft helps developers share their journey authentically — not performatively.",
 		site: "@Jolex_Dev",
 		creator: "@Jolex_Dev",
-		images: ["https://commit.jolexhive.com/twitter-image.jpg"],
+		images: ["https://pushtodraft.app/twitter-image.jpg"],
 	},
 	keywords: [
+		"Push to Draft",
+		"Git commit to post draft",
+		"AI tools for developers",
+		"build in public automation",
 		"select workspace login",
-		"Git commits to social media",
-		"AI post generator",
-		"developer social media automation",
-		"push to post AI",
-		"GitHub commit content generator",
-		"AI-powered LinkedIn posts",
-		"workspace login for developers",
+		"GitHub progress sharing",
+		"indie hacker storytelling",
+		"developer visibility tools",
+		"authentic content creation",
+		"developer marketing automation",
 	],
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-video-preview": -1,
+			"max-image-preview": "large",
+			"max-snippet": -1,
+		},
+	},
+	alternates: {
+		canonical: "https://pushtodraft.app/workspace",
+	},
 };
 
 export default function Layout({

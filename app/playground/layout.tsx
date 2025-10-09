@@ -1,38 +1,53 @@
 import "@/app/globals.css";
 
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { LogoutModal } from "@/components/auth/modals/logout-modal";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://commit.jolexhive.com/"),
-	title: "Push to Post - AI-Powered Playground",
-	description: "Create social media posts in our interactive playground.",
+	metadataBase: new URL("https://pushtodraft.app/"),
+	title: "Push to Draft - AI-Powered Playground for Developers",
+	description:
+		"Turn your Git commits into authentic post drafts. Experiment, refine, and create content that reflects your real progress — not marketing fluff.",
 	keywords: [
-		"git commit messages",
-		"AI content creation",
-		"social media posts",
+		"Push to Draft",
+		"build in public",
 		"developer tools",
-		"commit message generator",
-		"AI writing assistant",
-		"content playground",
+		"AI for developers",
+		"developer storytelling",
+		"commit message to post",
+		"indie hacker visibility",
+		"Git commit to post draft",
+		"authentic content automation",
+		"AI writing assistant for developers",
+		"social media content for developers",
 	],
 	openGraph: {
-		title: "Push to Post - Content Playground",
+		title: "Push to Draft - AI-Powered Playground for Developers",
 		description:
-			"Create engaging git commit messages, social media posts, images, and memes with AI assistance. Test and refine your content creation workflow in our interactive playground.",
+			"Transform your Git commits into authentic, human-like post drafts. Explore, edit, and refine your content in our interactive AI playground built for developers and indie hackers.",
 		type: "website",
-		url: "https://commit.jolexhive.com/playground",
-		siteName: "Push to Post",
+		url: "https://pushtodraft.app/playground",
+		siteName: "Push to Draft",
 		locale: "en_US",
+		images: [
+			{
+				width: 1200,
+				height: 630,
+				url: "https://pushtodraft.app/opengraph-image.jpg",
+				alt: "Push to Draft - Turn Git Commits into Authentic AI-Generated Post Drafts",
+			},
+		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Push to Post - Content Playground",
+		title: "Push to Draft - AI Playground for Developers",
 		description:
-			"Create engaging git commit messages, social media posts, images, and memes with AI assistance.",
+			"Convert Git commits into post drafts with AI. Test, refine, and share your authentic developer journey — straight from the playground.",
+		images: ["https://pushtodraft.app/twitter-image.jpg"],
+		creator: "@Jolex_Dev",
 	},
 	robots: {
 		index: true,
@@ -46,7 +61,7 @@ export const metadata: Metadata = {
 		},
 	},
 	alternates: {
-		canonical: "https://commit.jolexhive.com/playground",
+		canonical: "https://pushtodraft.app/playground",
 	},
 };
 

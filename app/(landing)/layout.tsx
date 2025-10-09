@@ -1,56 +1,63 @@
 import "../globals.css";
 
-import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 
-import { MaintenanceBanner } from "@/components/general/micro/maintenance/maintenance-banner";
-import { MaintenanceCornerBanner } from "@/components/general/micro/maintenance/maintenance-corner-banner";
-import Footer from "@/components/navigation/footer/footer";
 import TopNavigation from "@/components/navigation/top_navigation/top-navigation";
 
+const baseUrl = "https://pushtodraft.app/";
+
 export const metadata: Metadata = {
-	metadataBase: new URL("https://commit.jolexhive.com/"),
-	title: "Push to Post | AI-Powered Social Media Posts from Git Commits",
+	metadataBase: new URL(baseUrl),
+	title:
+		"Push to Draft | Turn Git Commits into Authentic, AI-Generated Post Drafts",
 	description:
-		"Turn your Git commits into shareable, engaging social media posts with AI. Automate content creation and showcase your work effortlessly on LinkedIn and beyond.",
+		"Push to Draft helps developers, indie hackers, and open-source creators turn Git commits into authentic social media post drafts. Share real progress, stay visible, and build in public without burnout or creative blocks.",
 	openGraph: {
-		title: "Push to Post | AI-Powered Social Media Posts from Git Commits",
+		title:
+			"Push to Draft | AI-Powered Drafts for Developers Building in Public",
 		description:
-			"Automate your social media updates with AI-generated posts from your latest Git commits. Easily share project updates and boost your developer presence.",
+			"Push to Draft turns your Git commits into human-like post drafts powered by AI. Perfect for developers who want to stay consistent and visible on LinkedIn, X (Twitter), and beyond — without overthinking what to write.",
 		type: "website",
-		url: "https://commit.jolexhive.com/",
-		siteName: "Push to Post",
+		url: baseUrl,
+		siteName: "Push to Draft",
 		locale: "en_US",
 		images: [
 			{
-				url: "https://commit.jolexhive.com/opengraph-image.jpg",
+				url: `${baseUrl}opengraph-image.jpg`,
 				width: 1200,
 				height: 630,
-				alt: "Push to Post - AI Git Commit to Social Media",
+				alt: "Push to Draft – AI-Powered Git Commit to Post Draft Generator for Developers",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Push to Post | AI-Powered Social Media Posts from Git Commits",
+		title: "Push to Draft | AI Tool for Developers Who Build in Public",
 		description:
-			"Push to Post converts your Git commits into polished social media posts using AI. Effortlessly share your project updates on LinkedIn, Twitter, and more.",
-		site: "@Jolex_Dev", // Replace with your actual Twitter handle
+			"Push to Draft converts your Git commits into authentic, ready-to-edit post drafts. Built for developers and indie hackers who want to share progress without forcing creativity.",
+		site: "@Jolex_Dev",
 		creator: "@Jolex_Dev",
-		images: ["https://commit.jolexhive.com/twitter-image.jpg"],
+		images: [`${baseUrl}twitter-image.jpg`],
 	},
 	keywords: [
-		"Git commits to social media",
-		"AI post generator",
-		"automated content creation",
-		"developer social media tool",
-		"push to post AI",
-		"GitHub LinkedIn automation",
-		"AI-powered marketing for developers",
+		"Push to Draft",
+		"AI for developers",
+		"Git commit to post draft",
+		"build in public tool",
+		"developer storytelling",
+		"authentic content automation",
+		"indie hacker visibility",
+		"GitHub to LinkedIn posts",
+		"developer branding tool",
+		"maker productivity tools",
+		"open source project visibility",
+		"commit to content automation",
+		"developer marketing",
+		"AI post generator for developers",
 	],
 };
 

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-const baseUrl = "https://commit.jolexhive.com";
-const siteName = "Push to Post";
+const baseUrl = "https://pushtodraft.app";
+const siteName = "Push to Draft";
 const defaultDescription =
-	"Turn your Git commits into shareable, engaging social media posts with AI. Automate content creation and showcase your work effortlessly on LinkedIn and beyond.";
+	"Push to Draft helps developers and creators transform their work into publish-ready content using AI. Turn your commits, ideas, and updates into polished posts effortlessly.";
 
 interface MetadataConfig {
 	title: string;
@@ -32,13 +32,15 @@ export function generateMetadata({
 		title: fullTitle,
 		description,
 		keywords: [
-			"Git commits to social media",
-			"AI post generator",
-			"automated content creation",
-			"developer social media tool",
-			"push to post AI",
-			"GitHub LinkedIn automation",
-			"AI-powered marketing for developers",
+			"AI content automation",
+			"developer writing assistant",
+			"AI-powered publishing",
+			"push to draft",
+			"commit to content",
+			"AI productivity tool",
+			"automated writing workflow",
+			"developer content creation",
+			"indie hacker tools",
 			...keywords,
 		],
 		openGraph: {
@@ -53,7 +55,7 @@ export function generateMetadata({
 					url: ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`,
 					width: 1200,
 					height: 630,
-					alt: `${fullTitle} - AI Git Commit to Social Media`,
+					alt: `${fullTitle} - AI-Powered Publishing Workflow`,
 				},
 			],
 		},
@@ -84,100 +86,105 @@ export function generateMetadata({
 	return metadata;
 }
 
-// Predefined metadata for common pages
+// 🔥 Predefined metadata for key routes
 export const commonMetadata = {
 	home: generateMetadata({
-		title: "AI-Powered Social Media Posts from Git Commits",
+		title: "AI-Powered Publishing for Developers",
 		description:
-			"Turn your Git commits into shareable, engaging social media posts with AI. Automate content creation and showcase your work effortlessly on LinkedIn and beyond.",
+			"Push to Draft turns your commits, ideas, and updates into clean, publish-ready content using AI. Simplify your workflow and grow your visibility as a builder.",
 		keywords: [
-			"GitHub automation",
-			"social media automation",
-			"developer tools",
+			"AI writing tool for developers",
+			"content automation",
+			"commit to post AI",
+			"developer marketing",
 		],
 	}),
 
 	onboarding: generateMetadata({
-		title: "Get Started - Setup Your Account",
+		title: "Get Started - Setup Your Workspace",
 		description:
-			"Complete your account setup to start automating your social media posts from Git commits. Connect GitHub, social accounts, and repositories.",
-		keywords: ["account setup", "onboarding", "GitHub integration"],
+			"Set up your Push to Draft workspace and start creating AI-powered drafts from your commits, updates, and content ideas.",
+		keywords: ["workspace setup", "onboarding", "AI writing assistant"],
 		noIndex: true,
 	}),
 
 	dashboard: generateMetadata({
 		title: "Dashboard",
 		description:
-			"Manage your automated social media posts, view analytics, and monitor your Git commit to social media workflow.",
-		keywords: ["dashboard", "analytics", "post management"],
+			"Track your drafts, manage credits, and review your AI-generated posts. Stay organized and focused on what matters most — creating.",
+		keywords: ["dashboard", "AI drafts", "content overview", "credit balance"],
 		noIndex: true,
 	}),
 
 	repositories: generateMetadata({
 		title: "Repositories",
 		description:
-			"Manage your connected repositories and configure which commits should be shared on social media.",
-		keywords: ["repository management", "GitHub repos", "commit settings"],
+			"Connect your GitHub repositories and turn commit activity into structured content ideas and publish-ready drafts.",
+		keywords: [
+			"GitHub integration",
+			"repository management",
+			"commit tracking",
+		],
 		noIndex: true,
 	}),
 
-	posts: generateMetadata({
-		title: "Posts",
+	drafts: generateMetadata({
+		title: "Drafts",
 		description:
-			"View and manage all your automated social media posts generated from Git commits.",
-		keywords: ["post management", "social media posts", "content management"],
+			"Manage, refine, and publish your AI-generated drafts. Transform your project activity into content that inspires and informs.",
+		keywords: ["draft management", "AI content", "publishing workflow"],
 		noIndex: true,
 	}),
 
 	settings: generateMetadata({
 		title: "Settings",
 		description:
-			"Configure your account settings, social media connections, and automation preferences.",
-		keywords: ["account settings", "preferences", "social connections"],
+			"Adjust your account preferences, manage integrations, and configure how Push to Draft works for your creative workflow.",
+		keywords: ["settings", "preferences", "integrations", "account management"],
 		noIndex: true,
 	}),
 
 	billing: generateMetadata({
-		title: "Billing & Subscription",
+		title: "Credits & Billing",
 		description:
-			"Manage your subscription, view billing history, and upgrade your Push to Post plan.",
-		keywords: ["billing", "subscription", "pricing", "upgrade"],
+			"Manage your credits, view billing history, and upgrade your plan to unlock more AI-powered content generation.",
+		keywords: ["credits", "billing", "subscription", "payment history"],
 		noIndex: true,
 	}),
 
 	pricing: generateMetadata({
 		title: "Pricing Plans",
 		description:
-			"Choose the perfect plan for your social media automation needs. Free tier available with premium features for power users.",
-		keywords: ["pricing", "plans", "subscription", "free trial"],
+			"Flexible credit-based pricing for creators, developers, and teams. Start free or scale your publishing workflow with Push to Draft Pro.",
+		keywords: ["pricing", "plans", "credits", "AI subscription"],
 	}),
 
 	privacy: generateMetadata({
 		title: "Privacy Policy",
 		description:
-			"Learn how Push to Post protects your data and respects your privacy when automating your social media posts.",
-		keywords: ["privacy policy", "data protection", "GDPR"],
+			"Your privacy matters. Learn how Push to Draft collects, uses, and protects your data responsibly.",
+		keywords: ["privacy policy", "data security", "user protection"],
 	}),
 
 	terms: generateMetadata({
 		title: "Terms of Service",
 		description:
-			"Read our terms of service and understand the rules and guidelines for using Push to Post.",
-		keywords: ["terms of service", "legal", "user agreement"],
+			"Review Push to Draft’s Terms of Service to understand your rights, responsibilities, and usage guidelines.",
+		keywords: ["terms of service", "user agreement", "legal terms"],
 	}),
 
 	refund: generateMetadata({
 		title: "Refund Policy",
 		description:
-			"Learn about our refund policy and how to request a refund for your Push to Post subscription.",
-		keywords: ["refund policy", "money back", "cancellation"],
+			"Learn how refunds and cancellations are handled under Push to Draft’s fair usage policy.",
+		keywords: ["refund policy", "cancellation", "payment refund"],
 	}),
 
 	notFound: generateMetadata({
 		title: "Page Not Found",
 		description:
-			"The page you're looking for doesn't exist. Return to the homepage to continue using Push to Post.",
-		keywords: ["404", "not found", "error"],
+			"The page you’re looking for doesn’t exist or has been moved. Return to the homepage to continue exploring Push to Draft.",
+		keywords: ["404 error", "not found", "broken link"],
 		noIndex: true,
 	}),
 };

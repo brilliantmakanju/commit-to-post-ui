@@ -1,44 +1,46 @@
 import type { Metadata } from "next";
 
-const baseUrl = "https://commit.jolexhive.com/";
+const baseUrl = "https://pushtodraft.app/";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(baseUrl),
 	title: {
-		default: "Billing & Subscription | Push to Post",
-		template: "%s | Push to Post",
+		default: "Credits & Billing | Push to Draft",
+		template: "%s | Push to Draft",
 	},
 	description:
-		"Manage your Push to Post billing details, update subscription plans, and review payment history with ease.",
+		"Manage your Push to Draft credits, purchase more, and review your usage history easily and securely.",
 	openGraph: {
 		type: "website",
 		locale: "en_US",
 		url: `${baseUrl}billing`,
-		title: "Billing & Subscription | Push to Post",
+		title: "Credits & Billing | Push to Draft",
 		description:
-			"Update your Push to Post subscription, manage billing details, and review past invoices securely.",
-		siteName: "Push to Post",
+			"View and manage your Push to Draft credits, check usage, and top up your balance whenever you need.",
+		siteName: "Push to Draft",
 		images: [
 			{
 				url: `${baseUrl}opengraph-image.jpg`,
 				width: 1200,
 				height: 630,
-				alt: "Push to Post - Billing & Subscription",
+				alt: "Push to Draft - Credits & Billing",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Billing & Subscription | Push to Post",
+		title: "Credits & Billing | Push to Draft",
 		description:
-			"Securely manage your Push to Post billing information and subscription preferences.",
+			"Manage your Push to Draft credits, track usage, and securely top up your balance anytime.",
 		images: [`${baseUrl}twitter-image.jpg`],
 	},
 	keywords: [
-		"Push to Post billing",
-		"subscription management",
-		"update payment details",
-		"manage invoices",
-		"account subscription settings",
+		"Push to Draft credits",
+		"buy credits",
+		"credit management",
+		"usage tracking",
+		"account balance",
+		"billing history",
+		"Push to Draft",
 	],
 };

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import "@/app/globals.css";
 
 import { Metadata } from "next";

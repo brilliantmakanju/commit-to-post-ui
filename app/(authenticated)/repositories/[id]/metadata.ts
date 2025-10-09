@@ -5,42 +5,42 @@ const baseUrl = "https://commit.jolexhive.com/";
 export const metadata: Metadata = {
 	metadataBase: new URL(baseUrl),
 	title: {
-		default: "Repositories | Push to Post",
-		template: "%s | Push to Post",
+		default: "Repositories | Push to Draft",
+		template: "%s | Push to Draft",
 	},
 	description:
-		"Manage your connected repository in Push to Post. Review generated posts, check activity logs, and configure repository settings such as branch selection, tone, and commit-to-post preferences.",
+		"Manage your connected repositories in Push to Draft and turn your Git commits into editable social media drafts.",
 	openGraph: {
 		type: "website",
 		locale: "en_US",
 		url: `${baseUrl}repositories`,
-		title: "Repositories | Push to Post",
+		title: "Repositories | Push to Draft",
 		description:
-			"View and manage your repository in Push to Post. Access posts, logs, and settings to control commit-to-post automation.",
-		siteName: "Push to Post",
+			"Connect and manage your GitHub repositories with Push to Draft — where your commits become social media drafts ready to refine and post.",
+		siteName: "Push to Draft",
 		images: [
 			{
 				url: `${baseUrl}opengraph-image.jpg`,
 				width: 1200,
 				height: 630,
-				alt: "Push to Post - Repository",
+				alt: "Push to Draft - Repositories",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: " Repositories | Push to Post",
+		title: "Repositories | Push to Draft",
 		description:
-			"Manage your connected repository in Push to Post. Configure commit automation, review logs, and fine-tune settings like tone and branch rules.",
+			"Manage your GitHub repositories and convert your commits into editable social media drafts with Push to Draft.",
 		images: [`${baseUrl}twitter-image.jpg`],
 	},
 	keywords: [
-		"Push to Post repository",
-		"GitHub commit automation",
-		"AI commit posts",
-		"repository settings",
-		"branch management",
-		"developer social media automation",
+		"Push to Draft repositories",
+		"GitHub integration",
+		"commit to draft automation",
+		"developer social media workflow",
+		"AI post generation",
+		"content automation for developers",
 	],
 	robots: {
 		index: false,
