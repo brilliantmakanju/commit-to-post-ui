@@ -37,14 +37,16 @@ const ConnectGithub = () => {
 					await createEncryptedCookie("redirect_url", {
 						path: path,
 					});
-					router.push("https://github.com/apps/push-to-post/installations/new");
+					router.push(
+						"https://github.com/apps/push-to-draft/installations/new",
+					);
 					toast.error(response.message);
 				}
 			} else if (organization.github_installation_status === "unknown") {
 				await createEncryptedCookie("redirect_url", {
 					path: path,
 				});
-				router.push("https://github.com/apps/push-to-post/installations/new");
+				router.push("https://github.com/apps/push-to-draft/installations/new");
 			} else {
 			}
 			setIsLoading(false);

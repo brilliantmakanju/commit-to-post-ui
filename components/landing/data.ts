@@ -61,7 +61,7 @@ export const benefits = [
 ];
 
 export const repos = [
-	"push-to-post",
+	"push-to-draft",
 	"social-sync",
 	"git-publisher",
 	"dev-to-social",

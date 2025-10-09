@@ -23,7 +23,7 @@ export function TerminalHeader({
 			</div>
 			<div className="flex-1 text-center">
 				<span className="font-mono text-sm text-gray-400">
-					push-to-post@{provider}:~/oauth-integration
+					push-to-draft@{provider}:~/oauth-integration
 				</span>
 			</div>
 			<div className="flex items-center gap-2">

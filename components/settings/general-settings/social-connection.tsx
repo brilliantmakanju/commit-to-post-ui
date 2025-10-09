@@ -54,11 +54,13 @@ export function SocialConnectionSettings() {
 					updateInstallationStatus(organization.id, "active", organization.id);
 					toast.success(response.message);
 				} else {
-					router.push("https://github.com/apps/push-to-post/installations/new");
+					router.push(
+						"https://github.com/apps/push-to-draft/installations/new",
+					);
 					toast.error(response.message);
 				}
 			} else if (organization.github_installation_status === "unknown") {
-				router.push("https://github.com/apps/push-to-post/installations/new");
+				router.push("https://github.com/apps/push-to-draft/installations/new");
 			} else {
 			}
 			setIsConnecting(false);

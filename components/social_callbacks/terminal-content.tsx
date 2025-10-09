@@ -57,7 +57,7 @@ export function TerminalContent({
 			<div
 				className={`${terminalTheme.primary} flex flex-wrap items-center justify-start md:gap-1`}
 			>
-				<span className="text-green-400">user@push-to-post</span>
+				<span className="text-green-400">user@push-to-draft</span>
 				<span className="text-gray-500">:</span>
 				<span className="text-blue-400">~/integrations</span>
 				<span className="text-gray-500">$</span>
