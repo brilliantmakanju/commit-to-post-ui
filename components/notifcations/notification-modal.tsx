@@ -56,7 +56,7 @@ export default function NotificationModal({
 				</div>
 				<DialogFooter className="mt-6 flex items-center justify-between border-t border-zinc-800/50 p-4 sm:p-6">
 					<div className="text-sm text-zinc-500">
-						{notification.triggered_by}
+						{notification.triggered_by_name}
 					</div>
 					<div className="flex items-center gap-1.5 text-sm text-zinc-500">
 						<Calendar className="h-4 w-4" />

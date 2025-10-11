@@ -4,7 +4,7 @@
 import { UUID } from "node:crypto";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 
 import NotificationItem from "@/components/notifcations/notification-items";
@@ -14,32 +14,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import useRetrieveNotifications from "@/hooks/notifications/notifications";
 import {
+	deleteAllNotifications,
+	deleteNotification,
 	readAllNotifications,
 	readNotifications,
 } from "@/server-actions/notifications/read-notification";
 import useNotificationStore from "@/zustand/notification/use-notification-store";
 
-// Mock functions - replace with your actual API calls
-const handleDelete = (id: string) => {
-	// console.log("Delete notification:", id);
-	// Your API call here
-};
-
-// const handleClearAll = () => {
-// 	console.log("Clear all notifications");
-// 	// Your API call here
-// };
 export default function NotificationsPage() {
 	const queryClient = useQueryClient();
 	const {
 		markAsRead,
+		removeNotification,
 		setNotifications,
 		notifications: localNotifications,
 		setMarking,
+		setDeleting,
 		markingIds,
+		deletingIds,
 		isBulkMarking,
+		isBulkDeleting,
 		setBulkMarking,
-		clearMarking,
+		setBulkDeleting,
+		clearAllMarking,
 	} = useNotificationStore();
 
 	const {
@@ -48,6 +45,7 @@ export default function NotificationsPage() {
 		isNotificationLoading,
 		isNotificationFetching,
 		notifications: serverNotifications,
+		refetchNotifications,
 	} = useRetrieveNotifications();
 
 	// Hydrate Zustand only once when serverNotifications arrive
@@ -76,10 +74,33 @@ export default function NotificationsPage() {
 			queryClient.invalidateQueries({
 				queryKey: ["unread_notification_counts"],
 			});
+		} else {
+			// Revert optimistic update on failure
+			refetchNotifications();
 		}
 
 		// Clear loading state for this item regardless of outcome
 		setMarking(id, false);
+	};
+
+	const handleDelete = async (id: UUID) => {
+		// Show loading for this item
+		setDeleting(id, true);
+		// Optimistic update
+		removeNotification(id);
+
+		const response = await deleteNotification({ id });
+		if (response.success) {
+			queryClient.invalidateQueries({
+				queryKey: ["notifications"],
+			});
+		} else {
+			// Revert optimistic update on failure
+			refetchNotifications();
+		}
+
+		// Clear loading state for this item regardless of outcome
+		setDeleting(id, false);
 	};
 
 	const handleMarkAllAsRead = async () => {
@@ -95,10 +116,34 @@ export default function NotificationsPage() {
 			queryClient.invalidateQueries({
 				queryKey: ["unread_notification_counts"],
 			});
+		} else {
+			// Revert on failure
+			refetchNotifications();
 		}
 
 		// Clear bulk and per-item loading
-		clearMarking();
+		clearAllMarking();
+	};
+
+	const handleDeleteAll = async () => {
+		// Show bulk loading and per-item loading
+		setBulkDeleting(true);
+		localNotifications.forEach(n => setDeleting(n.id, true));
+
+		const response = await deleteAllNotifications();
+		if (response.success) {
+			// Optimistic update
+			setNotifications([]);
+			queryClient.invalidateQueries({
+				queryKey: ["notifications"],
+			});
+		} else {
+			// Revert on failure
+			refetchNotifications();
+		}
+
+		// Clear bulk and per-item loading
+		clearAllMarking();
 	};
 
 	if (isNotificationLoading && localNotifications.length === 0) {
@@ -144,56 +189,61 @@ export default function NotificationsPage() {
 						</p>
 					</div>
 					<div className="flex items-center gap-3">
-						<Badge
-							// variant="secondary"
-							className="border-zinc-700 bg-zinc-800 text-zinc-200"
-						>
+						<Badge className="border-zinc-700 bg-zinc-800 text-zinc-200">
 							{unread_count} unread
 						</Badge>
 					</div>
 				</div>
 
 				{/* Action Bar */}
-				<div className="mb-6 flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-zinc-400">
-							{total_count} total, {unread_count} unread
-						</span>
+				{localNotifications.length > 0 && (
+					<div className="mb-6 flex items-center justify-between rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
+						<div className="flex items-center gap-2">
+							<span className="text-sm text-zinc-400">
+								{total_count} total, {unread_count} unread
+							</span>
+						</div>
+						<div className="flex items-center gap-2">
+							{unread_count > 0 && (
+								<Button
+									size="sm"
+									variant="ghost"
+									onClick={handleMarkAllAsRead}
+									disabled={isBulkMarking}
+									className="text-zinc-400 hover:bg-zinc-800 hover:text-white disabled:opacity-50"
+								>
+									<Check className="mr-2 h-4 w-4" />
+									Mark all read
+								</Button>
+							)}
+							{localNotifications.length > 0 && (
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleDeleteAll}
+									disabled={isBulkDeleting}
+									className="text-zinc-400 hover:bg-red-900/20 hover:text-red-400 disabled:opacity-50"
+								>
+									<Trash2 className="mr-2 h-4 w-4" />
+									Delete all
+								</Button>
+							)}
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<Button
-							size="sm"
-							variant="ghost"
-							onClick={handleMarkAllAsRead}
-							disabled={unread_count === 0}
-							className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
-						>
-							<Check className="mr-2 h-4 w-4" />
-							Mark all read
-						</Button>
-						{/* <Button
-								variant="ghost"
-								size="sm"
-								onClick={handleClearAll}
-								className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
-							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								Clear all
-							</Button> */}
-					</div>
-				</div>
+				)}
 
 				{/* Notifications List */}
 				<div className="space-y-3">
 					{localNotifications.map(notification => (
 						<NotificationItem
 							key={notification.id}
-							onDelete={handleDelete}
 							notification={notification}
 							onMarkAsRead={handleMarkAsRead}
-							// Pass loading flag based on store states
-							// @ts-ignore - extend props in the component to accept isLoading
+							onDelete={handleDelete}
 							isLoading={isBulkMarking || markingIds.includes(notification.id)}
+							isDeleting={
+								isBulkDeleting || deletingIds.includes(notification.id)
+							}
 						/>
 					))}
 				</div>

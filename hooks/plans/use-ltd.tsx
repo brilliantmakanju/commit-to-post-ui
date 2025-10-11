@@ -17,13 +17,13 @@ export function useLifetimeAccess() {
 			if (status === "authenticated") {
 				// NEW: Check lifetime access based on plan and credits
 				const isLtdPlan = userStore.plan === "ltd";
-				const hasCredits = (userStore.credits ?? 0) > 0;
+				const hasCredits = (userStore.credits_balance ?? 0) > 0;
 				setLifetimeAccess(isLtdPlan && hasCredits);
 			}
 		};
 
 		checkLifetimeAccess();
-	}, [userStore.plan, userStore.credits, status]);
+	}, [userStore.plan, userStore.credits_balance, status]);
 
 	return lifetimeAccess;
 }

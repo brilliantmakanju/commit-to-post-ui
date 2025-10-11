@@ -33,7 +33,7 @@ export const FeatureFlagWrapper: React.FC<FeatureFlagWrapperProps> = ({
 
 	// Get user context for credit and plan checks
 	const userPlan = userStore.plan;
-	const userCredits = userStore.credits || 0;
+	const userCredits = userStore.credits_balance || 0;
 	const isAuthenticated = !!session?.user;
 
 	// Calculate credit cost (use provided cost or get from feature)

@@ -221,30 +221,12 @@ export default function TopNavigation({ className }: NavigationProps) {
 						<Logo />
 						<div className="hidden flex-row items-start justify-start gap-2 pl-3 sm:flex sm:gap-3 sm:pl-4 md:flex md:gap-4 md:pl-5 lg:gap-4 lg:pl-5">
 							<Link
-								href="#products"
-								onClick={event_ => handleScroll(event_, "products")}
-								className="flex cursor-pointer items-center justify-start transition-colors hover:text-black"
-							>
-								<div className="flex flex-col justify-center font-sans text-xs font-medium leading-[14px] text-gray-600 md:text-[13px]">
-									Products
-								</div>
-							</Link>
-							<Link
 								href="#pricing"
 								onClick={event_ => handleScroll(event_, "pricing")}
 								className="flex cursor-pointer items-center justify-start transition-colors hover:text-black"
 							>
 								<div className="flex flex-col justify-center font-sans text-xs font-medium leading-[14px] text-gray-600 md:text-[13px]">
 									Pricing
-								</div>
-							</Link>
-							<Link
-								href="#refill"
-								onClick={event_ => handleScroll(event_, "refill")}
-								className="flex cursor-pointer items-center justify-start transition-colors hover:text-black"
-							>
-								<div className="flex flex-col justify-center font-sans text-xs font-medium leading-[14px] text-gray-600 md:text-[13px]">
-									Refill
 								</div>
 							</Link>
 							<Link

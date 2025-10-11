@@ -29,8 +29,8 @@ export const checkSpinEligibility = async (): Promise<{
 
 		// Return success with eligibility data
 		return {
-			success: true,
 			nonce: response.data.nonce,
+			success: response.data.success,
 			eligible: response.data.eligible,
 		};
 	} catch (error: any) {

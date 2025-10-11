@@ -26,12 +26,12 @@ const FAQ_DATA: FAQItem[] = [
 	{
 		question: "How does the credit system work?",
 		answer:
-			"Credits are pay-as-you-go tokens. 1 credit = 1 post generated OR 1 platform published to. Buy credits once, use them whenever you need. No subscriptions, no expiration dates, no surprises.",
+			"Credits are pay-as-you-go tokens. 1 credit = 1 post generated OR 1 platform published to. Buy credits once, use them whenever you need. No expiration dates, no surprises.",
 	},
 	{
 		question: "Why is there an unlock fee?",
 		answer:
-			"The unlock fee ($25 Pro, $75 Studio) permanently enables premium features like multiple tones, image uploads, and scheduling. It includes bonus credits and is a one-time payment—pay once, keep access forever.",
+			"The unlock fee ($19 Pro, $49 Studio) permanently enables premium features like multiple tones, image uploads, and scheduling. It includes bonus credits and is a one-time payment—pay once, keep access forever.",
 	},
 	{
 		question: "Do credits expire?",
@@ -57,11 +57,6 @@ const FAQ_DATA: FAQItem[] = [
 		question: "Which platforms can I publish to?",
 		answer:
 			"Currently: Twitter/X, LinkedIn, and Discord. Each publish costs 1 credit. More platforms (like Dev.to and Hashnode) coming soon based on community feedback.",
-	},
-	{
-		question: "How is this different from subscription tools?",
-		answer:
-			"Zero monthly fees. Pay only for what you use, and credits never expire. It's predictable, flexible, and built specifically for developers and indie hackers who hate recurring bills.",
 	},
 ];
 
@@ -134,7 +129,7 @@ export default function FAQSection() {
 	return (
 		<section
 			id="faq"
-			className="flex w-full scroll-mt-20 items-start justify-center border-b border-gray-200 bg-white pb-[10rem]"
+			className="flex w-full scroll-mt-[200px] items-start justify-center border-b border-gray-200 bg-white pb-[10rem]"
 		>
 			<div className="flex flex-1 flex-col items-start justify-start gap-10 lg:flex-row lg:gap-20">
 				{/* Left Column - Header */}

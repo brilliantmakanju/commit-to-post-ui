@@ -14,7 +14,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
+import { syncUserData } from "@/lib/sync-user-data";
 import { verifyAndLogin } from "@/server-actions/auth/magic-link";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useUserStore from "@/zustand/useuser-store";

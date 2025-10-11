@@ -48,15 +48,6 @@ export const InitialModal: React.FC<InitialModalProps> = ({
 					1 credit = 1 social media draft from your commits
 				</AlertDescription>
 			</Alert>
-
-			{errorMessage && (
-				<Alert variant="destructive">
-					<AlertDescription className="text-sm">
-						{errorMessage}
-					</AlertDescription>
-				</Alert>
-			)}
-
 			<div className="flex flex-col gap-2 pt-2">
 				<Button onClick={onClaim} className="w-full">
 					Claim Bonus Credits

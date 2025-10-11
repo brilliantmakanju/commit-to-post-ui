@@ -40,9 +40,9 @@ export default function NotificationCard({
 			</CardContent>
 			<CardFooter className="flex items-end justify-between gap-3">
 				<div className="flex items-center text-sm text-muted-foreground">
-					{notification.triggered_by === ""
+					{notification.triggered_by_name === ""
 						? "System"
-						: notification.triggered_by}
+						: notification.triggered_by_name}
 				</div>
 				<div className="flex items-center text-sm text-muted-foreground">
 					<Calendar className="mr-1 h-4 w-4" />

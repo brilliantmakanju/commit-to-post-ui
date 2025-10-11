@@ -596,7 +596,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			}
 
 			// Check credit balance before making the API call
-			const currentCredits = useUserStore.getState().credits;
+			const currentCredits = useUserStore.getState().credits_balance;
 			const requiredCredits = selectedTonesArray.length;
 
 			if (currentCredits < requiredCredits) {

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading, Span } from "@/components/general/micro/typography";
 import { CreateOrganizationModal } from "@/components/organization/create-organization";
 import WorkspaceSelection from "@/components/workspace/selection";
-import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
+import { syncUserData } from "@/lib/sync-user-data";
 import { hasWorkspaceAccess } from "@/lib/utils/feature-flag-utils";
 import useUserStore from "@/zustand/useuser-store";
 
@@ -15,7 +15,12 @@ const WorkSpaceSelection = () => {
 
 	const hasSyncedRef = useRef(false);
 	const { data: session, status } = useSession();
-	const { setUser, hasHydratedUser, plan, credits } = useUserStore();
+	const {
+		plan,
+		setUser,
+		hasHydratedUser,
+		credits_balance: credits,
+	} = useUserStore();
 
 	// NEW: Check if user has workspace access (studio plan + credits)
 	const userPlan = plan;

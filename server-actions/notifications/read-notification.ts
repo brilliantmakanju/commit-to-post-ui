@@ -1,5 +1,4 @@
 "use server";
-
 import { UUID } from "node:crypto";
 
 import { apiClient } from "@/lib/utils/api-client";
@@ -13,25 +12,21 @@ export const readNotifications = async ({
 	message?: string;
 }> => {
 	try {
-		// Make the API call to get all Notifications
 		const response = await apiClient.post(
-			`/api/v1/notifications/?notification_id=${id}`,
+			`/api/v1/notifications/?notification_id=${id}&action=read`,
 			{},
 		);
 
-		// Check if the request was successful
 		if (response.error) {
 			throw new Error(
 				response?.error.message || "Failed to read notification.",
 			);
 		}
 
-		// Return success with the organizations tone data
 		return {
 			success: true,
 		};
 	} catch (error: any) {
-		// Catch any errors and return them
 		return {
 			success: false,
 			message: error.message || "An unexpected error occurred.",
@@ -44,25 +39,79 @@ export const readAllNotifications = async (): Promise<{
 	message?: string;
 }> => {
 	try {
-		// Make the API call to get all Notifications
 		const response = await apiClient.post(
-			"/api/v1/notifications/?all=true",
+			"/api/v1/notifications/?all=true&action=read",
 			{},
 		);
 
-		// Check if the request was successful
 		if (response.error) {
 			throw new Error(
-				response?.error.message || "Failed to read notification.",
+				response?.error.message || "Failed to read notifications.",
 			);
 		}
 
-		// Return success with the organizations tone data
 		return {
 			success: true,
 		};
 	} catch (error: any) {
-		// Catch any errors and return them
+		return {
+			success: false,
+			message: error.message || "An unexpected error occurred.",
+		};
+	}
+};
+
+export const deleteNotification = async ({
+	id,
+}: {
+	id: UUID;
+}): Promise<{
+	success: boolean;
+	message?: string;
+}> => {
+	try {
+		const response = await apiClient.post(
+			`/api/v1/notifications/?notification_id=${id}&action=delete`,
+			{},
+		);
+
+		if (response.error) {
+			throw new Error(
+				response?.error.message || "Failed to delete notification.",
+			);
+		}
+
+		return {
+			success: true,
+		};
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error.message || "An unexpected error occurred.",
+		};
+	}
+};
+
+export const deleteAllNotifications = async (): Promise<{
+	success: boolean;
+	message?: string;
+}> => {
+	try {
+		const response = await apiClient.post(
+			"/api/v1/notifications/?all=true&action=delete",
+			{},
+		);
+
+		if (response.error) {
+			throw new Error(
+				response?.error.message || "Failed to delete notifications.",
+			);
+		}
+
+		return {
+			success: true,
+		};
+	} catch (error: any) {
 		return {
 			success: false,
 			message: error.message || "An unexpected error occurred.",

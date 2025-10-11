@@ -16,7 +16,7 @@ export function useCheckAccess() {
 		const checkAccess = async () => {
 			if (status === "authenticated") {
 				// NEW: Check access based on credits instead of subscription status
-				const hasCredits = (userStore.credits ?? 0) > 0;
+				const hasCredits = (userStore.credits_balance ?? 0) > 0;
 				setBillingPlan(hasCredits);
 			}
 		};

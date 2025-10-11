@@ -20,10 +20,10 @@ import { ResultModal } from "./result";
 export default function CreditBonusParent() {
 	const {
 		nonce,
+		currentStep,
+		currentModal,
 		errorMessage,
 		loadingState,
-		currentModal,
-		currentStep,
 		selectedCredits,
 
 		setError,
@@ -52,8 +52,6 @@ export default function CreditBonusParent() {
 				return;
 			}
 
-			setLoadingState("checking");
-
 			const result = await checkSpinEligibility();
 
 			if (result.success && result.eligible && result.nonce) {
@@ -61,14 +59,16 @@ export default function CreditBonusParent() {
 				setLoadingState("eligible");
 				openModal("initial");
 			} else {
-				setEligibility(false);
-				setLoadingState("not-eligible");
+				closeModal();
+				setLoadingState("idle");
+				setEligibility(false, undefined);
 			}
 		};
 
 		checkEligibility();
 	}, [
 		openModal,
+		closeModal,
 		setEligibility,
 		setLoadingState,
 		skipUserSpinBonus,

@@ -1,432 +1,653 @@
-/* eslint-disable import/no-unresolved */
 "use client";
-import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+
+import {
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	Download,
+	RefreshCw,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	FaCheck,
+	FaClock,
 	FaExclamationCircle,
 	FaExclamationTriangle,
-	FaFilter,
-	FaPlus,
 	FaSpinner,
 } from "react-icons/fa";
 
-// shadcn/ui imports
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-// eslint-disable-next-line import/no-unresolved
-import {
-	fetchBillingHistory,
-	fetchBillingHistoryByUrl,
+	fetchCreditHistory,
+	fetchPlanChanges,
 } from "@/server-actions/core/billing-history";
 
-// Status badge styling
-const getStatusBadgeClass = (status: string) =>
-	status === "paid"
-		? "border border-green-700/50 bg-green-800/30 text-green-300"
-		: "border border-red-700/50 bg-red-800/30 text-red-300";
+interface CreditTransaction {
+	id: number;
+	description: string;
+	amount: number;
+	balance_after: number;
+	transaction_type: string;
+	transaction_type_display: string;
+	user_email: string;
+	paddle_transaction_id: string | null;
+	related_subscription_id: string | null;
+	created_at: string;
+}
 
-const BillingHistory = () => {
-	// State management
-	const [billingData, setBillingData] = useState({
-		billing_history: [],
-		pagination: {
-			total_count: 0,
-			has_more: false,
-			remaining_count: 0,
-			next: undefined as string | undefined,
-			previous: undefined as string | undefined,
-			current_page: 1,
-			total_pages: 1,
-		},
-		summary: {
-			total_transactions: 0,
-			successful_payments: 0,
-			failed_payments: 0,
-		},
+interface PlanChange {
+	id: number;
+	old_plan: string;
+	new_plan: string;
+	old_price_id: string | null;
+	new_price_id: string | null;
+	change_type: string;
+	change_type_display: string;
+	old_price: number | null;
+	new_price: number | null;
+	scheduled_date: string;
+	effective_date: string;
+	is_scheduled: boolean;
+	is_processed: boolean;
+	reason: string;
+	metadata: Record<string, unknown>;
+	created_at: string;
+}
+
+interface BillingHistoryProps {
+	onAggregatesChange?: (aggregates: {
+		debits: number;
+		credits: number;
+		bonuses: number;
+		upgrades: number;
+		downgrades: number;
+		totalChanges: number;
+	}) => void;
+}
+
+const formatDate = (dateString: string): string => {
+	return new Date(dateString).toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
 	});
-	const [loading, setLoading] = useState(true);
-	const [refreshing, setRefreshing] = useState(false);
-	const [loadingMore, setLoadingMore] = useState(false);
-	const [error, setError] = useState<string | undefined>();
-	const [historyFilter, setHistoryFilter] = useState<"all" | "paid" | "failed">(
-		"all",
-	);
+};
 
-	// Track current offset to prevent duplicate loading
-	const [currentOffset, setCurrentOffset] = useState(0);
+const formatCurrency = (amount: number): string =>
+	`$${Number(amount).toFixed(2)}`;
 
-	// Fetch helper
-	const loadBillingHistory = async ({
-		status,
-		offset,
-		limit,
-		page,
-		append = false,
-	}: {
-		status: "all" | "paid" | "failed";
-		offset: number;
-		limit: number;
-		page?: number;
-		append?: boolean;
-	}) => {
-		try {
-			const data = await fetchBillingHistory({ status, offset, limit, page });
+const LoadingSkeleton: React.FC = () => (
+	<>
+		{Array.from({ length: 6 }).map((_, index) => (
+			<tr key={index} className="border-b border-zinc-800/50">
+				{Array.from({ length: 5 }).map((_, index) => (
+					<td key={index} className="px-4 py-3">
+						<div className="h-4 w-24 animate-pulse rounded bg-zinc-800/50"></div>
+					</td>
+				))}
+			</tr>
+		))}
+	</>
+);
 
-			setBillingData(previous => {
-				if (append) {
-					// When appending, merge the new items with existing ones
-					// Use a Set to prevent duplicates based on item ID
-					const existingIds = new Set(
-						previous.billing_history.map((item: any) => item.id),
-					);
-					const newItems = data.billing_history.filter(
-						(item: any) => !existingIds.has(item.id),
-					);
+interface ErrorStateProps {
+	errorMessage: string;
+	onRetry: () => void;
+}
 
-					return {
-						...data, // Use new pagination data
-						billing_history: [
-							...previous.billing_history,
-							...newItems, // Only add truly new items
-						],
-						// Keep the previous summary when appending
-						summary: previous.summary,
-					};
-				} else {
-					// Complete replacement
-					return data;
-				}
-			});
-
-			setError(undefined);
-		} catch (error_) {
-			setError(error_ instanceof Error ? error_.message : "Unknown error");
-		}
-	};
-
-	// Initial load
-	useEffect(() => {
-		const loadInitialData = async () => {
-			setLoading(true);
-			setCurrentOffset(0); // Reset offset
-			await loadBillingHistory({
-				status: historyFilter,
-				offset: 0,
-				limit: 50,
-				page: 1, // Add page parameter for initial load
-				append: false,
-			});
-			setLoading(false);
-		};
-		loadInitialData();
-	}, [historyFilter]);
-
-	// Handle filter changes
-	const handleFilterChange = async (newFilter: "all" | "paid" | "failed") => {
-		if (newFilter === historyFilter) return;
-
-		setHistoryFilter(newFilter);
-		setCurrentOffset(0); // Reset offset when changing filters
-		setLoading(true);
-		await loadBillingHistory({
-			status: newFilter,
-			offset: 0,
-			limit: 50,
-			page: 1, // Start from page 1
-			append: false,
-		});
-		setLoading(false);
-	};
-
-	// Load more functionality - Use the next URL from API response
-	const loadMoreHistory = async () => {
-		if (
-			loadingMore ||
-			!billingData.pagination?.has_more ||
-			!billingData.pagination?.next
-		)
-			return;
-
-		setLoadingMore(true);
-
-		try {
-			// Use the next URL directly from the API response
-			const data = await fetchBillingHistoryByUrl(billingData.pagination.next);
-
-			setBillingData(previous => {
-				// Filter out duplicates based on item ID
-				const existingIds = new Set(
-					previous.billing_history.map((item: any) => item.id),
-				);
-				const newItems = data.billing_history.filter(
-					(item: any) => !existingIds.has(item.id),
-				);
-
-				return {
-					...data, // Use new pagination data
-					billing_history: [
-						...previous.billing_history,
-						...newItems, // Only add truly new items
-					],
-					// Keep the original summary since it represents the total
-					summary: previous.summary,
-				};
-			});
-
-			setError(undefined);
-		} catch (error_) {
-			setError(error_ instanceof Error ? error_.message : "Unknown error");
-		}
-
-		setLoadingMore(false);
-	};
-
-	// Refresh functionality
-	const refreshData = async () => {
-		setRefreshing(true);
-		setCurrentOffset(0); // Reset offset
-
-		// Always refresh with just the initial 10 items to prevent stale data
-		await loadBillingHistory({
-			status: historyFilter,
-			offset: 0,
-			limit: 50,
-			page: 1, // Start from page 1
-			append: false,
-		});
-
-		setRefreshing(false);
-	};
-
-	// Loading skeleton
-	const LoadingSkeleton = () => (
-		<>
-			{Array.from({ length: 6 }).map((_, index) => (
-				<TableRow
-					key={index}
-					className="border-zinc-800/30 hover:bg-zinc-800/20"
-				>
-					<TableCell className="px-2 py-2.5">
-						<div className="h-4 w-20 animate-pulse rounded bg-zinc-700/50"></div>
-					</TableCell>
-					<TableCell className="px-2 py-2.5">
-						<div className="h-4 w-32 animate-pulse rounded bg-zinc-700/50"></div>
-					</TableCell>
-					<TableCell className="px-2 py-2.5">
-						<div className="h-4 w-16 animate-pulse rounded bg-zinc-700/50"></div>
-					</TableCell>
-					<TableCell className="px-2 py-2.5">
-						<div className="h-6 w-16 animate-pulse rounded-full bg-zinc-700/50"></div>
-					</TableCell>
-				</TableRow>
-			))}
-		</>
-	);
-
-	// Error state
-	const ErrorState = () => (
-		<TableRow>
-			<TableCell colSpan={4} className="px-2 py-8 text-center">
-				<div className="flex flex-col items-center gap-3">
-					<FaExclamationCircle className="h-8 w-8 text-red-400" />
-					<div>
-						<p className="mb-2 text-sm text-zinc-300">
-							Failed to load billing history
-						</p>
-						<p className="mb-3 text-xs text-zinc-500">{error}</p>
-						<button
-							onClick={refreshData}
-							className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1.5 text-xs transition-colors hover:bg-zinc-700/50"
-						>
-							<RefreshCw className="h-3 w-3" />
-							Try Again
-						</button>
-					</div>
-				</div>
-			</TableCell>
-		</TableRow>
-	);
-
-	// Empty state
-	const EmptyState = () => (
-		<TableRow className="h-full">
-			<TableCell
-				colSpan={4}
-				className="border-zinc-800/30 text-center transition-colors hover:bg-none"
+const ErrorState: React.FC<ErrorStateProps> = ({ errorMessage, onRetry }) => (
+	<div className="flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-16 backdrop-blur-md">
+		<FaExclamationCircle className="h-12 w-12 text-red-400" />
+		<div className="text-center">
+			<p className="mb-1 text-lg font-semibold text-zinc-100">
+				Failed to load data
+			</p>
+			<p className="mb-4 text-sm text-zinc-400">{errorMessage}</p>
+			<button
+				onClick={onRetry}
+				className="inline-flex items-center gap-2 rounded-lg border border-zinc-800/50 bg-zinc-900/30 px-4 py-2 text-sm font-medium text-zinc-100 transition-all hover:bg-zinc-800/40"
 			>
-				<div className="flex flex-col items-center gap-3">
-					<div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800/50">
-						<FaFilter className="h-5 w-5 text-zinc-500" />
-					</div>
-					<div>
-						<p className="text-sm text-zinc-300">No billing history found</p>
-						<p className="text-xs text-zinc-500">
-							{historyFilter === "all"
-								? "No transactions yet"
-								: `No ${historyFilter} transactions found`}
-						</p>
-					</div>
-				</div>
-			</TableCell>
-		</TableRow>
-	);
+				<RefreshCw className="h-4 w-4" />
+				Try Again
+			</button>
+		</div>
+	</div>
+);
 
-	const filteredHistory: any = billingData.billing_history || [];
-	const hasMoreHistory = billingData.pagination?.has_more || false;
-	const remainingCount = billingData.pagination?.remaining_count || 0;
+const BillingHistory: React.FC<BillingHistoryProps> = ({
+	onAggregatesChange,
+}) => {
+	const [creditTransactions, setCreditTransactions] = useState<
+		CreditTransaction[]
+	>([]);
+	const [planChangeHistory, setPlanChangeHistory] = useState<PlanChange[]>([]);
+	const [activeTab, setActiveTab] = useState<"transactions" | "plans">(
+		"transactions",
+	);
+	const [hasError, setHasError] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
+	const [filterType, setFilterType] = useState<string>("all");
+	const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+	// Pagination states
+	const [itemsPerPage] = useState(20);
+	const [totalCount, setTotalCount] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const loadData = useCallback(async () => {
+		try {
+			setHasError(false);
+			setErrorMessage("");
+
+			const offset = (currentPage - 1) * itemsPerPage;
+			const filterValue = filterType === "all" ? undefined : filterType;
+
+			if (activeTab === "transactions") {
+				const creditResult = await fetchCreditHistory({
+					limit: itemsPerPage,
+					offset,
+					type: filterValue,
+				});
+
+				if (creditResult.success && creditResult.data) {
+					setCreditTransactions(creditResult.data.transactions);
+					setTotalCount(creditResult.data.total_count);
+
+					// Calculate aggregates for all transactions (not just current page)
+					const allTransactionsResult = await fetchCreditHistory({
+						limit: 1000,
+						offset: 0,
+						type: undefined,
+					});
+
+					if (
+						allTransactionsResult.success &&
+						allTransactionsResult.data &&
+						onAggregatesChange
+					) {
+						const allTransactions = allTransactionsResult.data.transactions;
+						const debits = allTransactions
+							.filter(t => t.transaction_type === "debit")
+							.reduce((sum, t) => sum + t.amount, 0);
+						const credits = allTransactions
+							.filter(t => t.transaction_type === "credit")
+							.reduce((sum, t) => sum + t.amount, 0);
+						const bonuses = allTransactions
+							.filter(t => t.transaction_type === "bonus")
+							.reduce((sum, t) => sum + t.amount, 0);
+
+						onAggregatesChange({
+							debits,
+							credits,
+							bonuses,
+							upgrades: 0,
+							downgrades: 0,
+							totalChanges: 0,
+						});
+					}
+				}
+			} else {
+				const planResult = await fetchPlanChanges({
+					limit: itemsPerPage,
+					offset,
+				});
+
+				if (planResult.success && planResult.data) {
+					setPlanChangeHistory(planResult.data.changes);
+					setTotalCount(planResult.data.total_count);
+
+					// Calculate aggregates for all plan changes
+					const allChangesResult = await fetchPlanChanges({
+						limit: 1000,
+						offset: 0,
+					});
+
+					if (
+						allChangesResult.success &&
+						allChangesResult.data &&
+						onAggregatesChange
+					) {
+						const allChanges = allChangesResult.data.changes;
+						const upgrades = allChanges.filter(
+							c => c.change_type === "upgrade",
+						).length;
+						const downgrades = allChanges.filter(
+							c => c.change_type === "downgrade",
+						).length;
+
+						onAggregatesChange({
+							debits: 0,
+							credits: 0,
+							bonuses: 0,
+							upgrades,
+							downgrades,
+							totalChanges: allChanges.length,
+						});
+					}
+				}
+			}
+		} catch (error) {
+			setHasError(true);
+			setErrorMessage(
+				error instanceof Error ? error.message : "Failed to load billing data",
+			);
+		}
+	}, [filterType, currentPage, itemsPerPage, activeTab, onAggregatesChange]);
+
+	useEffect(() => {
+		const initializeData = async () => {
+			setIsLoading(true);
+			await loadData();
+			setIsLoading(false);
+		};
+
+		initializeData();
+	}, [loadData]);
+
+	// Reset to page 1 when changing filters or tabs
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [filterType, activeTab]);
+
+	const handleRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await loadData();
+		setRefreshing(false);
+	}, [loadData]);
+
+	const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+	const exportToCSV = useCallback(() => {
+		let csvContent = "";
+		let filename = "";
+
+		if (activeTab === "transactions") {
+			csvContent = "Date,Description,Amount,Type,Balance After\n";
+			creditTransactions.forEach(t => {
+				const row = [
+					formatDate(t.created_at),
+					`"${t.description}"`,
+					t.amount,
+					t.transaction_type_display,
+					t.balance_after,
+				].join(",");
+				csvContent += row + "\n";
+			});
+			filename = `credit-transactions-${new Date().toISOString().split("T")[0]}.csv`;
+		} else {
+			csvContent =
+				"Date,From Plan,To Plan,Change Type,Old Price,New Price,Status\n";
+			planChangeHistory.forEach(c => {
+				const status = c.is_processed
+					? "Processed"
+					: c.is_scheduled
+						? "Scheduled"
+						: "Pending";
+				const row = [
+					formatDate(c.created_at),
+					c.old_plan,
+					c.new_plan,
+					c.change_type_display,
+					c.old_price || "N/A",
+					c.new_price || "N/A",
+					status,
+				].join(",");
+				csvContent += row + "\n";
+			});
+			filename = `plan-changes-${new Date().toISOString().split("T")[0]}.csv`;
+		}
+
+		const blob = new Blob([csvContent], { type: "text/csv" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = filename;
+		link.click();
+		URL.revokeObjectURL(url);
+	}, [activeTab, creditTransactions, planChangeHistory]);
+
+	if (hasError) {
+		return <ErrorState errorMessage={errorMessage} onRetry={handleRefresh} />;
+	}
 
 	return (
-		<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-5 py-4 text-zinc-100 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
+		<div className="space-y-6">
 			{/* Header */}
-			<div className="mb-4 flex items-center justify-between">
-				<div className="flex items-center gap-3">
-					<h3 className="text-lg font-semibold">Billing History</h3>
-					{billingData.summary?.total_transactions > 0 && (
-						<span className="rounded-full border border-zinc-700/50 bg-zinc-800/50 px-2 py-0.5 text-xs text-zinc-400">
-							{billingData.summary.total_transactions} total
-						</span>
-					)}
-				</div>
-				<div className="flex items-center gap-2">
-					{refreshing && (
-						<FaSpinner className="h-3.5 w-3.5 animate-spin text-zinc-400" />
-					)}
+			<div className="flex items-center justify-end">
+				<div className="flex gap-2">
 					<button
-						onClick={refreshData}
-						disabled={refreshing || loading}
-						className="rounded-lg border border-zinc-700/50 bg-zinc-800/30 p-1.5 transition-colors hover:bg-zinc-700/40 disabled:opacity-50"
-						title="Refresh"
-					>
-						<RefreshCw className="h-3 w-3 text-zinc-400" />
-					</button>
-					<FaFilter className="h-3.5 w-3.5 text-zinc-400" />
-					<select
-						value={historyFilter}
-						onChange={event_ =>
-							handleFilterChange(
-								event_.target.value as "all" | "paid" | "failed",
-							)
+						onClick={exportToCSV}
+						disabled={
+							isLoading ||
+							(activeTab === "transactions"
+								? creditTransactions.length === 0
+								: planChangeHistory.length === 0)
 						}
-						disabled={loading}
-						className="rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1 text-sm text-zinc-100 focus:border-zinc-600/70 focus:outline-none disabled:opacity-50"
+						className="flex items-center gap-2 rounded-xl border border-zinc-800/50 bg-zinc-900/30 px-4 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur-md transition-all hover:bg-zinc-800/40 disabled:cursor-not-allowed disabled:opacity-40"
 					>
-						<option value="all">All</option>
-						<option value="paid">Paid</option>
-						<option value="failed">Failed</option>
-					</select>
-				</div>
-			</div>
-
-			{/* Summary Stats */}
-			{billingData.summary && billingData.summary.total_transactions > 0 && (
-				<div className="mb-4 grid grid-cols-3 gap-3">
-					<div className="rounded-lg border border-zinc-700/50 bg-zinc-800/30 p-3">
-						<div className="text-xs text-zinc-400">Total</div>
-						<div className="text-lg font-semibold">
-							{billingData.summary.total_transactions}
-						</div>
-					</div>
-					<div className="rounded-lg border border-zinc-700/50 bg-zinc-800/30 p-3">
-						<div className="text-xs text-zinc-400">Successful</div>
-						<div className="text-lg font-semibold text-green-400">
-							{billingData.summary.successful_payments}
-						</div>
-					</div>
-					<div className="rounded-lg border border-zinc-700/50 bg-zinc-800/30 p-3">
-						<div className="text-xs text-zinc-400">Failed</div>
-						<div className="text-lg font-semibold text-red-400">
-							{billingData.summary.failed_payments}
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Table with shadcn/ui components */}
-			<div className="overflow-x-auto">
-				<Table className="h-[300px] max-h-[300px] w-full">
-					<TableHeader>
-						<TableRow className="border-zinc-800/50 hover:bg-transparent">
-							<TableHead className="h-auto px-2 py-2 text-left text-sm font-medium text-zinc-400">
-								Date
-							</TableHead>
-							<TableHead className="h-auto px-2 py-2 text-left text-sm font-medium text-zinc-400">
-								Description
-							</TableHead>
-							<TableHead className="h-auto px-2 py-2 text-left text-sm font-medium text-zinc-400">
-								Amount
-							</TableHead>
-							<TableHead className="h-auto px-2 py-2 text-left text-sm font-medium text-zinc-400">
-								Status
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody className="scrollbar-hide h-[400px] max-h-[400px] overflow-hidden overflow-y-auto">
-						{loading ? (
-							<LoadingSkeleton />
-						) : error ? (
-							<ErrorState />
-						) : filteredHistory.length === 0 ? (
-							<EmptyState />
-						) : (
-							filteredHistory.map((item: any, index: any) => {
-								return (
-									<TableRow
-										key={`${item.id || index}-${item.date}`}
-										className="border-zinc-800/30 transition-colors hover:bg-zinc-800/20"
-									>
-										<TableCell className="px-2 py-2.5 text-sm text-zinc-300">
-											{item.date}
-										</TableCell>
-										<TableCell className="px-2 py-2.5 text-sm text-zinc-300">
-											{item.description}
-										</TableCell>
-										<TableCell className="px-2 py-2.5 text-sm font-medium text-zinc-300">
-											{item.amount}
-										</TableCell>
-										<TableCell className="px-2 py-2.5">
-											<span
-												className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${getStatusBadgeClass(item.status)}`}
-											>
-												{item.status === "paid" ? (
-													<FaCheck className="h-2.5 w-2.5" />
-												) : (
-													<FaExclamationTriangle className="h-2.5 w-2.5" />
-												)}
-												{item.status === "paid" ? "Paid" : "Failed"}
-											</span>
-										</TableCell>
-									</TableRow>
-								);
-							})
-						)}
-					</TableBody>
-				</Table>
-			</div>
-
-			{/* Load More Button - Fixed logic */}
-			{hasMoreHistory && !loading && !error && (
-				<div className="mt-4 text-center">
-					<button
-						onClick={loadMoreHistory}
-						disabled={loadingMore}
-						className="mx-auto flex items-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/30 px-4 py-2 text-sm font-medium text-zinc-100 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/40 disabled:opacity-50"
-					>
-						{loadingMore ? (
-							<FaSpinner className="h-3 w-3 animate-spin" />
-						) : (
-							<FaPlus className="h-3 w-3" />
-						)}
-						{loadingMore
-							? "Loading..."
-							: `Load More (${remainingCount} remaining)`}
+						<Download className="h-4 w-4" />
+						Export CSV
 					</button>
+					<button
+						onClick={handleRefresh}
+						disabled={refreshing}
+						className="flex items-center gap-2 rounded-xl border border-zinc-800/50 bg-zinc-900/30 px-4 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur-md transition-all hover:bg-zinc-800/40 disabled:opacity-50"
+					>
+						{refreshing ? (
+							<FaSpinner className="h-4 w-4 animate-spin" />
+						) : (
+							<RefreshCw className="h-4 w-4" />
+						)}
+						Refresh
+					</button>
+				</div>
+			</div>
+
+			{/* Tabs and Filter */}
+			<div className="flex items-center justify-between rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-1 backdrop-blur-md">
+				<div className="flex gap-1">
+					<button
+						onClick={() => setActiveTab("transactions")}
+						className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition-all ${
+							activeTab === "transactions"
+								? "bg-zinc-800/50 text-zinc-100 shadow-lg"
+								: "text-zinc-400 hover:text-zinc-200"
+						}`}
+					>
+						Transactions
+					</button>
+					<button
+						onClick={() => setActiveTab("plans")}
+						className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition-all ${
+							activeTab === "plans"
+								? "bg-zinc-800/50 text-zinc-100 shadow-lg"
+								: "text-zinc-400 hover:text-zinc-200"
+						}`}
+					>
+						Plan Changes
+					</button>
+				</div>
+
+				{/* {activeTab === "transactions" && (
+					<div className="relative">
+						<button
+							onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+							className="flex items-center gap-2 rounded-lg bg-zinc-800/50 px-4 py-2 text-sm font-medium text-zinc-100 transition-all hover:bg-zinc-800/70"
+						>
+							{filterType === "all"
+								? "All Types"
+								: filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+							<ChevronDown className="h-4 w-4" />
+						</button>
+
+						{showFilterDropdown && (
+							<div className="absolute right-0 top-full z-50 mt-2 w-36 rounded-xl border border-zinc-800/50 bg-zinc-900/95 p-1 backdrop-blur-md">
+								{["all", "debit", "credit", "bonus"].map(option => (
+									<button
+										key={option}
+										onClick={() => {
+											setFilterType(option);
+											setShowFilterDropdown(false);
+										}}
+										className={`w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-all ${
+											filterType === option
+												? "bg-zinc-800/50 text-zinc-100"
+												: "text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-100"
+										}`}
+									>
+										{option === "all"
+											? "All Types"
+											: option.charAt(0).toUpperCase() + option.slice(1)}
+									</button>
+								))}
+							</div>
+						)}
+					</div>
+				)} */}
+			</div>
+
+			{/* Table */}
+			<div className="overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl">
+				<div className="overflow-x-auto">
+					<table className="w-full">
+						<thead className="bg-zinc-800/50">
+							<tr>
+								{activeTab === "transactions" ? (
+									<>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Date
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Description
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Amount
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Type
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Balance
+										</th>
+									</>
+								) : (
+									<>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Date
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											From Plan
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											To Plan
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Change Type
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Pricing
+										</th>
+										<th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+											Status
+										</th>
+									</>
+								)}
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-zinc-800/50">
+							{isLoading ? (
+								<LoadingSkeleton />
+							) : activeTab === "transactions" ? (
+								creditTransactions.length > 0 ? (
+									creditTransactions.map(t => (
+										<tr
+											key={t.id}
+											className="transition-colors hover:bg-zinc-800/30"
+										>
+											<td className="px-6 py-4 text-sm text-zinc-300">
+												{formatDate(t.created_at)}
+											</td>
+											<td className="px-6 py-4 text-sm text-zinc-300">
+												{t.description}
+											</td>
+											<td
+												className={`px-6 py-4 text-sm font-semibold ${
+													t.transaction_type === "debit"
+														? "text-red-400"
+														: "text-green-400"
+												}`}
+											>
+												{t.transaction_type === "debit" ? "−" : "+"}
+												{formatCurrency(t.amount)}
+											</td>
+											<td className="px-6 py-4">
+												<span
+													className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+														t.transaction_type === "debit"
+															? "bg-red-500/20 text-red-300"
+															: t.transaction_type === "credit"
+																? "bg-green-500/20 text-green-300"
+																: "bg-blue-500/20 text-blue-300"
+													}`}
+												>
+													{t.transaction_type_display}
+												</span>
+											</td>
+											<td className="px-6 py-4 text-sm font-medium text-zinc-200">
+												{formatCurrency(t.balance_after)}
+											</td>
+										</tr>
+									))
+								) : (
+									<tr>
+										<td colSpan={5} className="px-6 py-12 text-center">
+											<p className="text-sm text-zinc-500">
+												No transactions found
+											</p>
+										</td>
+									</tr>
+								)
+							) : planChangeHistory.length > 0 ? (
+								planChangeHistory.map(c => (
+									<tr
+										key={c.id}
+										className="transition-colors hover:bg-zinc-800/30"
+									>
+										<td className="px-6 py-4 text-sm text-zinc-300">
+											{formatDate(c.created_at)}
+										</td>
+										<td className="px-6 py-4">
+											<span className="inline-block rounded-lg bg-zinc-800/50 px-3 py-1 text-xs font-medium capitalize text-zinc-300">
+												{c.old_plan}
+											</span>
+										</td>
+										<td className="px-6 py-4">
+											<span className="inline-block rounded-lg bg-zinc-800/50 px-3 py-1 text-xs font-medium capitalize text-zinc-300">
+												{c.new_plan}
+											</span>
+										</td>
+										<td className="px-6 py-4">
+											<span
+												className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+													c.change_type === "upgrade"
+														? "bg-green-500/20 text-green-300"
+														: "bg-orange-500/20 text-orange-300"
+												}`}
+											>
+												{c.change_type_display}
+											</span>
+										</td>
+										<td className="px-6 py-4">
+											{c.old_price !== null && c.new_price !== null ? (
+												<div className="flex items-center gap-2 text-sm">
+													<span className="text-zinc-500 line-through">
+														{formatCurrency(c.old_price)}
+													</span>
+													<span className="font-semibold text-zinc-200">
+														{formatCurrency(c.new_price)}
+													</span>
+												</div>
+											) : (
+												<span className="text-sm text-zinc-500">N/A</span>
+											)}
+										</td>
+										<td className="px-6 py-4">
+											<div className="flex items-center gap-2">
+												{c.is_processed ? (
+													<>
+														<FaCheck className="h-3.5 w-3.5 text-green-400" />
+														<span className="text-xs font-medium text-zinc-400">
+															Processed
+														</span>
+													</>
+												) : c.is_scheduled ? (
+													<>
+														<FaClock className="h-3.5 w-3.5 text-blue-400" />
+														<span className="text-xs font-medium text-zinc-400">
+															Scheduled
+														</span>
+													</>
+												) : (
+													<>
+														<FaExclamationTriangle className="h-3.5 w-3.5 text-yellow-400" />
+														<span className="text-xs font-medium text-zinc-400">
+															Pending
+														</span>
+													</>
+												)}
+											</div>
+										</td>
+									</tr>
+								))
+							) : (
+								<tr>
+									<td colSpan={6} className="px-6 py-12 text-center">
+										<p className="text-sm text-zinc-500">
+											No plan changes found
+										</p>
+									</td>
+								</tr>
+							)}
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			{/* Pagination */}
+			{totalPages > 1 && (
+				<div className="flex items-center justify-between rounded-xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-4 backdrop-blur-md">
+					<div className="text-sm text-zinc-400">
+						Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+						{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{" "}
+						entries
+					</div>
+					<div className="flex items-center gap-2">
+						<button
+							onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+							disabled={currentPage === 1}
+							className="flex items-center gap-1 rounded-lg bg-zinc-800/50 px-3 py-2 text-sm font-medium text-zinc-100 transition-all hover:bg-zinc-800/70 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							<ChevronLeft className="h-4 w-4" />
+							Previous
+						</button>
+						<div className="flex items-center gap-1">
+							{Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+								let pageNumber;
+								if (totalPages <= 5) {
+									pageNumber = index + 1;
+								} else if (currentPage <= 3) {
+									pageNumber = index + 1;
+								} else if (currentPage >= totalPages - 2) {
+									pageNumber = totalPages - 4 + index;
+								} else {
+									pageNumber = currentPage - 2 + index;
+								}
+
+								return (
+									<button
+										key={pageNumber}
+										onClick={() => setCurrentPage(pageNumber)}
+										className={`h-10 w-10 rounded-lg text-sm font-medium transition-all ${
+											currentPage === pageNumber
+												? "bg-zinc-800/50 text-zinc-100"
+												: "bg-zinc-900/30 text-zinc-400 hover:bg-zinc-800/30"
+										}`}
+									>
+										{pageNumber}
+									</button>
+								);
+							})}
+						</div>
+						<button
+							onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+							disabled={currentPage === totalPages}
+							className="flex items-center gap-1 rounded-lg bg-zinc-800/50 px-3 py-2 text-sm font-medium text-zinc-100 transition-all hover:bg-zinc-800/70 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							Next
+							<ChevronRight className="h-4 w-4" />
+						</button>
+					</div>
 				</div>
 			)}
 		</div>

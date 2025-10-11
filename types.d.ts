@@ -43,15 +43,57 @@ export type FooterProps = {
 export type AuthModalProps = {
 	trigger: any;
 };
+// ============================================
+// UPDATED TYPESCRIPT INTERFACE (types/index.ts or types/notification.ts)
+// ============================================
 
 export interface Notification {
+	// Core fields
 	id: UUID;
-	organization: string;
 	title: string;
 	message: string;
-	triggered_by: string;
-	is_read: boolean;
 	created_at: string;
+
+	// Read status
+	is_read: boolean;
+	is_read_by: string[]; // Array of user IDs who have read this
+
+	// Triggered by information
+	triggered_by_name: string | null; // Full name of user who triggered
+	triggered_by_email: string | null; // Email of user who triggered
+
+	// Related object (optional)
+	related_object_type: string | null; // e.g., "post", "postgroup"
+	related_object_id: string | null; // UUID of related object
+
+	// Metadata
+	organization?: string; // Organization ID
+}
+
+// Additional helper types
+export interface NotificationResponse {
+	total_count: number;
+	unread_count: number;
+	notifications: Notification[];
+}
+
+export interface NotificationListParams {
+	notification_id?: UUID;
+	all?: boolean;
+	action?: "read" | "delete";
+}
+
+export type NotificationAction = "read" | "delete";
+
+// Notification types for filtering/categorization (optional, for future use)
+export enum NotificationType {
+	POST_CREATED = "post_created",
+	POST_PUBLISHED = "post_published",
+	POST_FAILED = "post_failed",
+	VARIATION_CREATED = "variation_created",
+	INTEGRATION_FAILED = "integration_failed",
+	CREDIT_LOW = "credit_low",
+	SYSTEM = "system",
 }
 
 export type AuthView =

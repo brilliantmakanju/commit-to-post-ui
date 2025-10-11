@@ -18,6 +18,14 @@ import { useSessionManager } from "@/components/tracker/auth-tracker";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useFetchOrganizations } from "@/hooks/core/repo/use-organization-hook";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
+// Import sync utilities
+import {
+	clearUserData,
+	hasCompletedOnboarding,
+	hasUserDataChanged,
+	syncUserData,
+	validateUserData,
+} from "@/lib/sync-user-data";
 import useLogoutStore from "@/zustand/logout-store";
 import useUserStore from "@/zustand/useuser-store";
 
@@ -41,81 +49,15 @@ const LoadingScreen = ({ message }: { message?: string }) => (
 	</div>
 );
 
-// Helper function to parse dates safely
-const parseDate = (dateString: string | undefined | null) => {
-	if (!dateString) return;
-	try {
-		const date = new Date(dateString);
-		return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
-	} catch {
-		return;
-	}
-};
-
-// Enhanced sync function with all new fields
-export const syncUserData = (userData: any) => {
-	return {
-		// ===== CORE USER FIELDS =====
-		first_name: userData.first_name || "",
-		last_name: userData.last_name || "",
-		email: userData.email || "",
-		profile: userData.profile || undefined,
-		bio: userData.bio || "",
-		preferences: userData.preferences || {},
-		hasHydratedUser: true,
-
-		// ===== AUTHENTICATION & CONNECTIONS =====
-		github_connected: userData.github_connected || false,
-		google_connected: userData.google_connected || false,
-
-		// ===== SUBSCRIPTION & BILLING FIELDS =====
-		plan: userData.plan || "basic",
-		paddle_subscription_id: userData.paddle_subscription_id || undefined,
-		stripe_subscription_id: userData.stripe_subscription_id || undefined,
-
-		// Subscription status and dates
-		subscription_status: userData.subscription_status || "inactive",
-		subscription_start_date: parseDate(userData.subscription_start_date),
-		subscription_end_date: parseDate(userData.subscription_end_date),
-
-		// Billing details
-		billing_interval: userData.billing_interval || undefined,
-		current_price_id: userData.current_price_id || undefined,
-
-		// Plan changes
-		pending_plan_change: userData.pending_plan_change || undefined,
-		pending_plan_effective_date: parseDate(
-			userData.pending_plan_effective_date,
-		),
-
-		// Payment information
-		payment_grace_period_end: parseDate(userData.payment_grace_period_end),
-		last_successful_payment: parseDate(userData.last_successful_payment),
-		payment_retry_count: userData.payment_retry_count || 0,
-
-		// ===== SUBSCRIPTION HELPER FLAGS =====
-		has_active_subscription: userData.has_active_subscription || false,
-		is_in_grace_period: userData.is_in_grace_period || false,
-		current_billing_type: userData.current_billing_type || undefined,
-
-		// ===== CREDIT MANAGEMENT =====
-		credits: userData.credits || 0,
-
-		// ===== BONUS FLAGS =====
-		signup_bonus_claimed: userData.signup_bonus_claimed || false,
-		spin_bonus_claimed: userData.spin_bonus_claimed || false,
-		spin_bonus_skipped: userData.spin_bonus_skipped || false,
-	};
-};
-
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	const hasSyncedRef = useRef(false);
 	const logoutStore = useLogoutStore();
 	const { data: session, status } = useSession();
-	const { setUser, hasHydratedUser } = useUserStore();
+	const lastSyncedDataRef = useRef<any>(undefined);
+	const { setUser, hasHydratedUser, clearUser } = useUserStore();
+	const [forceShowContent, setForceShowContent] = useState(false);
 	const [onboardingChecked, setOnboardingChecked] = useState(false);
 	const [initializationComplete, setInitializationComplete] = useState(false);
-	const [forceShowContent, setForceShowContent] = useState(false);
 
 	// Client-side mounting state
 	const [isClient, setIsClient] = useState(false);
@@ -137,16 +79,26 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	// Memoized sync function to prevent recreations
 	const syncUserStoreData = useCallback(
 		(userData: any) => {
-			if (hasSyncedRef.current) return; // Prevent multiple syncs
+			if (
+				hasSyncedRef.current && // Only re-sync if data has actually changed
+				!hasUserDataChanged(lastSyncedDataRef.current, userData)
+			) {
+				return;
+			}
 
 			try {
+				// Validate user data before syncing
+				if (!validateUserData(userData)) {
+					console.error("❌ Invalid skipping sync");
+					return;
+				}
+
 				const syncedData = syncUserData(userData);
 				setUser(syncedData);
+
 				hasSyncedRef.current = true;
-				console.log("✅ User data synced successfully");
-			} catch (error) {
-				console.error("❌ Failed to sync user data:", error);
-			}
+				lastSyncedDataRef.current = userData;
+			} catch {}
 		},
 		[setUser],
 	);
@@ -162,16 +114,16 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 		const emergencyTimeout = setTimeout(() => {
 			console.warn("⚠️ Emergency timeout triggered - forcing content display");
-			setForceShowContent(true);
-			setInitializationComplete(true);
-			setOnboardingChecked(true);
 			setCookieValidated(true);
-		}, 5000); // 5 second emergency timeout
+			setForceShowContent(true);
+			setOnboardingChecked(true);
+			setInitializationComplete(true);
+		}, 8000); // 8 second emergency timeout
 
 		return () => clearTimeout(emergencyTimeout);
 	}, [isClient]);
 
-	// Cookie validation effect - simplified
+	// Cookie validation effect
 	useEffect(() => {
 		if (!isClient || cookieValidated) return;
 
@@ -184,22 +136,34 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				if (!mounted) return;
 
 				if (!cookieState) {
-					// Force logout if no cookie_state found
+					console.warn("⚠️ No cookie_state found - forcing logout");
 					await logout();
 					return;
 				}
 
+				// Validate cookie hasn't expired
+				if (cookieState.created_at) {
+					const createdAt = new Date(`${cookieState.created_at}`);
+					const now = new Date();
+					const hoursSinceCreation =
+						(now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+					// If cookie is older than 30 days, force re-authentication
+					if (hoursSinceCreation > 20) {
+						console.warn("⚠️ Cookie expired - forcing logout");
+						await logout();
+						return;
+					}
+				}
+
 				setCookieValidated(true);
-			} catch (error) {
-				console.error("Cookie validation failed:", error);
+			} catch {
 				if (mounted) {
-					// Don't force logout on cookie validation error - might be temporary
 					await logout();
 				}
 			}
 		};
 
-		// Reduce timeout and add fallback
 		const timeout = setTimeout(() => {
 			if (mounted) {
 				validateCookie();
@@ -209,7 +173,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		// Fallback timeout
 		const fallbackTimeout = setTimeout(() => {
 			if (mounted && !cookieValidated) {
-				console.warn("Cookie validation timeout - proceeding anyway");
+				console.warn("⚠️ proceeding anyway");
 				setCookieValidated(true);
 			}
 		}, 3000);
@@ -233,31 +197,47 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		}
 	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
 
-	// Simplified onboarding check
+	// Re-sync on session updates (if user data changed server-side)
+	useEffect(() => {
+		if (
+			status === "authenticated" &&
+			session?.user &&
+			hasHydratedUser &&
+			hasSyncedRef.current && // Only re-sync if significant changes detected
+			hasUserDataChanged(lastSyncedDataRef.current, session.user)
+		) {
+			console.log("🔄 re-syncing...");
+			hasSyncedRef.current = false; // Allow re-sync
+			syncUserStoreData(session.user);
+		}
+	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
+
+	// Onboarding check
 	useEffect(() => {
 		if (!isClient || !cookieValidated || onboardingChecked) return;
 
 		const checkNewUser = async () => {
 			try {
 				const sessionData = await getDecryptedCookie("user_state");
-				const isNewUser = sessionData?.new_user || false;
+				const userData = session?.user;
 
-				if (isNewUser) {
+				// Check both cookie and session data
+				const isNewUser = sessionData?.new_user || userData?.new_user || false;
+				const needsOnboarding = !hasCompletedOnboarding(userData);
+
+				if (isNewUser || needsOnboarding) {
 					globalThis.window.location.replace("/start");
 					return;
 				}
-			} catch (error) {
-				console.error("Failed to check new user cookie:", error);
+			} catch {
 			} finally {
 				setOnboardingChecked(true);
 			}
 		};
 
-		// Add timeout for onboarding check
 		const timeout = setTimeout(checkNewUser, 100);
 		const fallbackTimeout = setTimeout(() => {
 			if (!onboardingChecked) {
-				console.warn("Onboarding check timeout - proceeding");
 				setOnboardingChecked(true);
 			}
 		}, 2000);
@@ -266,7 +246,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			clearTimeout(timeout);
 			clearTimeout(fallbackTimeout);
 		};
-	}, [isClient, cookieValidated, onboardingChecked]);
+	}, [isClient, cookieValidated, onboardingChecked, session?.user]);
 
 	// Track when initialization is complete
 	useEffect(() => {
@@ -279,6 +259,26 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			setInitializationComplete(true);
 		}
 	}, [isClient, cookieValidated, onboardingChecked, initializationComplete]);
+
+	// Cleanup on logout
+	useEffect(() => {
+		if (logoutStore.logout) {
+			clearUserData();
+			clearUser();
+			hasSyncedRef.current = false;
+			lastSyncedDataRef.current = undefined;
+		}
+	}, [logoutStore.logout, clearUser]);
+
+	// Cleanup on unmount
+	useEffect(() => {
+		return () => {
+			if (status === "unauthenticated") {
+				clearUserData();
+				clearUser();
+			}
+		};
+	}, [status, clearUser]);
 
 	// Early returns for loading states
 	if (!isClient) {
@@ -302,9 +302,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		isInitializing ||
 		isSessionLoading ||
 		(isOrganizationLoading && !shouldShowContent);
-	const showContent =
-		(shouldShowContent && isSessionValid && initializationComplete) ||
-		forceShowContent;
+	// const showContent =
+	// 	(shouldShowContent && isSessionValid && initializationComplete) ||
+	// 	forceShowContent;
 
 	// Show loading states with timeouts
 	if (showLoading && !forceShowContent) {
@@ -313,9 +313,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		if (isSessionLoading) {
 			loadingMessage = "Authenticating...";
 		} else if (isOrganizationLoading) {
-			loadingMessage = "Setting up your organizations...";
+			loadingMessage = "Setting up your workspace...";
 		} else if (isInitializing) {
-			loadingMessage = "Initializing...";
+			loadingMessage = "Initializing your account...";
 		}
 
 		return <LoadingScreen message={loadingMessage} />;
@@ -343,8 +343,8 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 					</div>
 					<h2 className="text-xl font-semibold text-white">Setup Error</h2>
 					<p className="max-w-md text-gray-400">
-						There was an issue setting up your organizations. Please refresh the
-						page or contact support.
+						There was an issue setting up your workspace. Please refresh the
+						page or contact support if the problem persists.
 					</p>
 					<div className="space-x-4">
 						<button
@@ -363,16 +363,13 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 	return (
 		<>
 			<SessionUI />
-
 			<SidebarProvider className="scrollbar-hide h-screen overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
 				<div className="relative flex h-screen w-full">
 					<AppSidebar />
 					<SidebarInset className="scrollbar-hide relative flex-1 overflow-hidden bg-[#0A0A0A] md:rounded-[20px]">
-						{/* Top Navigation Bar with integrated user data */}
 						<TopNav isLoadingAttachment={false} />
 
 						<main className="scrollbar-hide relative mb-2 h-full w-full overflow-y-auto text-[#EAF6FF] md:mb-0">
-							{/* Removed SidebarTrigger since it's now in TopNav */}
 							<Suspense
 								fallback={<LoadingScreen message="Loading content..." />}
 							>

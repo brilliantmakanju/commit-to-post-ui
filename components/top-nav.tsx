@@ -38,8 +38,8 @@ export function TopNav({ isLoadingAttachment = false }: TopNavProps) {
 
 	// Use the hook with minimal options to prevent infinite loops
 	const { credits: apiCredits, isLoading: creditsLoading } = useCreditBalance({
-		refetchInterval: 5 * 60 * 1000,
 		syncWithStore: true,
+		refetchInterval: 5 * 60 * 1000,
 		showNotifications: false, // Don't show notifications in nav
 	});
 
@@ -84,19 +84,19 @@ export function TopNav({ isLoadingAttachment = false }: TopNavProps) {
 	// Memoize credit calculations
 	const creditInfo = useMemo(() => {
 		// Prefer API data, fall back to store data
-		const credits = apiCredits ?? userStore.credits ?? 0;
+		const credits = apiCredits ?? userStore.credits_balance ?? 0;
 		const status = getCreditStatus(credits);
 
 		return {
-			credits,
-			displayText: getCreditDisplayText(credits, "full"),
-			mobileDisplayText: getCreditDisplayText(credits, "mobile"),
-			badgeDisplayText: getCreditDisplayText(credits, "badge"),
 			status,
+			credits,
 			isLow: credits < 100,
 			isCritical: credits < 10,
+			displayText: getCreditDisplayText(credits, "full"),
+			badgeDisplayText: getCreditDisplayText(credits, "badge"),
+			mobileDisplayText: getCreditDisplayText(credits, "mobile"),
 		};
-	}, [apiCredits, userStore.credits]);
+	}, [apiCredits, userStore.credits_balance]);
 
 	const logoutClient = async () => {
 		await performLogout();

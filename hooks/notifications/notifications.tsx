@@ -7,7 +7,6 @@ const useRetrieveNotifications = () => {
 		queryKey: ["notifications"],
 		queryFn: async () => {
 			const hooks = await getNotifications();
-
 			if (hooks.success) {
 				return {
 					total_count: hooks.data?.total_count,
@@ -15,7 +14,6 @@ const useRetrieveNotifications = () => {
 					notifications: hooks.data?.notifications,
 				};
 			}
-
 			return {
 				total_count: undefined,
 				unread_count: undefined,
@@ -25,6 +23,7 @@ const useRetrieveNotifications = () => {
 		enabled: true,
 		refetchOnMount: true,
 		refetchOnWindowFocus: true,
+		refetchInterval: 30000, // Refetch every 30 seconds
 	});
 
 	return {

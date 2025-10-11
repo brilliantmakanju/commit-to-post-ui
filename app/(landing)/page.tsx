@@ -1,7 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import SubAuthPage from "@/components/auth/sub-modal";
 import { BentoGridSection } from "@/components/landing/micro/v3/bento-grid";
@@ -12,23 +11,17 @@ import FooterSection from "@/components/landing/micro/v3/footer-v3";
 import HeroSection from "@/components/landing/micro/v3/hero-section";
 import PricingSection from "@/components/landing/micro/v3/pricing-section";
 import PurchaseSuccessModal from "@/components/landing/pricing/payment-success";
-import { syncUserData } from "@/components/wrappers/loaders/authenticated-layout";
 import { usePurchaseSuccess } from "@/hooks/plans/payment-success";
 import { clearCookies } from "@/lib/cookies/create-cookies";
 import { getDecryptedCookie } from "@/lib/cookies/getcookies";
 import { signOut } from "@/server-actions/auth/signout";
 import useAuthModalStore from "@/zustand/auth/use-auth-modal";
 import useLogoutStore from "@/zustand/logout-store";
-import useUserStore from "@/zustand/useuser-store";
-
 export default function Home() {
 	const router = useRouter();
-	const hasSyncedRef = useRef(false);
 	const logoutStore = useLogoutStore();
 	const searchParams = useSearchParams();
-	const { data: session, status } = useSession();
 	const { isOpen, openModal } = useAuthModalStore();
-	const { setUser, hasHydratedUser } = useUserStore();
 	// Handle purchase success
 	const { isModalOpen, closeModal } = usePurchaseSuccess();
 
@@ -58,32 +51,6 @@ export default function Home() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router, searchParams]);
 
-	// Memoized sync function to prevent recreations
-	const syncUserStoreData = useCallback(
-		(userData: any) => {
-			if (hasSyncedRef.current) return; // Prevent multiple syncs
-
-			try {
-				const syncedData = syncUserData(userData);
-				setUser(syncedData);
-				hasSyncedRef.current = true;
-			} catch {}
-		},
-		[setUser],
-	);
-
-	// Single effect to handle user store synchronization
-	useEffect(() => {
-		if (
-			status === "authenticated" &&
-			session?.user &&
-			!hasHydratedUser &&
-			!hasSyncedRef.current
-		) {
-			syncUserStoreData(session.user);
-		}
-	}, [status, session?.user, hasHydratedUser, syncUserStoreData]);
-
 	return (
 		<>
 			<div className="container mx-auto grid items-center justify-items-center gap-[10rem] font-sans">
@@ -93,7 +60,7 @@ export default function Home() {
 				<HeroSection />
 				<VideoDemo />
 				<BentoGridSection />
-				<PricingSection />
+				<PricingSection tables={false} />
 				<FAQSection />
 				<CTASection />
 				<FooterSection />

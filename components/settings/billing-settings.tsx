@@ -2,19 +2,24 @@
 "use client";
 
 import Link from "next/link";
+import React, { useState } from "react";
 import {
+	FaCalendarAlt,
+	FaCheckCircle,
+	FaClock,
 	FaCrown,
 	FaExclamationTriangle,
 	FaFileAlt,
 	FaGithub,
 	FaHeart,
+	FaInfinity,
 	FaLightbulb,
 	FaShare,
 	FaUsers,
 } from "react-icons/fa";
 
 import useOrganizationStats from "@/hooks/core/stats/use-organization-stats";
-import useUserStore from "@/zustand/useuser-store";
+import { useCreditBalance } from "@/hooks/plans/use-credit-balance";
 
 import { pricingData } from "../landing/pricing/data";
 import { Button } from "../ui/button";
@@ -34,7 +39,19 @@ interface UsageStats {
 }
 
 export default function BillingSettings() {
-	const useStore = useUserStore();
+	const {
+		credits,
+		userPlan,
+		billingType,
+		billingInterval,
+		subscriptionStatus,
+		subscriptionEndDate,
+		hasActiveSubscription,
+	} = useCreditBalance({
+		syncWithStore: true,
+		refetchInterval: 5 * 60 * 1000,
+		showNotifications: false,
+	});
 	const { summary, isStatsLoading, isStatsError } = useOrganizationStats();
 
 	// Get stats from the organization stats hook
@@ -44,21 +61,21 @@ export default function BillingSettings() {
 	const totalWorkspaces = summary?.total_organizations || 0;
 
 	// Validate all required fields before usage
-	const userPlanType = useStore.plan.toLowerCase();
+	const userPlanType = userPlan.toLowerCase();
 
 	const currentPlanData = pricingData.plans.find(
-		plan => plan.name.toLowerCase() === userPlanType,
+		plan => plan.name.toLocaleLowerCase() === userPlanType,
 	);
 
 	// Show loading state
 	if (isStatsLoading) {
 		return (
-			<div className="min-h-screen bg-zinc-950 p-4">
-				<div className="mx-auto w-full max-w-none">
-					<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-8 text-zinc-100 backdrop-blur-xl">
+			<div className="min-h-screen p-6">
+				<div className="mx-auto w-full max-w-7xl">
+					<div className="w-full rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-xl">
 						<div className="text-center">
-							<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300"></div>
-							<p className="text-lg font-medium">
+							<div className="border-3 mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-white/20 border-t-white"></div>
+							<p className="text-lg font-medium text-white">
 								Loading billing information...
 							</p>
 						</div>
@@ -71,13 +88,17 @@ export default function BillingSettings() {
 	// Show error state
 	if (isStatsError) {
 		return (
-			<div className="min-h-screen bg-zinc-950 p-4">
-				<div className="mx-auto w-full max-w-none">
-					<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-8 text-zinc-100 backdrop-blur-xl">
+			<div className="min-h-screen p-6">
+				<div className="mx-auto w-full max-w-7xl">
+					<div className="w-full rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-xl">
 						<div className="text-center">
-							<FaExclamationTriangle className="mx-auto mb-4 h-12 w-12 text-zinc-400" />
-							<p className="text-lg font-medium">Error loading billing data</p>
-							<p className="mt-2 text-sm text-zinc-400">{"Unknown error"}</p>
+							<FaExclamationTriangle className="mx-auto mb-4 h-14 w-14 text-white/40" />
+							<p className="text-xl font-semibold text-white">
+								Error loading billing data
+							</p>
+							<p className="mt-2 text-sm text-white/60">
+								Please refresh the page
+							</p>
 						</div>
 					</div>
 				</div>
@@ -87,12 +108,12 @@ export default function BillingSettings() {
 
 	if (!currentPlanData) {
 		return (
-			<div className="min-h-screen bg-zinc-950 p-4">
-				<div className="mx-auto w-full max-w-none">
-					<div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-6 py-8 text-zinc-100 backdrop-blur-xl">
+			<div className="min-h-screen p-6">
+				<div className="mx-auto w-full max-w-7xl">
+					<div className="w-full rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-xl">
 						<div className="text-center">
-							<FaExclamationTriangle className="mx-auto mb-4 h-12 w-12 text-zinc-400" />
-							<p className="text-lg font-medium">
+							<FaExclamationTriangle className="mx-auto mb-4 h-14 w-14 text-white/40" />
+							<p className="text-xl font-semibold text-white">
 								Error: Plan &quot;{userPlanType}&quot; not found
 							</p>
 						</div>
@@ -104,7 +125,7 @@ export default function BillingSettings() {
 
 	const currentPlan: CurrentPlan = {
 		name: currentPlanData.name,
-		planType: userPlanType as "basic" | "pro" | "studio",
+		planType: userPlanType.toLocaleLowerCase() as "basic" | "pro" | "studio",
 		features: currentPlanData.features.map(feature =>
 			typeof feature === "string" ? feature : feature.name,
 		),
@@ -118,37 +139,107 @@ export default function BillingSettings() {
 	};
 
 	const canUpgrade = currentPlan.planType !== "studio";
+	const isOneTimePurchase =
+		billingType?.toLocaleLowerCase() === "one_time" ||
+		billingType?.toLocaleLowerCase() === "credits";
+	const isSubscription = billingType?.toLocaleLowerCase() === "subscription";
+	const isLifetime =
+		billingInterval?.toLocaleLowerCase() === "lifetime" ||
+		billingInterval?.toLocaleLowerCase() === "one_time";
 
 	const getPlanIcon = (planType: string) => {
 		switch (planType) {
 			case "basic": {
-				return <FaHeart className="h-5 w-5 text-zinc-400" />;
+				return <FaHeart className="h-6 w-6 text-white/60" />;
 			}
 			case "pro": {
-				return <FaLightbulb className="h-5 w-5 text-zinc-300" />;
+				return <FaLightbulb className="h-6 w-6 text-white/70" />;
 			}
 			case "studio": {
-				return <FaCrown className="h-5 w-5 text-zinc-200" />;
+				return <FaCrown className="h-6 w-6 text-white/90" />;
 			}
 			default: {
-				return <FaHeart className="h-5 w-5 text-zinc-400" />;
+				return <FaHeart className="h-6 w-6 text-white/60" />;
 			}
 		}
 	};
 
-	return (
-		<div className="min-h-screen p-4 sm:p-6 lg:p-8">
-			<div className="mx-auto w-full max-w-none space-y-6">
-				{/* Header */}
-				<div className="space-y-1">
-					<h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-						Billing
-					</h1>
-					<p className="text-sm text-zinc-400">
-						Manage your subscription, view usage all in one place.
-					</p>
+	const getBillingBadge = () => {
+		if (
+			isOneTimePurchase ||
+			billingInterval?.toLocaleLowerCase() === "lifetime" ||
+			billingInterval?.toLocaleLowerCase() === "one_time"
+		) {
+			return (
+				<div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white">
+					<FaInfinity className="h-3 w-3" />
+					Lifetime Access
 				</div>
+			);
+		}
 
+		if (
+			isSubscription &&
+			(billingInterval === "monthly" || billingInterval === "annual")
+		) {
+			const isYearly =
+				billingInterval.toLocaleLowerCase() === "yearly" ||
+				billingInterval.toLocaleLowerCase() === "annual";
+
+			return (
+				<div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white">
+					<FaCalendarAlt className="h-3 w-3" />
+					{isYearly ? "Annual Billing" : "Monthly Billing"}
+				</div>
+			);
+		}
+
+		return;
+	};
+
+	const getStatusBadge = () => {
+		if (
+			!hasActiveSubscription &&
+			billingInterval?.toLocaleLowerCase() != "one_time"
+		) {
+			return (
+				<div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/60">
+					<FaClock className="h-3 w-3" />
+					Inactive
+				</div>
+			);
+		}
+
+		if (subscriptionStatus?.toLocaleLowerCase() === "active") {
+			return (
+				<div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
+					<FaCheckCircle className="h-3 w-3" />
+					Active
+				</div>
+			);
+		}
+
+		return (
+			<div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/60">
+				<FaClock className="h-3 w-3" />
+				{subscriptionStatus}
+			</div>
+		);
+	};
+
+	const formatDate = (dateString: string | undefined) => {
+		if (!dateString) return "N/A";
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		});
+	};
+
+	return (
+		<div className="min-h-screen p-4 sm:p-4 lg:p-5">
+			<div className="mx-auto w-full max-w-none space-y-3">
 				{/* Subscription Overview */}
 				<div className="grid auto-rows-fr gap-4 lg:grid-cols-4">
 					{/* Current Plan */}
@@ -161,29 +252,92 @@ export default function BillingSettings() {
 									</div>
 									<div>
 										<h3 className="text-lg font-semibold">Current Plan</h3>
-										<div className="mt-0.5 flex items-center gap-2"></div>
+										<div className="mt-1 flex items-center gap-2">
+											{getBillingBadge()}
+											{getStatusBadge()}
+										</div>
 									</div>
 								</div>
 
 								<div className="flex flex-col gap-2">
 									{canUpgrade && (
-										<Link href={"/pricing"}>
-											<Button
-												asChild
-												className="flex items-center justify-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/30 px-4 py-2 text-sm font-medium text-zinc-100 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/40"
-											>
-												Upgrade Plan
-											</Button>
-										</Link>
+										<Button
+											asChild
+											className="flex items-center justify-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/30 px-4 py-2 text-sm font-medium text-zinc-100 transition-all duration-200 hover:border-zinc-600/70 hover:bg-zinc-700/40"
+										>
+											<Link href={"/pricing"}>Upgrade Plan</Link>
+										</Button>
 									)}
 								</div>
 							</div>
 
-							<div className="mt-auto grid place-items-end gap-4 sm:grid-cols-2">
-								<div className="w-full space-y-1">
-									<p className="text-xl font-bold text-zinc-100">
+							<div className="mt-auto space-y-4">
+								<div className="space-y-1">
+									<p className="text-2xl font-bold text-zinc-100">
 										{currentPlan.name}
 									</p>
+									{isLifetime && (
+										<p className="text-sm text-zinc-400">
+											You have lifetime access to this plan
+										</p>
+									)}
+									{isSubscription && (
+										<p className="text-sm text-zinc-400">
+											Your subscription is active and will renew automatically
+										</p>
+									)}
+								</div>
+
+								{/* Subscription Details */}
+								{hasActiveSubscription && !isLifetime && (
+									<div className="grid gap-3 border-t border-zinc-800/50 pt-3 sm:grid-cols-2">
+										{billingInterval && (
+											<div className="space-y-1">
+												<p className="text-xs uppercase tracking-wide text-zinc-500">
+													Billing Cycle
+												</p>
+												<p className="text-sm font-medium capitalize text-zinc-300">
+													{billingInterval === "monthly"
+														? "Monthly"
+														: billingInterval === "annual"
+															? "Yearly"
+															: billingInterval}
+												</p>
+											</div>
+										)}
+										{subscriptionEndDate && (
+											<div className="space-y-1">
+												<p className="text-xs uppercase tracking-wide text-zinc-500">
+													{subscriptionStatus === "active"
+														? "Renews On"
+														: "Expires On"}
+												</p>
+												<p className="text-sm font-medium text-zinc-300">
+													{formatDate(subscriptionEndDate)}
+												</p>
+											</div>
+										)}
+									</div>
+								)}
+
+								{/* Credits Display */}
+								<div className="border-t border-zinc-800/50 pt-3">
+									<div className="flex items-center justify-between">
+										<div className="space-y-1">
+											<p className="text-xs uppercase tracking-wide text-zinc-500">
+												Available Credits
+											</p>
+											<p className="text-lg font-semibold text-zinc-100">
+												{credits || 0} credits
+											</p>
+										</div>
+										<Button
+											className="flex items-center justify-center gap-2 rounded-lg border border-purple-700/50 bg-purple-800/20 px-3 py-1.5 text-xs font-medium text-purple-300 transition-all duration-200 hover:border-purple-600/70 hover:bg-purple-700/30"
+											asChild
+										>
+											<Link href={"/pricing"}>Top Up Credits</Link>
+										</Button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -249,34 +403,10 @@ export default function BillingSettings() {
 					</div>
 				</div>
 
-				{/* Features List */}
-				{/* <div className="w-full rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-5 py-4 text-zinc-100 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
-					<h3 className="mb-3 text-lg font-semibold">Plan Features</h3>
-					<div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{currentPlan.features.slice(0, 12).map((feature, index) => (
-							<div key={index} className="flex items-start gap-2.5">
-								<div className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border border-zinc-700/50 bg-zinc-800/50">
-									<FaCheck className="h-2.5 w-2.5 text-zinc-400" />
-								</div>
-								<span className="text-sm leading-relaxed text-zinc-300">
-									{feature}
-								</span>
-							</div>
-						))}
-					</div>
-				</div> */}
-
 				{/* Billing History */}
-				<BillingHistory />
-
-				{/* Plan Selector Modal */}
-				{/* <PlanSelector
-					type={selectedAction}
-					open={isUpgradeModalOpen}
-					currentPlanId={userPlanType}
-					onOpenChange={setIsUpgradeModalOpen}
-					currentInterval={useStore.billing_interval as "monthly" | "annual"}
-				/> */}
+				<div className="flex w-full flex-1 flex-col justify-between rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-5 py-4 text-zinc-100 backdrop-blur-xl transition-all duration-300 hover:border-zinc-700/50 hover:bg-zinc-800/40">
+					<BillingHistory />
+				</div>
 			</div>
 		</div>
 	);

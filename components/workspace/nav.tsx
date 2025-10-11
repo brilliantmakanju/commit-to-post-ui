@@ -23,7 +23,7 @@ const WorkspaceTopNav = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	const { data: session } = useSession();
-	const { plan, credits } = useUserStore();
+	const { plan, credits_balance: credits } = useUserStore();
 
 	// NEW: Check if user has workspace access (studio plan + credits)
 	const userPlan = plan;
