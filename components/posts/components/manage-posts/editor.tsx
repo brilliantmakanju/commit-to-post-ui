@@ -1212,8 +1212,8 @@ export const Editor: React.FC<EditorProps> = ({
 				<div className="mb-3 rounded-md border border-blue-500/20 bg-blue-500/10 p-2">
 					<p className="flex items-start gap-1 text-xs text-blue-400 lg:items-center">
 						<AlertTriangle className="h-3 w-3 flex-shrink-0" />
-						Remember to save your changes before switching posts or closing the
-						editor to avoid losing your work.
+						Make sure to save your work before switching posts, publishing,
+						scheduling, or closing the editor.
 					</p>
 				</div>
 

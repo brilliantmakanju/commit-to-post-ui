@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
+import PaddleCheckout from "../../pricing/v4/paddle-overlay";
+
 // ============================================
 // TYPES
 // ============================================
@@ -105,22 +107,43 @@ const DashboardButton = memo(() => (
 
 DashboardButton.displayName = "DashboardButton";
 
-const ProAccessButton = memo(() => (
-	<button
-		className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-black px-9 py-4 shadow-[0px_0px_0px_3px_rgba(255,255,255,0.1)_inset] transition-all duration-200 hover:scale-[1.02] hover:bg-gray-800 active:scale-[0.98] sm:w-auto"
-		aria-label="Get Pro Access for $25"
-	>
-		<div className="pointer-events-none absolute left-0 top-0 h-full w-full bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(0,0,0,0.05)] mix-blend-overlay" />
-		<span className="relative z-10 font-sans text-base font-semibold leading-5 text-white">
-			Get Pro Access Now ($25)
-		</span>
-		<ArrowRight
-			className="relative z-10 h-5 w-5 text-white transition-transform group-hover:translate-x-1"
-			strokeWidth={2}
-			aria-hidden="true"
-		/>
-	</button>
-));
+const ProAccessButtonComponent = () => {
+	const { status } = useSession();
+	const isAuthenticated = status === "authenticated";
+
+	return (
+		<PaddleCheckout
+			theme="dark"
+			locale="en"
+			credits={500}
+			displayMode="overlay"
+			forceDisabled={isAuthenticated}
+			disabledReason={isAuthenticated ? "has-access" : undefined}
+			productId={process.env.NEXT_PUBLIC_PADDLE_PRO_UNLOCK_ID || ""}
+			environment={
+				process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "sandbox" | "production"
+			}
+		>
+			<button
+				className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-black px-9 py-4 shadow-[0px_0px_0px_3px_rgba(255,255,255,0.1)_inset] transition-all duration-200 hover:scale-[1.02] hover:bg-gray-800 active:scale-[0.98] sm:w-auto"
+				aria-label="Get Pro Access for $19"
+				disabled={isAuthenticated}
+			>
+				<div className="pointer-events-none absolute left-0 top-0 h-full w-full bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(0,0,0,0.05)] mix-blend-overlay" />
+				<span className="relative z-10 font-sans text-base font-semibold leading-5 text-white">
+					Get Pro Access Now ($19)
+				</span>
+				<ArrowRight
+					className="relative z-10 h-5 w-5 text-white transition-transform group-hover:translate-x-1"
+					strokeWidth={2}
+					aria-hidden="true"
+				/>
+			</button>
+		</PaddleCheckout>
+	);
+};
+
+export const ProAccessButton = memo(ProAccessButtonComponent);
 
 ProAccessButton.displayName = "ProAccessButton";
 
