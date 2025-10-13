@@ -81,13 +81,13 @@ export default function Layout({
 									<div className="flex w-full flex-col items-center justify-start px-2 pb-8 pl-0 pr-0 sm:px-4 sm:pb-12 sm:pl-0 sm:pr-0 md:px-8 md:pb-16 lg:px-0">
 										{children}
 										<Link
-											href="https://www.producthunt.com/posts/push-to-post?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-push&#0045;to&#0045;post"
+											href="https://www.producthunt.com/products/push-to-draft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-push&#0045;to&#0045;draft"
 											target="_blank"
 											className="fixed bottom-4 right-4 z-50"
 										>
 											<Image
-												src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=941497&theme=dark&t=1741847658944"
-												alt="Push&#0032;to&#0032;Post - Push&#0032;Code&#0046;&#0032;Post&#0032;Updates&#0046;&#0032;Automate&#0032;Your&#0032;Dev&#0032;Journey&#0046; | Product Hunt"
+												src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1026161&theme=neutral&t=1760358412263"
+												alt="Push&#0032;to&#0032;Draft - Turn&#0032;Commits&#0032;into&#0032;Social&#0032;Post&#0032;Drafts | Product Hunt"
 												width={250}
 												height={54}
 												className="h-[54px] w-[250px]"
