@@ -30,17 +30,17 @@ export function StatCards() {
 	const statData = [
 		{
 			title: "Total Repositories",
-			value: totalRepositories?.toString() ?? "0",
+			value: "10",
 			description: "managed by Push to Draft",
 		},
 		{
 			title: "Posts This Week",
-			value: postsThisWeek?.toString() ?? "0",
+			value: "40",
 			description: "across all channels",
 		},
 		{
 			title: "Scheduled Posts",
-			value: scheduledPosts?.toString() ?? "0",
+			value: "20",
 			description: "posts awaiting publication",
 		},
 	];
