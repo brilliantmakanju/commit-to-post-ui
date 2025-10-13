@@ -17,6 +17,7 @@ import { XIcon } from "@/components/posts/utils/post-icons";
 import { Button } from "@/components/ui/button";
 import { ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import useDashboardMetrics from "@/hooks/core/charts";
 import { channelDistributionConfig } from "@/lib/data";
 
 const PLATFORM_CONFIG = {
@@ -36,22 +37,6 @@ const PLATFORM_CONFIG = {
 		label: "Discord",
 	},
 } as const;
-
-// Mock channel distribution data
-const MOCK_CHANNEL_DATA = [
-	{
-		platform: "Twitter",
-		posts: 42,
-	},
-	{
-		platform: "LinkedIn",
-		posts: 28,
-	},
-	{
-		platform: "Discord",
-		posts: 15,
-	},
-];
 
 const CustomTooltip = ({ active, payload }: any) => {
 	if (!active || !payload?.length) return;
@@ -83,10 +68,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function ChannelDistribution() {
-	// Using mock data instead of API call
-	const channelData = MOCK_CHANNEL_DATA;
-	const isChannelLoading = false;
-
+	const { channelData, isChannelLoading } = useDashboardMetrics();
 	const [viewType, setViewType] = useState<"pie" | "bar">("pie");
 
 	if (isChannelLoading) {

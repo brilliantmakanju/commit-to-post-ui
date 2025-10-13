@@ -19,6 +19,7 @@ import React, {
 // eslint-disable-next-line import/no-unresolved
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import useRetrieveHeatmapData from "@/hooks/core/charts";
 
 // Dark mode optimized colors for Push to Post
 const getContributionColor = (count: number) => {
@@ -39,44 +40,8 @@ const getIntensityLabel = (count: number) => {
 	return "Exceptional activity";
 };
 
-// Generate mock heatmap data
-const generateMockHeatmapData = () => {
-	const data: Record<string, number> = {};
-	const currentYear = new Date().getFullYear();
-
-	// Generate data for the entire year
-	for (let month = 0; month < 12; month++) {
-		const start = startOfMonth(new Date(currentYear, month, 1));
-		const end = endOfMonth(new Date(currentYear, month, 1));
-		const days = eachDayOfInterval({ start, end });
-
-		days.forEach(day => {
-			const dayString = format(day, "yyyy-MM-dd");
-			// Random contribution pattern with some realistic clustering
-			const random = Math.random();
-			if (random < 0.2) {
-				data[dayString] = 0; // 20% empty days
-			} else if (random < 0.4) {
-				data[dayString] = Math.floor(Math.random() * 2) + 1; // Low activity
-			} else if (random < 0.65) {
-				data[dayString] = Math.floor(Math.random() * 3) + 3; // Moderate activity
-			} else if (random < 0.85) {
-				data[dayString] = Math.floor(Math.random() * 5) + 6; // High activity
-			} else if (random < 0.95) {
-				data[dayString] = Math.floor(Math.random() * 5) + 11; // Very high activity
-			} else {
-				data[dayString] = Math.floor(Math.random() * 10) + 16; // Exceptional activity
-			}
-		});
-	}
-
-	return data;
-};
-
 export const ActivityHeatmap = () => {
-	// Using mock data instead of API call
-	const data = useMemo(() => generateMockHeatmapData(), []);
-	const isHeatmapLoading = false;
+	const { heatmapData: data, isHeatmapLoading } = useRetrieveHeatmapData();
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const heatmapContainerRef = useRef<HTMLDivElement>(null);
@@ -118,15 +83,15 @@ export const ActivityHeatmap = () => {
 		const scrollLeft = container.scrollLeft;
 		const maxScroll = container.scrollWidth - container.clientWidth;
 
-		setCanScrollLeft(scrollLeft > 5);
-		setCanScrollRight(scrollLeft < maxScroll - 5);
+		setCanScrollLeft(scrollLeft > 5); // Small threshold to account for rounding
+		setCanScrollRight(scrollLeft < maxScroll - 5); // Small threshold to account for rounding
 	}, []);
 
 	const scrollToMonth = useCallback((direction: "left" | "right") => {
 		if (!scrollContainerRef.current) return;
 
 		const container = scrollContainerRef.current;
-		const scrollAmount = 200;
+		const scrollAmount = 200; // Smooth scroll amount
 
 		container.scrollBy({
 			left: direction === "left" ? -scrollAmount : scrollAmount,
@@ -151,11 +116,13 @@ export const ActivityHeatmap = () => {
 		const dayString = format(day, "yyyy-MM-dd");
 		setHoveredDay(dayString);
 
+		// Add delay before showing
 		hoverTimeout.current = setTimeout(() => {
 			setActiveTooltip({ dayString, count, date: day, position, x, y });
-		}, 100);
+		}, 100); // ~100ms delay feels good
 	};
 
+	// Clear tooltip when leaving the heatmap container
 	const handleDayMouseLeave = () => {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		setHoveredDay(undefined);
@@ -171,6 +138,7 @@ export const ActivityHeatmap = () => {
 			const container = scrollContainerRef.current;
 			const target = currentMonthRef.current;
 
+			// Wait for layout to settle
 			setTimeout(() => {
 				const containerWidth = container.offsetWidth;
 				const targetLeft = target.offsetLeft;
@@ -182,6 +150,7 @@ export const ActivityHeatmap = () => {
 					behavior: "smooth",
 				});
 
+				// Check scroll buttons after positioning
 				setTimeout(checkScrollButtons, 500);
 			}, 100);
 		}
@@ -196,6 +165,7 @@ export const ActivityHeatmap = () => {
 		};
 
 		container.addEventListener("scroll", handleScroll);
+		// Also check on resize
 		window.addEventListener("resize", handleScroll);
 
 		return () => {
@@ -279,7 +249,9 @@ export const ActivityHeatmap = () => {
 					>
 						{/* Horizontal divider line */}
 						<div className="absolute left-0 right-0 top-1/2 z-10 h-px -translate-y-1/2 bg-transparent">
-							<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-800 px-2"></div>
+							<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-800 px-2">
+								{/* <div className="h-[4px] w-[4px] rounded-full bg-zinc-600"></div> */}
+							</div>
 						</div>
 
 						<div

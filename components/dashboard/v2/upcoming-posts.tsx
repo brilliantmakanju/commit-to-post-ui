@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import useRetrieveUpcomingPost from "@/hooks/core/upcoming";
 
 const platformIconMap = {
 	Twitter: <XIcon className="h-3 w-3" />,
@@ -37,98 +38,8 @@ const getPlatformIcon = (platform: string) => {
 	return platformIconMap[platform as Platform] ?? platformIconMap.default;
 };
 
-// Mock data
-const MOCK_POSTS = [
-	{
-		id: "1",
-		content:
-			"Just shipped a new feature for real-time collaboration! 🚀 Check out the demo",
-		repo: "project-alpha",
-		platform: "Twitter",
-		is_grouped: true,
-		is_edited: false,
-		scheduled_publish_time: new Date(
-			Date.now() + 2 * 60 * 60 * 1000,
-		).toISOString(),
-		integrations: {
-			posted_count: 2,
-			planned_count: 4,
-			is_fully_posted: false,
-		},
-	},
-	{
-		id: "2",
-		content:
-			"Excited to announce our Q4 product roadmap. Big things coming! 💼",
-		repo: "marketing-hub",
-		platform: "LinkedIn",
-		is_grouped: false,
-		is_edited: true,
-		scheduled_publish_time: new Date(
-			Date.now() + 5 * 60 * 60 * 1000,
-		).toISOString(),
-		integrations: {
-			posted_count: 1,
-			planned_count: 2,
-			is_fully_posted: false,
-		},
-	},
-	{
-		id: "3",
-		content: "Join us for the community meetup this weekend! 🎮",
-		repo: "community-bot",
-		platform: "Discord",
-		is_grouped: true,
-		is_edited: true,
-		scheduled_publish_time: new Date(
-			Date.now() + 24 * 60 * 60 * 1000,
-		).toISOString(),
-		integrations: {
-			posted_count: 3,
-			planned_count: 3,
-			is_fully_posted: true,
-		},
-	},
-	{
-		id: "4",
-		content:
-			"New blog post: 10 tips for better code reviews and team collaboration",
-		repo: "project-alpha",
-		platform: "Twitter",
-		is_grouped: false,
-		is_edited: false,
-		scheduled_publish_time: new Date(
-			Date.now() + 48 * 60 * 60 * 1000,
-		).toISOString(),
-		integrations: {
-			posted_count: 0,
-			planned_count: 3,
-			is_fully_posted: false,
-		},
-	},
-	{
-		id: "5",
-		content:
-			"Behind the scenes: How we scaled our infrastructure to handle 10x traffic",
-		repo: "tech-blog",
-		platform: "LinkedIn",
-		is_grouped: false,
-		is_edited: false,
-		scheduled_publish_time: new Date(
-			Date.now() + 72 * 60 * 60 * 1000,
-		).toISOString(),
-		integrations: {
-			posted_count: 1,
-			planned_count: 1,
-			is_fully_posted: true,
-		},
-	},
-];
-
 export const UpcomingPosts = () => {
-	// Using mock data instead of API call
-	const data = MOCK_POSTS;
-	const isUpcomingPostsLoading = false;
+	const { posts: data, isUpcomingPostsLoading } = useRetrieveUpcomingPost();
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [showFilters, setShowFilters] = useState(false);
