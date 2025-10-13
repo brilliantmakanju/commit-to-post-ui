@@ -44,14 +44,14 @@ export default auth(async request => {
 	// }
 
 	// --- Block non-new users from onboarding ---
-	if (
-		isLoggedIn &&
-		hasValidSession &&
-		!isNewUser &&
-		nextUrl.pathname.startsWith("/start")
-	) {
-		return Response.redirect(new URL("/dashboard", request.url));
-	}
+	// if (
+	// 	isLoggedIn &&
+	// 	hasValidSession &&
+	// 	!isNewUser &&
+	// 	nextUrl.pathname.startsWith("/start")
+	// ) {
+	// 	return Response.redirect(new URL("/dashboard", request.url));
+	// }
 
 	// --- Public route redirect to dashboard ---
 	if (
