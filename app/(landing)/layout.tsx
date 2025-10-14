@@ -83,7 +83,7 @@ export default function Layout({
 										<Link
 											href="https://www.producthunt.com/products/push-to-draft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-push&#0045;to&#0045;draft"
 											target="_blank"
-											className="fixed bottom-4 right-4 z-50"
+											className="fixed bottom-7 left-4 z-50"
 										>
 											<Image
 												src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1026161&theme=neutral&t=1760358412263"

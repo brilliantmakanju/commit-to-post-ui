@@ -64,7 +64,7 @@ export default function FooterSection() {
 	const socialLinks = useMemo<SocialLink[]>(
 		() => [
 			{
-				href: "https://twitter.com/yourusername",
+				href: "https://x.com/Jolex_Dev",
 				label: "Twitter",
 				icon: (
 					<svg
@@ -80,7 +80,7 @@ export default function FooterSection() {
 				),
 			},
 			{
-				href: "https://linkedin.com/in/yourusername",
+				href: "https://www.linkedin.com/in/brilliantmakanju/",
 				label: "LinkedIn",
 				icon: (
 					<svg
@@ -96,7 +96,7 @@ export default function FooterSection() {
 				),
 			},
 			{
-				href: "https://github.com/yourusername",
+				href: "https://github.com/brilliantmakanju",
 				label: "GitHub",
 				icon: (
 					<svg
@@ -112,7 +112,7 @@ export default function FooterSection() {
 				),
 			},
 			{
-				href: "https://youtube.com/@yourusername",
+				href: "https://www.youtube.com/@JolexDev",
 				label: "YouTube",
 				icon: (
 					<svg
@@ -134,9 +134,9 @@ export default function FooterSection() {
 	// Memoize legal links
 	const legalLinks = useMemo<LegalLink[]>(
 		() => [
+			{ href: "/refund", label: "Refund Policy" },
 			{ href: "/terms", label: "Terms of service" },
 			{ href: "/privacy", label: "Privacy Policy" },
-			{ href: "/refund", label: "Refund Policy" },
 		],
 		[],
 	);
@@ -189,7 +189,7 @@ export default function FooterSection() {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://twitter.com/"
+							href="https://x.com/Jolex_Dev"
 							className="font-medium text-black transition-colors hover:underline"
 						>
 							Brilliant
