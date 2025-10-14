@@ -68,7 +68,7 @@ export default function VideoDemo() {
 	const videoStats = useMemo<VideoStat[]>(
 		() => [
 			{
-				value: "<60s",
+				value: "<30s",
 				description: "Average time to generate a draft",
 			},
 			{
@@ -92,7 +92,7 @@ export default function VideoDemo() {
 	const iframeSource = useMemo(
 		() =>
 			isPlaying
-				? "https://www.youtube.com/embed/WXsnbXjd3dU?autoplay=1&rel=0"
+				? "https://www.youtube.com/embed/Ll0LMDfQB1g?si=xTZH8pTPcfMQhHSt?autoplay=1&rel=0"
 				: "",
 		[isPlaying],
 	);
