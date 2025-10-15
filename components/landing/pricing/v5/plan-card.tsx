@@ -124,7 +124,7 @@ export function PlanCard({
 						<Button
 							// disabled={(isAuthenticated && isActive) || plan.id === "basic"}
 							disabled={plan.id !== "basic"}
-							className={buttonClass}
+							className={`${buttonClass} h-auto break-words`}
 						>
 							{isAuthenticated ? buttonText : plan.buttonText}
 						</Button>
