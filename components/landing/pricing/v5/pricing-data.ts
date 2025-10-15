@@ -132,10 +132,8 @@ export const PRICING_DATA: {
 				},
 			],
 			// buttonText: "Unlock Pro",
-			buttonText:
-				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
-
-			buttonVariant: "default",
+			buttonText: "Paid features temporarily unavailable",
+			buttonVariant: "secondary",
 			borderStyle: "border-gray-300",
 			theme: "dark",
 			productId: process.env.NEXT_PUBLIC_PADDLE_PRO_UNLOCK_ID || "",
@@ -157,10 +155,9 @@ export const PRICING_DATA: {
 				},
 			],
 			// buttonText: "Unlock Studio",
-			buttonText:
-				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
+			buttonText: "Paid features temporarily unavailable",
+			buttonVariant: "default",
 
-			buttonVariant: "secondary",
 			borderStyle: "border-gray-800",
 			theme: "light",
 			productId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_UNLOCK_ID || "",
@@ -202,10 +199,8 @@ export const PRICING_DATA: {
 				{ text: "Multiple tone styles", tooltip: "Various tones" },
 			],
 			// buttonText: "Subscribe to Pro",
-			buttonText:
-				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
-
-			buttonVariant: "default",
+			buttonText: "Paid features temporarily unavailable",
+			buttonVariant: "secondary",
 			borderStyle: "border-gray-300",
 			theme: "dark",
 			productId: process.env.NEXT_PUBLIC_PADDLE_PRO_SUBSCRIPTION_ID || "",
@@ -227,12 +222,10 @@ export const PRICING_DATA: {
 				},
 			],
 			// buttonText: "Subscribe to Studio",
-			buttonText:
-				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
-
-			buttonVariant: "secondary",
+			buttonText: "Paid features temporarily unavailable",
 			borderStyle: "border-gray-800",
 			theme: "light",
+			buttonVariant: "default",
 			productId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_SUBSCRIPTION_ID || "",
 		},
 	],

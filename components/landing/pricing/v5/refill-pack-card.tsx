@@ -63,9 +63,7 @@ export function RefillPackCard({ pack }: RefillPackCardProps): JSX.Element {
 							disabled
 							className="w-full bg-black text-white shadow-md hover:bg-gray-800"
 						>
-							Paid features are temporarily unavailable while our payment
-							processor completes verification. You can still use your free
-							trial.
+							Paid features temporarily unavailable
 						</Button>
 					</PaddleCheckout>
 				) : (
