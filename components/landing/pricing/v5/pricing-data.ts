@@ -131,7 +131,10 @@ export const PRICING_DATA: {
 					tooltip: "Choose various writing tones",
 				},
 			],
-			buttonText: "Unlock Pro",
+			// buttonText: "Unlock Pro",
+			buttonText:
+				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
+
 			buttonVariant: "default",
 			borderStyle: "border-gray-300",
 			theme: "dark",
@@ -153,7 +156,10 @@ export const PRICING_DATA: {
 					tooltip: "Collaborate with team",
 				},
 			],
-			buttonText: "Unlock Studio",
+			// buttonText: "Unlock Studio",
+			buttonText:
+				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
+
 			buttonVariant: "secondary",
 			borderStyle: "border-gray-800",
 			theme: "light",
@@ -195,7 +201,10 @@ export const PRICING_DATA: {
 				{ text: "Advanced scheduling", tooltip: "Schedule posts" },
 				{ text: "Multiple tone styles", tooltip: "Various tones" },
 			],
-			buttonText: "Subscribe to Pro",
+			// buttonText: "Subscribe to Pro",
+			buttonText:
+				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
+
 			buttonVariant: "default",
 			borderStyle: "border-gray-300",
 			theme: "dark",
@@ -217,7 +226,10 @@ export const PRICING_DATA: {
 					tooltip: "Team collaboration",
 				},
 			],
-			buttonText: "Subscribe to Studio",
+			// buttonText: "Subscribe to Studio",
+			buttonText:
+				"Paid features are temporarily unavailable while our payment processor completes verification. You can still use your free trial.",
+
 			buttonVariant: "secondary",
 			borderStyle: "border-gray-800",
 			theme: "light",
