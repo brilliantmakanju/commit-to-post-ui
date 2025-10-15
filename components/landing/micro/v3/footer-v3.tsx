@@ -136,7 +136,7 @@ export default function FooterSection() {
 		() => [
 			{ href: "/refund", label: "Refund Policy" },
 			{ href: "/terms", label: "Terms of service" },
-			{ href: "/privacy", label: "Privacy Policy" },
+			{ href: "/privacy", label: "Privacy Notice" },
 		],
 		[],
 	);
