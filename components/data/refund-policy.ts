@@ -38,7 +38,7 @@ export const refundPolicyData = {
 		{
 			title: "3. Refund Eligibility",
 			content: [
-				"We offer a 7-day refund window for Unlock Packs (Pro and Studio) under these conditions:",
+				"We offer a 14-day refund window for Unlock Packs (Pro and Studio) under these conditions:",
 				"• You are a new customer making your first Unlock Pack purchase.",
 				"• You contact us within 7 days of your purchase date.",
 				"• Your account does not show excessive or abusive usage of credits.",
