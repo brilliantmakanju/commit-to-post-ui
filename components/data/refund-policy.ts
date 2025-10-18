@@ -40,7 +40,7 @@ export const refundPolicyData = {
 			content: [
 				"We offer a 14-day refund window for Unlock Packs (Pro and Studio) under these conditions:",
 				"• You are a new customer making your first Unlock Pack purchase.",
-				"• You contact us within 7 days of your purchase date.",
+				"• You contact us within 14 days of your purchase date.",
 				"• Your account does not show excessive or abusive usage of credits.",
 				"Refunds are not available for Refill Pack purchases, as these are considered consumable add-ons to an existing unlocked account.",
 			],
@@ -50,7 +50,7 @@ export const refundPolicyData = {
 			content: [
 				"Refunds will not be granted in the following situations:",
 				"• Refill Pack purchases (Starter, Growth, and Scale Refills are final sale).",
-				"• Unlock Pack purchases made more than 7 days ago.",
+				"• Unlock Pack purchases made more than 14 days ago.",
 				"• Accounts showing significant credit usage (more than 50% of included credits consumed).",
 				"• Evidence of policy violations, abuse of the refund process, or fraudulent activity.",
 				"• Requests based on preference changes after actively using the platform and generating content.",
@@ -71,7 +71,7 @@ export const refundPolicyData = {
 			content: [
 				"If your refund request is approved:",
 				"• The refund will be issued to your original payment method.",
-				"• Processing typically takes 7-10 business days, depending on your bank or payment provider.",
+				"• Processing typically takes 7-14 business days, depending on your bank or payment provider.",
 				"• Your account will be downgraded to the Starter (Free) tier, and any remaining credits from the refunded pack will be removed.",
 			],
 		},

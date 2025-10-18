@@ -19,14 +19,14 @@ export default function RefundPolicyPage() {
 				</p>
 			</div>
 
-			{/* 7-Day Refund Window Notice */}
+			{/* 14-Day Refund Window Notice */}
 			<div className="mb-8 rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-900/50 dark:bg-green-950/20">
 				<h2 className="mb-3 text-lg font-semibold text-green-900 dark:text-green-200">
-					7-Day Refund Window
+					14-Day Refund Window
 				</h2>
 				<p className="text-sm text-green-800 dark:text-green-300">
 					<strong>Unlock Pack buyers:</strong> You can request a full refund if
-					you contact us within 7 days of your purchase, provided your account
+					you contact us within 14 days of your purchase, provided your account
 					doesn&rsquo;t show excessive credit usage (less than 50% of included
 					credits used). Refill Packs are not eligible for refunds.
 				</p>
@@ -87,7 +87,7 @@ export default function RefundPolicyPage() {
 						<p className="text-xs text-amber-900 dark:text-amber-200">
 							<strong>Important:</strong> Refill Packs (credit top-ups) are
 							final sale and not eligible for refunds. Only Unlock Packs (Pro
-							and Studio) qualify for the 7-day refund window.
+							and Studio) qualify for the 14-day refund window.
 						</p>
 					</div>
 				</div>
