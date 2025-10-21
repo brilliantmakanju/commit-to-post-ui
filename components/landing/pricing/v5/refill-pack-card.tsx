@@ -59,11 +59,8 @@ export function RefillPackCard({ pack }: RefillPackCardProps): JSX.Element {
 								| "production"
 						}
 					>
-						<Button
-							disabled
-							className="w-full bg-black text-white shadow-md hover:bg-gray-800"
-						>
-							Paid features temporarily unavailable
+						<Button className="w-full bg-black text-white shadow-md hover:bg-gray-800">
+							Buy Credits
 						</Button>
 					</PaddleCheckout>
 				) : (

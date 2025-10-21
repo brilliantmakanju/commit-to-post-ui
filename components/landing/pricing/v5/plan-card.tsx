@@ -129,7 +129,7 @@ export function PlanCard({
 						</Button>
 					</PaddleCheckout>
 				) : (
-					<Button disabled={true} className={buttonClass}>
+					<Button className={buttonClass}>
 						{isAuthenticated ? buttonText : plan.buttonText}
 					</Button>
 				)}
