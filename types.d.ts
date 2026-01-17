@@ -173,6 +173,7 @@ export interface PostItem {
 		integration_details: any[];
 	};
 	tone?: string;
+	template?: string;
 	// Platform derived from the API structure
 	platform: Platform;
 }

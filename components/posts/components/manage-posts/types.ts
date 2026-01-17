@@ -23,6 +23,7 @@ export interface PostVersion {
 	tone?: string;
 	image?: string;
 	content: string;
+	template?: string;
 	createdAt: string;
 	isOriginal: boolean;
 	isGenerated: boolean;

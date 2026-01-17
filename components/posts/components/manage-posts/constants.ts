@@ -5,7 +5,7 @@ type PlatformLimit =
 	| { readonly default: number; readonly verified: number };
 
 export const PLATFORM_LIMITS: Record<string, PlatformLimit> = {
-	x: { default: 280, verified: 25000 },
+	x: { default: 260, verified: 3000 },
 	linkedin: 3000,
 	discord: 2000,
 } as const;

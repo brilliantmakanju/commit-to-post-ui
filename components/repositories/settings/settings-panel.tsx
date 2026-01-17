@@ -9,8 +9,6 @@ import { useEffect, useState } from "react";
 import { FaDiscord, FaLinkedinIn, FaSlack, FaTwitter } from "react-icons/fa";
 import { toast } from "sonner";
 
-// import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
-// import LimitTooltip from "@/components/feature-flag/limit-tooltip";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -18,8 +16,6 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
-// import { useLimitUI } from "@/hooks/use-limit-ui";
-// import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
 import { deleteRepo } from "@/server-actions/core/repo/repo-status";
 import { updateRepoSettings } from "@/server-actions/user-actions/repo/edit-repo";
 
@@ -182,6 +178,7 @@ export function SettingsPanel({ repo_id }: SettingsPanelProps) {
 					loading
 					settings={{
 						ai_tone: "",
+						template: "",
 						ai_enabled: false,
 						tracked_branch: "",
 					}}

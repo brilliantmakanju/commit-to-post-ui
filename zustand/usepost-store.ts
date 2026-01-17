@@ -51,6 +51,7 @@ interface CreatePostModalState {
 
 	// Generator state
 	selectedTones: Set<string>;
+	selectedTemplates: Set<string>;
 
 	// Selection state
 	selectedVersions: Set<string>;
@@ -81,6 +82,7 @@ interface CreatePostModalActions {
 	addNewVersion: (
 		content: string,
 		tone?: string,
+		template?: string,
 		metadata?: {
 			id?: string;
 			platform?: string;
@@ -91,6 +93,7 @@ interface CreatePostModalActions {
 			variation_group_id?: string | null;
 			apiGeneratedId?: string;
 			createdAt?: string;
+			template?: string;
 			// Add other metadata fields as needed
 			[key: string]: any;
 		},
@@ -122,6 +125,8 @@ interface CreatePostModalActions {
 	// Generator actions
 	toggleTone: (toneId: string) => void;
 	setSelectedTones: (tones: Set<string>) => void;
+	toggleTemplate: (templateId: string) => void;
+	setSelectedTemplates: (templates: Set<string>) => void;
 
 	// Selection actions
 	selectAllVersions: () => void;
@@ -188,6 +193,7 @@ const initialState: CreatePostModalState = {
 
 	// Generator state
 	selectedTones: new Set(),
+	selectedTemplates: new Set(),
 
 	// Selection state
 	selectedVersions: new Set(),
@@ -299,16 +305,8 @@ const useCreatePostModalStore = create<
 			},
 
 			// FIXED: Create new versions with proper status instead of copying from base post
-			addNewVersion: (content, tone, metadata) => {
+			addNewVersion: (content, tone, template, metadata) => {
 				const state = get();
-				console.log("🎨 Adding new version:", {
-					content: content.slice(0, 50) + "...",
-					tone,
-					metadata,
-					currentPostsCount: state.posts.length,
-					isUIDisabled: state.isUIDisabled(),
-				});
-
 				if (state.isUIDisabled()) {
 					console.log("⏸️ UI disabled, cannot add new version");
 					return;
@@ -318,7 +316,6 @@ const useCreatePostModalStore = create<
 				const basePost = state.posts.find(p => p.is_original) || state.posts[0];
 
 				if (!basePost) {
-					console.error("❌ No base post found");
 					return;
 				}
 
@@ -327,8 +324,6 @@ const useCreatePostModalStore = create<
 					metadata?.id ||
 					metadata?.apiGeneratedId ||
 					`v${versionNumber}_${Date.now()}`;
-
-				console.log("🆔 Using version ID:", newVersionId);
 
 				// ENHANCED: Create new version with metadata support
 				const newVersion: PostItem = {
@@ -369,20 +364,22 @@ const useCreatePostModalStore = create<
 
 					// Store the tone if provided in metadata (overrides parameter)
 					tone: metadata?.tone || tone,
+					template: metadata?.template || template,
 
 					// Include any additional metadata fields
 					...Object.keys(metadata || {}).reduce((accumulator, key) => {
 						// Skip fields we've already handled
 						const handledFields = [
 							"id",
-							"status",
-							"created_at",
-							"createdAt",
-							"scheduled_publish_time",
-							"platform",
-							"variation_group_id",
 							"tone",
+							"status",
+							"platform",
+							"template",
+							"createdAt",
+							"created_at",
 							"apiGeneratedId",
+							"variation_group_id",
+							"scheduled_publish_time",
 						];
 
 						if (!handledFields.includes(key) && metadata![key] !== undefined) {
@@ -398,12 +395,6 @@ const useCreatePostModalStore = create<
 				set({
 					posts: updatedPosts,
 					activeVersionId: newVersionId,
-				});
-
-				console.log("📊 Posts updated:", {
-					totalPosts: updatedPosts.length,
-					activeVersionId: newVersionId,
-					newVersionStatus: newVersion.status,
 				});
 			},
 
@@ -573,6 +564,19 @@ const useCreatePostModalStore = create<
 				set({ selectedTones: newTones });
 			},
 
+			setSelectedTemplates: templates => set({ selectedTemplates: templates }),
+
+			toggleTemplate: templateId => {
+				const state = get();
+				const newTemplates = new Set(state.selectedTemplates);
+				if (newTemplates.has(templateId)) {
+					newTemplates.delete(templateId);
+				} else {
+					newTemplates.add(templateId);
+				}
+				set({ selectedTemplates: newTemplates });
+			},
+
 			// Selection actions
 			setSelectedVersions: versions => set({ selectedVersions: versions }),
 
@@ -724,6 +728,7 @@ const useCreatePostModalStore = create<
 				set({
 					showGeneratorSidebar: false,
 					selectedTones: new Set(),
+					selectedTemplates: new Set(),
 					isGenerating: false,
 				});
 			},

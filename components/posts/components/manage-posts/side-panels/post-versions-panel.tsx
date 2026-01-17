@@ -1,7 +1,8 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, Circle, Clock, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useMemo } from "react";
 
@@ -148,34 +149,34 @@ export const VersionSidebar: React.FC<VersionSidebarProps> = ({
 		deleteVersions(selectedDeletableVersions);
 	}, [deleteVersions, selectedDeletableVersions, disabled]);
 
-	// Memoized truncated content
-	const getTruncatedContent = useCallback(
-		(content: string, maxLength: number = 120) => {
-			return content.length > maxLength
-				? `${content.slice(0, Math.max(0, maxLength))}...`
-				: content;
-		},
-		[],
-	);
-
 	return (
 		<SlideInPanel
 			isOpen={isOpen}
 			onClose={onClose}
-			widthClassName="w-full scrollbar-hide sm:w-[440px]"
-			title="Post Versions"
+			widthClassName="w-full scrollbar-hide sm:w-[480px]"
+			title="Version History"
 		>
 			{/* Action buttons - only show if there are deletable versions */}
 			{deletableVersions.length > 0 && (
-				<div className="scrollbar-hide mt-2 flex items-center justify-between gap-2 px-3">
+				<div className="sticky top-0 z-20 mb-4 flex items-center justify-between border-b border-white/5 bg-black/40 px-4 py-3 backdrop-blur-md">
 					<Button
 						size="sm"
 						variant="ghost"
 						disabled={disabled}
 						onClick={handleSelectAllVersions}
-						className="text-xs text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+						className="h-8 text-xs font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
 					>
-						{isAllSelected ? "Deselect All" : "Select All"}
+						{isAllSelected ? (
+							<>
+								<CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+								Deselect All
+							</>
+						) : (
+							<>
+								<Circle className="mr-1.5 h-3.5 w-3.5" />
+								Select All
+							</>
+						)}
 					</Button>
 
 					{hasSelectedVersions && (
@@ -184,9 +185,9 @@ export const VersionSidebar: React.FC<VersionSidebarProps> = ({
 							variant="ghost"
 							disabled={disabled}
 							onClick={handleDeleteSelected}
-							className="border border-red-500/20 text-xs text-red-400 transition-all hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+							className="h-8 border border-white/10 bg-white/5 text-xs font-medium text-zinc-300 hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-400"
 						>
-							<Trash2 className="mr-1.5 h-3 w-3" />
+							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
 							Delete ({selectedCount})
 						</Button>
 					)}
@@ -194,151 +195,163 @@ export const VersionSidebar: React.FC<VersionSidebarProps> = ({
 			)}
 
 			{/* Version list */}
-			<div className="scrollbar-hide h-full space-y-3 overflow-hidden overflow-y-auto p-3 pb-10">
-				{postVersions.map(version => {
-					const isActive = activeVersionId === version.id;
-					const isSelected = selectedVersions.has(version.id);
-					const canBeDeleted = !version.isOriginal;
+			<div className="scrollbar-hide h-full space-y-4 overflow-hidden overflow-y-auto px-4 pb-20 pt-2">
+				<AnimatePresence mode="popLayout">
+					{postVersions.map((version, index) => {
+						const isActive = activeVersionId === version.id;
+						const isSelected = selectedVersions.has(version.id);
+						const canBeDeleted = !version.isOriginal;
 
-					return (
-						<div
-							key={version.id}
-							onClick={event_ => handleSelectVersion(version.id, event_)}
-							className={`scrollbar-hide group relative rounded-lg border p-2 transition-all duration-200 ${
-								disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-							} ${
-								isActive
-									? "border-zinc-500/60 bg-zinc-800/40 shadow-sm"
-									: "border-zinc-700/40 bg-zinc-900/30 hover:border-zinc-600/50 hover:bg-zinc-800/20"
-							}`}
-						>
-							{/* Checkbox - only for non-original versions that can be deleted */}
-							{canBeDeleted && (
-								<div
-									data-checkbox-container
-									className={`absolute right-3 top-3 z-10 -m-1 rounded p-1 transition-colors ${
-										disabled
-											? "cursor-not-allowed opacity-50"
-											: "hover:bg-zinc-700/30"
-									}`}
-									onClick={event_ => handleCheckboxChange(version.id, event_)}
-								>
-									<Checkbox
-										disabled={disabled}
-										checked={isSelected}
-										onCheckedChange={() => {}} // Handled by container click
-										className="h-4 w-4 border-zinc-500 data-[state=checked]:border-zinc-200 data-[state=checked]:bg-zinc-200 data-[state=checked]:text-zinc-900"
-									/>
-								</div>
-							)}
-
-							{/* Version header */}
-							<div className="mb-2 flex items-start justify-between gap-2">
-								<div className="flex flex-wrap items-center gap-2">
-									<span
-										className={`text-sm font-medium ${isActive ? "text-zinc-100" : "text-zinc-200"}`}
-									>
-										{version.displayName ||
-											(version.isOriginal ? "Original" : version.id)}
-									</span>
-
-									{/* Tone badge */}
-									{version.tone && (
-										<Badge
-											variant="outline"
-											className="border-blue-400/30 bg-blue-400/10 px-1.5 py-0.5 text-[10px] text-blue-300"
-										>
-											{version.tone}
-										</Badge>
-									)}
-
-									{/* Active badge */}
-									{isActive && (
-										<Badge
-											variant="outline"
-											className="border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[10px] text-emerald-300"
-										>
-											Active
-										</Badge>
-									)}
-
-									{/* Original badge */}
-									{version.isOriginal && (
-										<Badge
-											variant="outline"
-											className="border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300"
-										>
-											Original
-										</Badge>
-									)}
-								</div>
-							</div>
-
-							{/* Content preview */}
-							<div className="mb-3 text-sm leading-relaxed text-zinc-400">
-								{getTruncatedContent(version.content)}
-							</div>
-
-							{/* Image preview */}
-							{version.image && (
-								<div className="mt-3">
-									<Image
-										width={400}
-										height={200}
-										src={version.image}
-										alt="Version preview"
-										className="h-20 w-full rounded-md border border-zinc-700/40 object-cover"
-									/>
-								</div>
-							)}
-
-							{/* Selection indicator for active version */}
-							{isActive && (
-								<div className="absolute bottom-2 right-2">
-									<div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
-										<div className="h-2 w-2 rounded-full bg-emerald-400" />
-									</div>
-								</div>
-							)}
-
-							{/* Subtle hover indicator */}
-							<div
-								className={`pointer-events-none absolute inset-0 rounded-lg transition-all duration-200 ${
+						return (
+							<motion.div
+								key={version.id}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, scale: 0.95 }}
+								transition={{ duration: 0.2, delay: index * 0.05 }}
+								onClick={event_ => handleSelectVersion(version.id, event_)}
+								className={cn(
+									"group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300",
+									disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
 									isActive
-										? "ring-1 ring-zinc-500/20"
-										: !disabled &&
-											"group-hover:ring-1 group-hover:ring-zinc-600/30"
-								}`}
-							/>
-							{version.status && version.status !== "drafted" && (
-								<Badge
-									variant="outline"
-									className={cn(
-										"mt-3 px-1.5 py-0.5 text-[10px]",
-										version.status === "published" &&
-											"border-green-400/30 bg-green-400/10 text-green-300",
-										version.status === "scheduled" &&
-											"border-blue-400/30 bg-blue-400/10 text-blue-300",
-									)}
-								>
-									{version.status === "published"
-										? "Published"
-										: version.status === "scheduled"
-											? "Scheduled"
-											: version.status}
-								</Badge>
-							)}
-						</div>
-					);
-				})}
-			</div>
+										? "border-white/20 bg-white/5 shadow-2xl ring-1 ring-white/10"
+										: "border-white/5 bg-black/20 hover:border-white/10 hover:bg-white/[0.02]",
+								)}
+							>
+								{/* Active Glow Effect */}
+								{isActive && (
+									<div className="absolute -left-full -top-full h-[200%] w-[200%] rotate-45 bg-gradient-to-b from-white/5 via-transparent to-transparent opacity-50 blur-3xl" />
+								)}
 
-			{/* Empty state */}
-			{postVersions.length === 0 && (
-				<div className="py-8 text-center">
-					<p className="text-sm text-zinc-500">No versions available</p>
-				</div>
-			)}
+								{/* Checkbox - only for non-original versions */}
+								{canBeDeleted && (
+									<div
+										data-checkbox-container
+										className={cn(
+											"absolute right-3 top-3 z-10 rounded-full p-1 transition-all duration-200",
+											disabled ? "cursor-not-allowed" : "hover:bg-white/10",
+											isSelected
+												? "opacity-100"
+												: "opacity-0 group-hover:opacity-100",
+										)}
+										onClick={event_ => handleCheckboxChange(version.id, event_)}
+									>
+										<Checkbox
+											disabled={disabled}
+											checked={isSelected}
+											onCheckedChange={() => {}}
+											className="h-4 w-4 rounded-full border-zinc-600 data-[state=checked]:border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
+										/>
+									</div>
+								)}
+
+								{/* Header Info */}
+								<div className="mb-3 flex items-center justify-between gap-3">
+									<div className="flex items-center gap-2">
+										{version.isOriginal ? (
+											<Badge
+												variant="outline"
+												className="border-white/20 bg-white/10 px-2 py-0.5 text-[10px] font-medium text-zinc-200"
+											>
+												Original
+											</Badge>
+										) : (
+											<Badge
+												variant="outline"
+												className="border-zinc-800 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-medium text-zinc-400"
+											>
+												v{index}
+											</Badge>
+										)}
+
+										{/* Tone/Template Badges - Monochrome */}
+										{version.tone && (
+											<span className="flex items-center gap-1 text-[10px] text-zinc-500">
+												<span className="h-0.5 w-0.5 rounded-full bg-zinc-500" />
+												{version.tone}
+											</span>
+										)}
+										{version.template && (
+											<span className="flex items-center gap-1 text-[10px] text-zinc-500">
+												<span className="h-0.5 w-0.5 rounded-full bg-zinc-500" />
+												{version.template}
+											</span>
+										)}
+									</div>
+
+									{/* Status Indicator */}
+									{version.status && version.status !== "drafted" && (
+										<span className="flex items-center gap-1.5 text-[10px] font-medium text-zinc-400">
+											{version.status === "published" && (
+												<div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+											)}
+											{version.status === "scheduled" && (
+												<Clock className="h-3 w-3" />
+											)}
+											<span className="capitalize">{version.status}</span>
+										</span>
+									)}
+								</div>
+
+								{/* Content */}
+								<div className="relative">
+									<p
+										className={cn(
+											"line-clamp-3 text-sm leading-relaxed transition-colors",
+											isActive
+												? "text-zinc-200"
+												: "text-zinc-400 group-hover:text-zinc-300",
+										)}
+									>
+										{version.content}
+									</p>
+									{/* Fade out effect for text */}
+									<div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/0 to-transparent" />
+								</div>
+
+								{/* Image Preview */}
+								{version.image && (
+									<div className="mt-4 overflow-hidden rounded-lg border border-white/5 bg-black/40">
+										<div className="relative aspect-video w-full">
+											<Image
+												fill
+												src={version.image}
+												alt="Version preview"
+												className="object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+											/>
+										</div>
+									</div>
+								)}
+
+								{/* Active Indicator */}
+								{isActive && (
+									<motion.div
+										layoutId="active-indicator"
+										className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent"
+									/>
+								)}
+							</motion.div>
+						);
+					})}
+				</AnimatePresence>
+
+				{/* Empty state */}
+				{postVersions.length === 0 && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						className="flex flex-col items-center justify-center py-12 text-center"
+					>
+						<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900/50 ring-1 ring-white/5">
+							<Sparkles className="h-5 w-5 text-zinc-600" />
+						</div>
+						<p className="text-sm font-medium text-zinc-400">No versions yet</p>
+						<p className="mt-1 text-xs text-zinc-600">
+							Generate some variations to get started
+						</p>
+					</motion.div>
+				)}
+			</div>
 		</SlideInPanel>
 	);
 };

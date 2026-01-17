@@ -12,6 +12,7 @@ export const createPostVariationsSchema = z.object({
 		.array(z.string())
 		.min(1, "At least one tone is required")
 		.max(3, "Maximum 3 tones allowed"),
+	templates: z.array(z.string()),
 });
 
 export type CreatePostVariationsInput = z.infer<
@@ -24,6 +25,7 @@ export interface PostVariation {
 	content: string;
 	platform: string;
 	tone: string;
+	template?: string;
 	status: string;
 	created_at: string;
 	scheduled_publish_time: string | null;

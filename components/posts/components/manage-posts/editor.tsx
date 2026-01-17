@@ -1,13 +1,16 @@
 /* eslint-disable import/no-unresolved */
 "use client";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	AlertTriangle,
 	Calendar,
 	CheckCircle2,
 	ChevronDown,
 	Eye,
+	Image as ImageIcon,
 	Loader2,
 	Plus,
+	Sparkles,
 	X,
 } from "lucide-react";
 import Image from "next/image";
@@ -20,7 +23,7 @@ import React, {
 } from "react";
 import { BiSolidMagicWand } from "react-icons/bi";
 import { FaPaperPlane, FaSave } from "react-icons/fa";
-import { toast } from "sonner"; // Import toast
+import { toast } from "sonner";
 
 import FeatureLimitWrapper from "@/components/feature-flag/feature-limit-wrapper";
 import LimitTooltip from "@/components/feature-flag/limit-tooltip";
@@ -76,7 +79,7 @@ interface EditorProps {
 	) => void;
 	onImageUploadError?: (error: string, file: File) => void;
 	hasPublishedInGroup?: boolean;
-	userSubscriptionTier?: "basic" | "pro" | "studio"; // Add subscription tier
+	userSubscriptionTier?: "basic" | "pro" | "studio";
 }
 
 interface HistoryEntry {
@@ -87,7 +90,7 @@ interface HistoryEntry {
 
 const MAX_IMAGES = 2;
 const MAX_HISTORY_SIZE = 50;
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // Increased to 25MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const DEBOUNCE_TIME = 300;
 
 // Helper functions
@@ -140,7 +143,6 @@ const formatFileSize = (bytes: number): string => {
 	);
 };
 
-// Validate content before publishing/scheduling
 const validatePostContent = (
 	content: string,
 	images: ImageState[],
@@ -151,7 +153,6 @@ const validatePostContent = (
 	const hasText = trimmedContent.length > 0;
 	const hasImages = images.length > 0;
 
-	// Must have either text or images
 	if (!hasText && !hasImages) {
 		return {
 			isValid: false,
@@ -159,7 +160,6 @@ const validatePostContent = (
 		};
 	}
 
-	// Check for upload in progress
 	if (isUploading) {
 		return {
 			isValid: false,
@@ -167,7 +167,6 @@ const validatePostContent = (
 		};
 	}
 
-	// Check for upload errors
 	if (hasUploadErrors) {
 		return {
 			isValid: false,
@@ -195,14 +194,13 @@ export const Editor: React.FC<EditorProps> = ({
 	getCharacterCounts,
 	onImageUploadError,
 	updateVersionContent,
-	userSubscriptionTier = "basic", // Default to free tier
+	userSubscriptionTier = "basic",
 }) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const historyRef = useRef<Map<string, HistoryEntry[]>>(new Map());
 	const historyIndexRef = useRef<Map<string, number>>(new Map());
 	const contentChangeTimeoutRef = useRef<NodeJS.Timeout>();
 
-	// State
 	const [imageStates, setImageStates] = useState<ImageState[]>([]);
 	const [removingImageIds, setRemovingImageIds] = useState<Set<string>>(
 		new Set(),
@@ -210,12 +208,10 @@ export const Editor: React.FC<EditorProps> = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | undefined>();
 
-	// Check if user can upload images based on subscription
 	const canUploadImages = useMemo(() => {
 		return userSubscriptionTier !== "basic";
 	}, [userSubscriptionTier]);
 
-	// Get current platform from character counts
 	const currentPlatform = useMemo(() => {
 		const characterCounts = getCharacterCounts();
 		if (characterCounts.length > 0) {
@@ -224,17 +220,14 @@ export const Editor: React.FC<EditorProps> = ({
 		return "";
 	}, [getCharacterCounts]);
 
-	// Check if current platform is Twitter/X
 	const isTwitterPlatform = useMemo(() => {
 		return currentPlatform === "twitter" || currentPlatform === "x";
 	}, [currentPlatform]);
 
-	// Determine if image upload should be blocked
 	const shouldBlockImageUpload = useMemo(() => {
 		return isTwitterPlatform;
 	}, [isTwitterPlatform]);
 
-	// Current state with better memoization
 	const currentContent = activeVersion?.content || "";
 	const currentImages = useMemo(() => {
 		if ((activeVersion?.images?.length ?? 0) > 0) {
@@ -250,7 +243,6 @@ export const Editor: React.FC<EditorProps> = ({
 		return imageStates;
 	}, [activeVersion, imageStates]);
 
-	// Helper states
 	const isUploading = useMemo(
 		() => imageStates.some(state => state.isUploading),
 		[imageStates],
@@ -265,7 +257,6 @@ export const Editor: React.FC<EditorProps> = ({
 		!shouldBlockImageUpload;
 	const isProcessing = isUploading || removingImageIds.size > 0;
 
-	// History management
 	const addToHistory = useCallback(
 		(content: string, imageUrls: string[]) => {
 			if (!activeVersion?.id) return;
@@ -301,7 +292,6 @@ export const Editor: React.FC<EditorProps> = ({
 		[activeVersion?.id],
 	);
 
-	// Initialize history when version changes
 	useEffect(() => {
 		if (!activeVersion?.id) return;
 
@@ -335,7 +325,6 @@ export const Editor: React.FC<EditorProps> = ({
 		};
 	}, [currentImages]);
 
-	// Enhanced image removal
 	const handleRemoveImage = useCallback(
 		async (imageIndex: number) => {
 			const imageState = currentImages[imageIndex];
@@ -385,11 +374,9 @@ export const Editor: React.FC<EditorProps> = ({
 		[currentImages, removeVersionImage, addToHistory, currentContent],
 	);
 
-	// Upload to server with enhanced validation
 	const uploadToServer = useCallback(
 		async (file: File, imageStateId: string, previewUrl: string) => {
 			try {
-				// Server-side validation will also check this
 				const result = await uploadToCloudinary(
 					file,
 					activeVersion?.id || "draft",
@@ -462,10 +449,8 @@ export const Editor: React.FC<EditorProps> = ({
 		],
 	);
 
-	// File upload handler with subscription check and Twitter/X platform check
 	const handleFileUpload = useCallback(
 		async (file: File) => {
-			// Check if Twitter/X platform
 			if (shouldBlockImageUpload) {
 				toast.error("Image upload not available for Twitter/X", {
 					description: "Image uploads for Twitter/X posts coming soon!",
@@ -473,7 +458,6 @@ export const Editor: React.FC<EditorProps> = ({
 				return;
 			}
 
-			// Check subscription tier
 			if (!canUploadImages) {
 				toast.error("Image upload not available", {
 					description: "Upgrade to Pro or Premium to upload images",
@@ -559,12 +543,10 @@ export const Editor: React.FC<EditorProps> = ({
 		],
 	);
 
-	// Drag and drop handler
 	const handleDrop = useCallback(
 		async (event: React.DragEvent) => {
 			event.preventDefault();
 
-			// Check if Twitter/X platform
 			if (shouldBlockImageUpload) {
 				toast.error("Image upload not available for Twitter/X", {
 					description: "Image uploads for Twitter/X posts coming soon!",
@@ -619,13 +601,11 @@ export const Editor: React.FC<EditorProps> = ({
 		],
 	);
 
-	// File input change handler
 	const handleFileInputChange = useCallback(
 		async (event: React.ChangeEvent<HTMLInputElement>) => {
 			const files = event.target.files;
 			if (!files?.length) return;
 
-			// Check if Twitter/X platform
 			if (shouldBlockImageUpload) {
 				toast.error("Image upload not available for Twitter/X", {
 					description: "Image uploads for Twitter/X posts coming soon!",
@@ -676,7 +656,6 @@ export const Editor: React.FC<EditorProps> = ({
 		],
 	);
 
-	// Content change handler with debouncing
 	const handleContentChange = useCallback(
 		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newContent = event.target.value;
@@ -695,7 +674,6 @@ export const Editor: React.FC<EditorProps> = ({
 		[updateVersionContent, addToHistory, currentImages],
 	);
 
-	// Manual save handler
 	const handleSaveDraftClick = useCallback(async () => {
 		if (disabled || !activeVersion?.id) return;
 
@@ -725,7 +703,6 @@ export const Editor: React.FC<EditorProps> = ({
 		}
 	}, [disabled, activeVersion?.id, currentImages, onSaveDraft]);
 
-	// Enhanced publish handler with validation
 	const handlePublishClick = useCallback(() => {
 		const validation = validatePostContent(
 			currentContent,
@@ -750,7 +727,6 @@ export const Editor: React.FC<EditorProps> = ({
 		onOpenPublish,
 	]);
 
-	// Enhanced schedule handler with validation
 	const handleScheduleClick = useCallback(() => {
 		const validation = validatePostContent(
 			currentContent,
@@ -784,7 +760,7 @@ export const Editor: React.FC<EditorProps> = ({
 			case "published": {
 				return {
 					label: "Published",
-					color: "text-green-400 bg-green-500/10 border-green-500/20",
+					color: "text-zinc-300 bg-zinc-100/10 border-zinc-100/20",
 					icon: CheckCircle2,
 					detail: `to ${publishedCount} account${publishedCount === 1 ? "" : "s"}`,
 				};
@@ -792,7 +768,7 @@ export const Editor: React.FC<EditorProps> = ({
 			case "scheduled": {
 				return {
 					label: "Scheduled",
-					color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+					color: "text-zinc-300 bg-zinc-100/10 border-zinc-100/20",
 					icon: Calendar,
 					detail: activeVersion.scheduled_publish_time
 						? `for ${new Date(activeVersion.scheduled_publish_time).toLocaleDateString()}`
@@ -830,29 +806,29 @@ export const Editor: React.FC<EditorProps> = ({
 	return (
 		<div className="scrollbar-hide mt-10 flex h-full w-full flex-col lg:mt-2">
 			{/* Header */}
-			<div className="scrollbar-hide border-b border-zinc-800/50 bg-zinc-950/50 px-2 py-2">
+			<div className="scrollbar-hide border-b border-white/5 bg-black/40 px-4 py-3 backdrop-blur-md">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<Button
 							variant="outline"
 							onClick={onOpenVersions}
 							disabled={disabled}
-							className="border-zinc-700/50 bg-zinc-900/30 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+							className="h-9 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							<span className="mr-2">
+							<span className="mr-2 font-medium">
 								{activeVersion?.displayName || activeVersion?.id || "Version"}
 							</span>
 							{activeVersion?.tone && (
 								<Badge
 									variant="outline"
-									className="mr-2 border-blue-500/30 bg-blue-500/10 text-xs text-blue-400"
+									className="mr-2 border-white/20 bg-white/10 text-xs text-zinc-300"
 								>
 									{activeVersion.tone}
 								</Badge>
 							)}
-							<ChevronDown className="h-4 w-4" />
+							<ChevronDown className="h-4 w-4 opacity-50" />
 						</Button>
-						<span className="hidden text-xs text-zinc-400 sm:inline">
+						<span className="hidden text-xs font-medium text-zinc-500 sm:inline">
 							{postVersionsCount} version{postVersionsCount === 1 ? "" : "s"}
 						</span>
 					</div>
@@ -862,55 +838,63 @@ export const Editor: React.FC<EditorProps> = ({
 							variant="ghost"
 							onClick={onOpenGenerator}
 							disabled={disabled}
-							className="text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+							className="group h-9 text-xs font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							<BiSolidMagicWand className="h-3 w-3 lg:mr-1" />
-							<span className="hidden lg:inline">Generate</span>
+							<Sparkles className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+							<span className="hidden lg:inline">Generate AI</span>
 						</Button>
 					</div>
 				</div>
 
-				<Badge
-					variant="outline"
-					className={`${statusInfo.color} mt-2 flex w-[188px] items-center justify-center gap-1`}
-				>
-					<StatusIcon className="h-3 w-3" />
-					<span>{statusInfo.label}</span>
-					{statusInfo.detail && (
-						<span className="text-xs opacity-75">• {statusInfo.detail}</span>
-					)}
-				</Badge>
+				<div className="mt-3 flex items-center justify-between">
+					<Badge
+						variant="outline"
+						className={cn(
+							"flex items-center gap-1.5 px-2.5 py-1",
+							statusInfo.color,
+						)}
+					>
+						<StatusIcon className="h-3.5 w-3.5" />
+						<span className="font-medium">{statusInfo.label}</span>
+						{statusInfo.detail && (
+							<span className="text-xs opacity-60">• {statusInfo.detail}</span>
+						)}
+					</Badge>
 
-				{saveError && (
-					<div className="mt-3 flex items-center text-xs">
-						<span className="flex items-center gap-1 text-red-400">
-							<AlertTriangle className="h-3 w-3" />
+					{saveError && (
+						<div className="flex items-center gap-1.5 text-xs text-red-400">
+							<AlertTriangle className="h-3.5 w-3.5" />
 							{saveError}
-						</span>
-					</div>
-				)}
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* Content */}
-			<div className="scrollbar-hide flex-1 overflow-y-auto px-2 py-2">
-				<div className="scrollbar-hide max-w-none space-y-6">
-					<div className="space-y-3">
-						<Label className="text-sm font-medium text-zinc-200">Content</Label>
-						<div className="relative">
-							<Textarea
-								disabled={disabled}
-								placeholder="What's happening?"
-								onChange={handleContentChange}
-								value={currentContent}
-								className="min-h-[200px] w-full resize-none border-zinc-800/50 bg-zinc-900/30 pr-20 text-sm leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:ring-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
-							/>
+			<div className="scrollbar-hide flex-1 overflow-y-auto bg-black/20 p-4">
+				<div className="mx-auto max-w-3xl space-y-6">
+					<div className="group relative rounded-2xl border border-white/5 bg-white/[0.02] p-1 transition-colors hover:border-white/10 hover:bg-white/[0.04]">
+						<Textarea
+							disabled={disabled}
+							placeholder="What's on your mind?"
+							onChange={handleContentChange}
+							value={currentContent}
+							className="scrollbar-hide min-h-[240px] w-full resize-none border-0 bg-transparent p-4 text-base leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+						/>
+						<div className="absolute bottom-4 right-4 flex gap-3">
 							{getCharacterCounts().map(count => (
-								<div key={count.platform} className="absolute bottom-3 right-3">
-									<span
-										className={`text-xs font-medium ${
-											count.isOverLimit ? "text-red-400" : "text-zinc-400"
-										}`}
-									>
+								<div
+									key={count.platform}
+									className={cn(
+										"flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium backdrop-blur-sm",
+										count.isOverLimit
+											? "border-red-500/20 bg-red-500/10 text-red-400"
+											: "border-white/5 bg-black/40 text-zinc-500",
+									)}
+								>
+									<span>{count.platform}</span>
+									<span className="opacity-50">|</span>
+									<span>
 										{count.count} /{" "}
 										{typeof count.limit === "number"
 											? count.limit.toLocaleString()
@@ -922,415 +906,239 @@ export const Editor: React.FC<EditorProps> = ({
 					</div>
 
 					{/* Image Upload */}
-					<div className="space-y-3">
-						<div className="flex items-center justify-between">
-							<Label className="text-sm font-medium text-zinc-200">
-								Images
+					<div className="space-y-4">
+						<div className="flex items-center justify-between px-1">
+							<Label className="text-sm font-medium text-zinc-400">
+								Media
 								{!canUploadImages && (
 									<Badge
 										variant="outline"
-										className="ml-2 border-amber-500/30 bg-amber-500/10 text-xs text-amber-400"
+										className="ml-2 border-amber-500/20 bg-amber-500/5 text-[10px] text-amber-400"
 									>
-										Pro+
-									</Badge>
-								)}
-								{shouldBlockImageUpload && (
-									<Badge
-										variant="outline"
-										className="ml-2 border-blue-500/30 bg-blue-500/10 text-xs text-blue-400"
-									>
-										Coming Soon
+										PRO
 									</Badge>
 								)}
 							</Label>
 							{currentImages.length > 0 && (
-								<span className="text-xs text-zinc-400">
-									{currentImages.length}/{MAX_IMAGES} image
-									{currentImages.length === 1 ? "" : "s"}
+								<span className="text-xs text-zinc-600">
+									{currentImages.length}/{MAX_IMAGES}
 								</span>
 							)}
 						</div>
 
-						{/* Twitter/X Image Upload Disclaimer */}
 						{shouldBlockImageUpload && (
-							<div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+							<div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
 								<div className="flex items-start gap-3">
-									<div className="flex-shrink-0 rounded-full bg-blue-500/10 p-2">
-										<AlertTriangle className="h-4 w-4 text-blue-400" />
+									<div className="rounded-full bg-white/5 p-2">
+										<ImageIcon className="h-4 w-4 text-zinc-400" />
 									</div>
-									<div className="flex-1 space-y-1">
-										<p className="text-sm font-medium text-blue-300">
-											Image uploads not available for Twitter/X posts
+									<div className="space-y-1">
+										<p className="text-sm font-medium text-zinc-300">
+											Media upload unavailable
 										</p>
-										<p className="text-xs leading-relaxed text-blue-400/80">
-											We&apos;re working hard to bring image upload support for
-											Twitter/X posts. This feature is coming soon! For now, you
-											can still create and schedule text-based posts for your
-											Twitter/X accounts.
+										<p className="text-xs leading-relaxed text-zinc-500">
+											Image uploads are currently disabled for this platform.
+											You can still create text-only posts.
 										</p>
-										<div className="mt-2 flex items-center gap-2">
-											<div className="flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-1">
-												<Calendar className="h-3 w-3 text-blue-400" />
-												<span className="text-xs font-medium text-blue-300">
-													Coming Soon
-												</span>
-											</div>
-										</div>
 									</div>
 								</div>
 							</div>
 						)}
 
-						<div className="grid grid-cols-2 gap-3">
-							{currentImages
-								.filter(imageState => !removingImageIds.has(imageState.id))
-								.map((imageState, index) => (
-									<div key={imageState.id} className="group relative">
-										<div className="relative h-[120px] w-full overflow-hidden rounded-lg border border-zinc-800/50">
+						<div className="grid grid-cols-2 gap-4">
+							<AnimatePresence mode="popLayout">
+								{currentImages
+									.filter(imageState => !removingImageIds.has(imageState.id))
+									.map((imageState, index) => (
+										<motion.div
+											key={imageState.id}
+											initial={{ opacity: 0, scale: 0.95 }}
+											animate={{ opacity: 1, scale: 1 }}
+											exit={{ opacity: 0, scale: 0.95 }}
+											className="group relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-black/40"
+										>
 											<Image
 												src={imageState.url}
 												alt={`Uploaded content ${index + 1}`}
 												fill
 												className={cn(
-													"object-cover transition-opacity duration-200",
-													imageState.isUploading && "opacity-50",
+													"object-cover transition-all duration-300 group-hover:scale-105",
+													imageState.isUploading && "opacity-50 blur-sm",
 												)}
-												unoptimized={
-													imageState.url.startsWith("data:image/gif") ||
-													imageState.url.startsWith("blob:")
-												}
-												sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
 											/>
 
-											{imageState.isUploading && (
-												<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/70 backdrop-blur-[2px]">
-													<div className="flex flex-col items-center gap-2">
-														<div className="relative">
-															<div className="border-3 animation-delay-150 absolute inset-0 h-8 w-8 animate-spin rounded-full border-transparent border-r-blue-400" />
-														</div>
-														<div className="text-center">
-															<div className="text-xs font-semibold text-white">
-																Uploading...
-															</div>
-															<div className="text-xs text-white/70">
-																Please wait
-															</div>
-														</div>
-													</div>
-												</div>
-											)}
+											{/* Overlay Actions */}
+											<div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
 
-											{removingImageIds.has(imageState.id) && (
-												<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-zinc-900/80 backdrop-blur-sm">
-													<div className="flex flex-col items-center gap-2">
-														<Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
-														<span className="text-xs font-medium text-zinc-300">
-															Removing...
-														</span>
-													</div>
+											<button
+												type="button"
+												disabled={
+													disabled ||
+													removingImageIds.has(imageState.id) ||
+													imageState.isUploading ||
+													isUploading
+												}
+												onClick={() => handleRemoveImage(index)}
+												className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-md transition-all hover:bg-black/80 group-hover:opacity-100"
+											>
+												{removingImageIds.has(imageState.id) ? (
+													<Loader2 className="h-4 w-4 animate-spin" />
+												) : (
+													<X className="h-4 w-4" />
+												)}
+											</button>
+
+											{/* Status Indicators */}
+											{imageState.isUploading && (
+												<div className="absolute inset-0 flex items-center justify-center">
+													<Loader2 className="h-8 w-8 animate-spin text-white" />
 												</div>
 											)}
 
 											{imageState.uploadError && (
-												<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-red-900/80 backdrop-blur-sm">
-													<div className="flex flex-col items-center gap-2 px-2 text-center">
-														<AlertTriangle className="h-6 w-6 text-red-300" />
-														<span className="text-xs font-medium text-red-200">
-															Upload failed
-														</span>
-														<span className="text-xs text-red-300">
-															Remove and try again
-														</span>
-													</div>
+												<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+													<AlertTriangle className="mb-2 h-6 w-6 text-red-400" />
+													<span className="text-xs font-medium text-red-400">
+														Upload Failed
+													</span>
 												</div>
 											)}
+										</motion.div>
+									))}
+							</AnimatePresence>
 
-											{!imageState.isLocal &&
-												imageState.publicId &&
-												!imageState.uploadError &&
-												!imageState.isUploading && (
-													<div className="absolute left-2 top-2">
-														<div className="flex items-center gap-1 rounded bg-green-500/20 px-1.5 py-0.5 text-xs text-green-400">
-															<CheckCircle2 className="h-3 w-3" />
-															Cloud
-														</div>
-													</div>
-												)}
-										</div>
-
-										<button
-											type="button"
-											disabled={
-												disabled ||
-												removingImageIds.has(imageState.id) ||
-												imageState.isUploading ||
-												isUploading
-											}
-											onClick={() => {
-												if (
-													disabled ||
-													removingImageIds.has(imageState.id) ||
-													imageState.isUploading
-												) {
-													return;
-												}
-												handleRemoveImage(index);
-											}}
+							{/* Upload Button */}
+							{!shouldBlockImageUpload && (
+								<FeatureLimitWrapper
+									limitId={FEATURE_LIMITS.IMAGE_UPLOAD}
+									currentCount={1}
+									fallback={
+										<LimitTooltip
+											position="bottom"
+											currentUsage={1}
+											limitType="image_upload"
+											maxLimit={imageLimitUI.limit}
+										>
+											<div className="flex aspect-video cursor-not-allowed flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] opacity-50">
+												<ImageIcon className="mb-2 h-6 w-6 text-zinc-600" />
+												<span className="text-xs text-zinc-500">
+													Limit Reached
+												</span>
+											</div>
+										</LimitTooltip>
+									}
+								>
+									{canAddMoreImages && (
+										<motion.div
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
 											className={cn(
-												"absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 opacity-0 transition-opacity hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 group-hover:opacity-100",
-												imageState.isUploading &&
-													"cursor-not-allowed opacity-30",
+												"relative flex aspect-video cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] transition-all hover:border-white/20 hover:bg-white/[0.04]",
+												(disabled || isProcessing) &&
+													"cursor-not-allowed opacity-50",
 											)}
-											title={
-												imageState.isUploading
-													? "Cannot remove while uploading"
-													: "Remove image"
+											onClick={() =>
+												!disabled &&
+												!isProcessing &&
+												fileInputRef.current?.click()
 											}
+											onDrop={handleDrop}
+											onDragOver={event_ => event_.preventDefault()}
 										>
-											{removingImageIds.has(imageState.id) ? (
-												<Loader2 className="h-3 w-3 animate-spin text-zinc-300" />
-											) : (
-												<X className="h-3 w-3 text-zinc-300" />
-											)}
-										</button>
-									</div>
-								))}
-
-							<FeatureLimitWrapper
-								limitId={FEATURE_LIMITS.IMAGE_UPLOAD}
-								currentCount={1}
-								fallback={
-									<LimitTooltip
-										position="bottom"
-										currentUsage={1}
-										limitType="image_upload"
-										maxLimit={imageLimitUI.limit}
-									>
-										<div
-											className={
-												"flex h-[120px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-700/50 bg-zinc-900/20 text-center opacity-75 transition-colors"
-											}
-										>
-											<Plus className="mb-2 h-6 w-6 text-zinc-500" />
-											<p className="mb-1 text-sm text-zinc-400">
-												{currentImages.length > 0
-													? "Add more images"
-													: "Add images"}
+											<input
+												type="file"
+												className="hidden"
+												ref={fileInputRef}
+												onChange={handleFileInputChange}
+												accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+												multiple={
+													canAddMoreImages && currentImages.length === 0
+												}
+												disabled={disabled || isProcessing}
+											/>
+											<div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 transition-transform group-hover:scale-110">
+												<Plus className="h-5 w-5 text-zinc-400" />
+											</div>
+											<p className="mt-3 text-xs font-medium text-zinc-400">
+												Add Media
 											</p>
-											<p className="text-xs text-zinc-500">
+											<p className="mt-1 text-[10px] text-zinc-600">
 												Drag & drop or click
 											</p>
-											<p className="mt-1 text-xs text-zinc-600">
-												JPEG, PNG, GIF, WebP • Max{" "}
-												{formatFileSize(MAX_FILE_SIZE)}
-											</p>
-										</div>
-									</LimitTooltip>
-								}
-							>
-								{canAddMoreImages && (
-									<div
-										onDrop={handleDrop}
-										onDragOver={event => event.preventDefault()}
-										onClick={() =>
-											!disabled &&
-											!isProcessing &&
-											canUploadImages &&
-											!shouldBlockImageUpload &&
-											fileInputRef.current?.click()
-										}
-										className={`flex h-[120px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-700/50 bg-zinc-900/20 text-center transition-colors ${
-											disabled ||
-											isProcessing ||
-											!canUploadImages ||
-											shouldBlockImageUpload
-												? "cursor-not-allowed opacity-50"
-												: "cursor-pointer hover:border-zinc-600/50 hover:bg-zinc-900/40"
-										}`}
-									>
-										{isUploading ? (
-											<>
-												<Loader2 className="mb-2 h-6 w-6 animate-spin text-zinc-500" />
-												<p className="mb-1 text-sm text-zinc-400">
-													Uploading...
-												</p>
-												<p className="text-xs text-zinc-500">
-													Processing image
-												</p>
-											</>
-										) : (
-											<>
-												<Plus className="mb-2 h-6 w-6 text-zinc-500" />
-												<p className="mb-1 text-sm text-zinc-400">
-													{currentImages.length > 0
-														? "Add more images"
-														: "Add images"}
-												</p>
-												<p className="text-xs text-zinc-500">
-													Drag & drop or click
-												</p>
-												<p className="mt-1 text-xs text-zinc-600">
-													JPEG, PNG, GIF, WebP • Max{" "}
-													{formatFileSize(MAX_FILE_SIZE)}
-												</p>
-												{!canUploadImages && (
-													<p className="mt-2 text-xs text-amber-400">
-														⚡ Pro+ required
-													</p>
-												)}
-												{shouldBlockImageUpload && (
-													<p className="mt-2 text-xs text-blue-400">
-														🚀 Coming soon for Twitter/X
-													</p>
-												)}
-											</>
-										)}
-										<input
-											type="file"
-											className="hidden"
-											ref={fileInputRef}
-											onChange={handleFileInputChange}
-											disabled={
-												disabled ||
-												isProcessing ||
-												!canUploadImages ||
-												shouldBlockImageUpload
-											}
-											accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-											multiple={canAddMoreImages && currentImages.length === 0}
-										/>
-									</div>
-								)}
-							</FeatureLimitWrapper>
+										</motion.div>
+									)}
+								</FeatureLimitWrapper>
+							)}
 						</div>
 					</div>
 				</div>
 			</div>
 
 			{/* Footer */}
-			<div className="scrollbar-hide border-t border-zinc-800/50 bg-zinc-950/80 px-2 py-2 backdrop-blur-sm">
-				<div className="mb-3 rounded-md border border-blue-500/20 bg-blue-500/10 p-2">
-					<p className="flex items-start gap-1 text-xs text-blue-400 lg:items-center">
-						<AlertTriangle className="h-3 w-3 flex-shrink-0" />
-						Make sure to save your work before switching posts, publishing,
-						scheduling, or closing the editor.
-					</p>
-				</div>
-
-				{isUploading && (
-					<div className="mb-3 flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2">
-						<Loader2 className="h-3 w-3 animate-spin text-amber-400" />
-						<span className="text-xs text-amber-400">
-							Uploading images - actions disabled
-						</span>
-					</div>
-				)}
-
-				<div className="flex flex-col gap-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-					<div className="flex flex-row gap-3 lg:gap-3">
+			<div className="scrollbar-hide border-t border-white/5 bg-black/40 px-4 py-4 backdrop-blur-md">
+				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+					<div className="flex flex-1 gap-3">
 						<Button
 							disabled={disabled || hasPublishedInGroup || isUploading}
 							onClick={handlePublishClick}
 							className={cn(
-								"w-full bg-zinc-100 text-zinc-950 hover:bg-zinc-200",
-								hasPublishedInGroup
-									? "disabled:cursor-not-allowed disabled:bg-red-900/20 disabled:text-red-400"
-									: "disabled:bg-zinc-800 disabled:text-zinc-500",
+								"h-10 flex-1 bg-white text-black hover:bg-zinc-200",
+								hasPublishedInGroup && "opacity-50",
 							)}
-							title={
-								isUploading
-									? "Please wait for image uploads to complete"
-									: hasPublishedInGroup
-										? "Cannot publish - another version is already published"
-										: undefined
-							}
 						>
-							<FaPaperPlane className="mr-1 h-4 w-4" />
-							{hasPublishedInGroup ? "Already Published" : "Publish now"}
+							<FaPaperPlane className="mr-2 h-3.5 w-3.5" />
+							{hasPublishedInGroup ? "Published" : "Publish Now"}
 						</Button>
 
 						<FeatureLimitWrapper
 							limitId={FEATURE_LIMITS.SCHEDULE_POST}
 							currentCount={1}
 							fallback={
-								<LimitTooltip
-									position="bottom"
-									currentUsage={1}
-									limitType="schedule_post"
-									maxLimit={scheduleLimitUI.limit}
+								<Button
+									disabled
+									variant="outline"
+									className="h-10 flex-1 border-white/10 bg-white/5 text-zinc-400"
 								>
-									<div className="cursor-pointer">
-										<Button
-											disabled={true}
-											variant="outline"
-											className={cn(
-												"w-full border-zinc-700/50 bg-zinc-900/30 text-zinc-300 transition-colors duration-75",
-											)}
-										>
-											<Calendar className="mr-1 h-4 w-4" />
-											Schedule
-										</Button>
-									</div>
-								</LimitTooltip>
+									<Calendar className="mr-2 h-4 w-4" />
+									Schedule
+								</Button>
 							}
 						>
 							<Button
 								onClick={handleScheduleClick}
 								disabled={disabled || hasPublishedInGroup || isUploading}
 								variant="outline"
-								className={cn(
-									"w-full border-zinc-700/50 bg-zinc-900/30 text-zinc-300 transition-colors duration-75",
-									hasPublishedInGroup &&
-										"disabled:border-red-700/30 disabled:text-red-400",
-								)}
-								title={
-									isUploading
-										? "Please wait for image uploads to complete"
-										: hasPublishedInGroup
-											? "Cannot schedule - another version is already published"
-											: undefined
-								}
+								className="h-10 flex-1 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white"
 							>
-								<Calendar className="mr-1 h-4 w-4" />
-								{hasPublishedInGroup ? "Already Published" : "Schedule"}
+								<Calendar className="mr-2 h-4 w-4" />
+								Schedule
 							</Button>
 						</FeatureLimitWrapper>
 					</div>
 
-					<div className="flex flex-col gap-3 lg:gap-3">
+					<div className="flex gap-3 lg:w-auto">
 						<Button
-							variant="outline"
+							variant="ghost"
 							disabled={disabled}
 							onClick={onOpenPreview}
-							className="w-full border-zinc-700/50 bg-zinc-900/30 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 md:hidden lg:w-[130px] lg:flex-none"
+							className="h-10 flex-1 text-zinc-400 hover:bg-white/5 hover:text-zinc-200 md:hidden lg:flex-none"
 						>
-							<Eye className="mr-1 h-4 w-4" />
+							<Eye className="mr-2 h-4 w-4" />
 							Preview
 						</Button>
+
 						<Button
-							variant="outline"
+							variant="ghost"
 							disabled={disabled || isSaving || hasUploadErrors || isUploading}
 							onClick={handleSaveDraftClick}
-							className="w-full border-zinc-700/50 bg-zinc-900/30 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 lg:w-[130px] lg:flex-none"
-							title={
-								hasUploadErrors
-									? "Fix upload errors first"
-									: isUploading
-										? "Wait for uploads to complete"
-										: "Save draft"
-							}
+							className="h-10 flex-1 text-zinc-400 hover:bg-white/5 hover:text-zinc-200 lg:flex-none"
 						>
 							{isSaving ? (
-								<>
-									<Loader2 className="mr-1 h-4 w-4 animate-spin" />
-									Saving...
-								</>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							) : (
-								<>
-									<FaSave className="mr-1 h-4 w-4" />
-									Save
-								</>
+								<FaSave className="mr-2 h-4 w-4" />
 							)}
+							Save Draft
 						</Button>
 					</div>
 				</div>

@@ -188,7 +188,7 @@ export function ChatInput() {
 			// Generate posts using server action
 			const result = await generatePost({
 				commits: currentInputText,
-				tone: "professional",
+				tone: "casual",
 				platform: selectedPlatform || "linkedin",
 			});
 

@@ -15,7 +15,7 @@ import {
  */
 export const generatePost = async ({
 	commits,
-	tone = "professional",
+	tone = "casual",
 	platform = "linkedin",
 }: PostGenerationInput): Promise<PostGenerationResponse> => {
 	try {

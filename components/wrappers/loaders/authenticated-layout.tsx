@@ -89,7 +89,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			try {
 				// Validate user data before syncing
 				if (!validateUserData(userData)) {
-					console.error("❌ Invalid skipping sync");
 					return;
 				}
 
@@ -113,7 +112,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 		if (!isClient) return;
 
 		const emergencyTimeout = setTimeout(() => {
-			console.warn("⚠️ Emergency timeout triggered - forcing content display");
 			setCookieValidated(true);
 			setForceShowContent(true);
 			setOnboardingChecked(true);
@@ -136,7 +134,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 				if (!mounted) return;
 
 				if (!cookieState) {
-					console.warn("⚠️ No cookie_state found - forcing logout");
 					await logout();
 					return;
 				}
@@ -206,7 +203,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 			hasSyncedRef.current && // Only re-sync if significant changes detected
 			hasUserDataChanged(lastSyncedDataRef.current, session.user)
 		) {
-			console.log("🔄 re-syncing...");
 			hasSyncedRef.current = false; // Allow re-sync
 			syncUserStoreData(session.user);
 		}

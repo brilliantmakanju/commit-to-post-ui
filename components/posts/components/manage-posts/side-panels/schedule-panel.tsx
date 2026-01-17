@@ -2,6 +2,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { Calendar, Clock } from "lucide-react";
 import React from "react";
 
 import { ConnectedIntegration } from "@/components/repositories/settings/channel-settings";
@@ -81,11 +82,14 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 			title="Schedule Post"
 			widthClassName="w-full sm:w-[500px] lg:w-[480px]"
 		>
-			<div className="flex h-full flex-col">
+			<div className="flex h-full flex-col bg-zinc-950/50 backdrop-blur-sm">
 				{/* Scrollable Content */}
-				<div className="flex-1 overflow-y-auto">
+				<div className="scrollbar-hide flex-1 overflow-y-auto">
 					{/* Quick Date Presets - 3 columns */}
-					<div className="border-b border-white/5 px-5 py-2">
+					<div className="border-b border-zinc-800/50 px-5 py-4">
+						<label className="mb-3 block text-xs font-medium uppercase tracking-wider text-zinc-500">
+							Quick Select
+						</label>
 						<div className="grid grid-cols-3 gap-2">
 							{datePresets.map(({ label, date }) => (
 								<Button
@@ -95,10 +99,10 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 									disabled={disabled}
 									onClick={() => setScheduleDate(date)}
 									className={cn(
-										"rounded-lg px-2 py-2.5 text-xs font-medium transition-all",
+										"rounded-lg border px-2 py-2.5 text-xs font-medium transition-all duration-200",
 										scheduleDate?.toDateString() === date.toDateString()
-											? "bg-white text-black"
-											: "text-white/70 hover:bg-white/10 hover:text-white",
+											? "border-zinc-200 bg-zinc-100 text-zinc-900 shadow-sm"
+											: "border-zinc-800/50 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200",
 									)}
 								>
 									{label}
@@ -108,10 +112,11 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 					</div>
 
 					{/* Date & Time Selection - Side by side */}
-					<div className="border-b border-white/5 px-5 py-2">
+					<div className="border-b border-zinc-800/50 px-5 py-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<label className="text-xs font-medium uppercase tracking-wide text-white/60">
+								<label className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
+									<Calendar className="h-3 w-3" />
 									Date
 								</label>
 								<DatePicker
@@ -120,12 +125,13 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 									disabled={disabled}
 									variant="popover"
 									placeholder="Select date"
-									className="h-11 w-full rounded-lg border-white/10 bg-white/5"
+									className="h-10 w-full rounded-lg border-zinc-800/50 bg-zinc-900/30 text-sm text-zinc-200 placeholder:text-zinc-600 hover:border-zinc-700 focus:border-zinc-600 focus:ring-zinc-600/20"
 								/>
 							</div>
 
 							<div className="space-y-2">
-								<label className="text-xs font-medium uppercase tracking-wide text-white/60">
+								<label className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
+									<Clock className="h-3 w-3" />
 									Time
 								</label>
 								<TimePicker
@@ -134,7 +140,7 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 									value={scheduleTime}
 									placeholder="Select time"
 									onChange={setScheduleTime}
-									className="h-11 w-full rounded-lg border-white/10 bg-white/5"
+									className="h-10 w-full rounded-lg border-zinc-800/50 bg-zinc-900/30 text-sm text-zinc-200 placeholder:text-zinc-600 hover:border-zinc-700 focus:border-zinc-600 focus:ring-zinc-600/20"
 								/>
 							</div>
 						</div>
@@ -142,13 +148,15 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 
 					{/* Schedule Preview - Compact and Simple */}
 					{scheduleDate && scheduleTime && selectedSocials.size > 0 && (
-						<div className="border-b border-white/5 px-5 py-3">
-							<div className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2">
-								<div className="h-1.5 w-1.5 rounded-full bg-green-400"></div>
-								<div className="flex-1 text-sm text-white/90">
+						<div className="border-b border-zinc-800/50 px-5 py-4">
+							<div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+								<div className="flex h-2 w-2 items-center justify-center rounded-full bg-emerald-500/20">
+									<div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+								</div>
+								<div className="flex-1 text-sm font-medium text-emerald-200/90">
 									{format(scheduleDate, "MMM d")} at {scheduleTime}
 								</div>
-								<div className="text-xs text-white/60">
+								<div className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
 									{selectedSocials.size} platform
 									{selectedSocials.size > 1 ? "s" : ""}
 								</div>
@@ -159,12 +167,12 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 					{/* Social Accounts Integration - Full width */}
 					<div className="px-5 py-5">
 						<div className="mb-4 flex items-center justify-between">
-							<h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
+							<h3 className="text-xs font-medium uppercase tracking-wider text-zinc-500">
 								Social Accounts
 							</h3>
 						</div>
 
-						<div className="scrollbar-hide h-[390px] overflow-x-hidden rounded-xl bg-white/5 p-3 lg:h-[302px]">
+						<div className="scrollbar-hide h-[390px] overflow-x-hidden rounded-xl border border-zinc-800/50 bg-zinc-900/20 p-1 lg:h-[302px]">
 							<IntegrationTabs
 								activeTab={activeTab}
 								currentPost={currentPost}
@@ -186,7 +194,7 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 				</div>
 
 				{/* Fixed Bottom Action Section */}
-				<div className="border-t border-white/5 bg-black/20 px-5 py-4">
+				<div className="border-t border-zinc-800/50 bg-zinc-950/80 px-5 py-4 backdrop-blur-md">
 					{/* Action Button - Reduced height */}
 					<Button
 						onClick={handleSchedulePost}
@@ -199,38 +207,26 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 								(currentPost.pending_integrations_data?.length ?? 0) === 0)
 						}
 						className={cn(
-							"relative h-10 w-full rounded-xl font-medium transition-all duration-200",
+							"relative h-10 w-full rounded-xl font-medium transition-all duration-300",
 							// Update condition for styling
 							isValidSchedule &&
 								(selectedSocials.size > 0 ||
 									(currentPost.pending_integrations_data?.length ?? 0) > 0)
-								? "mb-2 bg-white text-black hover:bg-white/90"
-								: "cursor-not-allowed bg-white/10 text-white/50",
+								? "bg-zinc-100 text-zinc-900 shadow-lg shadow-zinc-900/20 hover:bg-white hover:shadow-xl"
+								: "cursor-not-allowed border border-zinc-800 bg-zinc-900/50 text-zinc-500",
 						)}
 					>
 						{isScheduling ? (
 							<div className="flex items-center gap-2">
-								<div className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+								<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-zinc-900" />
 								<span>Scheduling...</span>
 							</div>
 						) : (
 							<div className="flex items-center gap-2">
-								<svg
-									className="h-4 w-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
+								<Calendar className="h-4 w-4" />
 								<span>Schedule Post</span>
 								{selectedSocials.size > 0 && (
-									<div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/80 text-xs text-white">
+									<div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-zinc-100">
 										{selectedSocials.size}
 									</div>
 								)}
@@ -240,8 +236,9 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
 
 					{/* Error Message */}
 					{!isValidSchedule && (
-						<div className="mt-2 text-center">
-							<p className="text-xs text-red-400/80">
+						<div className="mt-3 text-center">
+							<p className="flex items-center justify-center gap-1.5 text-xs text-red-400/90">
+								<span className="h-1 w-1 rounded-full bg-red-400" />
 								{scheduleDate
 									? scheduleTime
 										? selectedSocials.size === 0 &&

@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 export const FEATURE_CATEGORIES = [
 	"ai_tones",
 	"workspaces",
+	"ai_templates",
 	"image_upload",
 	"schedule_post",
 	"hashtag_automation",

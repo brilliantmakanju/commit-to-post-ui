@@ -203,7 +203,7 @@ export function RepositoryCard({ repository: repo }: RepositoryCardProps) {
 					<div className="flex items-center justify-between">
 						<span className="text-sm text-zinc-400">AI Tone</span>
 						<span className="text-sm capitalize text-zinc-300">
-							{repo.settings?.ai_tone || "professional"}
+							{repo.settings?.ai_tone || "casual"}
 						</span>
 					</div>
 				</div>

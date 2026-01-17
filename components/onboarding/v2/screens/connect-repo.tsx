@@ -129,7 +129,7 @@ const ConnectRepoOnboarding = () => {
 				...previous,
 				[repoId]: {
 					branch: repo.default_branch,
-					tone: "professional",
+					tone: "casual",
 					aiEnabled: true,
 					socials: [],
 				},

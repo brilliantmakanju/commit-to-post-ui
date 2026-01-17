@@ -15,6 +15,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import useRetrieveTemplates from "@/hooks/core/repo/get-templates";
 import useRetrieveTones from "@/hooks/core/repo/get-tones";
 import { useLimitUI } from "@/hooks/use-limit-ui";
 import { FEATURE_LIMITS } from "@/lib/constants/feature-limits";
@@ -22,13 +23,14 @@ import useUserStore from "@/zustand/useuser-store";
 
 interface AISettings {
 	ai_tone: string;
+	template: string;
 	ai_enabled: boolean;
 	tracked_branch: string;
 }
 
 interface RepoAISettingsCardProps {
-	settings: AISettings;
 	loading?: boolean;
+	settings: AISettings;
 	onChange: <K extends keyof AISettings>(key: K, value: AISettings[K]) => void;
 }
 
@@ -39,6 +41,7 @@ export const RepoAISettingsCard = ({
 }: RepoAISettingsCardProps) => {
 	const useStore = useUserStore();
 	const { tones, isTonesLoading } = useRetrieveTones();
+	const { templates, isTemplatesLoading } = useRetrieveTemplates();
 
 	const tonesLimitUI = useLimitUI({
 		currentCount: 1,
@@ -47,7 +50,14 @@ export const RepoAISettingsCard = ({
 		limitId: FEATURE_LIMITS.AI_TONES,
 	});
 
-	if (loading || isTonesLoading) {
+	const templateLimitUI = useLimitUI({
+		currentCount: 1,
+		warningThreshold: 80,
+		limitType: "ai_templates",
+		limitId: FEATURE_LIMITS.TEMPLATE,
+	});
+
+	if (loading || isTonesLoading || isTemplatesLoading) {
 		return (
 			<Card className="border-zinc-800 bg-zinc-900 text-zinc-100">
 				<CardHeader>
@@ -71,22 +81,6 @@ export const RepoAISettingsCard = ({
 		useStore.plan === "studio" || useStore.plan === "pro"
 			? tones.map(t => t.value)
 			: [settings.ai_tone];
-
-	// if (useStore.plan === "pro") {
-	// 	const firstTwo = tones.slice(0, 2);
-	// 	const middleIndex = Math.floor(tones.length / 2);
-	// 	const middleTwo = tones.slice(middleIndex, middleIndex + 2);
-	// 	selectableTones = [
-	// 		...firstTwo.map(t => t.value),
-	// 		...middleTwo.map(t => t.value),
-	// 	];
-	// } else
-	// if (useStore.plan === "studio" || useStore.plan === "pro") {
-	// 	selectableTones = tones.map(t => t.value);
-	// } else {
-	// 	// basic → only their current selected tone
-	// 	selectableTones = [settings.ai_tone];
-	// }
 
 	// reorder tones → selected one always first
 	const orderedTones = [
@@ -123,6 +117,39 @@ export const RepoAISettingsCard = ({
 						</SelectItem>
 					);
 				})}
+			</SelectContent>
+		</Select>
+	);
+
+	// reorder templates → selected one always first
+	const orderedTemplates = [
+		...templates.filter(t => t.value === settings.template),
+		...templates.filter(t => t.value !== settings.template),
+	];
+
+	const templateSelect = (
+		<Select
+			value={settings.template}
+			onValueChange={value => {
+				onChange("template", value);
+			}}
+		>
+			<SelectTrigger className="w-full border-zinc-700 bg-zinc-800 text-zinc-100">
+				<SelectValue placeholder="Select template" />
+			</SelectTrigger>
+			<SelectContent
+				className="max-h-72 min-w-[var(--radix-select-trigger-width)] border-zinc-700 bg-zinc-900 text-zinc-100"
+				position="popper"
+			>
+				{orderedTemplates.map(template => (
+					<SelectItem
+						key={template.value}
+						value={template.value}
+						className="flex flex-col items-start gap-1 py-2"
+					>
+						<span className="font-medium">{template.label}</span>
+					</SelectItem>
+				))}
 			</SelectContent>
 		</Select>
 	);
@@ -168,6 +195,40 @@ export const RepoAISettingsCard = ({
 						<p className="text-xs text-zinc-400">Default Tone: Professional</p>
 					</div>
 				)}
+
+				{/* AI Template Preset */}
+				<div className="flex w-full flex-col items-start justify-start space-y-2">
+					<Label className="text-sm font-medium text-zinc-100">
+						Post Template
+					</Label>
+					<FeatureLimitWrapper
+						limitId={FEATURE_LIMITS.TEMPLATE}
+						currentCount={1}
+						fallback={
+							<LimitTooltip
+								position="bottom"
+								currentUsage={1}
+								limitType="ai_templates"
+								maxLimit={templateLimitUI.limit}
+							>
+								<div className="w-full cursor-not-allowed">
+									<Select disabled>
+										<SelectTrigger className="w-full border-zinc-700 bg-zinc-800 text-zinc-500">
+											<SelectValue placeholder="No templates available" />
+										</SelectTrigger>
+									</Select>
+								</div>
+							</LimitTooltip>
+						}
+					>
+						{/* Make sure toneSelect has same structure */}
+						<div className="w-full">{templateSelect}</div>
+					</FeatureLimitWrapper>
+
+					<p className="text-xs text-zinc-400">
+						Controls the structure and vibe of generated posts
+					</p>
+				</div>
 
 				{/* Tracked Branch */}
 				<div className="space-y-2">

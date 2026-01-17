@@ -13,6 +13,7 @@ export const createPostVariations = async ({
 	commit_message,
 	platform,
 	tones,
+	templates,
 }: CreatePostVariationsInput) => {
 	try {
 		// Define validation schema inline since we can't export it
@@ -26,23 +27,31 @@ export const createPostVariations = async ({
 				.array(z.string())
 				.min(1, "At least one tone is required")
 				.max(3, "Maximum 3 tones allowed"),
+			templates: z.array(z.string()),
 		});
 
 		// Validate input data
 		const validatedData = createPostVariationsSchema.parse({
-			post_id,
-			commit_message,
-			platform,
 			tones,
+			post_id,
+			platform,
+			commit_message,
+			templates,
 		});
 
 		// Make API call to create variations
-		const response = await apiClient.post("/api/v1/posts/variations/", {
-			post_id: validatedData.post_id,
-			commit_message: validatedData.commit_message,
-			platform: validatedData.platform,
-			tones: validatedData.tones,
-		});
+		const response = await apiClient.post(
+			"/api/v1/posts/variations/",
+			{
+				tone: validatedData.tones[0],
+				post_id: validatedData.post_id,
+				platform: validatedData.platform,
+				templates: validatedData.templates,
+				commit_message: validatedData.commit_message,
+			},
+			{},
+			4000000,
+		);
 
 		if (response.status !== 201) {
 			throw new Error("Failed to create post variations.");

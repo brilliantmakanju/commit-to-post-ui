@@ -17,6 +17,9 @@ export const FEATURE_LIMITS = {
 
 	// Post Scheduling
 	SCHEDULE_POST: "schedule_post",
+
+	// Template
+	TEMPLATE: "templates",
 } as const;
 
 // Default feature limit configurations
@@ -81,6 +84,20 @@ export const DEFAULT_FEATURE_LIMITS: Record<
 		name: "Post Scheduling",
 		id: FEATURE_LIMITS.SCHEDULE_POST,
 		description: "Number of scheduled posts you can set up.",
+		limits: {
+			basic: 1,
+			pro: 2,
+			studio: 2,
+		},
+		requiresAuth: true,
+	},
+
+	[FEATURE_LIMITS.TEMPLATE]: {
+		category: "ai_templates",
+		name: "Post Templates",
+		id: FEATURE_LIMITS.TEMPLATE,
+		description:
+			"Controls how many post templates you can use to shape tone, structure, and style of generated posts.",
 		limits: {
 			basic: 1,
 			pro: 2,

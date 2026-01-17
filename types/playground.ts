@@ -7,7 +7,7 @@ export const postGenerationSchema = z.object({
 		.max(5000, "Commit message too long. Please keep under 5000 characters."),
 	tone: z
 		.enum(["professional", "casual", "technical", "friendly"])
-		.default("professional"),
+		.default("casual"),
 	platform: z.enum(["linkedin", "twitter", "discord"]).default("linkedin"),
 });
 

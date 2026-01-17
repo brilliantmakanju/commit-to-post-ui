@@ -18,6 +18,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import useRepoSuperDetails from "@/hooks/core/repo/get-repo-super-detail-hook";
+import useRetrieveTemplates from "@/hooks/core/repo/get-templates";
 import { useCreditBalance } from "@/hooks/plans/use-credit-balance";
 import { cn } from "@/lib/utils";
 import {
@@ -127,14 +128,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 	// Get state and actions from Zustand store
 	const {
 		// Core state
-		isOpen,
 		posts,
+		isOpen,
 		platform,
 		loadingState,
 		isGenerating,
 		scheduleDate,
 		scheduleTime,
 		selectedTones,
+		selectedTemplates,
 		activeVersionId,
 		showPreviewModal,
 		selectedVersions,
@@ -156,6 +158,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 		openSpecificModal,
 		updatePostContent,
 		closeSpecificModal,
+		setSelectedTemplates,
 		toggleVersionSelection,
 
 		// Computed helpers
@@ -181,13 +184,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 		new Set(),
 	);
 	const [socials, setSocials] = useState<any[]>([]);
-	const [activeIntegrationTab, setActiveIntegrationTab] = useState("posted");
 	const [isAddingIntegrations, setIsAddingIntegrations] = useState(false);
+	const [activeIntegrationTab, setActiveIntegrationTab] = useState("posted");
 	const [isRemovingIntegrations, setIsRemovingIntegrations] = useState(false);
 	const [removingIntegrationIds, setRemovingIntegrationIds] = useState<
 		Set<string>
 	>(new Set());
 
+	const { templates } = useRetrieveTemplates();
 	const { repoDetails: repository } = useRepoSuperDetails(repoId);
 	const { forceRefresh } = useCreditBalance({
 		showNotifications: false,
@@ -262,7 +266,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 		queryClient.invalidateQueries({ queryKey: ["posts"] });
 	}, [queryClient]);
 
-	// Validation for schedule
 	// Validation for schedule - include pending integrations
 	const isValidSchedule = useMemo(() => {
 		if (!scheduleDate || !scheduleTime) return false;
@@ -460,16 +463,16 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			}
 		},
 		[
-			activeVersionId,
 			posts,
-			onUpdatePost,
+			stopLoading,
+			refreshData,
+			startLoading,
 			isUIDisabled,
+			onUpdatePost,
+			activeVersionId,
 			hasPendingOperation,
 			addPendingOperation,
 			removePendingOperation,
-			startLoading,
-			stopLoading,
-			refreshData,
 		],
 	);
 
@@ -554,7 +557,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			return;
 		}
 
-		const operationKey = `generate_${[...selectedTones].join("_")}`;
+		const operationKey = `generate_${[...selectedTones].join("_")}_${[...selectedTemplates].join("_")}`;
 		if (hasPendingOperation(operationKey)) {
 			return;
 		}
@@ -580,28 +583,35 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 				originalPost.source_commit_message || "Manual variation generation";
 			const platform = originalPost.platform?.toLowerCase() || "linkedin";
 			const selectedTonesArray = [...selectedTones];
+			const selectedTemplatesArray = [...selectedTemplates];
 
 			// Validate we have the required data
 			if (!postId) {
 				toast.error("⚠️ Post ID is required to generate variations");
 				return;
 			}
-			if (selectedTonesArray.length === 0) {
-				toast.error("⚠️ Please select at least one tone to continue");
+			if (
+				selectedTonesArray.length === 0 &&
+				selectedTemplatesArray.length === 0
+			) {
+				toast.error(
+					"⚠️ Please select at least one tone or template to continue",
+				);
 				return;
 			}
-			if (selectedTonesArray.length > 3) {
-				toast.error("⚠️ Maximum 3 tones can be selected at once");
+			if (selectedTonesArray.length + selectedTemplatesArray.length > 3) {
+				toast.error("⚠️ Maximum 3 variations can be selected at once");
 				return;
 			}
 
 			// Check credit balance before making the API call
 			const currentCredits = useUserStore.getState().credits_balance;
-			const requiredCredits = selectedTonesArray.length;
+			// New logic: 1 credit per generation batch (1 tone * N templates)
+			const requiredCredits = 1;
 
 			if (currentCredits < requiredCredits) {
 				toast.error(
-					`💳 Insufficient credits. You need ${requiredCredits} credits but only have ${currentCredits}.`,
+					`💳 Insufficient credits. You need ${requiredCredits} credit but only have ${currentCredits}.`,
 					{
 						duration: 6000,
 						action: {
@@ -619,9 +629,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			// Call the server action to create variations
 			const result = await createPostVariations({
 				post_id: postId,
-				commit_message: commitMessage,
-				platform: platform as "linkedin" | "twitter" | "slack" | "discord",
 				tones: selectedTonesArray,
+				commit_message: commitMessage,
+				templates: selectedTemplatesArray,
+				platform: platform as "linkedin" | "twitter" | "slack" | "discord",
 			});
 
 			// Mark that credits were likely deducted (even if we don't get the response)
@@ -652,17 +663,23 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			// Process the created variations and add them to the UI
 			const variations = result.data.variations || [];
 
-			variations.forEach((variation: PostVariation, index: number) => {
+			variations.forEach((variation: PostVariation) => {
 				// Find the tone label for display
 				const toneLabel =
 					TONE_OPTIONS.find(t => t.id === variation.tone)?.label ||
 					variation.tone;
 
+				// Find the template label for display
+				const templateLabel =
+					templates?.find(t => t.value === variation.template)?.label ||
+					variation.template;
+
 				// Add the new version to your UI state
-				addNewVersion(variation.content, toneLabel, {
+				addNewVersion(variation.content, toneLabel, templateLabel, {
 					id: variation.id,
 					platform: variation.platform,
 					tone: variation.tone,
+					template: variation.template,
 					status: variation.status,
 					created_at: variation.created_at,
 					variation_group_id: result.data.variation_group_id,
@@ -670,6 +687,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 			});
 
 			closeSpecificModal("generator");
+
+			console.log("WOrked");
 		} catch (error) {
 			// Handle different error scenarios with user-friendly messages
 			if (error instanceof Error) {
@@ -892,14 +911,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 		(post: PostItem) => ({
 			id: post.id,
 			tone: post.tone,
-			content: post.content,
-			createdAt: post.created_at,
-			isOriginal: post.is_original,
-			isGenerated: !post.is_original,
-			images: post.image_urls || [],
-			image: post.image_urls?.[0],
-			displayName: getVersionDisplayName(post),
 			status: post.status,
+			content: post.content,
+			template: post.template,
+			createdAt: post.created_at,
+			image: post.image_urls?.[0],
+			isOriginal: post.is_original,
+			images: post.image_urls || [],
+			isGenerated: !post.is_original,
+			displayName: getVersionDisplayName(post),
 			scheduled_publish_time: post.scheduled_publish_time,
 		}),
 		[getVersionDisplayName],
@@ -1530,11 +1550,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 								updateVersionContent={(content: string) =>
 									updatePostContent(activeVersionId, content)
 								}
+								onSaveDraft={() => saveVersionContent()}
+								hasPublishedInGroup={hasPublishedInGroup}
 								onOpenVersions={() => openSpecificModal("versions")}
 								onOpenSchedule={() => openSpecificModal("schedule")}
 								onOpenGenerator={() => openSpecificModal("generator")}
-								onSaveDraft={() => saveVersionContent()}
-								hasPublishedInGroup={hasPublishedInGroup}
 								userSubscriptionTier={
 									plan as "basic" | "pro" | "studio" | undefined
 								}
@@ -1570,6 +1590,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 						selectedTones={selectedTones}
 						setSelectedTones={setSelectedTones}
 						generateVariants={generateVariants}
+						selectedTemplates={selectedTemplates}
+						setSelectedTemplates={setSelectedTemplates}
 						onClose={() => closeSpecificModal("generator")}
 						userPlan={plan as "basic" | "pro" | "studio" | undefined}
 					/>
@@ -1590,10 +1612,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 							loadingState.isLoading &&
 							loadingState.operation.includes("Scheduling")
 						}
-						isValidSchedule={isValidSchedule}
+						datePresets={datePresets}
 						scheduleDate={scheduleDate}
 						scheduleTime={scheduleTime}
-						datePresets={datePresets}
+						isValidSchedule={isValidSchedule}
 						setScheduleDate={date => {
 							useCreatePostModalStore.setState({ scheduleDate: date });
 						}}
